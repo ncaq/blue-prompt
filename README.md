@@ -26,3 +26,10 @@ ClaudeのProjectを作成して、
 必要なリソースを選択することを想定しています。
 
 必要なリソースはその時次第で選択してください。
+
+# 利用できるリソース
+
+## [style](./style)
+
+[Claudeのカスタムスタイル](https://support.claude.com/ja/articles/10181068-%E3%82%B9%E3%82%BF%E3%82%A4%E3%83%AB%E3%81%AE%E8%A8%AD%E5%AE%9A%E3%81%A8%E4%BD%BF%E7%94%A8)
+として利用できるリソースです。
