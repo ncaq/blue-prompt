@@ -10,14 +10,14 @@ description: |
   - When completing code that involves loops, network requests,
     or memory-intensive operations
 tools:
+  - BashOutput
   - Glob
   - Grep
-  - Read
-  - WebFetch
-  - TodoWrite
-  - WebSearch
-  - BashOutput
   - KillBash
+  - Read
+  - TodoWrite
+  - WebFetch
+  - WebSearch
 model: inherit
 ---
 

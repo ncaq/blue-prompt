@@ -9,14 +9,14 @@ description: |
   - Before committing significant changes
   - When uncertain about code quality
 tools:
+  - BashOutput
   - Glob
   - Grep
-  - Read
-  - WebFetch
-  - TodoWrite
-  - WebSearch
-  - BashOutput
   - KillBash
+  - Read
+  - TodoWrite
+  - WebFetch
+  - WebSearch
 model: inherit
 ---
 

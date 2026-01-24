@@ -8,14 +8,14 @@ description: |
   - Completing a logical chunk of code that needs documentation review
   - Preparing code for review/release
 tools:
+  - BashOutput
   - Glob
   - Grep
-  - Read
-  - WebFetch
-  - TodoWrite
-  - WebSearch
-  - BashOutput
   - KillBash
+  - Read
+  - TodoWrite
+  - WebFetch
+  - WebSearch
 model: inherit
 ---
 
