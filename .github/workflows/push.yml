@@ -20,7 +20,7 @@ jobs:
         with:
           extra_nix_config: |
             accept-flake-config = true
-      - uses: cachix/cachix-action@e7c5c1add25228c774d40ae0adbd520ea7c919c0 # v16
+      - uses: cachix/cachix-action@ca2e51995f0edefbb31bc858102abd109580c99c # v16
         with:
           name: blue-prompt
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
