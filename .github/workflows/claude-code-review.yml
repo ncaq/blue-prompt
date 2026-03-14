@@ -33,17 +33,17 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 50
-      - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
+      - uses: cachix/install-nix-action@1ca7d21a94afc7c957383a2d217460d980de4934 # v31
         with:
           extra_nix_config: |
             accept-flake-config = true
-      - uses: cachix/cachix-action@0fc020193b5a1fa3ac4575aa3a7d3aa6a35435ad # v16
+      - uses: cachix/cachix-action@ca2e51995f0edefbb31bc858102abd109580c99c # v16
         with:
           name: blue-prompt
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - name: Run Claude Code Review
         id: claude-review
-        uses: anthropics/claude-code-action@8341a564b0c1693e9fa29c681852ee3714980098 # v1
+        uses: anthropics/claude-code-action@5d0cc745cd0cce4c0e9e0b3511de26c3bc285eb5 # v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: "/review-pr REPO: ${{ github.repository }} PR_NUMBER: ${{ github.event.pull_request.number }}"
