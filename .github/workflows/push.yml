@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read # リポジトリコンテンツの読み取り
+  id-token: write # niks3のOIDC認証に必要
 
 jobs:
   nix-flake-check:
@@ -16,14 +17,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-      - uses: cachix/install-nix-action@616559265b40713947b9c190a8ff4b507b5df49b # v31.10.4
+      - uses: ncaq/nix-composite-action@dc5ec3a596bed5cb62a417dd446ff955876b1f49 # v1.0.1
         with:
-          # セルフホストランナーでうっかり外部からの悪意あるPRを実行許可してしまい、
-          # flake.nixの設定を受け入れると好きなキャッシュを入れられたりしてセキュリティリスクがあるため、
-          # GitHubホストランナーでのみflake.nixの設定を自動で受け入れるようにしています。
-          extra_nix_config: ${{ runner.environment == 'github-hosted' && 'accept-flake-config = true' || '' }}
-      - uses: cachix/cachix-action@1eb2ef646ac0255473d23a5907ad7b04ce94065c # v16
-        with:
-          name: ncaq
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+          cachix-auth-token: "${{ secrets.CACHIX_AUTH_TOKEN }}"
       - run: nix flake check
