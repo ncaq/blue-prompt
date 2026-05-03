@@ -1,3 +1,5 @@
+# Nix
+
 # Ignore build outputs from performing a nix-build or `nix build` command
 result
 result-*
@@ -5,5 +7,5 @@ result-*
 # Ignore automatically generated direnv output
 .direnv
 
-# Customize by person
-.env*local
+# Ignore local override env
+.env.local
