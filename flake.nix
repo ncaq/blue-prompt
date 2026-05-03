@@ -19,11 +19,7 @@
         treefmt-nix.flakeModule
       ];
 
-      systems = [
-        "aarch64-darwin"
-        "aarch64-linux"
-        "x86_64-linux"
-      ];
+      systems = [ "x86_64-linux" ];
 
       perSystem =
         {
@@ -40,30 +36,48 @@
               prettier.enable = true;
               shellcheck.enable = true;
               shfmt.enable = true;
+              statix.enable = true;
               typos.enable = true;
               zizmor.enable = true;
-
-              statix = {
-                enable = true;
-                disabled-lints = [ "eta_reduction" ];
-              };
             };
             settings.formatter = {
               editorconfig-checker = {
-                command = pkgs.lib.getExe (
-                  pkgs.writeShellApplication {
-                    name = "editorconfig-checker-wrapper";
-                    runtimeInputs = [ pkgs.editorconfig-checker ];
-                    text = ''
-                      editorconfig-checker "$@"
-                    '';
-                  }
-                );
+                command = pkgs.editorconfig-checker;
                 includes = [ "*" ];
               };
+              zizmor.options = [ "--pedantic" ];
             };
           };
-          devShells.default = pkgs.mkShell { };
+
+          packages = {
+            # flake.lockの管理バージョンをre-exportすることで安定した利用を促進。
+            inherit (pkgs)
+              nix-fast-build
+              ;
+          };
+
+          devShells.default = pkgs.mkShell {
+            buildInputs = with pkgs; [
+              # treefmtで指定したプログラムの単体版。
+              actionlint
+              deadnix
+              editorconfig-checker
+              nixfmt
+              prettier
+              shellcheck
+              shfmt
+              statix
+              typos
+              zizmor
+
+              # nixの関連ツール。
+              nil
+              nix-fast-build
+
+              # GitHub関連ツール。
+              gh
+            ];
+          };
         };
     };
 
