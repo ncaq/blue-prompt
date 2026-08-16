@@ -65,13 +65,23 @@
                 mkdir -p $out
                 ${lib.concatMapStrings (
                   { pluginName, skillName }:
+                  # プラグインを跨いでスキル名が重複しても衝突しないように、
+                  # 作業ディレクトリと出力ファイルの名前をプラグイン名で名前空間に分ける。
+                  # Claude Codeもプラグイン配下のスキルを`plugin:skill`の形で参照するため、
+                  # プラグイン名を冠する命名はその慣習にも沿う。
+                  # ZIP内のルートディレクトリはスキルの`name`と一致させる必要があるため、
+                  # そちらはスキル名のままにする。
+                  let
+                    workDir = "${pluginName}-${skillName}";
+                  in
                   ''
-                    cp -r ${./plugins + "/${pluginName}/skills/${skillName}"} ${skillName}
-                    chmod -R u+w ${skillName}
+                    mkdir -p ${workDir}
+                    cp -r ${./plugins + "/${pluginName}/skills/${skillName}"} ${workDir}/${skillName}
+                    chmod -R u+w ${workDir}
                     # nix storeのタイムスタンプとファイル列挙順に依存しないアーカイブにする。
-                    find ${skillName} -exec touch -d "@$SOURCE_DATE_EPOCH" {} +
+                    find ${workDir} -exec touch -d "@$SOURCE_DATE_EPOCH" {} +
                     # -Xはuid/gidなどの環境依存の拡張属性を格納しないオプション。
-                    find ${skillName} | sort | zip --quiet -X $out/${skillName}.zip -@
+                    (cd ${workDir} && find ${skillName} | sort | zip --quiet -X $out/${workDir}.zip -@)
                   ''
                 ) skills}
               '';
