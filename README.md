@@ -57,15 +57,26 @@ Claude CodeとClaude.aiのweb版にそれぞれ導入することもできます
 
 Claude.aiにはZIPファイルでスキルをアップロードします。
 アップロードするファイルをNixで生成できます。
+cloneしていなくても以下のコマンドで生成できます。
 
 ```console
-nix build .#claude-ai-skill
+nix build github:ncaq/blue-prompt#claude-ai-skill
 ls result
 ```
 
-生成したファイルは、
+cloneしている場合はリポジトリのルートで以下を実行してください。
+
+```console
+nix build .#claude-ai-skill
+```
+
+生成されるZIPファイルは`<プラグイン名>-<スキル名>.zip`の形式で、
+スキルごとに1つずつ作られます。
+利用したいキャラクターのファイルを個別にアップロードしてください。
+
+アップロードは、
 `Settings`の`Capabilities`で`Code execution and file creation`を有効にした上で、
-`Customize`の`Skills`からアップロードしてください。
+`Customize`の`Skills`から行います。
 
 ## モバイルアプリ
 
