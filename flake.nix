@@ -28,6 +28,9 @@
           ...
         }:
         let
+          # marketplace.jsonの`metadata.version`はリポジトリ全体の配布バージョンとして扱う。
+          # プラグイン個別のバージョンはそれぞれのplugin.jsonが持つ。
+          # この配布物は全プラグインのスキルをまとめたものなので前者を名前に使う。
           marketplace = lib.importJSON ./.claude-plugin/marketplace.json;
 
           dirNamesIn =
