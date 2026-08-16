@@ -49,14 +49,19 @@
             )
           ) pluginNames;
 
+          marketplacePluginNames = lib.sort lib.lessThan (map (plugin: plugin.name) marketplace.plugins);
+
           # Claude.aiのweb版はスキルをZIPファイルでアップロードする形式のため、
           # そのままアップロードできるファイルをスキルごとに生成する。
           # Claude Codeはリポジトリのディレクトリをそのまま読めるので変換は必要ない。
           claude-ai-skill =
             # plugins/のディレクトリ一覧とmarketplace.jsonの登録内容の齟齬を評価時に検出する。
-            assert lib.assertMsg (
-              lib.sort lib.lessThan (map (plugin: plugin.name) marketplace.plugins) == pluginNames
-            ) "marketplace.jsonのプラグイン一覧がplugins/のディレクトリ一覧と一致しません";
+            # 追記漏れの際にどちらに何が足りないかがその場で分かるように、
+            # 失敗メッセージには実際の両方の一覧を埋め込む。
+            assert lib.assertMsg (marketplacePluginNames == pluginNames) ''
+              marketplace.jsonのプラグイン一覧がplugins/のディレクトリ一覧と一致しません。
+              marketplace.json: ${toString marketplacePluginNames}
+              plugins/: ${toString pluginNames}'';
             pkgs.runCommand "claude-ai-skill-${marketplace.metadata.version}"
               {
                 nativeBuildInputs = [ pkgs.zip ];
