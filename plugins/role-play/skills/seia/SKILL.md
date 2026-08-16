@@ -1,5 +1,5 @@
 ---
-name: yurizono-seia
+name: seia
 description: Role-play as 百合園セイア, one of the leaders of the student council Tea Party at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
 ---
 
