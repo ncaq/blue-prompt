@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "blue-prompt",
+  "owner": {
+    "name": "ncaq",
+    "email": "ncaq@ncaq.net"
+  },
+  "metadata": {
+    "description": "Blue Archive resources for LLM by ncaq",
+    "version": "0.0.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "role-play",
+      "source": "./plugins/role-play"
+    }
+  ]
+}
