@@ -42,7 +42,9 @@ nix-fast-build --option eval-cache false --no-link --skip-cached --no-nom
 
 # リポジトリ構成
 
-Codex向けの`AGENTS.md`とClaude Code向けの`CLAUDE.md`は以下のように`.github/copilot-instructions.md`のシンボリックリンクになっています。
+様々なコーディングエージェント向けの`AGENTS.md`と、
+Claude Code向けの`CLAUDE.md`は、
+以下のように`.github/copilot-instructions.md`のシンボリックリンクになっています。
 
 ```console
 AGENTS.md -> .github/copilot-instructions.md
@@ -50,3 +52,43 @@ CLAUDE.md -> .github/copilot-instructions.md
 ```
 
 これにより各種LLM向けのドキュメントを一元管理しています。
+
+# F#
+
+## ビルドとテスト
+
+devShell内(direnvをロードした通常の環境)で、
+通常のdotnetコマンドが使えます。
+
+slnファイルは使っていないため、
+プロジェクトのディレクトリを指定して実行します。
+
+```console
+dotnet build src/BluePrompt
+dotnet test test/BluePrompt.Test
+```
+
+`dotnet test`はブラウザ依存テスト(`Category=Browser`)も含めて実行します。
+Nix経由の統合検証(ブラウザ依存テストを除く)はnix-fast-buildのchecksに含まれています。
+
+## NuGet依存の更新
+
+fsprojのPackageReferenceを変更したら以下を一回実行するだけで、
+deps.jsonの再生成・整形・コミットまで自動で完了します。
+
+```console
+nix run .#update-deps
+```
+
+`Microsoft.Playwright`のバージョンは、
+nixpkgsの`playwright-driver`とmajor.minorを揃える必要があります。
+ズレるとflake評価がassertで失敗します。
+
+# テスト方針
+
+このリポジトリのプログラムは外部に配布したりする性質のものではないので、
+動いていることが確認できれば問題なく、
+テストカバレッジはあまり気にしません。
+
+バグったときとか、
+機能の確認でインラインで動作確認するより良いからテストを書いているだけです。
