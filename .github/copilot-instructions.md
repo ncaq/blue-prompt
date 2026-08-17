@@ -84,6 +84,10 @@ nix run .#update-deps
 nixpkgsの`playwright-driver`とmajor.minorを揃える必要があります。
 ズレるとflake評価がassertで失敗します。
 
+そのためRenovateには`renovate.json`でパッチ更新のみ許可する制限を掛けています。
+nixpkgsの`playwright-driver`が上がった時は、
+`renovate.json`の`allowedVersions`も手で追従させてください。
+
 # テスト方針
 
 このリポジトリのプログラムは外部に配布したりする性質のものではないので、
