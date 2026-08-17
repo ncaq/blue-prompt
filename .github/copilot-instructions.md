@@ -85,8 +85,8 @@ nixpkgsの`playwright-driver`とmajor.minorを揃える必要があります。
 ズレるとflake評価がassertで失敗します。
 
 そのためRenovateには`renovate.json`でパッチ更新のみ許可する制限を掛けています。
-nixpkgsの`playwright-driver`が上がった時は、
-`renovate.json`の`allowedVersions`も手で追従させてください。
+minor以上の更新PRは作られないため、
+nixpkgsの`playwright-driver`が上がった時はfsprojのバージョンを手で上げてください。
 
 # テスト方針
 

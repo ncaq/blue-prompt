@@ -4,10 +4,13 @@
   "packageRules": [
     {
       "description": [
-        "Microsoft.Playwrightはnixpkgsのplaywright-driverとmajor.minorを揃える必要があり、flake.nixのassertで検証しています。nixpkgsが追従していないバージョンに上げるとビルドが通らないため、パッチ更新のみ許可します。nixpkgsのplaywright-driverが上がったらこの範囲も手で追従してください。"
+        "Microsoft.Playwrightはnixpkgsのplaywright-driverとmajor.minorを揃える必要があり、flake.nixのassertで検証しています。",
+        "nixpkgsが追従していないバージョンに上げるとビルドが通らないため、パッチ更新のみ許可します。",
+        "nixpkgsのplaywright-driverが上がった時はfsprojを手で上げて`nix run .#update-deps`してください。"
       ],
       "matchPackageNames": ["Microsoft.Playwright"],
-      "allowedVersions": "~1.59.0"
+      "matchUpdateTypes": ["major", "minor"],
+      "enabled": false
     }
   ]
 }
