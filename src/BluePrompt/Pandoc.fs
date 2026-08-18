@@ -10,12 +10,12 @@ open System.Threading.Tasks
 /// pandocが異常終了した時のexit codeとstderr。
 exception PandocError of exitCode: int * stderr: string
 
-/// HTMLをLLM・人間可読なMarkdownへ変換するためのpandocの引数。
-/// gfmで出力し、raw_htmlを無効化して変換できないタグを除去し、行折り返しをしない。
-/// --sandboxでiframeのsrc取得などのIOを禁止する(信頼できないHTMLによるSSRF対策)。
 /// pandocの完了をこれ以上待たない打ち切り時間。
 let private timeout = TimeSpan.FromMinutes 1.
 
+/// HTMLをLLM・人間可読なMarkdownへ変換するためのpandocの引数。
+/// gfmで出力し、raw_htmlを無効化して変換できないタグを除去し、行折り返しをしない。
+/// --sandboxでiframeのsrc取得などのIOを禁止する(信頼できないHTMLによるSSRF対策)。
 let private markdownArguments =
     [ "-f"; "html"; "-t"; "gfm-raw_html"; "--wrap=none"; "--sandbox" ]
 
@@ -26,7 +26,8 @@ let resolvePath () : string =
     | _ -> "pandoc"
 
 /// HTML文字列をLLMにも人間にも読みやすいGFM Markdownへ変換する。
-/// raw_htmlを無効化して変換できないタグを除去し、行折り返しをしない。
+/// pandocが非0終了した場合はPandocErrorを、
+/// 打ち切り時間を超えた場合はTimeoutExceptionを送出する。
 let toMarkdown (html: string) : Task<string> =
     task {
         let startInfo =
@@ -44,7 +45,13 @@ let toMarkdown (html: string) : Task<string> =
             startInfo.ArgumentList.Add argument
 
         use cancellation = new CancellationTokenSource(timeout)
-        use pandoc = Process.Start startInfo
+
+        use pandoc =
+            match Process.Start startInfo with
+            | null ->
+                // PANDOC_PATHの設定ミスやdevShell外での実行を切り分けられるようにパスを含める。
+                failwith $"pandocを起動できませんでした: %s{startInfo.FileName}"
+            | started -> started
         // 標準入力の書き込み中にパイプバッファが満杯になるとpandocと相互待ちになるため、
         // 標準出力と標準エラーの読み取りを書き込みより先に開始しておく。
         let stdoutTask = pandoc.StandardOutput.ReadToEndAsync()
