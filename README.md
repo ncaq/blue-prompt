@@ -53,6 +53,39 @@ Claude CodeとClaude.aiのweb版にそれぞれ導入することもできます
 /plugin install role-play@blue-prompt
 ```
 
+## home-manager
+
+`homeModules.default`をimportすると、
+プラグインとスキル一式をClaude CodeやOpenCodeへ接続できます。
+
+flakeのinputに追加します。
+
+```nix
+{
+  inputs.blue-prompt.url = "github:ncaq/blue-prompt";
+}
+```
+
+home-managerの構成に組み込みます。
+
+```nix
+{
+  imports = [ inputs.blue-prompt.homeModules.default ];
+
+  blue-prompt = {
+    claude-code.enable = true;
+    opencode.enable = true;
+  };
+}
+```
+
+- `blue-prompt.claude-code.enable`は全プラグインを`programs.claude-code.plugins`へ追加します
+- `blue-prompt.opencode.enable`は各プラグインのスキルをフラットに展開して`programs.opencode.skills`へ追加します
+
+`programs.claude-code`や`programs.opencode`自体の有効化や設定は、
+通常通りhome-manager側で行ってください。
+有効化されていない場合はassertionでエラーになります。
+
 ## Claude.aiのweb版
 
 Claude.aiにはZIPファイルでスキルをアップロードします。
