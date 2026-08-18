@@ -9,6 +9,12 @@ open System.Threading.Tasks
 /// pandocが異常終了した時のexit codeとstderr。
 exception PandocError of exitCode: int * stderr: string
 
+/// HTMLをLLM・人間可読なMarkdownへ変換するためのpandocの引数。
+/// gfmで出力し、raw_htmlを無効化して変換できないタグを除去し、行折り返しをしない。
+/// --sandboxでiframeのsrc取得などのIOを禁止する(信頼できないHTMLによるSSRF対策)。
+let private markdownArguments =
+    [ "-f"; "html"; "-t"; "gfm-raw_html"; "--wrap=none"; "--sandbox" ]
+
 /// 環境変数PANDOC_PATHがあればそれを、無ければPATH上のpandocを使う。
 let resolvePath () : string =
     Environment.GetEnvironmentVariable "PANDOC_PATH"
@@ -30,7 +36,7 @@ let toMarkdown (html: string) : Task<string> =
                 StandardErrorEncoding = Encoding.UTF8
             )
 
-        for argument in [ "-f"; "html"; "-t"; "gfm-raw_html"; "--wrap=none" ] do
+        for argument in markdownArguments do
             startInfo.ArgumentList.Add argument
 
         use pandoc = Process.Start startInfo
