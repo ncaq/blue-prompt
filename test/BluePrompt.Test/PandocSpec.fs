@@ -66,12 +66,28 @@ let ``pandocが異常終了するとPandocErrorにexit codeとstderrが入る`` 
         try
             let! error =
                 Assert.ThrowsAsync<BluePrompt.Pandoc.PandocError>(fun () ->
-                    BluePrompt.Pandoc.toMarkdownWith script "<h1>x</h1>" :> Task)
+                    BluePrompt.Pandoc.toMarkdownWith
+                        script
+                        BluePrompt.Pandoc.defaultMarkdownArguments
+                        "<h1>x</h1>"
+                    :> Task)
 
             Assert.Equal(3, error.exitCode)
             Assert.Contains("boom", error.stderr)
         finally
             File.Delete script
+    }
+
+[<Fact>]
+let ``引数を差し替えると変換先フォーマットを変えられる`` () : Task =
+    task {
+        let! rst =
+            BluePrompt.Pandoc.toMarkdownWithArguments
+                [ "-f"; "html"; "-t"; "rst"; "--wrap=none"; "--sandbox" ]
+                "<h1>Example Domain</h1>"
+
+        // reStructuredTextの見出しはテキストの下線で表現される。
+        Assert.Contains("Example Domain\n==============", rst)
     }
 
 [<Fact>]

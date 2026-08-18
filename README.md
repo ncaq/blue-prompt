@@ -57,8 +57,6 @@ wiki独自の解説や考察はそのままの形では置きません。
 同じページを何度も取得しに行かずに済むようにします。
 詳しくは[プラグインのREADME.md](./plugins/jp-wikiru-bluearchive/README.md)を参照してください。
 
-現在は雛形の段階です。
-
 # スキルの導入方法
 
 ## Claude Code

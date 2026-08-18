@@ -32,6 +32,30 @@ LLMは『ブルーアーカイブ』について、
 LLMに記憶を頼らせるのではなく、
 出典のある事実を引かせることが目的です。
 
+## 提供するスキル
+
+### [character-appellation](./skills/character-appellation)
+
+キャラクターが自分や他のキャラクターをどう呼ぶかを調べるスキルです。
+[キャラ呼称表](https://bluearchive.wikiru.jp/?%E3%82%AD%E3%83%A3%E3%83%A9%E5%91%BC%E7%A7%B0%E8%A1%A8)
+を整形した一覧を同梱しています。
+
+## ナレッジの生成方法
+
+各スキルが参照する`reference.md`は、
+このリポジトリのF#プログラムでwikiruの記事から自動生成しています。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-knowledge 'キャラ呼称表' plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md
+```
+
+Playwrightでページを開いて本文と脚注だけを抜き出し、
+編集リンクや広告やコメント欄を取り除き、
+GFMのテーブルで表現できない結合セルを展開した上で、
+pandocでMarkdownへ変換しています。
+
+wikiの更新を取り込みたい時に同じコマンドを再実行してください。
+
 ## 著作権についての立場
 
 このプラグインは非公式であり、

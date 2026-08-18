@@ -13,10 +13,11 @@ exception PandocError of exitCode: int * stderr: string
 /// pandocの完了をこれ以上待たない打ち切り時間。
 let private timeout = TimeSpan.FromMinutes 1.
 
-/// HTMLをLLM・人間可読なMarkdownへ変換するためのpandocの引数。
+/// HTMLをLLM・人間可読なMarkdownへ変換するためのpandocの既定の引数。
 /// gfmで出力し、raw_htmlを無効化して変換できないタグを除去し、行折り返しをしない。
 /// --sandboxでiframeのsrc取得などのIOを禁止する(信頼できないHTMLによるSSRF対策)。
-let private markdownArguments =
+/// 呼び出し側はこれを差し替えたり書き足したりして変換を調整できる。
+let defaultMarkdownArguments =
     [ "-f"; "html"; "-t"; "gfm-raw_html"; "--wrap=none"; "--sandbox" ]
 
 /// 環境変数PANDOC_PATHがあればそれを、無ければPATH上のpandocを使う。
@@ -25,10 +26,10 @@ let resolvePath () : string =
     | path when not (String.IsNullOrWhiteSpace path) -> path
     | _ -> "pandoc"
 
-/// 指定したパスのpandocでHTML文字列をGFM Markdownへ変換する。
+/// 指定したパスのpandocを指定した引数で起動してHTML文字列をMarkdownへ変換する。
 /// pandocが非0終了した場合はPandocErrorを、
 /// 打ち切り時間を超えた場合はTimeoutExceptionを送出する。
-let toMarkdownWith (pandocPath: string) (html: string) : Task<string> =
+let toMarkdownWith (pandocPath: string) (arguments: string list) (html: string) : Task<string> =
     task {
         let startInfo =
             ProcessStartInfo(
@@ -41,7 +42,7 @@ let toMarkdownWith (pandocPath: string) (html: string) : Task<string> =
                 StandardErrorEncoding = Encoding.UTF8
             )
 
-        for argument in markdownArguments do
+        for argument in arguments do
             startInfo.ArgumentList.Add argument
 
         use cancellation = new CancellationTokenSource(timeout)
@@ -75,6 +76,12 @@ let toMarkdownWith (pandocPath: string) (html: string) : Task<string> =
         return markdown
     }
 
+/// resolvePathで解決したpandocを指定した引数で起動してHTML文字列をMarkdownへ変換する。
+/// エラー条件はtoMarkdownWithと同じ。
+let toMarkdownWithArguments (arguments: string list) (html: string) : Task<string> =
+    toMarkdownWith (resolvePath ()) arguments html
+
 /// resolvePathで解決したpandocでHTML文字列をGFM Markdownへ変換する。
 /// エラー条件はtoMarkdownWithと同じ。
-let toMarkdown (html: string) : Task<string> = toMarkdownWith (resolvePath ()) html
+let toMarkdown (html: string) : Task<string> =
+    toMarkdownWithArguments defaultMarkdownArguments html
