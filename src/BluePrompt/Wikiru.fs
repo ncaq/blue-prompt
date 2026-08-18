@@ -52,9 +52,16 @@ let private trimPreamble (markdown: string) : string =
 /// 本文中の参照はリンクを外した後に「\*1」の形で残り、
 /// 末尾の#note由来の定義は「\*1 本文」の行になっているので、
 /// 定義行を「[^1]: 本文」へ、残った参照を「[^1]」へ書き換える。
+/// Multiline下の\sは改行にもマッチして後続の段落を巻き込むため、
+/// 空白は行内のものだけに限定して定義のマッチを1行へ閉じ込める。
 let private convertFootnotes (markdown: string) : string =
     let withDefinitions =
-        Regex.Replace(markdown, @"^\\\*(\d+)\s+(.*?)\s*$", "[^$1]: $2", RegexOptions.Multiline)
+        Regex.Replace(
+            markdown,
+            @"^\\\*(\d+)[^\S\r\n]+(.*?)[^\S\r\n]*$",
+            "[^$1]: $2",
+            RegexOptions.Multiline
+        )
 
     Regex.Replace(withDefinitions, @"\\\*(\d+)", "[^$1]")
 
