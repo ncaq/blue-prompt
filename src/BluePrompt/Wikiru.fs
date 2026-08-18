@@ -74,13 +74,25 @@ let private convertFootnotes (markdown: string) : string =
 /// 変換後Markdownの後始末。
 /// 最初の見出しより前のナビゲーションを切り落とし、
 /// 中身を取り除いて残骸になったコメント欄の見出しを消し、
+/// 画像だけのリンク列の跡として残った区切り文字だけの行を消し、
 /// 脚注をGFMの文法へ変換し、連続する空行を1つへ潰す。
 let cleanupMarkdown (markdown: string) : string =
     let withoutCommentHeading =
         Regex.Replace(trimPreamble markdown, @"^#{1,6} コメント(フォーム)?\s*$", "", RegexOptions.Multiline)
 
+    // 画像だけのリンクを「/」で並べたナビゲーションは、
+    // 画像除去とリンク外しの後に区切り文字だけの行になる。
+    // 空白は行内のものだけに限定して、行を跨いだ巻き込みを防ぐ。
+    let withoutSeparatorRemnant =
+        Regex.Replace(
+            withoutCommentHeading,
+            @"^[^\S\r\n]*(/[^\S\r\n]*)+$",
+            "",
+            RegexOptions.Multiline
+        )
+
     let collapsed =
-        Regex.Replace(convertFootnotes withoutCommentHeading, @"\n{3,}", "\n\n")
+        Regex.Replace(convertFootnotes withoutSeparatorRemnant, @"\n{3,}", "\n\n")
 
     collapsed.Trim() + "\n"
 
