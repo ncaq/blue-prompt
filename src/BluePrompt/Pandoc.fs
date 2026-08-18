@@ -41,7 +41,11 @@ let toMarkdownWith (pandocPath: string) (arguments: string list) (html: string) 
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
-                StandardInputEncoding = Encoding.UTF8,
+                // Encoding.UTF8はBOM付きで、ProcessはBOMをプロセス起動直後に書き込む。
+                // 起動直後に終了したプロセスへのBOM書き込みはbroken pipeとなり、
+                // Start自体がIOExceptionで失敗する競合になるため、BOMなしを明示する。
+                // pandocへの入力に余計なBOMが混ざることも防ぐ。
+                StandardInputEncoding = UTF8Encoding false,
                 StandardOutputEncoding = Encoding.UTF8,
                 StandardErrorEncoding = Encoding.UTF8
             )
