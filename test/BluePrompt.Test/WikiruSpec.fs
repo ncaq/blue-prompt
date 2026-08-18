@@ -34,6 +34,30 @@ let ``cleanupMarkdownは脚注をGFMの文法へ変換する`` () =
     )
 
 [<Fact>]
+let ``脚注定義の変換は後続の段落を巻き込まない`` () =
+    // 定義行にテキストが無い場合、正規表現が改行を跨いでマッチすると、
+    // 無関係な次の段落が脚注定義へ吸い込まれてしまう。
+    let markdown = "# h\n\n\\*1\n\n次の段落\n"
+    Assert.Equal("# h\n\n[^1]\n\n次の段落\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``2桁の脚注も変換される`` () =
+    let markdown = "# h\n\n本文\\*10\n\n\\*10 条件\n"
+    Assert.Equal("# h\n\n本文[^10]\n\n[^10]: 条件\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``連続する脚注定義はそれぞれ変換される`` () =
+    let markdown = "# h\n\n\\*1 初対面時  \n\\*2 変装中  \n"
+
+    Assert.Equal("# h\n\n[^1]: 初対面時\n[^2]: 変装中\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``エスケープされていないアスタリスクは変換されない`` () =
+    // pandocがエスケープしなかった*1は脚注由来ではないため素通りする。
+    let markdown = "# h\n\n*1 これは脚注ではない\n"
+    Assert.Equal("# h\n\n*1 これは脚注ではない\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
 let ``knowledgeHeaderは出典URLを含む`` () =
     Assert.Contains(
         "https://bluearchive.wikiru.jp/?%E3%82%AD%E3%83%A3%E3%83%A9%E5%91%BC%E7%A7%B0%E8%A1%A8",
