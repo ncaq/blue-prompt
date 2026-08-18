@@ -20,6 +20,20 @@ let ``長い段落は行折り返しされず1行になる`` () : Task =
     }
 
 [<Fact>]
+let ``日本語などの非ASCII文字が化けずにMarkdownへ現れる`` () : Task =
+    task {
+        let! markdown = BluePrompt.Pandoc.toMarkdown "<p>日本語テキストと絵文字🎉</p>"
+        Assert.Contains("日本語テキストと絵文字🎉", markdown)
+    }
+
+[<Fact>]
+let ``空のHTMLは空のMarkdownになる`` () : Task =
+    task {
+        let! markdown = BluePrompt.Pandoc.toMarkdown ""
+        Assert.Equal("", markdown.Trim())
+    }
+
+[<Fact>]
 let ``数MB規模のHTMLもハングせず変換できる`` () : Task =
     task {
         let html = String.replicate 100000 "<p>large input</p>"
