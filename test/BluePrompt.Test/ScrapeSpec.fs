@@ -24,16 +24,9 @@ let ``1つのブラウザを再利用して複数回Markdown化できる`` () : 
 
 [<Fact>]
 [<Trait("Category", "Browser")>]
-let ``example.comのMarkdownにタイトルが見出しとして含まれる`` () : Task =
+let ``example.comのMarkdownに見出しとリンクがMarkdown記法で含まれる`` () : Task =
     task {
         let! markdown = BluePrompt.Scrape.fetchMarkdown (Uri "https://example.com/")
         Assert.Contains("# Example Domain", markdown)
-    }
-
-[<Fact>]
-[<Trait("Category", "Browser")>]
-let ``example.comのMarkdownにリンクがMarkdown記法で含まれる`` () : Task =
-    task {
-        let! markdown = BluePrompt.Scrape.fetchMarkdown (Uri "https://example.com/")
         Assert.Contains("](https://iana.org/domains/example)", markdown)
     }
