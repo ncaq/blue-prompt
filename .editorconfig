@@ -43,7 +43,7 @@ indent_style = space
 indent_size = 2
 
 # 標準インデントが4の言語。
-[*.{cs,csx,fs,fsi,fsx,java,kt,kts,php,py,pyi,rs}]
+[*.{cs,csx,java,kt,kts,php,py,pyi,rs}]
 indent_size = 4
 
 # Goのエコシステムは標準インデントがタブ。
@@ -63,6 +63,12 @@ indent_size = unset
 
 # Haskellは文法の都合で3文字インデントが必要な場合があるので未設定。
 [*.{chs,hs,hsc,hsig,lhs,lhsig}]
+indent_size = unset
+
+# F#は基本インデントは4だが、
+# レコードのフィールドやリストの要素を開き括弧の直後へ縦に揃える文法のため、
+# fantomasの標準スタイルでも4の倍数にならない行が生じるので未設定。
+[*.{fs,fsi,fsx}]
 indent_size = unset
 
 # Emacs Lispは文法の都合で3文字インデントが必要な場合があるので未設定。

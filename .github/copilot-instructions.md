@@ -88,6 +88,16 @@ nixpkgsの`playwright-driver`とmajor.minorを揃える必要があります。
 minor以上の更新PRは作られないため、
 nixpkgsの`playwright-driver`が上がった時はfsprojのバージョンを手で上げてください。
 
+# wikiruナレッジの生成
+
+`plugins/jp-wikiru-bluearchive/`配下の各スキルが参照する`reference.md`は、
+wikiruの記事からの自動生成ファイルです。
+手で編集せず、以下のコマンドで再生成してください。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-knowledge '<ページ名>' <出力ファイル>
+```
+
 # テスト方針
 
 このリポジトリのプログラムは外部に配布したりする性質のものではないので、

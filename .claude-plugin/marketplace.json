@@ -12,6 +12,10 @@
   },
   "plugins": [
     {
+      "name": "jp-wikiru-bluearchive",
+      "source": "./plugins/jp-wikiru-bluearchive"
+    },
+    {
       "name": "role-play",
       "source": "./plugins/role-play"
     }
