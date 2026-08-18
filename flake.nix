@@ -6,20 +6,82 @@
       url = "github:numtide/treefmt-nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # home-managerモジュールの検証にのみ使用する。
+    home-manager = {
+      url = "github:nix-community/home-manager/release-26.05";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
     inputs@{
+      nixpkgs,
       flake-parts,
       treefmt-nix,
       ...
     }:
+    let
+      inherit (nixpkgs) lib;
+
+      dirNamesIn =
+        path: lib.attrNames (lib.filterAttrs (_name: type: type == "directory") (builtins.readDir path));
+
+      pluginDirOf = pluginName: ./plugins + "/${pluginName}";
+
+      # plugins/配下の実ディレクトリからプラグイン一覧を導出する。
+      # プラグインやスキルを追加してもここに一覧を追記する必要がなく、
+      # 配布物やhome-managerモジュールからの漏れも起きない。
+      # system非依存なのでmkFlakeの外で導出し、
+      # perSystemとhome-managerモジュールが同じ一覧を共有する。
+      pluginNames = dirNamesIn ./plugins;
+
+      # 各プラグインのskills/配下をプラグイン名とスキル名の組で列挙する。
+      skills = lib.concatMap (
+        pluginName:
+        let
+          skillsDir = pluginDirOf pluginName + "/skills";
+        in
+        map (skillName: { inherit pluginName skillName; }) (
+          lib.optionals (builtins.pathExists skillsDir) (dirNamesIn skillsDir)
+        )
+      ) pluginNames;
+
+      # プラグイン名からプラグインディレクトリへの辞書。
+      pluginPaths = lib.genAttrs pluginNames pluginDirOf;
+
+      # スキル名からスキルディレクトリへの辞書。
+      # OpenCodeはプラグインの単位を持たないためスキルをフラットに展開する必要があるが、
+      # 複数プラグインが同名のスキルを持つと片方が黙って消えるため、
+      # 衝突を評価時に検出する。
+      skillPaths =
+        let
+          skillOwners = lib.mapAttrs (_skillName: map (skill: skill.pluginName)) (
+            lib.groupBy (skill: skill.skillName) skills
+          );
+          skillNameConflicts = lib.filterAttrs (_skillName: owners: 1 < lib.length owners) skillOwners;
+        in
+        assert lib.assertMsg (
+          skillNameConflicts == { }
+        ) "blue-promptのプラグイン間でスキル名が衝突しています: ${builtins.toJSON skillNameConflicts}";
+        lib.listToAttrs (
+          map (
+            { pluginName, skillName }:
+            lib.nameValuePair skillName (pluginDirOf pluginName + "/skills/${skillName}")
+          ) skills
+        );
+    in
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [
         treefmt-nix.flakeModule
       ];
 
       systems = [ "x86_64-linux" ];
+
+      # プラグインとスキル一式をClaude CodeやOpenCodeへ接続するhome-managerモジュール。
+      flake.homeModules.default = import ./modules/home-manager.nix {
+        plugins = pluginPaths;
+        skills = skillPaths;
+      };
 
       perSystem =
         {
@@ -126,25 +188,6 @@
             '';
           };
 
-          dirNamesIn =
-            path: lib.attrNames (lib.filterAttrs (_name: type: type == "directory") (builtins.readDir path));
-
-          # plugins/配下の実ディレクトリからプラグイン一覧を導出する。
-          # プラグインやスキルを追加してもここに一覧を追記する必要がなく、
-          # 配布物からの漏れも起きない。
-          pluginNames = dirNamesIn ./plugins;
-
-          # 各プラグインのskills/配下をプラグイン名とスキル名の組で列挙する。
-          skills = lib.concatMap (
-            pluginName:
-            let
-              skillsDir = ./plugins + "/${pluginName}/skills";
-            in
-            map (skillName: { inherit pluginName skillName; }) (
-              lib.optionals (builtins.pathExists skillsDir) (dirNamesIn skillsDir)
-            )
-          ) pluginNames;
-
           marketplacePluginNames = lib.sort lib.lessThan (map (plugin: plugin.name) marketplace.plugins);
 
           # Claude.aiのweb版はスキルをZIPファイルでアップロードする形式のため、
@@ -220,6 +263,56 @@
           checks = {
             package-blue-prompt = blue-prompt;
             package-claude-ai-skill = claude-ai-skill;
+
+            # home-managerモジュールを実際のhome-manager構成へ組み込んで、
+            # プラグインとスキルが実際に接続されていることを検証する。
+            # 接続が空になっても評価自体は通り続けるため、
+            # 内容を検証しないとモジュールが実質何も接続しなくなった退行を検出できない。
+            home-manager-module =
+              let
+                homeConfiguration = inputs.home-manager.lib.homeManagerConfiguration {
+                  inherit pkgs;
+                  modules = [
+                    inputs.self.homeModules.default
+                    {
+                      home = {
+                        username = "blue-prompt-test";
+                        homeDirectory = "/home/blue-prompt-test";
+                        stateVersion = "26.05";
+                      };
+                      programs = {
+                        claude-code.enable = true;
+                        opencode.enable = true;
+                      };
+                      blue-prompt = {
+                        claude-code.enable = true;
+                        opencode.enable = true;
+                      };
+                    }
+                  ];
+                };
+                claudeCodePlugins = homeConfiguration.config.programs.claude-code.plugins;
+                # モジュールがhome-managerのバージョンに応じてリストと属性セットを使い分けるため、
+                # どちらで接続されても中身を取り出せるようにリストへ揃える。
+                pluginPathList =
+                  if lib.isList claudeCodePlugins then claudeCodePlugins else lib.attrValues claudeCodePlugins;
+                inherit (homeConfiguration.config.programs.opencode) skills;
+              in
+              # Claude Code本体はunfreeでビルドにライセンス許諾の設定が必要なため、
+              # 構成全体(activationPackage)ではなく接続先の実体だけをビルド時に検証する。
+              assert lib.assertMsg (
+                pluginPathList != [ ]
+              ) "blue-promptのプラグインがprograms.claude-code.pluginsへ接続されていません";
+              assert lib.assertMsg (skills ? kotori) "blue-promptのスキルがprograms.opencode.skillsへ展開されていません";
+              pkgs.runCommand "home-manager-module" { } ''
+                # Claude Code側: 接続されたプラグインがマニフェストを持つ実体である。
+                ${lib.concatMapStrings (pluginPath: ''
+                  test -f ${pluginPath}/.claude-plugin/plugin.json
+                '') pluginPathList}
+                # OpenCode側: 代表スキルの本体が接続されている。
+                test -f ${skills.kotori}/SKILL.md
+                touch $out
+              '';
           };
 
           packages = {
