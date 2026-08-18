@@ -125,7 +125,13 @@ let private flattenTablesScript =
 /// URLへ遷移し、queryに従って本文だけをHTML文字列として抜き出す。
 /// RemoveSelectorsの除去とUnwrapLinks・FlattenTablesの変形を施した後に、
 /// ContentSelectorsへ一致した要素のouterHTMLを連結して返す。
-/// 一致する要素が無いセレクタは読み飛ばす。エラー条件はwithPageと同じ。
+/// 一致する要素が無いセレクタは読み飛ばす。
+/// wikiruの脚注のように存在しないことが正常な要素があるためで、
+/// RemoveSelectorsの0件一致も同様に正常として扱う。
+/// ただし全ContentSelectorsが1件も一致しなかった場合は、
+/// サイト側の構造変更で抽出が全滅した可能性が高く、
+/// 空のナレッジによる上書きを防ぐためContentNotFoundを送出する。
+/// エラー条件はwithPageと同じ。
 let fetchContentHtml (browser: IBrowser) (url: Uri) (query: ContentQuery) : Task<string> =
     withPage browser url (fun page ->
         task {
@@ -146,6 +152,9 @@ let fetchContentHtml (browser: IBrowser) (url: Uri) (query: ContentQuery) : Task
             for selector in query.ContentSelectors do
                 let! htmls = page.EvalOnSelectorAllAsync<string array>(selector, outerHtmlScript)
                 contents.AddRange htmls
+
+            if contents.Count = 0 then
+                raise (ContentNotFound(url = url, selectors = query.ContentSelectors))
 
             return String.concat "\n" contents
         })
