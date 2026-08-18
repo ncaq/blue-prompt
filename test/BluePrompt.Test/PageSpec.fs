@@ -119,6 +119,43 @@ let ``fetchContentHtmlはリンクを外しテーブルを平坦化する`` () :
 
 [<Fact>]
 [<Trait("Category", "Browser")>]
+let ``全ContentSelectorsが一致しない場合はContentNotFoundになる`` () : Task =
+    task {
+        // サイト側のid変更などで抽出が全滅した時に、
+        // 空文字列が正常な結果として返ると空のナレッジで既存ファイルを上書きしてしまう。
+        // 全セレクタ0件一致は例外として検知できることを検証する。
+        let query =
+            { fixtureQuery with
+                ContentSelectors = [ "#missing"; "#also-missing" ] }
+
+        do!
+            Assert.ThrowsAsync<BluePrompt.Page.ContentNotFound>(fun () ->
+                BluePrompt.Browser.withBrowser (fun browser ->
+                    withServedHtml fixtureHtml (fun url ->
+                        BluePrompt.Page.fetchContentHtml browser url query))
+                :> Task)
+            :> Task
+    }
+
+[<Fact>]
+[<Trait("Category", "Browser")>]
+let ``一部のContentSelectorsが一致しなくても残りは抽出される`` () : Task =
+    task {
+        // wikiruの#note(脚注)のように任意の要素があるため、個別のセレクタの0件一致は許容する。
+        let query =
+            { fixtureQuery with
+                ContentSelectors = [ "#content"; "#missing" ] }
+
+        let! html =
+            BluePrompt.Browser.withBrowser (fun browser ->
+                withServedHtml fixtureHtml (fun url ->
+                    BluePrompt.Page.fetchContentHtml browser url query))
+
+        Assert.Contains("Fixture", html)
+    }
+
+[<Fact>]
+[<Trait("Category", "Browser")>]
 let ``平坦化したテーブルはpandocでパイプテーブルへ変換できる`` () : Task =
     task {
         let! html =

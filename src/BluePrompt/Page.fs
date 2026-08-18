@@ -8,6 +8,9 @@ open System.Threading.Tasks
 /// HTTPステータスが成功以外だった時のURLとステータスコード。
 exception FetchError of url: Uri * status: int
 
+/// コンテンツ抽出でどのセレクタも要素に一致しなかった時のURLとセレクタ一覧。
+exception ContentNotFound of url: Uri * selectors: string list
+
 /// コンテンツ抽出の設定。
 /// ヘッダやサイドバーや広告を除いた本文だけをナレッジ用に抜き出す用途を想定している。
 type ContentQuery =
