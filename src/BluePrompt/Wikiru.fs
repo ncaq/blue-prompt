@@ -35,7 +35,13 @@ let contentQuery: Page.ContentQuery =
           "#pcomment-form"
           "div[class*='pcmt-']"
           // 画像。lazyload用プレースホルダのdata URIしか取れずノイズになる。
-          "img" ]
+          "img"
+          // 表示対象ではない要素。pandocはタグを落としてもテキスト内容を本文へ混ぜることがあり、
+          // wikiのプラグインや広告タグ由来のスクリプト片がナレッジへ紛れ込む余地がある。
+          "script"
+          "style"
+          "noscript"
+          "template" ]
       UnwrapLinks = true
       FlattenTables = true }
 
