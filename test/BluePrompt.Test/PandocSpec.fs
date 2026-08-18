@@ -1,5 +1,6 @@
 module BluePrompt.Test.PandocSpec
 
+open System.IO
 open System.Threading.Tasks
 open Xunit
 
@@ -34,6 +35,29 @@ let ``変換できないタグの生HTMLは残らない`` () : Task =
 
         Assert.DoesNotContain("<span", markdown)
         Assert.Contains("text", markdown)
+    }
+
+[<Fact>]
+let ``pandocが異常終了するとPandocErrorにexit codeとstderrが入る`` () : Task =
+    task {
+        // pandocの代わりにstderrへ出力して非0終了するスクリプトを使い、異常系を決定的に再現する。
+        let script = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+        do! File.WriteAllTextAsync(script, "#!/bin/sh\necho boom >&2\nexit 3\n")
+
+        File.SetUnixFileMode(
+            script,
+            UnixFileMode.UserRead ||| UnixFileMode.UserWrite ||| UnixFileMode.UserExecute
+        )
+
+        try
+            let! error =
+                Assert.ThrowsAsync<BluePrompt.Pandoc.PandocError>(fun () ->
+                    BluePrompt.Pandoc.toMarkdownWith script "<h1>x</h1>" :> Task)
+
+            Assert.Equal(3, error.exitCode)
+            Assert.Contains("boom", error.stderr)
+        finally
+            File.Delete script
     }
 
 [<Fact>]

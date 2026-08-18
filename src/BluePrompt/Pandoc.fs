@@ -25,14 +25,14 @@ let resolvePath () : string =
     | path when not (String.IsNullOrWhiteSpace path) -> path
     | _ -> "pandoc"
 
-/// HTML文字列をLLMにも人間にも読みやすいGFM Markdownへ変換する。
+/// 指定したパスのpandocでHTML文字列をGFM Markdownへ変換する。
 /// pandocが非0終了した場合はPandocErrorを、
 /// 打ち切り時間を超えた場合はTimeoutExceptionを送出する。
-let toMarkdown (html: string) : Task<string> =
+let toMarkdownWith (pandocPath: string) (html: string) : Task<string> =
     task {
         let startInfo =
             ProcessStartInfo(
-                FileName = resolvePath (),
+                FileName = pandocPath,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -74,3 +74,7 @@ let toMarkdown (html: string) : Task<string> =
 
         return markdown
     }
+
+/// resolvePathで解決したpandocでHTML文字列をGFM Markdownへ変換する。
+/// エラー条件はtoMarkdownWithと同じ。
+let toMarkdown (html: string) : Task<string> = toMarkdownWith (resolvePath ()) html
