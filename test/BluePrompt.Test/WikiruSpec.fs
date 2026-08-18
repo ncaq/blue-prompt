@@ -34,6 +34,18 @@ let ``cleanupMarkdownは脚注をGFMの文法へ変換する`` () =
     )
 
 [<Fact>]
+let ``区切り文字だけになった行は取り除かれる`` () =
+    // 画像だけのリンクを「/」で並べたナビゲーションは、
+    // 画像除去とリンク外しの後に区切り文字だけの行として残る。
+    let markdown = "# h\n\n/\n\n本文\n\n/ /\n"
+    Assert.Equal("# h\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``水平線の行は区切り文字の除去では消えない`` () =
+    let markdown = "# h\n\n本文\n\n---\n\n付記\n"
+    Assert.Equal("# h\n\n本文\n\n---\n\n付記\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
 let ``脚注定義の変換は後続の段落を巻き込まない`` () =
     // 定義行にテキストが無い場合、正規表現が改行を跨いでマッチすると、
     // 無関係な次の段落が脚注定義へ吸い込まれてしまう。
