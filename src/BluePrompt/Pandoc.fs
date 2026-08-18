@@ -30,6 +30,9 @@ let resolvePath () : string =
 /// 指定したパスのpandocを指定した引数で起動してHTML文字列をMarkdownへ変換する。
 /// pandocが非0終了した場合はPandocErrorを、
 /// 打ち切り時間を超えた場合はTimeoutExceptionを送出する。
+/// 標準入力への書き込みが失敗した場合は終了状態で判断する。
+/// 非0終了ならPandocErrorを優先し、
+/// 0終了なら出力が完全である保証が無いため書き込み失敗のIOExceptionを送出する。
 let toMarkdownWith (pandocPath: string) (arguments: string list) (html: string) : Task<string> =
     task {
         let startInfo =
@@ -59,15 +62,24 @@ let toMarkdownWith (pandocPath: string) (arguments: string list) (html: string) 
         let stdoutTask = pandoc.StandardOutput.ReadToEndAsync()
         let stderrTask = pandoc.StandardError.ReadToEndAsync()
 
+        // プロセスが入力を読み切る前に終了するとbroken pipeで書き込みが失敗する。
+        // その場で送出せず記録に留めて、終了状態を見てから報告方法を決める。
+        let mutable writeError: IOException option = None
+
         try
             try
-                do! pandoc.StandardInput.WriteAsync(html.AsMemory(), cancellation.Token)
-                pandoc.StandardInput.Close()
-            with :? IOException ->
-                // プロセスが入力を読み切る前に異常終了するとbroken pipeで書き込みが失敗する。
-                // その場合も書き込み失敗自体ではなく、
-                // この後の終了待ちで得られるexit codeとstderrをPandocErrorとして報告したい。
-                ()
+                try
+                    do! pandoc.StandardInput.WriteAsync(html.AsMemory(), cancellation.Token)
+                with :? IOException as error ->
+                    writeError <- Some error
+            finally
+                // Closeを飛ばすとEOFが送られず、プロセスが生きている場合に終了待ちが打ち切りまでブロックする。
+                // Close自体の失敗(フラッシュのbroken pipe)も入力が完全に渡っていない兆候として記録する。
+                try
+                    pandoc.StandardInput.Close()
+                with :? IOException as error ->
+                    if writeError.IsNone then
+                        writeError <- Some error
 
             do! pandoc.WaitForExitAsync cancellation.Token
         with :? OperationCanceledException ->
@@ -80,6 +92,12 @@ let toMarkdownWith (pandocPath: string) (arguments: string list) (html: string) 
 
         if pandoc.ExitCode <> 0 then
             raise (PandocError(exitCode = pandoc.ExitCode, stderr = stderr))
+
+        // 正常終了していても入力を書き切れていないなら、出力は途中までの変換かもしれない。
+        // 成功として返すと不完全なナレッジが静かに書き出されるため、書き込みの失敗を報告する。
+        match writeError with
+        | Some error -> raise error
+        | None -> ()
 
         return markdown
     }
