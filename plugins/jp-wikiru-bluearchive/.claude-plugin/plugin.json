@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "jp-wikiru-bluearchive",
+  "version": "0.1.0",
+  "description": "Knowledge base and lookup skills built from the Japanese Blue Archive community wiki at bluearchive.wikiru.jp.",
+  "author": {
+    "name": "ncaq",
+    "email": "ncaq@ncaq.net",
+    "url": "https://github.com/ncaq"
+  },
+  "homepage": "https://github.com/ncaq/blue-prompt/tree/master/plugins/jp-wikiru-bluearchive",
+  "repository": "https://github.com/ncaq/blue-prompt",
+  "license": "Apache-2.0",
+  "keywords": ["blue-archive", "wiki", "knowledge-base", "japanese"]
+}
