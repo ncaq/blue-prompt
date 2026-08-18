@@ -21,9 +21,9 @@ let private markdownArguments =
 
 /// 環境変数PANDOC_PATHがあればそれを、無ければPATH上のpandocを使う。
 let resolvePath () : string =
-    Environment.GetEnvironmentVariable "PANDOC_PATH"
-    |> Option.ofObj
-    |> Option.defaultValue "pandoc"
+    match Environment.GetEnvironmentVariable "PANDOC_PATH" with
+    | path when not (String.IsNullOrWhiteSpace path) -> path
+    | _ -> "pandoc"
 
 /// HTML文字列をLLMにも人間にも読みやすいGFM Markdownへ変換する。
 /// raw_htmlを無効化して変換できないタグを除去し、行折り返しをしない。
