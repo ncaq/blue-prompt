@@ -82,6 +82,8 @@
               doCheck = true;
               # サンドボックス内ではブラウザを起動できないため、ブラウザ依存テストは除外する。
               testFilters = [ "Category!=Browser" ];
+              # HTML→Markdown変換のテストがpandocを起動するため、check環境に含める。
+              nativeCheckInputs = [ pkgs.pandoc ];
               executables = [ "BluePrompt" ];
               # nix runで単体実行できるようにPlaywrightの実行環境をラッパーに焼き込む。
               makeWrapperArgs = [
@@ -94,6 +96,9 @@
                 "--set-default"
                 "PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS"
                 "true"
+                "--set-default"
+                "PANDOC_PATH"
+                (lib.getExe pkgs.pandoc)
               ];
               meta.mainProgram = "BluePrompt";
             };
@@ -254,6 +259,9 @@
               # F#開発ツール。
               dotnet-sdk_10
               fsautocomplete
+
+              # HTML→Markdown変換。
+              pandoc
             ];
             env = {
               DOTNET_ROOT = "${pkgs.dotnet-sdk_10}/share/dotnet";
@@ -264,6 +272,8 @@
               PLAYWRIGHT_BROWSERS_PATH = "${playwrightBrowsers}";
               # nixpkgsのブラウザはパッチ済みなのでaptパッケージ前提のホスト検証を飛ばす。
               PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
+              # HTML→Markdown変換に使うpandocをnixpkgsのもので固定する。
+              PANDOC_PATH = lib.getExe pkgs.pandoc;
             };
           };
         };
