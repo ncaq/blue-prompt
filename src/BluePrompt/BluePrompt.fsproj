@@ -6,6 +6,10 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Pandoc.fs" />
+    <Compile Include="Browser.fs" />
+    <Compile Include="Page.fs" />
+    <Compile Include="Scrape.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
