@@ -3,6 +3,7 @@ module BluePrompt.Pandoc
 
 open System
 open System.Diagnostics
+open System.IO
 open System.Text
 open System.Threading
 open System.Threading.Tasks
@@ -59,8 +60,15 @@ let toMarkdownWith (pandocPath: string) (arguments: string list) (html: string) 
         let stderrTask = pandoc.StandardError.ReadToEndAsync()
 
         try
-            do! pandoc.StandardInput.WriteAsync(html.AsMemory(), cancellation.Token)
-            pandoc.StandardInput.Close()
+            try
+                do! pandoc.StandardInput.WriteAsync(html.AsMemory(), cancellation.Token)
+                pandoc.StandardInput.Close()
+            with :? IOException ->
+                // プロセスが入力を読み切る前に異常終了するとbroken pipeで書き込みが失敗する。
+                // その場合も書き込み失敗自体ではなく、
+                // この後の終了待ちで得られるexit codeとstderrをPandocErrorとして報告したい。
+                ()
+
             do! pandoc.WaitForExitAsync cancellation.Token
         with :? OperationCanceledException ->
             // 打ち切り時はプロセスを回収しないとパイプごとリークする。

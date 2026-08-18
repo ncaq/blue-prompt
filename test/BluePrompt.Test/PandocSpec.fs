@@ -79,6 +79,37 @@ let ``pandocが異常終了するとPandocErrorにexit codeとstderrが入る`` 
     }
 
 [<Fact>]
+let ``入力を読まずに異常終了してもPandocErrorになる`` () : Task =
+    task {
+        // 入力を読まずに即終了するプロセスへの書き込みはbroken pipeになる。
+        // それでも書き込みの失敗ではなくexit codeがPandocErrorとして報告されることを検証する。
+        let script = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+        do! File.WriteAllTextAsync(script, "#!/bin/sh\nexit 4\n")
+
+        File.SetUnixFileMode(
+            script,
+            UnixFileMode.UserRead ||| UnixFileMode.UserWrite ||| UnixFileMode.UserExecute
+        )
+
+        try
+            // パイプバッファ(Linuxで既定64KiB)に収まらないサイズにして、
+            // プロセス終了前に書き込みが完了してしまう取りこぼしを防ぐ。
+            let html = String.replicate 100000 "<p>x</p>"
+
+            let! error =
+                Assert.ThrowsAsync<BluePrompt.Pandoc.PandocError>(fun () ->
+                    BluePrompt.Pandoc.toMarkdownWith
+                        script
+                        BluePrompt.Pandoc.defaultMarkdownArguments
+                        html
+                    :> Task)
+
+            Assert.Equal(4, error.exitCode)
+        finally
+            File.Delete script
+    }
+
+[<Fact>]
 let ``引数を差し替えると変換先フォーマットを変えられる`` () : Task =
     task {
         let! rst =
