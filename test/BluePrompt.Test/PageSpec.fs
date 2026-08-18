@@ -119,6 +119,36 @@ let ``fetchContentHtmlはリンクを外しテーブルを平坦化する`` () :
 
 [<Fact>]
 [<Trait("Category", "Browser")>]
+let ``過大なrowspanは実際の行数で切り詰められる`` () : Task =
+    task {
+        // rowspan/colspanは外部HTML由来の未検証値で、HTML仕様上は65534と1000まで指定できる。
+        // そのまま格子を組むと数千万要素へ膨らんで処理がハングするため、切り詰めを検証する。
+        let html =
+            """<html><body><main id="content">
+<table>
+<thead><tr><th>name</th><th>value</th></tr></thead>
+<tbody>
+<tr><td rowspan="65534">big</td><td>one</td></tr>
+<tr><td>two</td></tr>
+</tbody>
+</table>
+</main></body></html>"""
+
+        let query =
+            { fixtureQuery with
+                ContentSelectors = [ "#content" ] }
+
+        let! extracted =
+            BluePrompt.Browser.withBrowser (fun browser ->
+                withServedHtml html (fun url -> BluePrompt.Page.fetchContentHtml browser url query))
+
+        // 実際の行数(2行)分だけ展開され、指定値までは複製されない。
+        Assert.Equal(2, Text.RegularExpressions.Regex.Matches(extracted, "big").Count)
+        Assert.DoesNotContain("rowspan", extracted)
+    }
+
+[<Fact>]
+[<Trait("Category", "Browser")>]
 let ``全ContentSelectorsが一致しない場合はContentNotFoundになる`` () : Task =
     task {
         // サイト側のid変更などで抽出が全滅した時に、

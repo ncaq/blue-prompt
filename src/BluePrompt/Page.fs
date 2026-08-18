@@ -71,6 +71,11 @@ let private outerHtmlScript =
 /// 結合セルを個別セルへ複製展開し、セル内のbrを区切り文字へ置換するスクリプト。
 /// 列位置はrowspan/colspanを考慮した格子を組み立てて求める。
 /// 内側のテーブルを先に処理しないと外側のセル複製で処理前の姿が固定されるため、逆順に走査する。
+/// rowspan/colspanは外部HTML由来の未検証値で、HTML仕様上は65534と1000まで指定できる。
+/// そのまま使うと悪意ある値や編集ミスで格子が数千万要素へ膨らむため、
+/// rowspanは実際の残り行数で、colspanは現実のwikiテーブルを大きく超える定数で切り詰める。
+/// 展開で増える位置はテキストだけを持つ複製にする。
+/// サブツリーの深いコピーを繰り返すと入れ子テーブルを含むセルで乗算的に膨らむため。
 let private flattenTablesScript =
     """() => {
     for (const br of document.querySelectorAll("th br, td br")) {
@@ -89,6 +94,7 @@ let private flattenTablesScript =
             br.remove();
         }
     }
+    const maxColumnSpan = 100;
     for (const table of Array.from(document.querySelectorAll("table")).reverse()) {
         const rows = Array.from(table.rows);
         const grid = [];
@@ -99,23 +105,32 @@ let private flattenTablesScript =
                 while (grid[rowIndex][columnIndex] !== undefined) {
                     columnIndex++;
                 }
-                for (let i = 0; i < cell.rowSpan; i++) {
-                    for (let j = 0; j < cell.colSpan; j++) {
+                const rowSpan = Math.min(cell.rowSpan, rows.length - rowIndex);
+                const columnSpan = Math.min(cell.colSpan, maxColumnSpan);
+                for (let i = 0; i < rowSpan; i++) {
+                    for (let j = 0; j < columnSpan; j++) {
                         grid[rowIndex + i] ??= [];
-                        grid[rowIndex + i][columnIndex + j] = cell;
+                        grid[rowIndex + i][columnIndex + j] = {
+                            cell,
+                            isOrigin: i === 0 && j === 0,
+                        };
                     }
                 }
-                columnIndex += cell.colSpan;
+                columnIndex += columnSpan;
             }
         });
         rows.forEach((row, rowIndex) => {
             const cells = (grid[rowIndex] ?? [])
-                .filter((cell) => cell !== undefined)
-                .map((cell) => {
-                    const clone = cell.cloneNode(true);
-                    clone.removeAttribute("rowspan");
-                    clone.removeAttribute("colspan");
-                    return clone;
+                .filter((entry) => entry !== undefined)
+                .map((entry) => {
+                    if (entry.isOrigin) {
+                        entry.cell.removeAttribute("rowspan");
+                        entry.cell.removeAttribute("colspan");
+                        return entry.cell;
+                    }
+                    const copy = document.createElement(entry.cell.tagName);
+                    copy.textContent = entry.cell.textContent;
+                    return copy;
                 });
             row.replaceChildren(...cells);
         });
