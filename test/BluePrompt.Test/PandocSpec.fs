@@ -19,6 +19,14 @@ let ``長い段落は行折り返しされず1行になる`` () : Task =
     }
 
 [<Fact>]
+let ``数MB規模のHTMLもハングせず変換できる`` () : Task =
+    task {
+        let html = String.replicate 100000 "<p>large input</p>"
+        let! markdown = BluePrompt.Pandoc.toMarkdown html
+        Assert.Contains("large input", markdown)
+    }
+
+[<Fact>]
 let ``変換できないタグの生HTMLは残らない`` () : Task =
     task {
         let! markdown =
