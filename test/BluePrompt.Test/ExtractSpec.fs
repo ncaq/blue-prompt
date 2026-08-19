@@ -380,6 +380,29 @@ let ``過大なrowspanは実際の行数で切り詰められる`` () =
     Assert.DoesNotContain("rowspan", extracted)
 
 [<Fact>]
+let ``rowspan0のセルは残りの行の末尾まで展開される`` () =
+    // HTML仕様のrowspan="0"は「セクションの最後まで」を意味し、DOMのrowSpanは0を返す。
+    // 0のまま展開するとループが1度も回らずセルが格子から消え、事実データが静かに落ちる。
+    let html =
+        """<html><body><main id="content">
+<table>
+<tbody>
+<tr><td rowspan="0">スパン</td><td>one</td></tr>
+<tr><td>two</td></tr>
+</tbody>
+</table>
+</main></body></html>"""
+
+    let query =
+        { fixtureQuery with
+            ContentSelectors = [ "#content" ] }
+
+    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+
+    Assert.Equal(2, Text.RegularExpressions.Regex.Matches(extracted, "スパン").Count)
+    Assert.DoesNotContain("rowspan", extracted)
+
+[<Fact>]
 let ``全ContentSelectorsが一致しない場合はContentNotFoundになる`` () =
     // サイト側のid変更などで抽出が全滅した時に、
     // 空文字列が正常な結果として返ると空のナレッジで既存ファイルを上書きしてしまう。
