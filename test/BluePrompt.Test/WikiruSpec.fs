@@ -83,6 +83,22 @@ let ``エスケープされていないアスタリスクは変換されない``
     Assert.Equal("# h\n\n*1 これは脚注ではない\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
+let ``studentContentQueryは折りたたみの中身を残し開閉UIだけ取り除く`` () =
+    // 生徒ページでは絆ストーリー一覧やボイスなどの本文が折りたたみの中に入っている。
+    // セレクタの引き算が表記変更で空振りすると、折りたたみごと本文が消える。
+    let query = BluePrompt.Wikiru.studentContentQuery
+    Assert.DoesNotContain(".rgn-container", query.RemoveSelectors)
+    Assert.Contains(".rgn-button", query.RemoveSelectors)
+    Assert.Contains(".rgn-description", query.RemoveSelectors)
+
+[<Fact>]
+let ``studentContentQueryは画像を除去せずaltのテキストへ置き換える`` () =
+    // 素材や品物は画像で表現されていて、altに入っている名前が唯一の事実になる。
+    let query = BluePrompt.Wikiru.studentContentQuery
+    Assert.DoesNotContain("img", query.RemoveSelectors)
+    Assert.True query.ReplaceImagesWithAlt
+
+[<Fact>]
 let ``filterSectionsはホワイトリストにあるh2セクションだけ残す`` () =
     let markdown = "## 基本情報\n\n名前\n\n## 運用考察\n\n考察本文\n\n## スキル\n\nEX\n"
 

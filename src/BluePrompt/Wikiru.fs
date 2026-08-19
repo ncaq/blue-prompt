@@ -11,6 +11,15 @@ open System.Threading.Tasks
 let pageUri (pageName: string) : Uri =
     Uri $"https://bluearchive.wikiru.jp/?%s{Uri.EscapeDataString pageName}"
 
+/// 折りたたみUI(rgn)全体のセレクタ。
+/// contentQueryは丸ごと除去し、studentContentQueryは除去対象から外して中身を残す。
+/// 両者が同じ表記を参照することで、表記の変更が片方だけに伝わって空振りすることを防ぐ。
+let private collapsibleSelector = ".rgn-container"
+
+/// 画像のセレクタ。
+/// contentQueryは除去し、studentContentQueryは除去対象から外してaltのテキストへ置き換える。
+let private imageSelector = "img"
+
 /// wikiruの記事からナレッジとして使う部分を抜き出す設定。
 /// 本文(#body)と脚注(#note)を残し、サイトのヘッダ・サイドバー・フッタは含めない。
 let contentQuery: Page.ContentQuery =
@@ -25,8 +34,8 @@ let contentQuery: Page.ContentQuery =
           "table.toc"
           // 折りたたみUI。ページ内ジャンプの五十音索引やコメント欄ルールに使われていて、
           // ジャンプできないMarkdownではどちらも要らない。
-          // 折りたたみに本文が入っているページを扱うことになったら見直す。
-          ".rgn-container"
+          // 折りたたみに本文が入っている生徒個別ページはstudentContentQueryで扱う。
+          collapsibleSelector
           // 広告。
           ".sticky-ads"
           "ins.adsbygoogle"
@@ -42,7 +51,7 @@ let contentQuery: Page.ContentQuery =
           // リンクアンラップの後にページ名だけの行が残り、直前の表の一部と誤読される。
           ".permalink"
           // 画像。lazyload用プレースホルダのdata URIしか取れずノイズになる。
-          "img"
+          imageSelector
           // 表示対象ではない要素。pandocはタグを落としてもテキスト内容を本文へ混ぜることがあり、
           // wikiのプラグインや広告タグ由来のスクリプト片がナレッジへ紛れ込む余地がある。
           "script"
@@ -64,7 +73,7 @@ let studentContentQuery: Page.ContentQuery =
         RemoveSelectors =
             [ ".rgn-button"; ".rgn-description" ]
             @ List.filter
-                (fun selector -> selector <> ".rgn-container" && selector <> "img")
+                (fun selector -> selector <> collapsibleSelector && selector <> imageSelector)
                 contentQuery.RemoveSelectors
         ReplaceImagesWithAlt = true }
 
