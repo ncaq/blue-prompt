@@ -315,6 +315,35 @@ let ``キーと値のペアを横に並べた行は1行1ペアの2列になる``
 
 [<Fact>]
 [<Trait("Category", "Browser")>]
+let ``見出し行の無い表では先頭行にだけ値がある列も残る`` () : Task =
+    task {
+        // 見出しだけの列の削除はth見出し行を持つ表のための処理で、
+        // データ行から始まる表の先頭行を見出し扱いすると、
+        // 先頭行にだけ値がある列が事実データごと静かに消えてしまう。
+        let html =
+            """<html><body><main id="content">
+<table>
+<tbody>
+<tr><td>先頭だけの値</td><td>a</td></tr>
+<tr><td></td><td>b</td></tr>
+<tr><td></td><td>c</td></tr>
+</tbody>
+</table>
+</main></body></html>"""
+
+        let query =
+            { fixtureQuery with
+                ContentSelectors = [ "#content" ] }
+
+        let! extracted =
+            BluePrompt.Browser.withBrowser (fun browser ->
+                withServedHtml html (fun url -> BluePrompt.Page.fetchContentHtml browser url query))
+
+        Assert.Contains("先頭だけの値", extracted)
+    }
+
+[<Fact>]
+[<Trait("Category", "Browser")>]
 let ``全セルが空の行は取り除かれる`` () : Task =
     task {
         // 画像だけの行は画像の除去で全セルが空になり、ノイズの行として残ってしまう。
