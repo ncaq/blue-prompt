@@ -217,10 +217,12 @@ let private writeFile (outputPath: string) (content: string) : Task<unit> =
 
 /// wikiruの記事をMarkdown化し、出典ヘッダ付きのナレッジファイルとして書き出す。
 /// スキルが参照するリファレンスファイルの生成の入口。
+/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
 let writeKnowledge (browser: IBrowser) (pageName: string) (outputPath: string) : Task<unit> =
     task {
         let! markdown = fetchMarkdown browser pageName
         do! writeFile outputPath (knowledgeHeader pageName + markdown)
+        do! Fmt.formatFile outputPath
     }
 
 /// wikiruの記事から抽出・変形した本文を、Markdown化せずHTMLのまま書き出す。
@@ -281,6 +283,7 @@ description: %s{description}
 
 /// wikiruの生徒個別ページをMarkdown化し、SKILL.mdとして書き出す。
 /// スキル名は出力先のディレクトリ名と一致する必要があるため、出力パスから導出する。
+/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
 let writeStudentSkill (browser: IBrowser) (pageName: string) (outputPath: string) : Task<unit> =
     task {
         let skillName =
@@ -294,4 +297,5 @@ let writeStudentSkill (browser: IBrowser) (pageName: string) (outputPath: string
 
         let! markdown = fetchStudentMarkdown browser pageName
         do! writeFile outputPath (studentSkillMarkdown skillName pageName markdown)
+        do! Fmt.formatFile outputPath
     }

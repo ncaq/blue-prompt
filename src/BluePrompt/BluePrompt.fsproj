@@ -6,6 +6,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Fmt.fs" />
     <Compile Include="Pandoc.fs" />
     <Compile Include="Browser.fs" />
     <Compile Include="Page.fs" />
