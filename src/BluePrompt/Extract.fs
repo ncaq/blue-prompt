@@ -350,29 +350,33 @@ let private dropEmptyColumns (table: IHtmlTableElement) : unit =
     let survivingRows = Seq.toArray table.Rows
 
     if 2 <= survivingRows.Length then
-        let hasHeaderRow =
-            survivingRows[0].Cells |> Seq.forall (fun cell -> cell.TagName = "TH")
+        // AngleSharpのIHtmlCollectionはLengthもインデクサも呼ぶたびに子要素を線形に舐め、
+        // TextContentもアクセスごとに部分木を走査して文字列を新規生成するため、
+        // セルとそのテキストを一度だけ配列へ落として判定に使う。
+        // 列単位のセル削除は残った列のセルの位置を変えないので、事前に落とした配列のまま扱える。
+        let rowCells = survivingRows |> Array.map (fun row -> Seq.toArray row.Cells)
 
-        let columnCount =
-            survivingRows |> Array.map (fun row -> row.Cells.Length) |> Array.max
+        let rowTexts =
+            rowCells
+            |> Array.map (Array.map (fun (cell: IHtmlTableCellElement) -> cell.TextContent.Trim()))
+
+        let hasHeaderRow = rowCells[0] |> Array.forall (fun cell -> cell.TagName = "TH")
+        let columnCount = rowCells |> Array.map Array.length |> Array.max
+
+        // 行によってセル数が違うため、短い行では列が無いことを空として扱う。
+        let cellTextAt (index: int) (texts: string array) : string =
+            if index < texts.Length then texts[index] else ""
 
         for index in columnCount - 1 .. -1 .. 0 do
-            let headerIsEmpty =
-                survivingRows[0].Cells.Length <= index
-                || survivingRows[0].Cells[index].TextContent.Trim() = ""
+            let headerIsEmpty = cellTextAt index rowTexts[0] = ""
 
             let bodyIsEmpty =
-                survivingRows
-                |> Array.indexed
-                |> Array.forall (fun (rowIndex, row) ->
-                    rowIndex = 0
-                    || row.Cells.Length <= index
-                    || row.Cells[index].TextContent.Trim() = "")
+                rowTexts |> Seq.skip 1 |> Seq.forall (fun texts -> cellTextAt index texts = "")
 
             if bodyIsEmpty && (headerIsEmpty || (hasHeaderRow && 3 <= survivingRows.Length)) then
-                for row in survivingRows do
-                    if index < row.Cells.Length then
-                        row.Cells[index].Remove()
+                for cells in rowCells do
+                    if index < cells.Length then
+                        cells[index].Remove()
 
 /// キーと値のペアを横に繰り返すレイアウトの行(th,td,th,td,...)を1行1ペアの2列へ正規化する。
 /// 列の意味が揃わずデータとして混乱するため。
