@@ -197,6 +197,85 @@ let ``セル内の改行は前後の句読点に合わせて詰めるか読点�
 
 [<Fact>]
 [<Trait("Category", "Browser")>]
+let ``見出しセル内の改行は読点を挟まず詰める`` () : Task =
+    task {
+        // 見出しセルは文ではなくラベルで、改行は表示幅の都合の折り返しでしかない。
+        // 読点を挟むと「各バージョン、一覧」のようにラベルが分断されて読める。
+        let html =
+            """<html><body><main id="content">
+<table>
+<tbody>
+<tr><th>各バージョン<br>一覧</th><td>値あり</td></tr>
+</tbody>
+</table>
+</main></body></html>"""
+
+        let query =
+            { fixtureQuery with
+                ContentSelectors = [ "#content" ] }
+
+        let! extracted =
+            BluePrompt.Browser.withBrowser (fun browser ->
+                withServedHtml html (fun url -> BluePrompt.Page.fetchContentHtml browser url query))
+
+        Assert.Contains("各バージョン一覧", extracted)
+        Assert.DoesNotContain("各バージョン、一覧", extracted)
+    }
+
+[<Fact>]
+[<Trait("Category", "Browser")>]
+let ``同じリンク先をまたぐ改行は読点を挟まず詰める`` () : Task =
+    task {
+        // wikiruでは長いリンクラベルを同じリンク先の複数のaへ分けてbrで折り返すことがある。
+        // 読点を挟むと「ミレニアムサイエンス、スクール2年生」のように固有名詞が分断される。
+        let html =
+            """<html><body><main id="content">
+<table>
+<tbody>
+<tr><th>学園</th><td><a href="./?school#m">ミレニアムサイエンス</a><br><a href="./?school#m">スクール2年生</a></td></tr>
+</tbody>
+</table>
+</main></body></html>"""
+
+        let query =
+            { fixtureQuery with
+                ContentSelectors = [ "#content" ] }
+
+        let! extracted =
+            BluePrompt.Browser.withBrowser (fun browser ->
+                withServedHtml html (fun url -> BluePrompt.Page.fetchContentHtml browser url query))
+
+        Assert.Contains("ミレニアムサイエンススクール2年生", extracted)
+    }
+
+[<Fact>]
+[<Trait("Category", "Browser")>]
+let ``異なるリンク先をまたぐ改行は読点で繋ぐ`` () : Task =
+    task {
+        // 別々のリンク先が並ぶのは入手手段のような列挙なので、読点の区切りを維持する。
+        // 同じリンク先の折り返しを詰める規則が効き過ぎないことの固定。
+        let html =
+            """<html><body><main id="content">
+<table>
+<tbody>
+<tr><th>入手手段</th><td><a href="./?a">通常募集</a><br><a href="./?b">アーカイブ募集</a></td></tr>
+</tbody>
+</table>
+</main></body></html>"""
+
+        let query =
+            { fixtureQuery with
+                ContentSelectors = [ "#content" ] }
+
+        let! extracted =
+            BluePrompt.Browser.withBrowser (fun browser ->
+                withServedHtml html (fun url -> BluePrompt.Page.fetchContentHtml browser url query))
+
+        Assert.Contains("通常募集、アーカイブ募集", extracted)
+    }
+
+[<Fact>]
+[<Trait("Category", "Browser")>]
 let ``横に結合されたセルの複製は空になる`` () : Task =
     task {
         // 横方向の複製は同じ行を読めば分かる繰り返しでしかなく、
