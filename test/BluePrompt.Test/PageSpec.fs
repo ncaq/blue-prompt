@@ -9,7 +9,9 @@ open BluePrompt.Test.LocalServer
 [<Fact>]
 let ``ローカルサーバのHTMLを取得できる`` () : Task =
     task {
-        let html = "<html><head><title>Served Page</title></head><body>body text</body></html>"
+        let html =
+            "<html><head><title>Served Page</title></head><body>body text</body></html>"
+
         let! fetched = withServedHtml html (fun url -> BluePrompt.Page.fetchHtml url)
         Assert.Contains("<title>Served Page</title>", fetched)
         Assert.Contains("body text", fetched)

@@ -28,8 +28,7 @@ let private configuration =
         LoaderOptions(
             IsResourceLoadingEnabled = false,
             Filter =
-                (fun request ->
-                    request.Address.Scheme = "http" || request.Address.Scheme = "https")
+                (fun request -> request.Address.Scheme = "http" || request.Address.Scheme = "https")
         )
     )
 

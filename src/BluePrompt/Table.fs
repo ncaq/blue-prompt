@@ -240,50 +240,51 @@ let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) :
         false
     else
 
-    let grid = Array.init rows.Length (fun _ -> SortedDictionary<int, GridEntry>())
+        let grid = Array.init rows.Length (fun _ -> SortedDictionary<int, GridEntry>())
 
-    rows
-    |> Array.iteri (fun rowIndex row ->
-        let mutable columnIndex = 0
+        rows
+        |> Array.iteri (fun rowIndex row ->
+            let mutable columnIndex = 0
 
-        for cell in Seq.toArray row.Cells do
-            while grid[rowIndex].ContainsKey columnIndex do
-                columnIndex <- columnIndex + 1
+            for cell in Seq.toArray row.Cells do
+                while grid[rowIndex].ContainsKey columnIndex do
+                    columnIndex <- columnIndex + 1
 
-            let rowSpan, columnSpan = cellSpans rows.Length rowIndex cell
+                let rowSpan, columnSpan = cellSpans rows.Length rowIndex cell
 
-            for i in 0 .. rowSpan - 1 do
-                for j in 0 .. columnSpan - 1 do
-                    grid[rowIndex + i][columnIndex + j] <-
-                        { Cell = cell
-                          IsOrigin = i = 0 && j = 0
-                          KeepsText = j = 0 }
+                for i in 0 .. rowSpan - 1 do
+                    for j in 0 .. columnSpan - 1 do
+                        grid[rowIndex + i][columnIndex + j] <-
+                            { Cell = cell
+                              IsOrigin = i = 0 && j = 0
+                              KeepsText = j = 0 }
 
-            columnIndex <- columnIndex + columnSpan)
+                columnIndex <- columnIndex + columnSpan)
 
-    rows
-    |> Array.iteri (fun rowIndex row ->
-        let cells =
-            grid[rowIndex].Values
-            |> Seq.map (fun entry ->
-                if entry.IsOrigin then
-                    entry.Cell.RemoveAttribute "rowspan" |> ignore
-                    entry.Cell.RemoveAttribute "colspan" |> ignore
-                    entry.Cell :> IElement
-                else
-                    let copy = document.CreateElement entry.Cell.LocalName
+        rows
+        |> Array.iteri (fun rowIndex row ->
+            let cells =
+                grid[rowIndex].Values
+                |> Seq.map (fun entry ->
+                    if entry.IsOrigin then
+                        entry.Cell.RemoveAttribute "rowspan" |> ignore
+                        entry.Cell.RemoveAttribute "colspan" |> ignore
+                        entry.Cell :> IElement
+                    else
+                        let copy = document.CreateElement entry.Cell.LocalName
 
-                    copy.TextContent <- (if entry.KeepsText then entry.Cell.TextContent else "")
+                        copy.TextContent <-
+                            (if entry.KeepsText then entry.Cell.TextContent else "")
 
-                    copy)
-            |> Seq.toArray
+                        copy)
+                |> Seq.toArray
 
-        if Array.forall (fun (cell: IElement) -> cell.TextContent.Trim() = "") cells then
-            row.Remove()
-        else
-            replaceChildren row cells)
+            if Array.forall (fun (cell: IElement) -> cell.TextContent.Trim() = "") cells then
+                row.Remove()
+            else
+                replaceChildren row cells)
 
-    true
+        true
 
 /// 見出しの下が全て空になった列を列ごと取り除く。
 /// 画像の除去などで空になった列はノイズでしかないため。
