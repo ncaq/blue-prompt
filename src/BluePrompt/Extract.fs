@@ -116,9 +116,9 @@ let private splitDividerRows (document: IDocument) : unit =
 
 /// 改行の境界をどう繋ぐか決める。
 /// 前が句読点や開き括弧などで終わるか、後が区切り記号や閉じ括弧などで始まるなら、
-/// そのまま詰めても読める。どちらでもなければ読点を挟む。
+/// そのまま詰めても読めるのでNoneを返す。どちらでもなければ挟む読点を返す。
 /// 対象が日本語のwikiであることを前提にした結合規則。
-let private joinSeparator (previousText: string) (nextText: string) : string =
+let private joinSeparator (previousText: string) (nextText: string) : string option =
     let flushBefore = "。．！？!?…、,/／・:：(（「『"
     let flushAfter = "/／・、。,)）」』(（"
 
@@ -126,7 +126,7 @@ let private joinSeparator (previousText: string) (nextText: string) : string =
         (previousText <> "" && flushBefore.Contains previousText[previousText.Length - 1])
         || (nextText <> "" && flushAfter.Contains nextText[0])
 
-    if flushable then "" else "、"
+    if flushable then None else Some "、"
 
 /// 兄弟をnextの方向へ辿って最初に中身のあるノードを返す。
 let private siblingWithContent (next: INode -> INode) (node: INode) : INode option =
@@ -180,8 +180,8 @@ let private joinCellLineBreaks (document: IDocument) : unit =
             br.Remove()
         else
             match joinSeparator previous next with
-            | "" -> br.Remove()
-            | separator -> br.Replace [| document.CreateTextNode separator :> INode |]
+            | None -> br.Remove()
+            | Some separator -> br.Replace [| document.CreateTextNode separator :> INode |]
 
 /// セル内のdivやpなどのブロック要素の境界を繋いでタグを外す。
 /// ブロック要素が残っていると、
@@ -209,8 +209,8 @@ let private unwrapCellBlocks (document: IDocument) : unit =
 
             if previous <> "" && text <> "" && isNull (block.Closest "th") then
                 match joinSeparator previous text with
-                | "" -> ()
-                | separator -> block.Before [| document.CreateTextNode separator :> INode |]
+                | None -> ()
+                | Some separator -> block.Before [| document.CreateTextNode separator :> INode |]
 
             block.Replace(Seq.toArray block.ChildNodes)
 
