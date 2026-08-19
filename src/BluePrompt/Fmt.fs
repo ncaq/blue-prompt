@@ -22,7 +22,8 @@ let private timeout = TimeSpan.FromMinutes 5.
 /// どこから起動されてもファイルのあるリポジトリのフォーマッタが使われるように、
 /// ファイルのあるディレクトリを作業ディレクトリにする。
 /// nix fmtが非0終了した場合はFmtErrorを、
-/// 打ち切り時間を超えた場合はTimeoutExceptionを送出する。
+/// 打ち切り時間を超えた場合はTimeoutExceptionを、
+/// devShell外での実行などでnixが見つからない場合はInvalidOperationExceptionを送出する。
 let formatFile (path: string) : Task<unit> =
     task {
         let fullPath = Path.GetFullPath path
@@ -42,15 +43,17 @@ let formatFile (path: string) : Task<unit> =
 
         use cancellation = new CancellationTokenSource(timeout)
 
+        let startFailedMessage = $"nixを起動できませんでした: %s{startInfo.FileName}"
+
         use fmt =
             // 実行ファイルが見つからない場合、StartはnullではなくWin32Exceptionを送出する。
             // devShell外での実行などを切り分けられるように、起動しようとしたパスを添えて包み直す。
             try
                 match Process.Start startInfo with
-                | null -> failwith $"nixを起動できませんでした: %s{startInfo.FileName}"
+                | null -> raise (InvalidOperationException startFailedMessage)
                 | started -> started
             with :? System.ComponentModel.Win32Exception as error ->
-                raise (InvalidOperationException($"nixを起動できませんでした: %s{startInfo.FileName}", error))
+                raise (InvalidOperationException(startFailedMessage, error))
         // パイプバッファが満杯になるとプロセスと相互待ちになるため、
         // 終了待ちより先に標準出力と標準エラーの読み取りを開始しておく。
         let stdoutTask = fmt.StandardOutput.ReadToEndAsync()
