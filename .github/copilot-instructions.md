@@ -109,6 +109,14 @@ dotnet run --project src/BluePrompt -- wikiru-knowledge '<ページ名>' <出力
 dotnet run --project src/BluePrompt -- wikiru-student-skill '<生徒のページ名>' <SKILL.mdの出力パス>
 ```
 
+抽出設定を調整する時は、
+以下でpandoc変換前の中間HTMLを確認できます。
+こちらは`nix fmt`を実行しません。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-html '<ページ名>' <出力ファイル>
+```
+
 # テスト方針
 
 このリポジトリのプログラムは外部に配布したりする性質のものではないので、
