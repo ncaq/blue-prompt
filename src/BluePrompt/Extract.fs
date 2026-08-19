@@ -3,15 +3,16 @@
 /// ブラウザ上のJavaScriptではなくAngleSharpによるF#実装なので、ブラウザ無しで検証できる。
 module BluePrompt.Extract
 
-open System
 open System.Collections.Generic
 open System.Text.RegularExpressions
 open AngleSharp.Dom
 open AngleSharp.Html.Dom
 open AngleSharp.Html.Parser
 
-/// コンテンツ抽出でどのセレクタも要素に一致しなかった時のURLとセレクタ一覧。
-exception ContentNotFound of url: Uri * selectors: string list
+/// コンテンツ抽出でどのセレクタも要素に一致しなかった時のセレクタ一覧。
+/// 抽出はHTML文字列だけで完結するため取得元の情報は持たない。
+/// 取得元URLはPage側が包み直して付与する。
+exception ContentNotFound of selectors: string list
 
 /// コンテンツ抽出の設定。
 type ContentQuery =
@@ -451,8 +452,7 @@ let private flattenTables (document: IDocument) : unit =
 /// ただし全ContentSelectorsが1件も一致しなかった場合は、
 /// サイト側の構造変更で抽出が全滅した可能性が高く、
 /// 空のナレッジによる上書きを防ぐためContentNotFoundを送出する。
-/// urlは例外へ抽出元を載せるための情報で、取得そのものはこの関数の外で済ませておく。
-let contentHtml (url: Uri) (query: ContentQuery) (html: string) : string =
+let contentHtml (query: ContentQuery) (html: string) : string =
     use document = HtmlParser().ParseDocument html
 
     for selector in query.RemoveSelectors do
@@ -477,6 +477,6 @@ let contentHtml (url: Uri) (query: ContentQuery) (html: string) : string =
             |> Seq.toList)
 
     if List.isEmpty contents then
-        raise (ContentNotFound(url = url, selectors = query.ContentSelectors))
+        raise (ContentNotFound(selectors = query.ContentSelectors))
 
     String.concat "\n" contents

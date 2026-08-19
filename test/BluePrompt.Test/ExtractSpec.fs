@@ -4,9 +4,6 @@ open System
 open System.Threading.Tasks
 open Xunit
 
-/// 抽出元URLの代わり。抽出はHTML文字列だけで完結し、URLは例外の情報にしか使われない。
-let private fixtureUri = Uri "http://localhost/"
-
 /// コンテンツ抽出の検証用HTML。
 /// 除去対象のヘッダ類、外すべきリンク、結合セルとセル内改行を持つテーブルを1つに詰めている。
 let private fixtureHtml =
@@ -37,7 +34,7 @@ let private fixtureQuery: BluePrompt.Extract.ContentQuery =
 
 [<Fact>]
 let ``contentHtmlは指定した要素だけを抜き出し除去対象を含めない`` () =
-    let html = BluePrompt.Extract.contentHtml fixtureUri fixtureQuery fixtureHtml
+    let html = BluePrompt.Extract.contentHtml fixtureQuery fixtureHtml
 
     Assert.Contains("Fixture", html)
     Assert.Contains("note text", html)
@@ -47,7 +44,7 @@ let ``contentHtmlは指定した要素だけを抜き出し除去対象を含め
 
 [<Fact>]
 let ``contentHtmlはリンクを外しテーブルを平坦化する`` () =
-    let html = BluePrompt.Extract.contentHtml fixtureUri fixtureQuery fixtureHtml
+    let html = BluePrompt.Extract.contentHtml fixtureQuery fixtureHtml
 
     // リンクはタグだけ外れてテキストが残る。
     Assert.DoesNotContain("<a ", html)
@@ -72,7 +69,7 @@ let ``ReplaceImagesWithAltは画像をaltの文字列へ置き換え空altやフ
             ContentSelectors = [ "#content" ]
             ReplaceImagesWithAlt = true }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Contains("素材名", extracted)
     Assert.DoesNotContain("<img", extracted)
@@ -95,7 +92,7 @@ let ``セル内のブロック要素は区切り文字を挟んで平坦化さ�
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Contains("one、two", extracted)
     Assert.DoesNotContain("<div", extracted)
@@ -115,7 +112,7 @@ let ``セル内の改行は前後の句読点に合わせて詰めるか読点�
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     // 句点の後ろは詰め、区切り記号で始まる行の前も詰める。
     Assert.Contains("文がある。次の文", extracted)
@@ -138,7 +135,7 @@ let ``見出しセル内の改行は読点を挟まず詰める`` () =
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Contains("各バージョン一覧", extracted)
     Assert.DoesNotContain("各バージョン、一覧", extracted)
@@ -161,7 +158,7 @@ let ``同じリンク先をまたぐ改行は読点を挟まず詰める`` () =
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Contains("ミレニアムサイエンススクール2年生", extracted)
 
@@ -182,7 +179,7 @@ let ``異なるリンク先をまたぐ改行は読点で繋ぐ`` () =
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Contains("通常募集、アーカイブ募集", extracted)
 
@@ -204,7 +201,7 @@ let ``横に結合されたセルの複製は空になる`` () =
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.DoesNotContain("colspan", extracted)
     Assert.Equal(1, Text.RegularExpressions.Regex.Matches(extracted, "横に長い見出し").Count)
@@ -228,7 +225,7 @@ let ``表を横断する1セルだけの行は段落として表の外へ出る`
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     // 見出しセルは強調付きの段落、通常セルはただの段落になり、表には残らない。
     Assert.Contains("<strong>小見出し</strong>", extracted)
@@ -255,7 +252,7 @@ let ``見出しの下が全て空の列は取り除かれる`` () =
             ContentSelectors = [ "#content" ]
             RemoveSelectors = [ "img" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.DoesNotContain("画像", extracted)
     Assert.Contains("<td>ユウカ</td>", extracted)
@@ -277,7 +274,7 @@ let ``キーと値のペアを横に並べた行は1行1ペアの2列になる``
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Contains("<tr><th>HP</th><td>3146</td></tr>", extracted)
     Assert.Contains("<tr><th>攻撃力</th><td>118</td></tr>", extracted)
@@ -304,7 +301,7 @@ let ``見出し行の無い表では先頭行にだけ値がある列も残る``
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Contains("先頭だけの値", extracted)
 
@@ -326,7 +323,7 @@ let ``全セルが空の行は取り除かれる`` () =
             ContentSelectors = [ "#content" ]
             RemoveSelectors = [ "img" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Contains("name", extracted)
     Assert.Equal(1, Text.RegularExpressions.Regex.Matches(extracted, "<tr>").Count)
@@ -346,7 +343,7 @@ let ``レイアウト用テーブルのセル内にある本文のdivは平坦�
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Contains("id=\"content\"", extracted)
     Assert.Contains("Fixture", extracted)
@@ -373,7 +370,7 @@ let ``過大なrowspanは実際の行数で切り詰められる`` () =
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     // 実際の行数(2行)分だけ展開され、指定値までは複製されない。
     Assert.Equal(2, Text.RegularExpressions.Regex.Matches(extracted, "big").Count)
@@ -397,7 +394,7 @@ let ``rowspan0のセルは残りの行の末尾まで展開される`` () =
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Equal(2, Text.RegularExpressions.Regex.Matches(extracted, "スパン").Count)
     Assert.DoesNotContain("rowspan", extracted)
@@ -426,7 +423,7 @@ let ``格子が総量の上限を超える表は展開されずそのまま残�
         { fixtureQuery with
             ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+    let extracted = BluePrompt.Extract.contentHtml query html
 
     // 展開されない証拠としてrowspan属性が残る。データ自体は落ちない。
     Assert.Contains("rowspan", extracted)
@@ -437,13 +434,22 @@ let ``全ContentSelectorsが一致しない場合はContentNotFoundになる`` (
     // サイト側のid変更などで抽出が全滅した時に、
     // 空文字列が正常な結果として返ると空のナレッジで既存ファイルを上書きしてしまう。
     // 全セレクタ0件一致は例外として検知できることを検証する。
+    let selectors = [ "#missing"; "#also-missing" ]
+
     let query =
         { fixtureQuery with
-            ContentSelectors = [ "#missing"; "#also-missing" ] }
+            ContentSelectors = selectors }
 
-    Assert.Throws<BluePrompt.Extract.ContentNotFound>(fun () ->
-        BluePrompt.Extract.contentHtml fixtureUri query fixtureHtml |> ignore)
-    |> ignore
+    let error =
+        Assert.Throws<BluePrompt.Extract.ContentNotFound>(fun () ->
+            BluePrompt.Extract.contentHtml query fixtureHtml |> ignore)
+
+    // この例外は何をどのセレクタで探して失敗したかを人へ伝えるのが役目なので、
+    // 型だけでなくペイロードまで検証してフィールドの取り違えを検知する。
+    match error :> exn with
+    | BluePrompt.Extract.ContentNotFound failedSelectors ->
+        Assert.Equal<string list>(selectors, failedSelectors)
+    | unexpected -> raise unexpected
 
 [<Fact>]
 let ``一部のContentSelectorsが一致しなくても残りは抽出される`` () =
@@ -452,14 +458,14 @@ let ``一部のContentSelectorsが一致しなくても残りは抽出される`
         { fixtureQuery with
             ContentSelectors = [ "#content"; "#missing" ] }
 
-    let html = BluePrompt.Extract.contentHtml fixtureUri query fixtureHtml
+    let html = BluePrompt.Extract.contentHtml query fixtureHtml
 
     Assert.Contains("Fixture", html)
 
 [<Fact>]
 let ``平坦化したテーブルはpandocでパイプテーブルへ変換できる`` () : Task =
     task {
-        let html = BluePrompt.Extract.contentHtml fixtureUri fixtureQuery fixtureHtml
+        let html = BluePrompt.Extract.contentHtml fixtureQuery fixtureHtml
         let! markdown = BluePrompt.Pandoc.toMarkdown html
         // 結合セルやセル内改行が残っているとpandocはテーブルを[TABLE]へ潰してしまう。
         Assert.DoesNotContain("[TABLE]", markdown)

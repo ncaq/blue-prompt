@@ -93,3 +93,29 @@ let ``fetchContentHtmlは取得したDOMへ抽出を適用する`` () : Task =
         Assert.DoesNotContain("<a ", html)
         Assert.Contains("anchor text", html)
     }
+
+[<Fact>]
+let ``抽出が全滅した場合は取得元URL付きのContentNotFoundになる`` () : Task =
+    task {
+        // Extract側の例外はセレクタしか持たないため、
+        // Pageがどのページで全滅したのかを取得元URL付きの例外へ包み直すことを検証する。
+        let selectors = [ "#missing" ]
+
+        let query =
+            { fixtureQuery with
+                ContentSelectors = selectors }
+
+        do!
+            withServedHtml fixtureHtml (fun url ->
+                task {
+                    let! error =
+                        Assert.ThrowsAsync<BluePrompt.Page.ContentNotFound>(fun () ->
+                            BluePrompt.Page.fetchContentHtml url query :> Task)
+
+                    match error :> exn with
+                    | BluePrompt.Page.ContentNotFound(failedUrl, failedSelectors) ->
+                        Assert.Equal(url, failedUrl)
+                        Assert.Equal<string list>(selectors, failedSelectors)
+                    | unexpected -> raise unexpected
+                })
+    }
