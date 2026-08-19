@@ -117,6 +117,14 @@ dotnet run --project src/BluePrompt -- wikiru-student-skill '<生徒のページ
 dotnet run --project src/BluePrompt -- wikiru-html '<ページ名>' <出力ファイル>
 ```
 
+生徒個別ページは折りたたみを残すなど抽出設定が異なるため、
+生徒個別ページの設定での中間HTMLは以下で確認します。
+こちらも`nix fmt`を実行しません。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-student-html '<生徒のページ名>' <出力ファイル>
+```
+
 # テスト方針
 
 このリポジトリのプログラムは外部に配布したりする性質のものではないので、

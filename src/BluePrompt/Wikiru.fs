@@ -253,9 +253,15 @@ let writeKnowledge (browser: IBrowser) (pageName: string) (outputPath: string) :
 
 /// wikiruの記事から抽出・変形した本文を、Markdown化せずHTMLのまま書き出す。
 /// 抽出設定を調整する時にpandoc変換前の中間HTMLを確認するための入口。
-let writeContentHtml (browser: IBrowser) (pageName: string) (outputPath: string) : Task<unit> =
+/// 一覧ページと生徒個別ページで抽出設定が異なるため、確認したいクエリを受け取る。
+let writeContentHtml
+    (browser: IBrowser)
+    (query: Page.ContentQuery)
+    (pageName: string)
+    (outputPath: string)
+    : Task<unit> =
     task {
-        let! html = Page.fetchContentHtml browser (pageUri pageName) contentQuery
+        let! html = Page.fetchContentHtml browser (pageUri pageName) query
         do! writeFile outputPath html
     }
 
