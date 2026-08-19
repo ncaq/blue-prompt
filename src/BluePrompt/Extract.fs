@@ -251,8 +251,12 @@ let private cellSpans (rowCount: int) (rowIndex: int) (cell: IHtmlTableCellEleme
     rowSpan, min cell.ColumnSpan maxColumnSpan
 
 /// 子ノードを全て捨てて、渡したノードだけを子にする。
+/// InnerHtmlへの空文字列代入は空でもHTMLフラグメントパーサを起動するため、
+/// DOM操作だけで取り除く。
 let private replaceChildren (parent: IElement) (children: IElement array) : unit =
-    parent.InnerHtml <- ""
+    while parent.HasChildNodes do
+        parent.RemoveChild parent.FirstChild |> ignore
+
     parent.Append(Array.map (fun child -> child :> INode) children)
 
 /// rowspan/colspanを考慮した格子を組み立て、結合セルを個別セルへ複製展開する。
