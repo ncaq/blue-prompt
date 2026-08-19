@@ -232,7 +232,8 @@ let ``同じリンク先をまたぐ改行は読点を挟まず詰める`` () : 
             """<html><body><main id="content">
 <table>
 <tbody>
-<tr><th>学園</th><td><a href="./?school#m">ミレニアムサイエンス</a><br><a href="./?school#m">スクール2年生</a></td></tr>
+<tr><th>学園</th>
+<td><a href="./?school#m">ミレニアムサイエンス</a><br><a href="./?school#m">スクール2年生</a></td></tr>
 </tbody>
 </table>
 </main></body></html>"""
