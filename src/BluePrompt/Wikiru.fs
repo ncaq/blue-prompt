@@ -140,11 +140,12 @@ let cleanupMarkdown (markdown: string) : string =
 
     // 画像だけのリンクを「/」で並べたナビゲーションは、
     // 画像除去とリンク外しの後に区切り文字だけの行になる。
+    // セル内改行の結合で挟んだ読点も、続く要素が空行や空列の除去で消えると孤立する。
     // 空白は行内のものだけに限定して、行を跨いだ巻き込みを防ぐ。
     let withoutSeparatorRemnant =
         Regex.Replace(
             withoutSpaceBeforeComma,
-            @"^[^\S\r\n]*(/[^\S\r\n]*)+$",
+            @"^[^\S\r\n]*([/、][^\S\r\n]*)+$",
             "",
             RegexOptions.Multiline
         )
