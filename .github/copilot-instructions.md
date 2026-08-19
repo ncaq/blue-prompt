@@ -93,7 +93,8 @@ nixpkgsの`playwright-driver`が上がった時はfsprojのバージョンを手
 `plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジは、
 wikiruの記事からの自動生成ファイルです。
 手で編集せず、以下のコマンドで再生成してください。
-どちらのコマンドも書き出した直後に`nix fmt`まで実行するので、
+ナレッジを生成する`wikiru-knowledge`と`wikiru-student-skill`は、
+書き出した直後に`nix fmt`まで実行するので、
 生成コマンドだけで内容が確定します。
 
 一覧ページを整形するスキルの`reference.md`は以下で生成します。
