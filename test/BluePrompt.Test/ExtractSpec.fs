@@ -403,6 +403,36 @@ let ``rowspan0のセルは残りの行の末尾まで展開される`` () =
     Assert.DoesNotContain("rowspan", extracted)
 
 [<Fact>]
+let ``格子が総量の上限を超える表は展開されずそのまま残る`` () =
+    // rowspan/colspanの切り詰めは1セルあたりの上限でしかなく、
+    // 総量は行数×1行のセル数×rowSpan×colSpanで二次的に膨らむ。
+    // 悪意ある値や編集ミスでメモリ枯渇やハングに至らないように、
+    // 見積りが上限を超える表は展開を諦めてそのまま残ることを固定する。
+    let rows =
+        String.concat
+            "\n"
+            (List.init 200 (fun i -> $"""<tr><td rowspan="65534" colspan="1000">c%d{i}</td></tr>"""))
+
+    let html =
+        $"""<html><body><main id="content">
+<table>
+<tbody>
+%s{rows}
+</tbody>
+</table>
+</main></body></html>"""
+
+    let query =
+        { fixtureQuery with
+            ContentSelectors = [ "#content" ] }
+
+    let extracted = BluePrompt.Extract.contentHtml fixtureUri query html
+
+    // 展開されない証拠としてrowspan属性が残る。データ自体は落ちない。
+    Assert.Contains("rowspan", extracted)
+    Assert.Contains("c199", extracted)
+
+[<Fact>]
 let ``全ContentSelectorsが一致しない場合はContentNotFoundになる`` () =
     // サイト側のid変更などで抽出が全滅した時に、
     // 空文字列が正常な結果として返ると空のナレッジで既存ファイルを上書きしてしまう。
