@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="Fmt.fs" />
     <Compile Include="Pandoc.fs" />
+    <Compile Include="Table.fs" />
     <Compile Include="Extract.fs" />
     <Compile Include="Page.fs" />
     <Compile Include="Scrape.fs" />
