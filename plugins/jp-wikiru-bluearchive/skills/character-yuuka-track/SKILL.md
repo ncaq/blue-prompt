@@ -243,8 +243,6 @@ description: Lookup facts about ユウカ（体操服）, a Blue Archive student
 | YutokaMizu  | イラストレーター | メモリアルロビー ユウカ（体操服） |
 | kikihae     | アニメーター     | メモリアルロビー ユウカ（体操服） |
 
-テーブル/コンテンツ担当スタッフ
-
 ## ボイス
 
 **一般**
