@@ -405,10 +405,10 @@ let ``格子が総量の上限を超える表は展開されずそのまま残�
     // 総量は行数×1行のセル数×rowSpan×colSpanで二次的に膨らむ。
     // 悪意ある値や編集ミスでメモリ枯渇やハングに至らないように、
     // 見積りが上限を超える表は展開を諦めてそのまま残ることを固定する。
-    let rows =
-        String.concat
-            "\n"
-            (List.init 200 (fun i -> $"""<tr><td rowspan="65534" colspan="1000">c%d{i}</td></tr>"""))
+    let makeRow (index: int) : string =
+        $"""<tr><td rowspan="65534" colspan="1000">c%d{index}</td></tr>"""
+
+    let rows = String.concat "\n" (List.init 200 makeRow)
 
     let html =
         $"""<html><body><main id="content">
