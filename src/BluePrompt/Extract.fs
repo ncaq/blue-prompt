@@ -194,6 +194,20 @@ let private unwrapCellBlocks (document: IDocument) : unit =
     let cellBlocks =
         Seq.toArray (document.QuerySelectorAll "th div, th p, td div, td p")
 
+    // ページ全体をテーブルで組むレイアウトでは同じテーブル配下に大量のブロックが並び、
+    // ブロックごとに部分木を引き直すと同じ走査を何百回も繰り返すため、
+    // テーブルごとの見出し有無をメモ化する。
+    // タグ外しは子ノードをそのまま残すので、見出しの有無は走査中に変わらない。
+    let tableHasHeading = Dictionary<IElement, bool>()
+
+    let isLayoutTable (table: IElement) : bool =
+        match tableHasHeading.TryGetValue table with
+        | true, hasHeading -> hasHeading
+        | false, _ ->
+            let hasHeading = not (isNull (table.QuerySelector headingSelector))
+            tableHasHeading[table] <- hasHeading
+            hasHeading
+
     for block in Array.rev cellBlocks do
         let containsStructure =
             not (isNull (block.QuerySelector $"%s{headingSelector}, table, ul, ol"))
@@ -201,7 +215,7 @@ let private unwrapCellBlocks (document: IDocument) : unit =
         let inLayoutTable =
             match block.Closest "table" with
             | null -> false
-            | enclosingTable -> not (isNull (enclosingTable.QuerySelector headingSelector))
+            | enclosingTable -> isLayoutTable enclosingTable
 
         if not containsStructure && not inLayoutTable then
             let text = block.TextContent.Trim()
