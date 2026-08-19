@@ -95,75 +95,37 @@
           # この配布物は全プラグインのスキルをまとめたものなので前者を名前に使う。
           marketplace = lib.importJSON ./.claude-plugin/marketplace.json;
 
-          # Playwrightのブラウザ実体。
-          # スクレイピング用途なのでchromium系のみに絞りクロージャを削減する。
-          playwrightBrowsers = pkgs.playwright-driver.passthru.selectBrowsers {
-            withFirefox = false;
-            withWebkit = false;
-          };
-
-          # nixpkgsのplaywright-driverとNuGetのMicrosoft.Playwrightのバージョンがズレると、
-          # ブラウザのリビジョン不一致で実行時に起動失敗する。
-          # nix flake update等でのズレを評価時に検出する。
-          # deps.json再生成の前など、エントリがまだ存在しない時は検証しない。
-          # そうしないとdeps.jsonを生成するfetch-deps自体が評価できなくなる。
-          playwrightNugetDep = lib.findFirst (dep: dep.pname == "Microsoft.Playwright") null (
-            lib.importJSON ./deps.json
-          );
-
-          blue-prompt =
-            assert lib.assertMsg
-              (
-                playwrightNugetDep == null
-                ||
-                  lib.versions.majorMinor playwrightNugetDep.version
-                  == lib.versions.majorMinor pkgs.playwright-driver.version
-              )
-              ''
-                Microsoft.Playwright NuGetとnixpkgsのplaywright-driverのバージョンが一致しません。
-                NuGet: ${playwrightNugetDep.version}
-                playwright-driver: ${pkgs.playwright-driver.version}
-                fsprojのPackageReferenceを更新して`nix run .#update-deps`でdeps.jsonを再生成してください。'';
-            pkgs.buildDotnetModule {
-              pname = "blue-prompt";
-              # 外部に配布しないプログラムなのでバージョン番号に意味が無い。
-              version = "0.0.0";
-              # plugins/配下のMarkdown変更でF#の再ビルドが走らないようにソースを限定する。
-              src = lib.fileset.toSource {
-                root = ./.;
-                fileset = lib.fileset.unions [
-                  ./src
-                  ./test
-                ];
-              };
-              projectFile = "src/BluePrompt/BluePrompt.fsproj";
-              testProjectFile = "test/BluePrompt.Test/BluePrompt.Test.fsproj";
-              nugetDeps = ./deps.json;
-              dotnet-sdk = pkgs.dotnet-sdk_10;
-              dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
-              doCheck = true;
-              # サンドボックス内ではブラウザを起動できないため、ブラウザ依存テストは除外する。
-              testFilters = [ "Category!=Browser" ];
-              # HTML→Markdown変換のテストがpandocを起動するため、check環境に含める。
-              nativeCheckInputs = [ pkgs.pandoc ];
-              executables = [ "BluePrompt" ];
-              # nix runで単体実行できるようにPlaywrightの実行環境をラッパーに焼き込む。
-              makeWrapperArgs = [
-                "--set-default"
-                "PLAYWRIGHT_NODEJS_PATH"
-                (lib.getExe pkgs.nodejs)
-                "--set-default"
-                "PLAYWRIGHT_BROWSERS_PATH"
-                "${playwrightBrowsers}"
-                "--set-default"
-                "PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS"
-                "true"
-                "--set-default"
-                "PANDOC_PATH"
-                (lib.getExe pkgs.pandoc)
+          blue-prompt = pkgs.buildDotnetModule {
+            pname = "blue-prompt";
+            # 外部に配布しないプログラムなのでバージョン番号に意味が無い。
+            version = "0.0.0";
+            # plugins/配下のMarkdown変更でF#の再ビルドが走らないようにソースを限定する。
+            src = lib.fileset.toSource {
+              root = ./.;
+              fileset = lib.fileset.unions [
+                ./src
+                ./test
               ];
-              meta.mainProgram = "BluePrompt";
             };
+            projectFile = "src/BluePrompt/BluePrompt.fsproj";
+            testProjectFile = "test/BluePrompt.Test/BluePrompt.Test.fsproj";
+            nugetDeps = ./deps.json;
+            dotnet-sdk = pkgs.dotnet-sdk_10;
+            dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
+            doCheck = true;
+            # サンドボックス内では外部ネットワークへ出られないため、外部サイト依存テストは除外する。
+            testFilters = [ "Category!=Network" ];
+            # HTML→Markdown変換のテストがpandocを起動するため、check環境に含める。
+            nativeCheckInputs = [ pkgs.pandoc ];
+            executables = [ "BluePrompt" ];
+            # nix runで単体実行できるようにpandocのパスをラッパーに焼き込む。
+            makeWrapperArgs = [
+              "--set-default"
+              "PANDOC_PATH"
+              (lib.getExe pkgs.pandoc)
+            ];
+            meta.mainProgram = "BluePrompt";
+          };
 
           # NuGet依存のロックファイル更新を一回の実行で完結させる。
           # fetch-depsはネットワークを使うためNixサンドボックス外で実行する必要があり、
@@ -360,11 +322,6 @@
               DOTNET_ROOT = "${pkgs.dotnet-sdk_10}/share/dotnet";
               # 初回実行時のウェルカムバナーやロゴ出力を抑止してコマンド出力を綺麗に保つ。
               DOTNET_NOLOGO = "1";
-              # NuGet同梱のnodeバイナリはFHS前提でNixOSでは動かないため、nixpkgsのnodeを使わせる。
-              PLAYWRIGHT_NODEJS_PATH = lib.getExe pkgs.nodejs;
-              PLAYWRIGHT_BROWSERS_PATH = "${playwrightBrowsers}";
-              # nixpkgsのブラウザはパッチ済みなのでaptパッケージ前提のホスト検証を飛ばす。
-              PLAYWRIGHT_SKIP_VALIDATE_HOST_REQUIREMENTS = "true";
               # HTML→Markdown変換に使うpandocをnixpkgsのもので固定する。
               PANDOC_PATH = lib.getExe pkgs.pandoc;
             };

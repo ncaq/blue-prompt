@@ -8,7 +8,7 @@ open System.Threading.Tasks
 open Xunit
 
 /// 渡したHTMLだけを返すローカルHTTPサーバを立てて、そのURLをactionへ渡す。
-/// 外部サイトの構造に依存せずにページ取得を検証するための足場。
+/// 外部サイトの構造やネットワークに依存せずにページ取得を検証するための足場。
 let private withServedHtml (html: string) (action: Uri -> Task<'T>) : Task<'T> =
     task {
         // ポート0でOSに空きポートを割り当てさせて他のテストとの衝突を避ける。
@@ -23,7 +23,7 @@ let private withServedHtml (html: string) (action: Uri -> Task<'T>) : Task<'T> =
             + $"Content-Length: %d{body.Length}\r\n"
             + "Connection: close\r\n\r\n"
 
-        // ブラウザはfaviconなども取りに来るため、全リクエストへ同じHTMLを返し続ける。
+        // 全リクエストへ同じHTMLを返し続ける。
         // listener.Stop()でAcceptが例外になりループごと終了する。
         let serving =
             task {
@@ -44,18 +44,26 @@ let private withServedHtml (html: string) (action: Uri -> Task<'T>) : Task<'T> =
     }
 
 [<Fact>]
-[<Trait("Category", "Browser")>]
+let ``ローカルサーバのHTMLを取得できる`` () : Task =
+    task {
+        let html =
+            "<html><head><title>Served Page</title></head><body>body text</body></html>"
+
+        let! fetched = withServedHtml html (fun url -> BluePrompt.Page.fetchHtml url)
+        Assert.Contains("<title>Served Page</title>", fetched)
+        Assert.Contains("body text", fetched)
+    }
+
+[<Fact>]
+[<Trait("Category", "Network")>]
 let ``example.comのHTMLを取得できる`` () : Task =
     task {
-        let! html =
-            BluePrompt.Browser.withBrowser (fun browser ->
-                BluePrompt.Page.fetchHtml browser (Uri "https://example.com/"))
-
+        let! html = BluePrompt.Page.fetchHtml (Uri "https://example.com/")
         Assert.Contains("<title>Example Domain</title>", html)
     }
 
 /// 取得と抽出の結合の検証用HTML。
-/// 抽出処理そのものの網羅的な検証はブラウザ不要のExtractSpecで行う。
+/// 抽出処理そのものの網羅的な検証はExtractSpecで行う。
 let private fixtureHtml =
     """<html><body>
 <header id="header">site header</header>
@@ -73,13 +81,11 @@ let private fixtureQuery: BluePrompt.Extract.ContentQuery =
       FlattenTables = true }
 
 [<Fact>]
-[<Trait("Category", "Browser")>]
-let ``fetchContentHtmlはブラウザで取得したDOMへ抽出を適用する`` () : Task =
+let ``fetchContentHtmlは取得したDOMへ抽出を適用する`` () : Task =
     task {
         let! html =
-            BluePrompt.Browser.withBrowser (fun browser ->
-                withServedHtml fixtureHtml (fun url ->
-                    BluePrompt.Page.fetchContentHtml browser url fixtureQuery))
+            withServedHtml fixtureHtml (fun url ->
+                BluePrompt.Page.fetchContentHtml url fixtureQuery)
 
         Assert.Contains("Fixture", html)
         Assert.DoesNotContain("site header", html)

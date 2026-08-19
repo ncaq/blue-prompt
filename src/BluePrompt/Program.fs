@@ -16,31 +16,20 @@ let private usage =
 let main argv =
     match argv with
     | [| "wikiru-knowledge"; pageName; outputPath |] ->
-        let work =
-            Browser.withBrowser (fun browser -> Wikiru.writeKnowledge browser pageName outputPath)
-
-        work.GetAwaiter().GetResult()
+        (Wikiru.writeKnowledge pageName outputPath).GetAwaiter().GetResult()
         0
     | [| "wikiru-student-skill"; pageName; outputPath |] ->
-        let work =
-            Browser.withBrowser (fun browser ->
-                Wikiru.writeStudentSkill browser pageName outputPath)
-
-        work.GetAwaiter().GetResult()
+        (Wikiru.writeStudentSkill pageName outputPath).GetAwaiter().GetResult()
         0
     | [| "wikiru-html"; pageName; outputPath |] ->
-        let work =
-            Browser.withBrowser (fun browser ->
-                Wikiru.writeContentHtml browser Wikiru.contentQuery pageName outputPath)
+        (Wikiru.writeContentHtml Wikiru.contentQuery pageName outputPath).GetAwaiter().GetResult()
 
-        work.GetAwaiter().GetResult()
         0
     | [| "wikiru-student-html"; pageName; outputPath |] ->
-        let work =
-            Browser.withBrowser (fun browser ->
-                Wikiru.writeContentHtml browser Wikiru.studentContentQuery pageName outputPath)
+        (Wikiru.writeContentHtml Wikiru.studentContentQuery pageName outputPath)
+            .GetAwaiter()
+            .GetResult()
 
-        work.GetAwaiter().GetResult()
         0
     | [||] ->
         printfn $"%s{usage}"

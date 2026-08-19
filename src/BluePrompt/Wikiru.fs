@@ -4,7 +4,6 @@ module BluePrompt.Wikiru
 open System
 open System.IO
 open System.Text.RegularExpressions
-open Microsoft.Playwright
 open System.Threading.Tasks
 
 /// wikiruのページ名から記事URLを組み立てる。
@@ -211,20 +210,16 @@ let filterSections (titles: string list) (markdown: string) : string =
 
 /// wikiruの記事ページをナレッジ用Markdownへ変換する。
 /// pandocArgumentsでpandocの変換オプションを調整できる。
-let fetchMarkdownWith
-    (browser: IBrowser)
-    (pandocArguments: string list)
-    (pageName: string)
-    : Task<string> =
+let fetchMarkdownWith (pandocArguments: string list) (pageName: string) : Task<string> =
     task {
-        let! html = Page.fetchContentHtml browser (pageUri pageName) contentQuery
+        let! html = Page.fetchContentHtml (pageUri pageName) contentQuery
         let! markdown = Pandoc.toMarkdownWithArguments pandocArguments html
         return cleanupMarkdown markdown
     }
 
 /// wikiruの記事ページを既定のpandoc引数でナレッジ用Markdownへ変換する。
-let fetchMarkdown (browser: IBrowser) (pageName: string) : Task<string> =
-    fetchMarkdownWith browser Pandoc.defaultMarkdownArguments pageName
+let fetchMarkdown (pageName: string) : Task<string> =
+    fetchMarkdownWith Pandoc.defaultMarkdownArguments pageName
 
 /// ナレッジファイル先頭に付ける出典の表記。
 /// Uri.ToStringはパーセントエンコードを解いた表示用文字列を返すため、リンクにはAbsoluteUriを使う。
@@ -245,9 +240,9 @@ let private writeFile (outputPath: string) (content: string) : Task<unit> =
 /// wikiruの記事をMarkdown化し、出典ヘッダ付きのナレッジファイルとして書き出す。
 /// スキルが参照するリファレンスファイルの生成の入口。
 /// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
-let writeKnowledge (browser: IBrowser) (pageName: string) (outputPath: string) : Task<unit> =
+let writeKnowledge (pageName: string) (outputPath: string) : Task<unit> =
     task {
-        let! markdown = fetchMarkdown browser pageName
+        let! markdown = fetchMarkdown pageName
         do! writeFile outputPath (knowledgeHeader pageName + markdown)
         do! Fmt.formatFile outputPath
     }
@@ -256,21 +251,20 @@ let writeKnowledge (browser: IBrowser) (pageName: string) (outputPath: string) :
 /// 抽出設定を調整する時にpandoc変換前の中間HTMLを確認するための入口。
 /// 一覧ページと生徒個別ページで抽出設定が異なるため、確認したいクエリを受け取る。
 let writeContentHtml
-    (browser: IBrowser)
     (query: Extract.ContentQuery)
     (pageName: string)
     (outputPath: string)
     : Task<unit> =
     task {
-        let! html = Page.fetchContentHtml browser (pageUri pageName) query
+        let! html = Page.fetchContentHtml (pageUri pageName) query
         do! writeFile outputPath html
     }
 
 /// wikiruの生徒個別ページをナレッジ用Markdownへ変換する。
 /// 折りたたみの中身を残した設定で取得し、事実を載せているセクションだけへ選別する。
-let fetchStudentMarkdown (browser: IBrowser) (pageName: string) : Task<string> =
+let fetchStudentMarkdown (pageName: string) : Task<string> =
     task {
-        let! html = Page.fetchContentHtml browser (pageUri pageName) studentContentQuery
+        let! html = Page.fetchContentHtml (pageUri pageName) studentContentQuery
         let! markdown = Pandoc.toMarkdown html
         return filterSections studentSectionTitles (cleanupMarkdown markdown)
     }
@@ -317,7 +311,7 @@ description: %s{description}
 /// wikiruの生徒個別ページをMarkdown化し、SKILL.mdとして書き出す。
 /// スキル名は出力先のディレクトリ名と一致する必要があるため、出力パスから導出する。
 /// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
-let writeStudentSkill (browser: IBrowser) (pageName: string) (outputPath: string) : Task<unit> =
+let writeStudentSkill (pageName: string) (outputPath: string) : Task<unit> =
     task {
         let skillName =
             match Path.GetDirectoryName outputPath with
@@ -328,7 +322,7 @@ let writeStudentSkill (browser: IBrowser) (pageName: string) (outputPath: string
                 )
             | directory -> Path.GetFileName directory
 
-        let! markdown = fetchStudentMarkdown browser pageName
+        let! markdown = fetchStudentMarkdown pageName
         do! writeFile outputPath (studentSkillMarkdown skillName pageName markdown)
         do! Fmt.formatFile outputPath
     }
