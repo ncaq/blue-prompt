@@ -233,6 +233,23 @@ type private GridEntry =
 /// rowspanは実際の残り行数で、colspanは現実のwikiテーブルを大きく超えるこの定数で切り詰める。
 let private maxColumnSpan = 100
 
+/// 格子の総エントリ数の上限。
+/// 1セルあたりの切り詰めだけでは総量が行数×1行のセル数×rowSpan×colSpanで二次的に膨らむため、
+/// 見積りがこれを超える表は展開を諦める。現実のwikiテーブルを大きく超える値。
+let private maxGridEntries = 1_000_000L
+
+/// セルが格子で占める行方向と列方向の広がり。
+/// HTML仕様のrowspan="0"は「セクションの最後まで」を意味しDOMのrowSpanは0を返すため、
+/// 仕様に沿って残り行数へ展開する。それ以外のrowspanは残り行数で、colspanは定数で切り詰める。
+let private cellSpans (rowCount: int) (rowIndex: int) (cell: IHtmlTableCellElement) : int * int =
+    let rowSpan =
+        if cell.RowSpan = 0 then
+            rowCount - rowIndex
+        else
+            min cell.RowSpan (rowCount - rowIndex)
+
+    rowSpan, min cell.ColumnSpan maxColumnSpan
+
 /// 子ノードを全て捨てて、渡したノードだけを子にする。
 let private replaceChildren (parent: IElement) (children: IElement array) : unit =
     parent.InnerHtml <- ""
@@ -242,8 +259,24 @@ let private replaceChildren (parent: IElement) (children: IElement array) : unit
 /// 複製はサブツリーをコピーしない。
 /// 深いコピーを繰り返すと入れ子テーブルを含むセルで乗算的に膨らむため。
 /// 画像の除去などで全セルが空になった行はノイズでしかないので取り除く。
-let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) : unit =
+/// 総エントリ数の見積りが上限を超える表は、
+/// メモリ枯渇やハングを防ぐため展開せずそのまま残す。
+let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) : bool =
     let rows = Seq.toArray table.Rows
+
+    let estimatedEntries =
+        rows
+        |> Array.mapi (fun rowIndex row ->
+            row.Cells
+            |> Seq.sumBy (fun cell ->
+                let rowSpan, columnSpan = cellSpans rows.Length rowIndex cell
+                int64 rowSpan * int64 columnSpan))
+        |> Array.sum
+
+    if maxGridEntries < estimatedEntries then
+        false
+    else
+
     let grid = Array.init rows.Length (fun _ -> SortedDictionary<int, GridEntry>())
 
     rows
@@ -254,15 +287,7 @@ let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) :
             while grid[rowIndex].ContainsKey columnIndex do
                 columnIndex <- columnIndex + 1
 
-            // HTML仕様のrowspan="0"は「セクションの最後まで」を意味しDOMのrowSpanは0を返すため、
-            // 仕様に沿って残り行数へ展開する。
-            let rowSpan =
-                if cell.RowSpan = 0 then
-                    rows.Length - rowIndex
-                else
-                    min cell.RowSpan (rows.Length - rowIndex)
-
-            let columnSpan = min cell.ColumnSpan maxColumnSpan
+            let rowSpan, columnSpan = cellSpans rows.Length rowIndex cell
 
             for i in 0 .. rowSpan - 1 do
                 for j in 0 .. columnSpan - 1 do
@@ -294,6 +319,8 @@ let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) :
             row.Remove()
         else
             replaceChildren row cells)
+
+    true
 
 /// 見出しの下が全て空になった列を列ごと取り除く。
 /// 画像の除去などで空になった列はノイズでしかないため。
@@ -386,9 +413,12 @@ let private flattenTables (document: IDocument) : unit =
 
     for table in Array.rev (Seq.toArray (document.QuerySelectorAll "table")) do
         let table = table :?> IHtmlTableElement
-        expandMergedCells document table
-        dropEmptyColumns table
-        normalizePairsRows document table
+
+        // 展開を諦めた過大な表は結合セルが残ったままで、
+        // 後段の列単位の処理も同じ規模で膨らむため丸ごと飛ばす。
+        if expandMergedCells document table then
+            dropEmptyColumns table
+            normalizePairsRows document table
 
 /// HTML文字列からqueryに従って本文だけをHTML文字列として抜き出す。
 /// RemoveSelectorsの除去とUnwrapLinks・FlattenTablesの変形を施した後に、
