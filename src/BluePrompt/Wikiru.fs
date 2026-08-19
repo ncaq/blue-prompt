@@ -113,6 +113,11 @@ let private convertFootnotes (markdown: string) : string =
 
     Regex.Replace(withDefinitions, @"\\\*(\d+)", "[^$1]")
 
+/// 連続する空行を1つへ潰し、前後の空白を落として末尾を改行1つで終える。
+/// 行の削除を伴う整形の共通の仕上げ。
+let private normalizeBlankLines (markdown: string) : string =
+    Regex.Replace(markdown, @"\n{3,}", "\n\n").Trim() + "\n"
+
 /// 変換後Markdownの後始末。
 /// 最初の見出しより前のナビゲーションを切り落とし、
 /// 中身を取り除いて残骸になったコメント欄の見出しを消し、
@@ -144,13 +149,13 @@ let cleanupMarkdown (markdown: string) : string =
             RegexOptions.Multiline
         )
 
-    let collapsed =
-        Regex.Replace(convertFootnotes withoutSeparatorRemnant, @"\n{3,}", "\n\n")
-
-    collapsed.Trim() + "\n"
+    normalizeBlankLines (convertFootnotes withoutSeparatorRemnant)
 
 /// GFMの脚注定義行(「[^1]: 本文」)への一致。
 let private footnoteDefinitionPattern = Regex(@"^\[\^(\d+)\]: ")
+
+/// h2見出し行への一致。見出しのテキストを捕捉する。
+let private sectionHeadingPattern = Regex(@"^## +(.*?)\s*$")
 
 /// h2見出しのホワイトリストでMarkdownのセクションを選別する。
 /// h2の見出しがtitlesに載っているセクションだけを、h3以下の小見出しごと残す。
@@ -164,26 +169,35 @@ let filterSections (titles: string list) (markdown: string) : string =
     let definitions, bodyLines =
         Array.partition (fun (line: string) -> footnoteDefinitionPattern.IsMatch line) lines
 
+    // h2見出しの行で残すかどうかの状態が切り替わり、行の採否は常にその状態に従う。
     let filtered =
         bodyLines
         |> Array.fold
             (fun (kept, keeping) line ->
-                match Regex.Match(line, @"^## +(.*?)\s*$") with
-                | m when m.Success ->
-                    let keeping = List.contains m.Groups[1].Value titles
-                    ((if keeping then line :: kept else kept), keeping)
-                | _ -> ((if keeping then line :: kept else kept), keeping))
+                let keeping =
+                    match sectionHeadingPattern.Match line with
+                    | m when m.Success -> List.contains m.Groups[1].Value titles
+                    | _ -> keeping
+
+                ((if keeping then line :: kept else kept), keeping))
             ([], true)
         |> fst
         |> List.rev
 
     let body = String.concat "\n" filtered
 
+    // 参照番号の集合を本文から一度だけ作り、定義側は集合参照で絞り込む。
+    let referencedNumbers =
+        Regex.Matches(body, @"\[\^(\d+)\]")
+        |> Seq.map (fun m -> m.Groups[1].Value)
+        |> Set.ofSeq
+
     let referencedDefinitions =
         definitions
         |> Array.filter (fun definition ->
-            let number = footnoteDefinitionPattern.Match(definition).Groups[1].Value
-            body.Contains $"[^%s{number}]")
+            Set.contains
+                (footnoteDefinitionPattern.Match(definition).Groups[1].Value)
+                referencedNumbers)
 
     let withDefinitions =
         if Array.isEmpty referencedDefinitions then
@@ -191,8 +205,7 @@ let filterSections (titles: string list) (markdown: string) : string =
         else
             body.TrimEnd() + "\n\n" + String.concat "\n" referencedDefinitions
 
-    let collapsed = Regex.Replace(withDefinitions, @"\n{3,}", "\n\n")
-    collapsed.Trim() + "\n"
+    normalizeBlankLines withDefinitions
 
 /// wikiruの記事ページをナレッジ用Markdownへ変換する。
 /// pandocArgumentsでpandocの変換オプションを調整できる。
