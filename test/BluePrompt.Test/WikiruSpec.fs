@@ -54,6 +54,13 @@ let ``区切り文字だけになった行は取り除かれる`` () =
     Assert.Equal("# h\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
+let ``読点だけになった行は取り除かれる`` () =
+    // セル内改行の結合で挟んだ読点は、
+    // 続く要素が空行や空列の除去で消えると読点だけの行として孤立する。
+    let markdown = "# h\n\n、\n\n本文\n"
+    Assert.Equal("# h\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
 let ``水平線の行は区切り文字の除去では消えない`` () =
     let markdown = "# h\n\n本文\n\n---\n\n付記\n"
     Assert.Equal("# h\n\n本文\n\n---\n\n付記\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
