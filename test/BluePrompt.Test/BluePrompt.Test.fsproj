@@ -4,6 +4,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="LocalServer.fs" />
     <Compile Include="PandocSpec.fs" />
     <Compile Include="ExtractSpec.fs" />
     <Compile Include="PageSpec.fs" />

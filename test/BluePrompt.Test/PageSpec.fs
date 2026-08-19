@@ -1,54 +1,15 @@
 module BluePrompt.Test.PageSpec
 
 open System
-open System.Net
-open System.Net.Sockets
 open System.Text
 open System.Threading.Tasks
 open Xunit
-
-/// 渡したHTMLだけを返すローカルHTTPサーバを立てて、そのURLをactionへ渡す。
-/// 外部サイトの構造やネットワークに依存せずにページ取得を検証するための足場。
-let private withServedHtml (html: string) (action: Uri -> Task<'T>) : Task<'T> =
-    task {
-        // ポート0でOSに空きポートを割り当てさせて他のテストとの衝突を避ける。
-        let listener = new TcpListener(IPAddress.Loopback, 0)
-        listener.Start()
-        let port = (listener.LocalEndpoint :?> IPEndPoint).Port
-        let body = Encoding.UTF8.GetBytes html
-
-        let header =
-            "HTTP/1.1 200 OK\r\n"
-            + "Content-Type: text/html; charset=utf-8\r\n"
-            + $"Content-Length: %d{body.Length}\r\n"
-            + "Connection: close\r\n\r\n"
-
-        // 全リクエストへ同じHTMLを返し続ける。
-        // listener.Stop()でAcceptが例外になりループごと終了する。
-        let serving =
-            task {
-                while true do
-                    use! client = listener.AcceptTcpClientAsync()
-                    let stream = client.GetStream()
-                    let buffer = (Array.zeroCreate 8192: byte array).AsMemory()
-                    let! _ = stream.ReadAsync buffer
-                    do! stream.WriteAsync((Encoding.ASCII.GetBytes header).AsMemory())
-                    do! stream.WriteAsync(body.AsMemory())
-            }
-
-        try
-            return! action (Uri $"http://127.0.0.1:%d{port}/")
-        finally
-            listener.Stop()
-            ignore serving
-    }
+open BluePrompt.Test.LocalServer
 
 [<Fact>]
 let ``ローカルサーバのHTMLを取得できる`` () : Task =
     task {
-        let html =
-            "<html><head><title>Served Page</title></head><body>body text</body></html>"
-
+        let html = "<html><head><title>Served Page</title></head><body>body text</body></html>"
         let! fetched = withServedHtml html (fun url -> BluePrompt.Page.fetchHtml url)
         Assert.Contains("<title>Served Page</title>", fetched)
         Assert.Contains("body text", fetched)
@@ -60,6 +21,73 @@ let ``example.comのHTMLを取得できる`` () : Task =
     task {
         let! html = BluePrompt.Page.fetchHtml (Uri "https://example.com/")
         Assert.Contains("<title>Example Domain</title>", html)
+    }
+
+[<Fact>]
+let ``成功以外のHTTPステータスはFetchErrorになる`` () : Task =
+    task {
+        // ローダー差し替えで最も壊れやすいステータス検査を固定する。
+        do!
+            withServer
+                (fun _ ->
+                    { htmlResponse "<html><body>not found</body></html>" with
+                        Status = "404 Not Found" })
+                (fun url ->
+                    task {
+                        let! error =
+                            Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                                BluePrompt.Page.fetchHtml url :> Task)
+
+                        match error :> exn with
+                        | BluePrompt.Page.FetchError(failedUrl, status) ->
+                            Assert.Equal(url, failedUrl)
+                            Assert.Equal(404, status)
+                        | unexpected -> raise unexpected
+                    })
+    }
+
+[<Fact>]
+let ``http以外のスキームはArgumentExceptionになる`` () : Task =
+    task {
+        // ブラウザ経由でなくなった今、このガードがローカルファイル読み出しを防ぐ唯一の砦。
+        do!
+            Assert.ThrowsAsync<ArgumentException>(fun () ->
+                BluePrompt.Page.fetchHtml (Uri "file:///etc/passwd") :> Task)
+            :> Task
+    }
+
+[<Fact>]
+let ``Content-Typeのcharsetに従って文字コードが判定される`` () : Task =
+    task {
+        // wikiruはUTF-8だが、文字コードの判定をローダーに任せるという前提を固定する。
+        // EUC-JPは.NETの組み込みではないため、テスト側でプロバイダを登録する。
+        Encoding.RegisterProvider CodePagesEncodingProvider.Instance
+
+        let response =
+            { Status = "200 OK"
+              ContentType = "text/html; charset=euc-jp"
+              Body = (Encoding.GetEncoding "euc-jp").GetBytes "<html><body>日本語本文</body></html>"
+              ExtraHeaders = [] }
+
+        let! fetched = withServer (fun _ -> response) (fun url -> BluePrompt.Page.fetchHtml url)
+
+        Assert.Contains("日本語本文", fetched)
+    }
+
+[<Fact>]
+let ``リダイレクトを追跡して最終ページを取得する`` () : Task =
+    task {
+        let respond (path: string) : Response =
+            if path = "/moved" then
+                htmlResponse "<html><body>redirected body</body></html>"
+            else
+                { htmlResponse "" with
+                    Status = "302 Found"
+                    ExtraHeaders = [ "Location: /moved" ] }
+
+        let! fetched = withServer respond (fun url -> BluePrompt.Page.fetchHtml url)
+
+        Assert.Contains("redirected body", fetched)
     }
 
 /// 取得と抽出の結合の検証用HTML。
