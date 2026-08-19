@@ -162,30 +162,43 @@ let private flattenTablesScript =
         const flushAfter = "/／・、。,)）」』(（";
         return flushBefore.includes(previousChar) || flushAfter.includes(nextChar) ? "" : "、";
     };
-    // 兄弟を遡って最初に中身のあるテキストを返す。
-    const precedingText = (node) => {
+    // 兄弟を遡って最初に中身のあるノードを返す。
+    const precedingNode = (node) => {
         for (let sibling = node.previousSibling; sibling; sibling = sibling.previousSibling) {
-            const text = sibling.textContent.trim();
-            if (text !== "") {
-                return text;
+            if (sibling.textContent.trim() !== "") {
+                return sibling;
             }
         }
-        return "";
+        return null;
     };
-    const followingText = (node) => {
+    const followingNode = (node) => {
         for (let sibling = node.nextSibling; sibling; sibling = sibling.nextSibling) {
-            const text = sibling.textContent.trim();
-            if (text !== "") {
-                return text;
+            if (sibling.textContent.trim() !== "") {
+                return sibling;
             }
         }
-        return "";
+        return null;
     };
+    const nodeText = (node) => (node === null ? "" : node.textContent.trim());
+    // 長いリンクラベルを同じリンク先の複数のaへ分けて折り返す書き方があり、
+    // その境界はひと続きのラベルの途中なので区切りを挟んではいけない。
+    const isSameLinkFold = (previousNode, nextNode) =>
+        previousNode instanceof Element &&
+        nextNode instanceof Element &&
+        previousNode.tagName === "A" &&
+        nextNode.tagName === "A" &&
+        previousNode.getAttribute("href") !== null &&
+        previousNode.getAttribute("href") === nextNode.getAttribute("href");
     for (const br of document.querySelectorAll("th br, td br")) {
         // セル先頭や末尾のbr(画像除去の跡など)は繋ぐ相手がいないので取り除く。
-        const previous = precedingText(br);
-        const next = followingText(br);
+        const previousNode = precedingNode(br);
+        const nextNode = followingNode(br);
+        const previous = nodeText(previousNode);
+        const next = nodeText(nextNode);
         if (previous === "" || next === "") {
+            br.remove();
+        } else if (br.closest("th") !== null || isSameLinkFold(previousNode, nextNode)) {
+            // 見出しセルは文ではなくラベルで、改行は表示幅の都合の折り返しでしかない。
             br.remove();
         } else {
             br.replaceWith(joinSeparator(previous, next));
@@ -208,8 +221,8 @@ let private flattenTablesScript =
             continue;
         }
         const text = block.textContent.trim();
-        const previous = precedingText(block);
-        if (previous !== "" && text !== "") {
+        const previous = nodeText(precedingNode(block));
+        if (previous !== "" && text !== "" && block.closest("th") === null) {
             const separator = joinSeparator(previous, text);
             if (separator !== "") {
                 block.before(separator);
@@ -346,12 +359,14 @@ let fetchContentHtml (browser: IBrowser) (url: Uri) (query: ContentQuery) : Task
                 let! _ = page.EvalOnSelectorAllAsync("img", replaceImagesWithAltScript)
                 ()
 
-            if query.UnwrapLinks then
-                let! _ = page.EvalOnSelectorAllAsync("a", unwrapElementsScript)
-                ()
-
+            // 平坦化はセル内改行の結合で同じリンク先の折り返しを見分けるため、
+            // リンクを外す前に行う。
             if query.FlattenTables then
                 let! _ = page.EvaluateAsync flattenTablesScript
+                ()
+
+            if query.UnwrapLinks then
+                let! _ = page.EvalOnSelectorAllAsync("a", unwrapElementsScript)
                 ()
 
             let contents = ResizeArray()
