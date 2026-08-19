@@ -8,6 +8,7 @@
   <ItemGroup>
     <Compile Include="Fmt.fs" />
     <Compile Include="Pandoc.fs" />
+    <Compile Include="Extract.fs" />
     <Compile Include="Browser.fs" />
     <Compile Include="Page.fs" />
     <Compile Include="Scrape.fs" />
@@ -15,6 +16,7 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="1.7.1" />
     <PackageReference Include="Microsoft.Playwright" Version="1.59.0" />
   </ItemGroup>
 </Project>

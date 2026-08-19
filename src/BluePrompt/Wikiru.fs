@@ -22,7 +22,7 @@ let private imageSelector = "img"
 
 /// wikiruの記事からナレッジとして使う部分を抜き出す設定。
 /// 本文(#body)と脚注(#note)を残し、サイトのヘッダ・サイドバー・フッタは含めない。
-let contentQuery: Page.ContentQuery =
+let contentQuery: Extract.ContentQuery =
     { ContentSelectors = [ "#body"; "#note" ]
       RemoveSelectors =
         [
@@ -68,7 +68,7 @@ let contentQuery: Page.ContentQuery =
 /// 開閉ボタンと「クリックで展開」のラベルだけを取り除いて中身を残す。
 /// スキル成長素材のような表は素材を画像で表現しているため、
 /// 画像は除去せずaltに入っている素材名のテキストへ置き換える。
-let studentContentQuery: Page.ContentQuery =
+let studentContentQuery: Extract.ContentQuery =
     { contentQuery with
         RemoveSelectors =
             [ ".rgn-button"; ".rgn-description" ]
@@ -257,7 +257,7 @@ let writeKnowledge (browser: IBrowser) (pageName: string) (outputPath: string) :
 /// 一覧ページと生徒個別ページで抽出設定が異なるため、確認したいクエリを受け取る。
 let writeContentHtml
     (browser: IBrowser)
-    (query: Page.ContentQuery)
+    (query: Extract.ContentQuery)
     (pageName: string)
     (outputPath: string)
     : Task<unit> =
