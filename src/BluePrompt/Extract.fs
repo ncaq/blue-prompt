@@ -1,6 +1,6 @@
 /// 取得済みHTMLからの本文抽出。
 /// ヘッダやサイドバーや広告を除いた本文だけをナレッジ用に抜き出す用途を想定している。
-/// ブラウザ上のJavaScriptではなくAngleSharpによるF#実装なので、ブラウザ無しで検証できる。
+/// AngleSharpによる純粋なF#実装なので、ネットワークもブラウザも使わずに単体テストで検証できる。
 module BluePrompt.Extract
 
 open System.Text.RegularExpressions
@@ -63,7 +63,8 @@ let private replaceImagesWithAlt (document: IDocument) : unit =
             image.Replace [| document.CreateTextNode alt :> INode |]
 
 /// パース済みDOMからqueryに従って本文だけをHTML文字列として抜き出す。
-/// RemoveSelectorsの除去とUnwrapLinks・FlattenTablesの変形を施した後に、
+/// RemoveSelectorsの除去とReplaceImagesWithAlt・FlattenTables・UnwrapLinksの変形を、
+/// この適用順で施した後に、
 /// ContentSelectorsへ一致した要素のouterHTMLを連結して返す。
 /// documentは変形で破壊的に書き換わる。
 /// 一致する要素が無いセレクタは読み飛ばす。
