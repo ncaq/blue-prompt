@@ -267,8 +267,13 @@ let private flattenTablesScript =
         // 画像の除去などで見出しの下が全て空になった列は、列ごとノイズでしかない。
         // ただし2行の表では空セルがデータの欠けを意味しうるので、
         // 見出しに中身のある列は3行以上の表でだけ取り除く。
+        // 先頭行を見出し行として扱えるのは全セルがthの場合だけで、
+        // データ行から始まる表で先頭行にだけ値がある列を消すと事実データが落ちる。
         const survivingRows = Array.from(table.rows);
         if (2 <= survivingRows.length) {
+            const hasHeaderRow = Array.from(survivingRows[0].cells).every(
+                (cell) => cell.tagName === "TH",
+            );
             const columnCount = Math.max(...survivingRows.map((row) => row.cells.length));
             for (let index = columnCount - 1; 0 <= index; index--) {
                 const header = survivingRows[0].cells[index];
@@ -279,7 +284,7 @@ let private flattenTablesScript =
                         !row.cells[index] ||
                         row.cells[index].textContent.trim() === "",
                 );
-                if (bodyIsEmpty && (headerIsEmpty || 3 <= survivingRows.length)) {
+                if (bodyIsEmpty && (headerIsEmpty || (hasHeaderRow && 3 <= survivingRows.length))) {
                     for (const row of survivingRows) {
                         row.cells[index]?.remove();
                     }
