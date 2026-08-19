@@ -122,7 +122,8 @@ let private normalizeBlankLines (markdown: string) : string =
 /// 最初の見出しより前のナビゲーションを切り落とし、
 /// 中身を取り除いて残骸になったコメント欄の見出しを消し、
 /// 外部リンクの跡として残った🌐アイコンを消し、
-/// 画像だけのリンク列の跡として残った区切り文字だけの行を消し、
+/// セル内改行の結合で挟んだ読点の前に残った空白を詰め、
+/// 画像だけのリンク列の跡や孤立した読点として残った区切り文字だけの行を消し、
 /// 脚注をGFMの文法へ変換し、連続する空行を1つへ潰す。
 let cleanupMarkdown (markdown: string) : string =
     let withoutCommentHeading =
