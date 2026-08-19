@@ -254,7 +254,14 @@ let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) :
             while grid[rowIndex].ContainsKey columnIndex do
                 columnIndex <- columnIndex + 1
 
-            let rowSpan = min cell.RowSpan (rows.Length - rowIndex)
+            // HTML仕様のrowspan="0"は「セクションの最後まで」を意味しDOMのrowSpanは0を返すため、
+            // 仕様に沿って残り行数へ展開する。
+            let rowSpan =
+                if cell.RowSpan = 0 then
+                    rows.Length - rowIndex
+                else
+                    min cell.RowSpan (rows.Length - rowIndex)
+
             let columnSpan = min cell.ColumnSpan maxColumnSpan
 
             for i in 0 .. rowSpan - 1 do
