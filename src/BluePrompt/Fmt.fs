@@ -43,11 +43,14 @@ let formatFile (path: string) : Task<unit> =
         use cancellation = new CancellationTokenSource(timeout)
 
         use fmt =
-            match Process.Start startInfo with
-            | null ->
-                // devShell外での実行などnixが見つからないケースを切り分けられるようにする。
-                failwith $"nixを起動できませんでした: %s{startInfo.FileName}"
-            | started -> started
+            // 実行ファイルが見つからない場合、StartはnullではなくWin32Exceptionを送出する。
+            // devShell外での実行などを切り分けられるように、起動しようとしたパスを添えて包み直す。
+            try
+                match Process.Start startInfo with
+                | null -> failwith $"nixを起動できませんでした: %s{startInfo.FileName}"
+                | started -> started
+            with :? System.ComponentModel.Win32Exception as error ->
+                raise (InvalidOperationException($"nixを起動できませんでした: %s{startInfo.FileName}", error))
         // パイプバッファが満杯になるとプロセスと相互待ちになるため、
         // 終了待ちより先に標準出力と標準エラーの読み取りを開始しておく。
         let stdoutTask = fmt.StandardOutput.ReadToEndAsync()
