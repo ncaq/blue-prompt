@@ -443,18 +443,17 @@ let private flattenTables (document: IDocument) : unit =
             dropEmptyColumns table
             normalizePairsRows document table
 
-/// HTML文字列からqueryに従って本文だけをHTML文字列として抜き出す。
+/// パース済みDOMからqueryに従って本文だけをHTML文字列として抜き出す。
 /// RemoveSelectorsの除去とUnwrapLinks・FlattenTablesの変形を施した後に、
 /// ContentSelectorsへ一致した要素のouterHTMLを連結して返す。
+/// documentは変形で破壊的に書き換わる。
 /// 一致する要素が無いセレクタは読み飛ばす。
 /// wikiruの脚注のように存在しないことが正常な要素があるためで、
 /// RemoveSelectorsの0件一致も同様に正常として扱う。
 /// ただし全ContentSelectorsが1件も一致しなかった場合は、
 /// サイト側の構造変更で抽出が全滅した可能性が高く、
 /// 空のナレッジによる上書きを防ぐためContentNotFoundを送出する。
-let contentHtml (query: ContentQuery) (html: string) : string =
-    use document = HtmlParser().ParseDocument html
-
+let contentHtmlOfDocument (query: ContentQuery) (document: IDocument) : string =
     for selector in query.RemoveSelectors do
         removeElements document selector
 
@@ -480,3 +479,11 @@ let contentHtml (query: ContentQuery) (html: string) : string =
         raise (ContentNotFound(selectors = query.ContentSelectors))
 
     String.concat "\n" contents
+
+/// HTML文字列からqueryに従って本文だけをHTML文字列として抜き出す。
+/// パースしてcontentHtmlOfDocumentへ委譲する。挙動と失敗条件はそちらと同じ。
+/// 取得側が既にパース済みのDOMを持っている場合は、
+/// 再パースを避けるためcontentHtmlOfDocumentを直接使う。
+let contentHtml (query: ContentQuery) (html: string) : string =
+    use document = HtmlParser().ParseDocument html
+    contentHtmlOfDocument query document
