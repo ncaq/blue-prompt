@@ -40,19 +40,44 @@ LLMに記憶を頼らせるのではなく、
 [キャラ呼称表](https://bluearchive.wikiru.jp/?%E3%82%AD%E3%83%A3%E3%83%A9%E5%91%BC%E7%A7%B0%E8%A1%A8)
 を整形した一覧を同梱しています。
 
+### 生徒個別スキル(character-\*)
+
+生徒のプロフィール・ステータス・スキル・絆ストーリー・ボイスといった、
+ゲーム内の事実を調べるスキルです。
+
+[ユウカ](https://bluearchive.wikiru.jp/?%E3%83%A6%E3%82%A6%E3%82%AB)
+のような生徒個別ページから事実を載せているセクションだけを抜き出し、
+[character-yuuka](./skills/character-yuuka)
+のように生徒1人につき1つのスキルとして生成しています。
+
 ## ナレッジの生成方法
 
-各スキルが参照する`reference.md`は、
+各スキルのナレッジは、
 このリポジトリのF#プログラムでwikiruの記事から自動生成しています。
+
+一覧ページを整形するスキルは、
+`reference.md`をスキルの説明とは別のファイルとして生成します。
 
 ```console
 dotnet run --project src/BluePrompt -- wikiru-knowledge 'キャラ呼称表' plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md
+```
+
+生徒個別のスキルは1人分の量が少ないため、
+スキル定義ごと1つの`SKILL.md`として生成します。
+スキル名は出力先のディレクトリ名から導出されます。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-student-skill 'ユウカ' plugins/jp-wikiru-bluearchive/skills/character-yuuka/SKILL.md
 ```
 
 Playwrightでページを開いて本文と脚注だけを抜き出し、
 編集リンクや広告やコメント欄を取り除き、
 GFMのテーブルで表現できない結合セルを展開した上で、
 pandocでMarkdownへ変換しています。
+生徒個別のページではさらに、
+折りたたみを開き、
+素材などを表す画像をaltの名前へ置き換え、
+wiki独自の解説・考察を除いた事実セクションだけへ選別しています。
 
 wikiの更新を取り込みたい時に同じコマンドを再実行してください。
 

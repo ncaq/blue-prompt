@@ -34,6 +34,19 @@ let ``cleanupMarkdownは脚注をGFMの文法へ変換する`` () =
     )
 
 [<Fact>]
+let ``外部リンクの跡として残った🌐は取り除かれる`` () =
+    // wikiのJavaScriptが外部リンクの中へ付け足すアイコンは、
+    // リンク外しの後にただの文字として残る。
+    let markdown = "# h\n\n動画 🌐を開く\n"
+    Assert.Equal("# h\n\n動画を開く\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``読点の前の空白は詰められる`` () =
+    // セル内改行の結合で挟んだ読点の前に、元の空白テキストノード由来の空白が残ることがある。
+    let markdown = "# h\n\n★2 ユウカ 、★3 ユウカ（体操服）\n"
+    Assert.Equal("# h\n\n★2 ユウカ、★3 ユウカ（体操服）\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
 let ``区切り文字だけになった行は取り除かれる`` () =
     // 画像だけのリンクを「/」で並べたナビゲーションは、
     // 画像除去とリンク外しの後に区切り文字だけの行として残る。
@@ -68,6 +81,51 @@ let ``エスケープされていないアスタリスクは変換されない``
     // pandocがエスケープしなかった*1は脚注由来ではないため素通りする。
     let markdown = "# h\n\n*1 これは脚注ではない\n"
     Assert.Equal("# h\n\n*1 これは脚注ではない\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``filterSectionsはホワイトリストにあるh2セクションだけ残す`` () =
+    let markdown = "## 基本情報\n\n名前\n\n## 運用考察\n\n考察本文\n\n## スキル\n\nEX\n"
+
+    Assert.Equal(
+        "## 基本情報\n\n名前\n\n## スキル\n\nEX\n",
+        BluePrompt.Wikiru.filterSections [ "基本情報"; "スキル" ] markdown
+    )
+
+[<Fact>]
+let ``filterSectionsはh3以下の小見出しをh2セクションごと扱う`` () =
+    let markdown = "## スキル\n\n### EXスキル\n\n内容\n\n## 小ネタ\n\n### 元ネタ\n\n解説\n"
+
+    Assert.Equal("## スキル\n\n### EXスキル\n\n内容\n", BluePrompt.Wikiru.filterSections [ "スキル" ] markdown)
+
+[<Fact>]
+let ``filterSectionsは最初のh2より前の部分を残す`` () =
+    let markdown = "前書き\n\n## 基本情報\n\n名前\n"
+    Assert.Equal("前書き\n\n## 基本情報\n\n名前\n", BluePrompt.Wikiru.filterSections [ "基本情報" ] markdown)
+
+[<Fact>]
+let ``filterSectionsは参照ごと落ちた脚注定義を取り除く`` () =
+    // 落ちたセクションだけが参照していた脚注の定義を残すと、宙に浮いた脚注になる。
+    let markdown = "## 基本情報\n\n名前\n\n## 運用考察\n\n考察[^1]\n\n[^1]: 補足\n"
+    Assert.Equal("## 基本情報\n\n名前\n", BluePrompt.Wikiru.filterSections [ "基本情報" ] markdown)
+
+[<Fact>]
+let ``filterSectionsは残った本文から参照される脚注定義を文書末尾に保持する`` () =
+    // 脚注定義は落ちるセクションの側に置かれていても、参照が残っていれば保持する。
+    let markdown = "## 基本情報\n\n名前[^1]\n\n## コメント\n\n[^1]: 補足\n"
+
+    Assert.Equal(
+        "## 基本情報\n\n名前[^1]\n\n[^1]: 補足\n",
+        BluePrompt.Wikiru.filterSections [ "基本情報" ] markdown
+    )
+
+[<Fact>]
+let ``studentSkillMarkdownはフロントマターと出典とナレッジを含む`` () =
+    let skill =
+        BluePrompt.Wikiru.studentSkillMarkdown "character-yuuka" "ユウカ" "## 基本情報\n"
+
+    Assert.StartsWith("---\nname: character-yuuka\n", skill)
+    Assert.Contains("https://bluearchive.wikiru.jp/?%E3%83%A6%E3%82%A6%E3%82%AB", skill)
+    Assert.Contains("## 基本情報", skill)
 
 [<Fact>]
 let ``knowledgeHeaderは出典URLを含む`` () =
