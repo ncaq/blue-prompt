@@ -90,12 +90,40 @@ nixpkgsの`playwright-driver`が上がった時はfsprojのバージョンを手
 
 # wikiruナレッジの生成
 
-`plugins/jp-wikiru-bluearchive/`配下の各スキルが参照する`reference.md`は、
+`plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジは、
 wikiruの記事からの自動生成ファイルです。
 手で編集せず、以下のコマンドで再生成してください。
+ナレッジを生成する`wikiru-knowledge`と`wikiru-student-skill`は、
+書き出した直後に`nix fmt`まで実行するので、
+生成コマンドだけで内容が確定します。
+
+一覧ページを整形するスキルの`reference.md`は以下で生成します。
 
 ```console
 dotnet run --project src/BluePrompt -- wikiru-knowledge '<ページ名>' <出力ファイル>
+```
+
+生徒個別のスキルはナレッジを埋め込んだ`SKILL.md`全体を以下で生成します。
+スキル名は出力先のディレクトリ名から導出されます。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-student-skill '<生徒のページ名>' <SKILL.mdの出力パス>
+```
+
+抽出設定を調整する時は、
+以下でpandoc変換前の中間HTMLを確認できます。
+こちらは`nix fmt`を実行しません。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-html '<ページ名>' <出力ファイル>
+```
+
+生徒個別ページは折りたたみを残すなど抽出設定が異なるため、
+生徒個別ページの設定での中間HTMLは以下で確認します。
+こちらも`nix fmt`を実行しません。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-student-html '<生徒のページ名>' <出力ファイル>
 ```
 
 # テスト方針

@@ -7,3 +7,7 @@ HSA = "HSA"
 Hashi = "Hashi"
 # Immediately Invoked Function Expression (IIFE)の略語。camelCase分割で"IIF"をtypoと判定する。
 IIF = "IIF"
+
+[default.extend-identifiers]
+# ブルーアーカイブのメモリアルロビー制作スタッフ名。camelCase分割で"Ist"をtypoと判定する。
+POIst = "POIst"
