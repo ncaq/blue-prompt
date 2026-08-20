@@ -8,6 +8,7 @@ module BluePrompt.OpenWebuiSync
 
 open System
 open System.IO
+open System.Net
 open System.Net.Http
 open System.Net.Http.Headers
 open System.Text
@@ -133,9 +134,18 @@ let private syncModel (client: HttpClient) (options: Options) (path: string) : T
                         desired
 
                 printfn $"%s{id}: 更新"
-        else
+        elif
+            // Open WebUIは未登録のidへ401を返す。404も未登録相当として扱う。
+            response.StatusCode = HttpStatusCode.Unauthorized
+            || response.StatusCode = HttpStatusCode.NotFound
+        then
             do! postForm client $"%s{options.Url}/api/v1/models/create" desired
             printfn $"%s{id}: 作成"
+        else
+            // サーバエラーやプロキシエラーを未登録とみなして作成へ進むと、
+            // 真因の分かりにくい失敗や意図しない作成につながるため理由を明示して止める。
+            let! body = response.Content.ReadAsStringAsync()
+            raise (SyncError $"%s{id}の存在確認に失敗しました: %d{int response.StatusCode} %s{body}")
     }
 
 /// ディレクトリ内の全ModelFormのJSONを同期する。
