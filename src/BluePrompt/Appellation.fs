@@ -316,8 +316,9 @@ let toCallerMarkdown (caller: string) (entries: Entry list) : string =
         [ "| 相手 | 呼称 |"; "| --- | --- |" ] @ rows @ [ "" ] |> String.concat "\n"
 
 /// JSON直列化の設定。
-/// F#のoption型をnullと値の対応で書けるようにJsonFSharpConverterを使い、
+/// F#のoption型をnullと値の対応で書けるようにJsonFSharpOptionsを使い、
 /// 日本語をエスケープせずそのまま書いてdiffを読めるようにする。
+/// FSharp.SystemTextJson v1.1以降の公式推奨であるフルーエントビルダーで組み込む。
 let private serializerOptions =
     let options =
         JsonSerializerOptions(
@@ -326,7 +327,7 @@ let private serializerOptions =
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         )
 
-    options.Converters.Add(JsonFSharpConverter())
+    JsonFSharpOptions.Default().AddToJsonSerializerOptions options
     options
 
 /// レコードの列を機械読み出し用のJSON文字列へ直列化する。
