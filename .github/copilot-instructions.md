@@ -94,14 +94,14 @@ FSharp.Analyzers.SDKのバージョンはflake.nixのfsharp-analyzersと一致�
 devShellで単体実行したい時は以下を使います。
 
 ```console
-dotnet msbuild lint.proj /t:AnalyzeFSharpProject -m
+dotnet msbuild lint.proj /t:AnalyzeFSharpProject -warnaserror -m
 ```
 
 特定のプロジェクトだけ解析したい時は、
 プロジェクトのディレクトリを指定します。
 
 ```console
-dotnet msbuild src/BluePrompt /t:AnalyzeFSharpProject
+dotnet msbuild src/BluePrompt /t:AnalyzeFSharpProject -warnaserror
 ```
 
 ## NuGet依存の更新
