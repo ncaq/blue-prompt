@@ -254,3 +254,65 @@ let ``toJsonはcamelCaseのキーとnullのoptionで直列化する`` () =
     Assert.Contains("\"club\": null", json)
     Assert.Contains("\"caller\": \"リン\"", json)
     Assert.Contains("\"name\": \"私\"", json)
+
+[<Fact>]
+let ``toCallerMarkdownは指定キャラクターだけを相手と呼称の2列で組み立てる`` () =
+    let entries =
+        [ { School = "アビドス高等学校"
+            Club = Some "対策委員会"
+            Caller = "ホシノ"
+            Callee = "ノノミ"
+            CalleeNote = None
+            Name = "ノノミちゃん"
+            Note = None }
+          { School = "アビドス高等学校"
+            Club = Some "対策委員会"
+            Caller = "ホシノ"
+            Callee = "ノノミ"
+            CalleeNote = None
+            Name = "十六夜ノノミさん"
+            Note = Some "初対面時" }
+          // 他のキャラクターのレコードは出力に含まれない。
+          { School = "アビドス高等学校"
+            Club = Some "対策委員会"
+            Caller = "シロコ"
+            Callee = "ホシノ"
+            CalleeNote = None
+            Name = "ホシノ"
+            Note = None } ]
+
+    Assert.Equal(
+        "| 相手 | 呼称 |\n" + "| --- | --- |\n" + "| ノノミ | ノノミちゃん、十六夜ノノミさん(初対面時) |\n",
+        toCallerMarkdown "ホシノ" entries
+    )
+
+[<Fact>]
+let ``toCallerMarkdownは該当キャラクターが無いとCallerNotFoundになる`` () =
+    let error =
+        Assert.Throws<CallerNotFound>(fun () -> toCallerMarkdown "ユウカ" [] |> ignore)
+
+    match error :> exn with
+    | CallerNotFound caller -> Assert.Equal("ユウカ", caller)
+    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+
+[<Fact>]
+let ``ofJsonはtoJsonの出力を同じDocumentへ読み戻す`` () =
+    let document =
+        { Source = "https://bluearchive.wikiru.jp/?example"
+          Entries =
+            [ { School = "アビドス高等学校"
+                Club = Some "対策委員会"
+                Caller = "ホシノ"
+                Callee = "ノノミ"
+                CalleeNote = Some "モモフレンズ"
+                Name = "ノノミちゃん"
+                Note = Some "初対面時" }
+              { School = "連邦生徒会"
+                Club = None
+                Caller = "リン"
+                Callee = "自分"
+                CalleeNote = None
+                Name = "私"
+                Note = None } ] }
+
+    Assert.Equal(document, ofJson (toJson document))

@@ -42,6 +42,10 @@ exception EntryNotFound
 /// 呼称表の行のセル数が想定の3列でなかった時の、その時点のキャラクター名とセル数。
 exception RowShapeError of character: string * cellCount: int
 
+/// 指定した呼ぶ側のキャラクターのレコードが1件も無かった時のキャラクター名。
+/// 名前の打ち間違いで空のデータを黙って出力するのを防ぐ。
+exception CallerNotFound of caller: string
+
 /// 脚注アンカーのidから注釈本文への対応表を#noteから組み立てる。
 /// wikiruの脚注定義は「アンカー、本文のspan、brの繰り返し」の並びなので、
 /// アンカーから次のbrまでの兄弟ノードのテキストを本文として集める。
@@ -231,22 +235,28 @@ let private nameWithNote (name: string) (note: string option) : string =
 /// Markdownのテーブルセルとして安全なように縦棒をエスケープする。
 let private escapeCell (text: string) : string = text.Replace("|", "\\|")
 
+/// 呼ぶ側1人分のレコードを「相手のセルと呼称のセル」の組の列へまとめる。
+/// 同じ相手への呼称は1行へまとめて読点で連結し、注釈は半角括弧で呼称の直後へ添える。
+let private rowCells (callerEntries: Entry list) : (string * string) list =
+    callerEntries
+    |> List.groupBy (fun entry -> entry.Callee, entry.CalleeNote)
+    |> List.map (fun ((callee, calleeNote), rowEntries) ->
+        let names =
+            rowEntries
+            |> List.map (fun entry -> nameWithNote entry.Name entry.Note)
+            |> String.concat "、"
+
+        escapeCell (nameWithNote callee calleeNote), escapeCell names)
+
 /// レコードの列からLLM参照用のMarkdown本文を組み立てる。
 /// ページと同じ学校(h2) > 部活(h3) > キャラクター(h4)の階層へ組み直し、
 /// 注釈は脚注ではなく呼称の直後の半角括弧に置いて、その場で条件を読めるようにする。
 let toReferenceMarkdown (entries: Entry list) : string =
     let callerBlock (caller: string, callerEntries: Entry list) =
         let rows =
-            callerEntries
-            |> List.groupBy (fun entry -> entry.Callee, entry.CalleeNote)
-            |> List.map (fun ((callee, calleeNote), rowEntries) ->
-                let names =
-                    rowEntries
-                    |> List.map (fun entry -> nameWithNote entry.Name entry.Note)
-                    |> String.concat "、"
-
-                let calleeCell = escapeCell (nameWithNote callee calleeNote)
-                $"| %s{escapeCell caller} | %s{calleeCell} | %s{escapeCell names} |")
+            rowCells callerEntries
+            |> List.map (fun (calleeCell, namesCell) ->
+                $"| %s{escapeCell caller} | %s{calleeCell} | %s{namesCell} |")
 
         [ $"#### %s{caller}"; ""; "| キャラクター | 相手 | 呼称 |"; "| --- | --- | --- |" ]
         @ rows
@@ -268,6 +278,20 @@ let toReferenceMarkdown (entries: Entry list) : string =
     |> List.collect schoolBlock
     |> String.concat "\n"
 
+/// 指定した呼ぶ側のキャラクター1人分の呼称を、
+/// role-playスキルへの埋め込みのようなLLM参照用のMarkdownテーブルへ組み立てる。
+/// 呼ぶ側は指定した時点で自明なため、テーブルは相手と呼称の2列にする。
+/// 該当するレコードが1件も無い場合はCallerNotFoundを送出する。
+let toCallerMarkdown (caller: string) (entries: Entry list) : string =
+    match entries |> List.filter (fun entry -> entry.Caller = caller) with
+    | [] -> raise (CallerNotFound caller)
+    | callerEntries ->
+        let rows =
+            rowCells callerEntries
+            |> List.map (fun (calleeCell, namesCell) -> $"| %s{calleeCell} | %s{namesCell} |")
+
+        [ "| 相手 | 呼称 |"; "| --- | --- |" ] @ rows @ [ "" ] |> String.concat "\n"
+
 /// JSON直列化の設定。
 /// F#のoption型をnullと値の対応で書けるようにJsonFSharpConverterを使い、
 /// 日本語をエスケープせずそのまま書いてdiffを読めるようにする。
@@ -285,3 +309,8 @@ let private serializerOptions =
 /// レコードの列を機械読み出し用のJSON文字列へ直列化する。
 let toJson (document: Document) : string =
     JsonSerializer.Serialize(document, serializerOptions) + "\n"
+
+/// JSON文字列をDocumentへ読み戻す。toJsonの逆変換。
+/// 生成済みのappellation.jsonからwikiruへアクセスせずに呼称を読み出す用途で使う。
+let ofJson (json: string) : Document =
+    JsonSerializer.Deserialize<Document>(json, serializerOptions)
