@@ -479,10 +479,7 @@ let ``格子が総量の上限を超える表は展開されずそのまま残�
         let! finished = Task.WhenAny(work, Task.Delay timeout)
         let completedInTime = obj.ReferenceEquals(finished, work)
 
-        Assert.True(
-            completedInTime,
-            $"総量上限を超える表の処理が%.0f{timeout.TotalSeconds}秒以内に完走しませんでした"
-        )
+        Assert.True(completedInTime, $"総量上限を超える表の処理が%.0f{timeout.TotalSeconds}秒以内に完走しませんでした")
 
         let extracted = work.Result
 

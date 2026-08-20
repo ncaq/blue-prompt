@@ -73,7 +73,9 @@ let withServer (respond: string -> Response) (action: Uri -> Task<'T>) : Task<'T
                             $"HTTP/1.1 %s{response.Status}\r\n"
                             + $"Content-Type: %s{response.ContentType}\r\n"
                             + $"Content-Length: %d{response.Body.Length}\r\n"
-                            + String.concat "" (List.map (fun h -> h + "\r\n") response.ExtraHeaders)
+                            + String.concat
+                                ""
+                                (List.map (fun h -> h + "\r\n") response.ExtraHeaders)
                             + "Connection: close\r\n\r\n"
 
                         do! stream.WriteAsync((Encoding.ASCII.GetBytes header).AsMemory())
