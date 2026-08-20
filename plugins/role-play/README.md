@@ -17,6 +17,28 @@
 作中で生徒が名字で呼ばれることはほとんどなく、
 名字を思い出せなくてもスキルを呼び出せるようにするためです。
 
+## 衣装ごとの参照ファイル
+
+`yuuka`スキルにはSKILL.mdの他に、
+衣装(実装)ごとのプロフィールとゲーム内ボイス一覧を収めた参照ファイルがあります。
+
+これらは
+[ブルーアーカイブ(ブルアカ)攻略有志Wiki](https://bluearchive.wikiru.jp/)
+の生徒個別ページからの自動生成ファイルです。
+手で編集せず、リポジトリルートで以下のコマンドで再生成してください。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-roleplay-reference 'ユウカ' plugins/role-play/skills/yuuka/normal.md
+dotnet run --project src/BluePrompt -- wikiru-roleplay-reference 'ユウカ（体操服）' plugins/role-play/skills/yuuka/track.md
+dotnet run --project src/BluePrompt -- wikiru-roleplay-reference 'ユウカ（パジャマ）' plugins/role-play/skills/yuuka/pajama.md
+```
+
+SKILL.md自体は人格や口調の指示を含む手書きのファイルで、
+自動生成の対象ではありません。
+
+`kotori`と`seia`はまだこの構成に移行しておらず、
+SKILL.mdに手で貼り付けたデータのままです。
+
 ## 注意
 
 スタイルはチャット全体に常時適用されるものでしたが、

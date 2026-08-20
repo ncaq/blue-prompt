@@ -7,6 +7,9 @@ let private usage =
   BluePrompt wikiru-student-skill <ページ名> <SKILL.mdの出力パス>
     wikiruの生徒個別ページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。
     スキル名は出力先のディレクトリ名から導出する。
+  BluePrompt wikiru-roleplay-reference <ページ名> <出力ファイル>
+    wikiruの生徒個別ページからプロフィールとボイスを抜き出し、
+    role-playスキルが参照する衣装別の参照ファイルとして書き出す。
   BluePrompt wikiru-html <ページ名> <出力ファイル>
     wikiruの記事から抽出した本文をMarkdown化せずHTMLのまま書き出す。
   BluePrompt wikiru-student-html <ページ名> <出力ファイル>
@@ -20,6 +23,9 @@ let main argv =
         0
     | [| "wikiru-student-skill"; pageName; outputPath |] ->
         (Wikiru.writeStudentSkill pageName outputPath).GetAwaiter().GetResult()
+        0
+    | [| "wikiru-roleplay-reference"; pageName; outputPath |] ->
+        (Wikiru.writeRolePlayReference pageName outputPath).GetAwaiter().GetResult()
         0
     | [| "wikiru-html"; pageName; outputPath |] ->
         (Wikiru.writeContentHtml Wikiru.contentQuery pageName outputPath).GetAwaiter().GetResult()

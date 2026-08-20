@@ -86,6 +86,11 @@ let studentContentQuery: Extract.ContentQuery =
 let studentSectionTitles: string list =
     [ "基本情報"; "スキル"; "固有武器"; "愛用品"; "能力解放"; "絆ランクボーナス"; "絆ストーリー"; "ボイス" ]
 
+/// 生徒個別ページからrole-playスキルの参照として残すセクションの見出し。
+/// 人格と話し方を示す基本情報とボイスだけを残し、
+/// 性能データの参照はjp-wikiru-bluearchive側のスキルに任せる。
+let rolePlaySectionTitles: string list = [ "基本情報"; "ボイス" ]
+
 /// 最初の見出しより前を切り落とす。
 /// wikiruの記事は本文が最初の見出しから始まり、
 /// それより前は関連ページへのナビゲーションや注意書きで、ナレッジには要らない。
@@ -260,13 +265,35 @@ let writeContentHtml
         do! writeFile outputPath html
     }
 
-/// wikiruの生徒個別ページをナレッジ用Markdownへ変換する。
-/// 折りたたみの中身を残した設定で取得し、事実を載せているセクションだけへ選別する。
-let fetchStudentMarkdown (pageName: string) : Task<string> =
+/// wikiruの生徒個別ページを取得し、指定した見出しのセクションだけのMarkdownへ変換する。
+/// 折りたたみの中身を残した設定で取得する。
+let private fetchStudentSections (titles: string list) (pageName: string) : Task<string> =
     task {
         let! html = Page.fetchContentHtml (pageUri pageName) studentContentQuery
         let! markdown = Pandoc.toMarkdown html
-        return filterSections studentSectionTitles (cleanupMarkdown markdown)
+        return filterSections titles (cleanupMarkdown markdown)
+    }
+
+/// wikiruの生徒個別ページをナレッジ用Markdownへ変換する。
+/// 事実を載せているセクションだけへ選別する。
+let fetchStudentMarkdown (pageName: string) : Task<string> =
+    fetchStudentSections studentSectionTitles pageName
+
+/// 基本情報セクションの「入手方法」の見出し以降(入手方法・ステータス・装備)を切り落とす。
+/// role-playの参照に要るのはプロフィールと紹介文だけで、
+/// 性能データはrole-playには使わないため。
+/// 「入手方法」は見出しプラグイン由来の太字行で、h3以下の見出しにはならない。
+let trimGameplayDetails (markdown: string) : string =
+    normalizeBlankLines (
+        Regex.Replace(markdown, @"^\*\*入手方法\*\*[\s\S]*?(?=^## |\z)", "", RegexOptions.Multiline)
+    )
+
+/// wikiruの生徒個別ページをrole-playスキルの参照用Markdownへ変換する。
+/// プロフィールと紹介文とボイスだけを残す。
+let fetchRolePlayMarkdown (pageName: string) : Task<string> =
+    task {
+        let! markdown = fetchStudentSections rolePlaySectionTitles pageName
+        return trimGameplayDetails markdown
     }
 
 /// 生徒スキルのSKILL.md全体を組み立てる。
@@ -324,5 +351,15 @@ let writeStudentSkill (pageName: string) (outputPath: string) : Task<unit> =
 
         let! markdown = fetchStudentMarkdown pageName
         do! writeFile outputPath (studentSkillMarkdown skillName pageName markdown)
+        do! Fmt.formatFile outputPath
+    }
+
+/// wikiruの生徒個別ページをMarkdown化し、
+/// role-playスキルが参照する衣装別の参照ファイルとして書き出す。
+/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
+let writeRolePlayReference (pageName: string) (outputPath: string) : Task<unit> =
+    task {
+        let! markdown = fetchRolePlayMarkdown pageName
+        do! writeFile outputPath (knowledgeHeader pageName + markdown)
         do! Fmt.formatFile outputPath
     }

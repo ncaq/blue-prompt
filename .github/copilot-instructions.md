@@ -115,10 +115,11 @@ nix run .#update-deps
 
 # wikiruナレッジの生成
 
-`plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジは、
+`plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジと、
+`plugins/role-play/`配下のスキルの衣装別参照ファイルは、
 wikiruの記事からの自動生成ファイルです。
 手で編集せず、以下のコマンドで再生成してください。
-ナレッジを生成する`wikiru-knowledge`と`wikiru-student-skill`は、
+ナレッジを生成する`wikiru-knowledge`と`wikiru-student-skill`と`wikiru-roleplay-reference`は、
 書き出した直後に`nix fmt`まで実行するので、
 生成コマンドだけで内容が確定します。
 
@@ -133,6 +134,13 @@ dotnet run --project src/BluePrompt -- wikiru-knowledge '<ページ名>' <出力
 
 ```console
 dotnet run --project src/BluePrompt -- wikiru-student-skill '<生徒のページ名>' <SKILL.mdの出力パス>
+```
+
+role-playスキルの衣装別参照ファイルは、
+生徒個別ページからプロフィールとボイスだけを抜き出して以下で生成します。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-roleplay-reference '<生徒のページ名>' <出力ファイル>
 ```
 
 抽出設定を調整する時は、

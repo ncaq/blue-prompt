@@ -142,6 +142,30 @@ let ``filterSectionsは残った本文から参照される脚注定義を文書
     )
 
 [<Fact>]
+let ``trimGameplayDetailsは入手方法から次のh2までを切り落とす`` () =
+    // 基本情報セクションの入手方法・ステータス・装備は性能データで、
+    // role-playの参照にはプロフィールと紹介文とボイスだけが要る。
+    let markdown =
+        "## 基本情報\n\n| 名前 | ユウカ |\n\n**基本情報**\n\n紹介文\n\n"
+        + "**入手方法**\n\n通常募集\n\n**ステータス(初期値/MAX値)**\n\n| HP | 3146 |\n\n"
+        + "## ボイス\n\n| 獲得 | セリフ |\n"
+
+    Assert.Equal(
+        "## 基本情報\n\n| 名前 | ユウカ |\n\n**基本情報**\n\n紹介文\n\n## ボイス\n\n| 獲得 | セリフ |\n",
+        BluePrompt.Wikiru.trimGameplayDetails markdown
+    )
+
+[<Fact>]
+let ``trimGameplayDetailsは続くh2が無ければ末尾まで切り落とす`` () =
+    let markdown = "## 基本情報\n\n紹介文\n\n**入手方法**\n\n通常募集\n"
+    Assert.Equal("## 基本情報\n\n紹介文\n", BluePrompt.Wikiru.trimGameplayDetails markdown)
+
+[<Fact>]
+let ``trimGameplayDetailsは入手方法が無ければ何も変えない`` () =
+    let markdown = "## 基本情報\n\n紹介文\n\n## ボイス\n\n| 獲得 | セリフ |\n"
+    Assert.Equal(markdown, BluePrompt.Wikiru.trimGameplayDetails markdown)
+
+[<Fact>]
 let ``studentSkillMarkdownはフロントマターと出典とナレッジを含む`` () =
     let skill =
         BluePrompt.Wikiru.studentSkillMarkdown "character-yuuka" "ユウカ" "## 基本情報\n"
