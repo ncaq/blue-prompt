@@ -95,6 +95,30 @@
           # この配布物は全プラグインのスキルをまとめたものなので前者を名前に使う。
           marketplace = lib.importJSON ./.claude-plugin/marketplace.json;
 
+          # F#アナライザーのCLIツール。
+          # nixpkgsに存在しないためNuGetから直接パッケージ化する。
+          # MSBuildのAnalyzeFSharpProjectターゲットは`dotnet fsharp-analyzers`を起動し、
+          # それはdotnet CLIのツール解決でPATH上の`dotnet-fsharp-analyzers`に解決されるため、
+          # そのコマンド名の別名も一緒に置く。
+          fsharp-analyzers = pkgs.buildDotnetGlobalTool {
+            pname = "fsharp-analyzers";
+            version = "0.37.2";
+            nugetHash = "sha256-tbQYxXQ39bXmvFQo9CL4A91RK5IHi3P6poUSc+C8448=";
+            dotnet-sdk = pkgs.dotnet-sdk_10;
+            dotnet-runtime = pkgs.dotnet-sdk_10;
+            # net8.0向けに配布されているツールをSDK 10のランタイムで動かす。
+            makeWrapperArgs = [
+              "--set-default"
+              "DOTNET_ROLL_FORWARD"
+              "Major"
+            ];
+            # binのラッパーはfixupフェーズのdotnetFixupHookが作るため、
+            # 別名のリンクはその後に張る。
+            postFixup = ''
+              ln -s $out/bin/fsharp-analyzers $out/bin/dotnet-fsharp-analyzers
+            '';
+          };
+
           blue-prompt = pkgs.buildDotnetModule {
             pname = "blue-prompt";
             # 外部に配布しないプログラムなのでバージョン番号に意味が無い。
@@ -103,6 +127,10 @@
             src = lib.fileset.toSource {
               root = ./.;
               fileset = lib.fileset.unions [
+                # アナライザーの参照はDirectory.Build.propsで全プロジェクトへ注入しているため、
+                # restoreの整合性のためにソースへ含める。
+                ./Directory.Build.props
+                ./Directory.Build.targets
                 ./src
                 ./test
               ];
@@ -116,7 +144,17 @@
             # サンドボックス内では外部ネットワークへ出られないため、外部サイト依存テストは除外する。
             testFilters = [ "Category!=Network" ];
             # HTML→Markdown変換のテストがpandocを起動するため、check環境に含める。
-            nativeCheckInputs = [ pkgs.pandoc ];
+            nativeCheckInputs = [
+              pkgs.pandoc
+              fsharp-analyzers
+            ];
+            # F#アナライザーによるリントもテストに続けて実行する。
+            # nix-fast-buildの統合チェックにリンターを含めるため。
+            # -warnaserrorで警告も失敗へ昇格して違反を検出する。
+            postCheck = ''
+              dotnet msbuild src/BluePrompt/BluePrompt.fsproj /t:AnalyzeFSharpProject -warnaserror
+              dotnet msbuild test/BluePrompt.Test/BluePrompt.Test.fsproj /t:AnalyzeFSharpProject -warnaserror
+            '';
             executables = [ "BluePrompt" ];
             # nix runで単体実行できるようにpandocのパスをラッパーに焼き込む。
             makeWrapperArgs = [
@@ -314,6 +352,7 @@
               # F#開発ツール。
               dotnet-sdk_10
               fsautocomplete
+              fsharp-analyzers
 
               # HTML→Markdown変換。
               pandoc

@@ -71,6 +71,23 @@ dotnet test test/BluePrompt.Test
 `dotnet test`は外部サイト依存テスト(`Category=Network`)も含めて実行します。
 Nix経由の統合検証(外部サイト依存テストを除く)はnix-fast-buildのchecksに含まれています。
 
+## リンター
+
+F#のリンターとして[fsharp-analyzers](https://github.com/ionide/FSharp.Analyzers.SDK)を使っています。
+ルール集はG-Research.FSharp.AnalyzersとIonide.Analyzersで、
+Directory.Build.propsで全F#プロジェクトへ導入しています。
+
+リンターはnix-fast-buildの統合チェックの一部として自動実行されます。
+警告もエラー扱いで、
+違反があるとチェックが失敗します。
+
+devShellで単体実行したい時は以下を使います。
+
+```console
+dotnet msbuild src/BluePrompt /t:AnalyzeFSharpProject
+dotnet msbuild test/BluePrompt.Test /t:AnalyzeFSharpProject
+```
+
 ## NuGet依存の更新
 
 fsprojのPackageReferenceを変更したら以下を一回実行するだけで、
