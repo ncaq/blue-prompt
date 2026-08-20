@@ -194,6 +194,7 @@ let private parseTable
 /// キャラクターの見出し配下の呼称表テーブルをレコード化する。
 /// 目次のようにキャラクターの見出しより前にあるテーブルや、
 /// コメント欄のように呼称表を持たないセクションは自然に読み飛ばされる。
+/// wiki側の編集ミスで同じ行が2度書かれることがあるため、完全一致のレコードは1件へまとめる。
 /// 1件も得られなかった場合はEntryNotFoundを送出する。
 let parse (document: IDocument) : Entry list =
     let notes = noteMap document
@@ -214,6 +215,7 @@ let parse (document: IDocument) : Entry list =
                     | _ -> entries, (school, club, character))
             ([], (None, None, None))
         |> fst
+        |> List.distinct
 
     if List.isEmpty entries then
         raise EntryNotFound
