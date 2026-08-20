@@ -70,12 +70,12 @@ dotnet run --project src/BluePrompt -- wikiru-knowledge 'キャラ呼称表' plu
 dotnet run --project src/BluePrompt -- wikiru-student-skill 'ユウカ' plugins/jp-wikiru-bluearchive/skills/character-yuuka/SKILL.md
 ```
 
-Playwrightでページを開いて本文と脚注だけを抜き出し、
+AngleSharpでページを取得して本文と脚注だけを抜き出し、
 編集リンクや広告やコメント欄を取り除き、
 GFMのテーブルで表現できない結合セルを展開した上で、
 pandocでMarkdownへ変換しています。
 生徒個別のページではさらに、
-折りたたみを開き、
+折りたたみの中身を残し、
 素材などを表す画像をaltの名前へ置き換え、
 wiki独自の解説・考察を除いた事実セクションだけへ選別しています。
 

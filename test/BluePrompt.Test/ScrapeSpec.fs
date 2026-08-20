@@ -3,27 +3,21 @@ module BluePrompt.Test.ScrapeSpec
 open System
 open System.Threading.Tasks
 open Xunit
+open BluePrompt.Test.LocalServer
 
 [<Fact>]
-[<Trait("Category", "Browser")>]
-let ``1つのブラウザを再利用して複数回Markdown化できる`` () : Task =
+let ``ローカルサーバのHTMLをMarkdown化できる`` () : Task =
     task {
-        let url = Uri "https://example.com/"
-
-        let! first, second =
-            BluePrompt.Browser.withBrowser (fun browser ->
-                task {
-                    let! first = BluePrompt.Scrape.toMarkdown browser url
-                    let! second = BluePrompt.Scrape.toMarkdown browser url
-                    return first, second
-                })
-
-        Assert.Contains("# Example Domain", first)
-        Assert.Contains("# Example Domain", second)
+        // 外部サイト依存テストはnixのchecksから除外されるため、
+        // 取得とpandoc変換の合成が繋がっていることをオフラインで固定する。
+        let html = "<html><body><h1>Local Page</h1><p>paragraph</p></body></html>"
+        let! markdown = withServedHtml html (fun url -> BluePrompt.Scrape.fetchMarkdown url)
+        Assert.Contains("# Local Page", markdown)
+        Assert.Contains("paragraph", markdown)
     }
 
 [<Fact>]
-[<Trait("Category", "Browser")>]
+[<Trait("Category", "Network")>]
 let ``example.comのMarkdownに見出しとリンクがMarkdown記法で含まれる`` () : Task =
     task {
         let! markdown = BluePrompt.Scrape.fetchMarkdown (Uri "https://example.com/")

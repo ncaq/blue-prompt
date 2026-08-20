@@ -1,17 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>ncaq/renovate-config"],
-  "packageRules": [
-    {
-      "description": [
-        "Microsoft.Playwrightはnixpkgsのplaywright-driverとmajor.minorを揃える必要があり、flake.nixのassertで検証しています。",
-        "nixpkgsが追従していないバージョンに上げるとビルドが通らないため、パッチ更新のみ許可します。",
-        "nixpkgsのplaywright-driverが上がった時はfsprojを手で上げて`nix run .#update-deps`してください。"
-      ],
-      "matchDatasources": ["nuget"],
-      "matchPackageNames": ["Microsoft.Playwright"],
-      "matchUpdateTypes": ["major", "minor"],
-      "enabled": false
-    }
-  ]
+  "extends": ["github>ncaq/renovate-config"]
 }

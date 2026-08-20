@@ -68,8 +68,8 @@ dotnet build src/BluePrompt
 dotnet test test/BluePrompt.Test
 ```
 
-`dotnet test`はブラウザ依存テスト(`Category=Browser`)も含めて実行します。
-Nix経由の統合検証(ブラウザ依存テストを除く)はnix-fast-buildのchecksに含まれています。
+`dotnet test`は外部サイト依存テスト(`Category=Network`)も含めて実行します。
+Nix経由の統合検証(外部サイト依存テストを除く)はnix-fast-buildのchecksに含まれています。
 
 ## NuGet依存の更新
 
@@ -79,14 +79,6 @@ deps.jsonの再生成・整形・コミットまで自動で完了します。
 ```console
 nix run .#update-deps
 ```
-
-`Microsoft.Playwright`のバージョンは、
-nixpkgsの`playwright-driver`とmajor.minorを揃える必要があります。
-ズレるとflake評価がassertで失敗します。
-
-そのためRenovateには`renovate.json`でパッチ更新のみ許可する制限を掛けています。
-minor以上の更新PRは作られないため、
-nixpkgsの`playwright-driver`が上がった時はfsprojのバージョンを手で上げてください。
 
 # wikiruナレッジの生成
 
