@@ -86,6 +86,25 @@ let ``脚注の定義を辿れない場合はtitle属性で代替する`` () =
     Assert.Equal(Some "覆面時", entry.Note)
 
 [<Fact>]
+let ``脚注定義の本文は次の脚注アンカーを巻き込まない`` () =
+    // 脚注定義の区切りのbrが欠けたマークアップでも、
+    // 次の脚注の定義が前の脚注の本文へ混入してはいけない。
+    let html =
+        "<div id=\"body\"><h2>学校</h2><h3>部活</h3><h4>ホシノ</h4>"
+        + appellationTable (
+            "<tr><td>ホシノ</td><td>ノノミ</td>"
+            + "<td>十六夜ノノミさん<a href=\"#notefoot_1\" class=\"note_super\">*1</a></td></tr>"
+        )
+        + "</div>"
+        + "<div id=\"note\">"
+        + "<a id=\"notefoot_1\" href=\"#notetext_1\" class=\"note_super\">*1</a>"
+        + "<span class=\"small\">初対面のとき</span>"
+        + "<a id=\"notefoot_2\" href=\"#notetext_2\" class=\"note_super\">*2</a>"
+        + "<span class=\"small\">変装中</span><br></div>"
+
+    Assert.Equal(Some "初対面のとき", (List.exactlyOne (parseHtml html)).Note)
+
+[<Fact>]
 let ``相手の名前に付いた脚注はCalleeNoteとして解決される`` () =
     let html =
         "<div id=\"body\"><h2>学校</h2><h3>部活</h3><h4>ノノミ</h4>"
