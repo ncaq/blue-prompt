@@ -350,14 +350,19 @@ let private normalizePairsRows (document: IDocument) (table: IHtmlTableElement) 
     for row in Seq.toArray table.Rows do
         let cells = Seq.toArray row.Cells
 
-        let pairCells =
-            match
-                Array.tryFindIndexBack
-                    (fun (cell: IHtmlTableCellElement) -> cell.TextContent.Trim() <> "")
-                    cells
-            with
-            | None -> [||]
-            | Some lastIndex -> Array.sub cells 0 (lastIndex + 1)
+        // TextContentはアクセスごとに部分木走査と文字列生成を伴うため、
+        // 行の先頭でセルごとの空判定を一度だけ配列へ落として使い回す。
+        let cellIsBlank =
+            cells
+            |> Array.map (fun (cell: IHtmlTableCellElement) ->
+                String.IsNullOrWhiteSpace cell.TextContent)
+
+        let pairLength =
+            match Array.tryFindIndexBack not cellIsBlank with
+            | None -> 0
+            | Some lastIndex -> lastIndex + 1
+
+        let pairCells = Array.sub cells 0 pairLength
 
         let isPairsRow =
             4 <= pairCells.Length
@@ -370,22 +375,21 @@ let private normalizePairsRows (document: IDocument) (table: IHtmlTableElement) 
         if isPairsRow then
             let pairRows =
                 pairCells
+                |> Array.indexed
                 |> Array.chunkBySize 2
                 |> Array.choose (fun pair ->
-                    let key = pair[0]
-                    let value = pair[1]
+                    let keyIndex, key = pair[0]
+                    let _, value = pair[1]
 
-                    if key.TextContent.Trim() = "" && value.TextContent.Trim() = "" then
+                    if cellIsBlank[keyIndex] && cellIsBlank[keyIndex + 1] then
                         None
                     else
                         let pairRow = document.CreateElement "tr"
                         pairRow.Append [| key :> INode; value |]
                         Some(pairRow :> INode))
 
-            if Array.isEmpty pairRows then
-                row.Remove()
-            else
-                row.Replace pairRows
+            // 末尾のセルは必ず非空なので、最後のペアが常に残りpairRowsが空になることはない。
+            row.Replace pairRows
 
 /// 文書中の全テーブルを平坦化する。
 /// 区切り行の段落化とセル内改行・ブロック要素の結合を施した後に、
