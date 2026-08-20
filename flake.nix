@@ -164,9 +164,11 @@
             # 解析対象を実際に配布・テストされる構成へ揃える。
             # buildPhaseの出力はRuntimeIdentifier付きの別パスへ出るため再利用はされず、
             # 自作アナライザーのRID無しビルドが1回走る。
+            # 並列数はnixpkgsのdotnetフック群と同じくNixが割り当てたコア数へ揃えて、
+            # 複数derivationの並行ビルド時のCPUの過剰割り当てを避ける。
             postCheck = ''
-              dotnet msbuild lint.proj /t:AnalyzeFSharpProject -warnaserror -m \
-                -p:Configuration="$dotnetBuildType"
+              dotnet msbuild lint.proj /t:AnalyzeFSharpProject -warnaserror \
+                -maxcpucount:"$NIX_BUILD_CORES" -p:Configuration="$dotnetBuildType"
             '';
             executables = [ "BluePrompt" ];
             # nix runで単体実行できるようにpandocのパスをラッパーに焼き込む。
