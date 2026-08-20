@@ -12,6 +12,10 @@ open AngleSharp.Html.Dom
 /// 見出しを含む表はデータの表ではなくレイアウトなので変形の対象から外す判定に使う。
 let private headingSelector = "h1, h2, h3, h4, h5, h6"
 
+/// タグを外してはいけないブロックが含む構造要素のセレクタ。
+/// ブロックごとのループの中で文字列を組み立て直さないように定数として持つ。
+let private structureSelector = $"%s{headingSelector}, table, ul, ol"
+
 /// 表全体を横断する1セルだけの行(小見出しや自由記述)を段落として表の外へ出し、
 /// 表をその前後で分割する。
 /// 列を持つ行と同じ表に混ぜると、長い記述に合わせた列幅の整形で他の行が際限なく伸びるため。
@@ -154,15 +158,16 @@ let private unwrapCellBlocks (document: IDocument) : unit =
             hasHeading
 
     for block in Array.rev cellBlocks do
-        let containsStructure =
-            not (isNull (block.QuerySelector $"%s{headingSelector}, table, ul, ol"))
-
+        // メモ化済みで安価なレイアウトテーブル判定を先に見て、
+        // レイアウト配下のブロックには部分木走査になるQuerySelectorを行わない。
+        // レイアウトテーブルのページでは外側のブロックほど部分木がページ全体に近く、
+        // 全ブロックで走査すると実質2乗のコストになるため。
         let inLayoutTable =
             match block.Closest "table" with
             | null -> false
             | enclosingTable -> isLayoutTable enclosingTable
 
-        if not containsStructure && not inLayoutTable then
+        if not inLayoutTable && isNull (block.QuerySelector structureSelector) then
             let text = block.TextContent.Trim()
             let previous = nodeText (precedingNode block)
 
