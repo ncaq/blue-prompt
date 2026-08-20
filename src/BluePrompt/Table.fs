@@ -78,34 +78,37 @@ let private joinSeparator (previousText: string) (nextText: string) : string opt
 
     if flushable then None else Some "、"
 
-/// 兄弟をnextの方向へ辿って最初に中身のあるノードを返す。
-let private siblingWithContent (next: INode -> INode) (node: INode) : INode option =
+/// 兄弟をnextの方向へ辿って最初に中身のあるノードを、トリム済みテキストと組で返す。
+/// TextContentはアクセスごとに部分木を走査して文字列を生成するため、
+/// 見つけたノードのテキストを呼び出し側が取り直さずに済むように一緒に返す。
+/// 走査中の空判定はトリム文字列を確保しないIsNullOrWhiteSpaceで行う。
+let private siblingWithContent (next: INode -> INode) (node: INode) : (INode * string) option =
     let rec go (sibling: INode) =
-        if isNull sibling then None
-        elif sibling.TextContent.Trim() <> "" then Some sibling
-        else go (next sibling)
+        if isNull sibling then
+            None
+        else
+            let text = sibling.TextContent
+
+            if String.IsNullOrWhiteSpace text then
+                go (next sibling)
+            else
+                Some(sibling, text.Trim())
 
     go (next node)
 
-/// 兄弟を遡って最初に中身のあるノードを返す。
-let private precedingNode (node: INode) : INode option =
+/// 兄弟を遡って最初に中身のあるノードをテキストと組で返す。
+let private precedingNode (node: INode) : (INode * string) option =
     siblingWithContent (fun sibling -> sibling.PreviousSibling) node
 
-/// 兄弟を下って最初に中身のあるノードを返す。
-let private followingNode (node: INode) : INode option =
+/// 兄弟を下って最初に中身のあるノードをテキストと組で返す。
+let private followingNode (node: INode) : (INode * string) option =
     siblingWithContent (fun sibling -> sibling.NextSibling) node
-
-/// ノードの本文テキスト。ノードが無ければ空文字列。
-let private nodeText (node: INode option) : string =
-    match node with
-    | None -> ""
-    | Some node -> node.TextContent.Trim()
 
 /// 長いリンクラベルを同じリンク先の複数のaへ分けて折り返す書き方があり、
 /// その境界はひと続きのラベルの途中なので区切りを挟んではいけない。
-let private isSameLinkFold (previousNode: INode option) (nextNode: INode option) : bool =
+let private isSameLinkFold (previousNode: INode) (nextNode: INode) : bool =
     match previousNode, nextNode with
-    | Some(:? IElement as previous), Some(:? IElement as next) ->
+    | (:? IElement as previous), (:? IElement as next) ->
         previous.TagName = "A"
         && next.TagName = "A"
         && (match previous.GetAttribute "href" with
@@ -117,21 +120,18 @@ let private isSameLinkFold (previousNode: INode option) (nextNode: INode option)
 /// GFMのパイプテーブルはセル内の改行を表現できないため。
 let private joinCellLineBreaks (document: IDocument) : unit =
     for br in Seq.toArray (document.QuerySelectorAll "th br, td br") do
-        let previousNode = precedingNode br
-        let nextNode = followingNode br
-        let previous = nodeText previousNode
-        let next = nodeText nextNode
-
-        if previous = "" || next = "" then
+        match precedingNode br, followingNode br with
+        | Some(previousNode, previous), Some(nextNode, next) ->
+            if not (isNull (br.Closest "th")) || isSameLinkFold previousNode nextNode then
+                // 見出しセルは文ではなくラベルで、改行は表示幅の都合の折り返しでしかない。
+                br.Remove()
+            else
+                match joinSeparator previous next with
+                | None -> br.Remove()
+                | Some separator -> br.Replace [| document.CreateTextNode separator :> INode |]
+        | _ ->
             // セル先頭や末尾のbr(画像除去の跡など)は繋ぐ相手がいないので取り除く。
             br.Remove()
-        elif not (isNull (br.Closest "th")) || isSameLinkFold previousNode nextNode then
-            // 見出しセルは文ではなくラベルで、改行は表示幅の都合の折り返しでしかない。
-            br.Remove()
-        else
-            match joinSeparator previous next with
-            | None -> br.Remove()
-            | Some separator -> br.Replace [| document.CreateTextNode separator :> INode |]
 
 /// セル内のdivやpなどのブロック要素の境界を繋いでタグを外す。
 /// ブロック要素が残っていると、
@@ -170,12 +170,15 @@ let private unwrapCellBlocks (document: IDocument) : unit =
 
         if not inLayoutTable && isNull (block.QuerySelector structureSelector) then
             let text = block.TextContent.Trim()
-            let previous = nodeText (precedingNode block)
 
-            if previous <> "" && text <> "" && isNull (block.Closest "th") then
-                match joinSeparator previous text with
+            if text <> "" && isNull (block.Closest "th") then
+                match precedingNode block with
                 | None -> ()
-                | Some separator -> block.Before [| document.CreateTextNode separator :> INode |]
+                | Some(_, previous) ->
+                    match joinSeparator previous text with
+                    | None -> ()
+                    | Some separator ->
+                        block.Before [| document.CreateTextNode separator :> INode |]
 
             block.Replace(Seq.toArray block.ChildNodes)
 
