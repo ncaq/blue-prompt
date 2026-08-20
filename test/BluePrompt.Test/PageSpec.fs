@@ -101,6 +101,24 @@ let ``Content-Typeのcharsetに従って文字コードが判定される`` () :
     }
 
 [<Fact>]
+let ``別スキームへのリダイレクトは追跡されずFetchErrorになる`` () : Task =
+    task {
+        // file:等へのリダイレクトを実際に弾いているのはLoaderOptionsのフィルタではなく、
+        // DefaultHttpRequesterがhttpとhttpsしか扱わないこと。
+        // requester構成の変更でこの担保が崩れた時に検知できるように固定する。
+        let respond (_: string) : Response =
+            { htmlResponse "" with
+                Status = "302 Found"
+                ExtraHeaders = [ "Location: file:///etc/passwd" ] }
+
+        do!
+            withServer respond (fun url ->
+                Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                    BluePrompt.Page.fetchHtml url :> Task))
+            :> Task
+    }
+
+[<Fact>]
 let ``リダイレクトを追跡して最終ページを取得する`` () : Task =
     task {
         let respond (path: string) : Response =

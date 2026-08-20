@@ -16,20 +16,21 @@ exception FetchError of url: Uri * status: int
 exception ContentNotFound of url: Uri * selectors: string list
 
 /// 取得に使う共有の設定。
-/// ローダーはリダイレクトを自動追跡するため、
-/// Filterで初回だけでなく全リクエストへhttp/https以外を拒否するスキーム制限を適用する。
-/// Filterに拒否されたリクエストは空のドキュメント(status=0)として現れFetchErrorになる。
-/// img/iframe/cssなどのリソースの追加取得をしないことも、
+/// スキーム制限は二段で成り立っている。
+/// 初回リクエストはwithDocumentの明示的なガードが検査し、
+/// ローダーが自動追跡するリダイレクトの先は、
+/// DefaultHttpRequesterがhttpとhttpsしか扱わないことで担保される。
+/// LoaderOptions.Filterは初回リクエストにしか適用されず、
+/// 明示的なガードと重複して全リクエストを検査しているような誤解を招くだけなので使わない。
+/// FileRequesterなどのrequesterを追加するとリダイレクト先の担保が崩れる点に注意。
+/// 制限しているのはスキームだけで宛先ホストは制限していないため、
+/// リダイレクトで内部ホストへ誘導される余地は残るが、
+/// 取得先をユーザ自身が指定するローカルCLIの脅威モデルでは許容する。
+/// img/iframe/cssなどのリソースの追加取得をしないことは、
 /// AngleSharpの既定値が将来変わっても影響を受けないように明示する。
 /// リクエスタごと共有することで、呼び出しごとの生成コストと接続の作り直しを避ける。
 let private configuration =
-    Configuration.Default.WithDefaultLoader(
-        LoaderOptions(
-            IsResourceLoadingEnabled = false,
-            Filter =
-                (fun request -> request.Address.Scheme = "http" || request.Address.Scheme = "https")
-        )
-    )
+    Configuration.Default.WithDefaultLoader(LoaderOptions(IsResourceLoadingEnabled = false))
 
 /// URLを取得し、パース済みDOMをactionへ渡してその結果を返す。
 /// AngleSharpのローダーで取得するためブラウザは不要で、JavaScriptは実行しない。
