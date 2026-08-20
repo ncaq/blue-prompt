@@ -52,10 +52,14 @@ in
     };
 
     apiKeyFile = lib.mkOption {
-      type = lib.types.nullOr lib.types.path;
+      # パスリテラルを渡すと文字列化の時点で秘密がNix storeへコピーされてしまうため、
+      # 文字列型にしてstoreへの取り込みを構造的に不可能にする。
+      type = lib.types.nullOr lib.types.str;
       default = null;
+      example = "/run/secrets/open-webui-api-key";
       description = ''
         Open WebUIのAPIキーを格納したファイルのパス。
+        storeパスではなく実行時に存在する絶対パスを文字列で指定する。
         systemdのcredentialとして実行時に読むためNix storeへは入らない。
         認証を無効化したインスタンスへ同期する場合はnullのままで良い。
       '';
