@@ -178,6 +178,10 @@ let private parseTable
               Note = note })
 
     table.QuerySelectorAll "tr"
+    // trの走査は子孫全体に及ぶため、
+    // セル内に入れ子のテーブルがあると内側の行まで拾ってしまう。
+    // 最も近い祖先のtableが自分自身である行だけを外側のテーブルの行として扱う。
+    |> Seq.filter (fun row -> obj.ReferenceEquals(row.Closest "table", table))
     |> Seq.toList
     |> List.collect (fun row ->
         let cells =
@@ -207,6 +211,14 @@ let parse (document: IDocument) : Entry list =
                 | "h2" -> entries, (Some(headingText element), None, None)
                 | "h3" -> entries, (school, Some(headingText element), None)
                 | "h4" -> entries, (school, club, Some(headingText element))
+                | _ when
+                    (match element.ParentElement with
+                     | null -> false
+                     | parent -> not (isNull (parent.Closest "table")))
+                    ->
+                    // 他のテーブルの内側にあるテーブルは外側の行のセルの一部なので、
+                    // 独立したテーブルとしては読まない。
+                    entries, (school, club, character)
                 | _ ->
                     match school, character with
                     | Some school, Some character ->
