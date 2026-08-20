@@ -31,6 +31,8 @@ type private MockServer() =
     let mutable createCount = 0
     let mutable updateCount = 0
     let mutable lastAuthorization: string option = None
+    // 存在確認のGETへ固定の応答を返すための上書き。サーバ側の異常を模す。
+    let mutable modelGetOverride: (int * string) option = None
 
     let respond (response: HttpListenerResponse) (status: int) (body: string) =
         response.StatusCode <- status
@@ -53,10 +55,13 @@ type private MockServer() =
         match request.HttpMethod, request.Url.AbsolutePath with
         | "GET", "/health" -> respond context.Response 200 """{"status":true}"""
         | "GET", "/api/v1/models/model" ->
-            match models.TryGetValue(request.QueryString["id"]) with
-            | true, model -> respond context.Response 200 (model.ToJsonString())
-            // Open WebUIは未登録のidへ401を返す。
-            | _ -> respond context.Response 401 """{"detail":"not found"}"""
+            match modelGetOverride with
+            | Some(status, body) -> respond context.Response status body
+            | None ->
+                match models.TryGetValue(request.QueryString["id"]) with
+                | true, model -> respond context.Response 200 (model.ToJsonString())
+                // Open WebUIは未登録のidへ401を返す。
+                | _ -> respond context.Response 401 """{"detail":"not found"}"""
         | "POST", "/api/v1/models/create" ->
             createCount <- createCount + 1
             store request
@@ -80,6 +85,9 @@ type private MockServer() =
         |> ignore
 
     member _.Url = $"http://127.0.0.1:%d{port}"
+
+    member _.OverrideModelGet(status: int, body: string) =
+        modelGetOverride <- Some(status, body)
     member _.Models = models
     member _.CreateCount = createCount
     member _.UpdateCount = updateCount
@@ -209,6 +217,22 @@ let ``コマンドライン引数から接続情報を組み立てられる`` ()
     Assert.Equal("http://127.0.0.1:8080", options.Url)
     Assert.Equal(Some "qwen3:32b", options.BaseModelId)
     Assert.Equal(Some "/run/credentials/api-key", options.ApiKeyFile)
+
+[<Fact>]
+let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり作成へ進まない`` () =
+    use server = new MockServer()
+    server.OverrideModelGet(500, """{"detail":"internal error"}""")
+
+    let options = makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ])
+
+    let error = Assert.Throws<SyncError>(fun () -> run options)
+
+    // 失敗の理由が調査できるようにステータスコードが含まれる。
+    match error :> exn with
+    | SyncError message -> Assert.Contains("500", message)
+    | unexpected -> failwith unexpected.Message
+
+    Assert.Equal(0, server.CreateCount)
 
 [<Fact>]
 let ``解釈できない引数はSyncErrorになる`` () =
