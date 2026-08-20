@@ -87,12 +87,20 @@ FSharp.Analyzers.SDKのバージョンはflake.nixのfsharp-analyzersと一致�
 警告もエラー扱いで、
 違反があるとチェックが失敗します。
 
+対象のプロジェクトはリポジトリ直下の`lint.proj`がglobで集約しているため、
+プロジェクトを追加しても一覧の更新は不要です。
+
 devShellで単体実行したい時は以下を使います。
 
 ```console
+dotnet msbuild lint.proj /t:AnalyzeFSharpProject -m
+```
+
+特定のプロジェクトだけ解析したい時は、
+プロジェクトのディレクトリを指定します。
+
+```console
 dotnet msbuild src/BluePrompt /t:AnalyzeFSharpProject
-dotnet msbuild src/BluePrompt.Analyzers /t:AnalyzeFSharpProject
-dotnet msbuild test/BluePrompt.Test /t:AnalyzeFSharpProject
 ```
 
 ## NuGet依存の更新

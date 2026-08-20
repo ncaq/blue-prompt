@@ -131,6 +131,8 @@
                 # restoreの整合性のためにソースへ含める。
                 ./Directory.Build.props
                 ./Directory.Build.targets
+                # リント対象のプロジェクトをglobで集約する単一エントリポイント。
+                ./lint.proj
                 ./src
                 ./test
               ];
@@ -158,9 +160,7 @@
             # nix-fast-buildの統合チェックにリンターを含めるため。
             # -warnaserrorで警告も失敗へ昇格して違反を検出する。
             postCheck = ''
-              dotnet msbuild src/BluePrompt/BluePrompt.fsproj /t:AnalyzeFSharpProject -warnaserror
-              dotnet msbuild src/BluePrompt.Analyzers/BluePrompt.Analyzers.fsproj /t:AnalyzeFSharpProject -warnaserror
-              dotnet msbuild test/BluePrompt.Test/BluePrompt.Test.fsproj /t:AnalyzeFSharpProject -warnaserror
+              dotnet msbuild lint.proj /t:AnalyzeFSharpProject -warnaserror -m
             '';
             executables = [ "BluePrompt" ];
             # nix runで単体実行できるようにpandocのパスをラッパーに焼き込む。
