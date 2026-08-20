@@ -447,18 +447,19 @@ let ``rowspan0のセルは残りの行の末尾まで展開される`` () =
     Assert.DoesNotContain("rowspan", extracted)
 
 [<Fact>]
-let ``格子が総量の上限を超える表は展開されずそのまま残る`` () =
-    // rowspan/colspanの切り詰めは1セルあたりの上限でしかなく、
-    // 総量は行数×1行のセル数×rowSpan×colSpanで二次的に膨らむ。
-    // 悪意ある値や編集ミスでメモリ枯渇やハングに至らないように、
-    // 見積りが上限を超える表は展開を諦めてそのまま残ることを固定する。
-    let makeRow (index: int) : string =
-        $"""<tr><td rowspan="65534" colspan="1000">c%d{index}</td></tr>"""
+let ``格子が総量の上限を超える表は展開されずそのまま残る`` () : Task =
+    task {
+        // rowspan/colspanの切り詰めは1セルあたりの上限でしかなく、
+        // 総量は行数×1行のセル数×rowSpan×colSpanで二次的に膨らむ。
+        // 悪意ある値や編集ミスでメモリ枯渇やハングに至らないように、
+        // 見積りが上限を超える表は展開を諦めてそのまま残ることを固定する。
+        let makeRow (index: int) : string =
+            $"""<tr><td rowspan="65534" colspan="1000">c%d{index}</td></tr>"""
 
-    let rows = String.concat "\n" (List.init 200 makeRow)
+        let rows = String.concat "\n" (List.init 200 makeRow)
 
-    let html =
-        $"""<html><body><main id="content">
+        let html =
+            $"""<html><body><main id="content">
 <table>
 <tbody>
 %s{rows}
@@ -466,15 +467,29 @@ let ``格子が総量の上限を超える表は展開されずそのまま残�
 </table>
 </main></body></html>"""
 
-    let query =
-        { fixtureQuery with
-            ContentSelectors = [ "#content" ] }
+        let query =
+            { fixtureQuery with
+                ContentSelectors = [ "#content" ] }
 
-    let extracted = BluePrompt.Extract.contentHtml query html
+        // 防御が壊れた時の退行は事実上の無限ループで、
+        // そのまま待つとCIごと停止するため、
+        // 上限時間を挟んでテストの失敗として観測できるようにする。
+        let timeout = TimeSpan.FromSeconds 60.
+        let work = Task.Run(fun () -> BluePrompt.Extract.contentHtml query html)
+        let! finished = Task.WhenAny(work, Task.Delay timeout)
+        let completedInTime = obj.ReferenceEquals(finished, work)
 
-    // 展開されない証拠としてrowspan属性が残る。データ自体は落ちない。
-    Assert.Contains("rowspan", extracted)
-    Assert.Contains("c199", extracted)
+        Assert.True(
+            completedInTime,
+            $"総量上限を超える表の処理が%.0f{timeout.TotalSeconds}秒以内に完走しませんでした"
+        )
+
+        let extracted = work.Result
+
+        // 展開されない証拠としてrowspan属性が残る。データ自体は落ちない。
+        Assert.Contains("rowspan", extracted)
+        Assert.Contains("c199", extracted)
+    }
 
 [<Fact>]
 let ``全ContentSelectorsが一致しない場合はContentNotFoundになる`` () =
