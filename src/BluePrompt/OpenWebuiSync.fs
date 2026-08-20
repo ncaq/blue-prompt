@@ -12,6 +12,7 @@ open System.Net
 open System.Net.Http
 open System.Net.Http.Headers
 open System.Text
+open System.Text.Json.Nodes
 open System.Threading
 open System.Threading.Tasks
 
@@ -85,6 +86,35 @@ let private waitForHealth (client: HttpClient) (url: string) : Task<unit> =
                 do! Task.Delay(TimeSpan.FromSeconds 2.0)
     }
 
+/// 認証を無効化したインスタンスがadminへ割り当てる資格情報。
+/// backend/open_webui/routers/auths.pyのsigninが`WEBUI_AUTH`無効時に使う定数で、
+/// 秘密ではなくOpen WebUIのソースに書かれているものをそのまま持ってきている。
+let private noAuthCredentials = """{"email":"admin@localhost","password":"admin"}"""
+
+/// 認証を無効化したインスタンスのadminとしてサインインし、Bearerトークンを得る。
+/// `WEBUI_AUTH`を無効にしてもAPIはトークンを要求するため、
+/// APIキーを渡さない運用ではUIが裏で行っているのと同じサインインを自分で行う。
+let private signIn (client: HttpClient) (url: string) : Task<string> =
+    task {
+        use content =
+            new StringContent(noAuthCredentials, Encoding.UTF8, "application/json")
+
+        use! response = client.PostAsync($"%s{url}/api/v1/auths/signin", content)
+        let! body = response.Content.ReadAsStringAsync()
+
+        if not response.IsSuccessStatusCode then
+            // 認証を有効にしたインスタンスではこの資格情報が通らないため、
+            // APIキーの指定が要ることに気付けるようにステータスと本文を残す。
+            raise (SyncError $"%s{url}へのサインインに失敗しました: %d{int response.StatusCode} %s{body}")
+
+        match JsonNode.Parse body with
+        | null -> return raise (SyncError $"サインインの応答を解釈できません: %s{body}")
+        | root ->
+            match root["token"] with
+            | null -> return raise (SyncError $"サインインの応答にtokenがありません: %s{body}")
+            | token -> return token.GetValue<string>()
+    }
+
 /// ModelFormをJSONボディとしてPOSTする。
 let private postForm (client: HttpClient) (url: string) (form: OpenWebui.ModelForm) : Task<unit> =
     task {
@@ -153,13 +183,16 @@ let sync (options: Options) : Task<unit> =
     task {
         use client = new HttpClient()
 
-        match options.ApiKeyFile with
-        | Some path ->
-            let! apiKey = File.ReadAllTextAsync path
-
-            client.DefaultRequestHeaders.Authorization <-
-                AuthenticationHeaderValue("Bearer", apiKey.Trim())
-        | None -> ()
+        // 読み取りは起動待ちより前に済ませて、
+        // ファイルが無い時に接続の待ち時間を費やしてから失敗しないようにする。
+        let! configuredApiKey =
+            task {
+                match options.ApiKeyFile with
+                | Some path ->
+                    let! apiKey = File.ReadAllTextAsync path
+                    return Some(apiKey.Trim())
+                | None -> return None
+            }
 
         // 生成物のbase_model_idはnullなので、指定があれば流し込む。
         let withBaseModelId (form: OpenWebui.ModelForm) =
@@ -185,6 +218,16 @@ let sync (options: Options) : Task<unit> =
                 raise (SyncError $"Modelのidが重複しています: %s{id} (%s{fileNames})")
 
         do! waitForHealth client options.Url
+
+        // サインインは起動後でなければ受け付けられないため、起動を待ってから行う。
+        let! token =
+            task {
+                match configuredApiKey with
+                | Some apiKey -> return apiKey
+                | None -> return! signIn client options.Url
+            }
+
+        client.DefaultRequestHeaders.Authorization <- AuthenticationHeaderValue("Bearer", token)
 
         for _, desired in forms do
             do! syncModel client options desired

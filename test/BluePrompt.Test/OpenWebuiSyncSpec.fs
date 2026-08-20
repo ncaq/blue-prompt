@@ -30,9 +30,12 @@ type private MockServer() =
     let models = Dictionary<string, JsonNode>()
     let mutable createCount = 0
     let mutable updateCount = 0
+    let mutable signInCount = 0
     let mutable lastAuthorization: string option = None
     // 存在確認のGETへ固定の応答を返すための上書き。サーバ側の異常を模す。
     let mutable modelGetOverride: (int * string) option = None
+    // サインインへ固定の応答を返すための上書き。認証を有効にしたインスタンスを模す。
+    let mutable signInOverride: (int * string) option = None
 
     let respond (response: HttpListenerResponse) (status: int) (body: string) =
         response.StatusCode <- status
@@ -54,6 +57,12 @@ type private MockServer() =
 
         match request.HttpMethod, request.Url.AbsolutePath with
         | "GET", "/health" -> respond context.Response 200 """{"status":true}"""
+        | "POST", "/api/v1/auths/signin" ->
+            signInCount <- signInCount + 1
+
+            match signInOverride with
+            | Some(status, body) -> respond context.Response status body
+            | None -> respond context.Response 200 """{"token":"signed-in-token"}"""
         | "GET", "/api/v1/models/model" ->
             match modelGetOverride with
             | Some(status, body) -> respond context.Response status body
@@ -87,9 +96,11 @@ type private MockServer() =
     member _.Url = $"http://127.0.0.1:%d{port}"
 
     member _.OverrideModelGet(status: int, body: string) = modelGetOverride <- Some(status, body)
+    member _.OverrideSignIn(status: int, body: string) = signInOverride <- Some(status, body)
     member _.Models = models
     member _.CreateCount = createCount
     member _.UpdateCount = updateCount
+    member _.SignInCount = signInCount
     member _.LastAuthorization = lastAuthorization
 
     interface IDisposable with
@@ -199,6 +210,50 @@ let ``APIキーのファイルを指定するとBearerヘッダとして送ら�
     run options
 
     Assert.Equal(Some "Bearer secret-key", server.LastAuthorization)
+    // 資格情報が与えられている以上サインインは要らない。
+    Assert.Equal(0, server.SignInCount)
+
+[<Fact>]
+let ``APIキーを指定しないとサインインしたトークンがBearerヘッダとして送られる`` () =
+    use server = new MockServer()
+
+    run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]))
+
+    Assert.Equal(1, server.SignInCount)
+    Assert.Equal(Some "Bearer signed-in-token", server.LastAuthorization)
+    Assert.Equal(1, server.CreateCount)
+
+[<Fact>]
+let ``サインインに失敗するとSyncErrorで止まり書き込みへ進まない`` () =
+    use server = new MockServer()
+    // 認証を有効にしたインスタンスでは固定の資格情報が通らない。
+    server.OverrideSignIn(400, """{"detail":"Invalid credentials"}""")
+
+    let options = makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ])
+
+    let error = Assert.Throws<SyncError>(fun () -> run options)
+
+    // APIキーの指定が要ることに気付けるように理由が含まれる。
+    match error :> exn with
+    | SyncError message -> Assert.Contains("400", message)
+    | unexpected -> failwith unexpected.Message
+
+    Assert.Equal(0, server.CreateCount)
+
+[<Fact>]
+let ``サインインの応答にtokenが無いとSyncErrorで止まる`` () =
+    use server = new MockServer()
+    server.OverrideSignIn(200, """{"detail":"ok"}""")
+
+    let options = makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ])
+
+    let error = Assert.Throws<SyncError>(fun () -> run options)
+
+    match error :> exn with
+    | SyncError message -> Assert.Contains("token", message)
+    | unexpected -> failwith unexpected.Message
+
+    Assert.Equal(0, server.CreateCount)
 
 [<Fact>]
 let ``コマンドライン引数から接続情報を組み立てられる`` () =
