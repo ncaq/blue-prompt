@@ -180,6 +180,20 @@ let ``呼称が空の行は落ちる`` () =
     Assert.Equal("カンナ", (List.exactlyOne (parseHtml html)).Callee)
 
 [<Fact>]
+let ``完全に同じ内容の行はレコードとしては1件になる`` () =
+    // wiki側の編集ミスで同じ行が2度書かれることがあり、
+    // そのまま残すとJSONにもMarkdownにも同じ呼称が重複して出る。
+    let html =
+        "<div id=\"body\"><h2>学校</h2><h3>部活</h3><h4>チナツ</h4>"
+        + appellationTable (
+            "<tr><td>チナツ</td><td>セナ</td><td>セナ部長、部長</td></tr>"
+            + "<tr><td>チナツ</td><td>セナ</td><td>セナ部長、部長、先輩</td></tr>"
+        )
+        + "</div>"
+
+    Assert.Equal<string list>([ "セナ部長"; "部長"; "先輩" ], parseHtml html |> List.map _.Name)
+
+[<Fact>]
 let ``セル数が想定外の行はRowShapeErrorになる`` () =
     let html =
         "<div id=\"body\"><h2>学校</h2><h3>部活</h3><h4>ホシノ</h4>"
