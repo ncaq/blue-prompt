@@ -1,6 +1,8 @@
 module BluePrompt.Test.PageSpec
 
 open System
+open System.Net
+open System.Net.Sockets
 open System.Text
 open System.Threading.Tasks
 open Xunit
@@ -46,6 +48,28 @@ let ``成功以外のHTTPステータスはFetchErrorになる`` () : Task =
                             Assert.Equal(404, status)
                         | unexpected -> raise unexpected
                     })
+    }
+
+[<Fact>]
+let ``接続できない場合はFetchErrorになる`` () : Task =
+    task {
+        // AngleSharpのローダーは接続拒否やDNS解決失敗でも例外を投げず、
+        // status=200の空ドキュメントを返すため、
+        // 検知しないと空のHTMLが正常な取得として静かに返ってしまう。
+        // 空きポートを確保してすぐ閉じることで、確実に接続拒否になるURLを作る。
+        let listener = new TcpListener(IPAddress.Loopback, 0)
+        listener.Start()
+        let port = (listener.LocalEndpoint :?> IPEndPoint).Port
+        listener.Stop()
+
+        let! error =
+            Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                BluePrompt.Page.fetchHtml (Uri $"http://127.0.0.1:%d{port}/") :> Task)
+
+        // レスポンス自体を得られなかった取得失敗はstatus=0として現れる。
+        match error :> exn with
+        | BluePrompt.Page.FetchError(_, status) -> Assert.Equal(0, status)
+        | unexpected -> raise unexpected
     }
 
 [<Fact>]
