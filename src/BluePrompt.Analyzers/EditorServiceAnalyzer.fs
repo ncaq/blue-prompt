@@ -9,29 +9,40 @@ module BluePrompt.Analyzers.EditorServiceAnalyzer
 open System
 open FSharp.Analyzers.SDK
 open FSharp.Compiler.EditorServices
+open FSharp.Compiler.Text
 
 [<Literal>]
 let private helpUri = "https://github.com/ionide/FsAutoComplete"
+
+/// EditorServices APIが要求する行取得関数。
+/// APIへ渡す行番号は1始まりでSourceTextの行インデックスは0始まり。
+let private getSourceLineStr (ctx: CliContext) (lineNumber: int) : string =
+    ctx.SourceText.GetLineString(lineNumber - 1)
+
+/// 検出結果の位置を診断のMessageへ写す。
+let private toMessage
+    (analyzerType: string)
+    (code: string)
+    (message: string)
+    (range: range)
+    : Message =
+    { Type = analyzerType
+      Message = message
+      Code = code
+      Severity = Severity.Warning
+      Range = range
+      Fixes = [] }
 
 [<CliAnalyzer("UnusedOpensAnalyzer",
               "Detects unused open statements like FSAC does in editors.",
               helpUri)>]
 let unusedOpensAnalyzer (ctx: CliContext) =
     async {
-        let getSourceLineStr (lineNumber: int) =
-            ctx.SourceText.GetLineString(lineNumber - 1)
-
-        let! unusedOpens = UnusedOpens.getUnusedOpens (ctx.CheckFileResults, getSourceLineStr)
+        let! unusedOpens = UnusedOpens.getUnusedOpens (ctx.CheckFileResults, getSourceLineStr ctx)
 
         return
             unusedOpens
-            |> List.map (fun range ->
-                { Type = "UnusedOpens analyzer"
-                  Message = "Unused open statement"
-                  Code = "FSAC0001"
-                  Severity = Severity.Warning
-                  Range = range
-                  Fixes = [] })
+            |> List.map (toMessage "UnusedOpens analyzer" "FSAC0001" "Unused open statement")
     }
 
 [<CliAnalyzer("SimplifyNamesAnalyzer",
@@ -39,21 +50,17 @@ let unusedOpensAnalyzer (ctx: CliContext) =
               helpUri)>]
 let simplifyNamesAnalyzer (ctx: CliContext) =
     async {
-        let getSourceLineStr (lineNumber: int) =
-            ctx.SourceText.GetLineString(lineNumber - 1)
-
         let! simplifiableNames =
-            SimplifyNames.getSimplifiableNames (ctx.CheckFileResults, getSourceLineStr)
+            SimplifyNames.getSimplifiableNames (ctx.CheckFileResults, getSourceLineStr ctx)
 
         return
             simplifiableNames
             |> Seq.map (fun simplifiableRange ->
-                { Type = "SimplifyNames analyzer"
-                  Message = $"This qualifier is redundant: %s{simplifiableRange.RelativeName}"
-                  Code = "FSAC0002"
-                  Severity = Severity.Warning
-                  Range = simplifiableRange.Range
-                  Fixes = [] })
+                toMessage
+                    "SimplifyNames analyzer"
+                    "FSAC0002"
+                    $"This qualifier is redundant: %s{simplifiableRange.RelativeName}"
+                    simplifiableRange.Range)
             |> Seq.toList
     }
 
@@ -69,12 +76,6 @@ let unusedDeclarationsAnalyzer (ctx: CliContext) =
 
         return
             unusedDeclarations
-            |> Seq.map (fun range ->
-                { Type = "UnusedDeclarations analyzer"
-                  Message = "This value is unused"
-                  Code = "FSAC0003"
-                  Severity = Severity.Warning
-                  Range = range
-                  Fixes = [] })
+            |> Seq.map (toMessage "UnusedDeclarations analyzer" "FSAC0003" "This value is unused")
             |> Seq.toList
     }
