@@ -17,6 +17,12 @@ let private usage =
     出力先と同じディレクトリの手書きテンプレートSKILL.template.mdのプレースホルダへ、
     生成済みのappellation.jsonから抜き出した指定キャラクターの呼称表を流し込み、
     role-playスキルのSKILL.md全体を生成する。wikiruへはアクセスしない。
+  BluePrompt open-webui-model <スキルディレクトリ> <出力ファイル>
+    スキルのSKILL.mdとリンクされた参照ファイルをインライン化して、
+    システムプロンプトへ焼き込んだOpen WebUIのModelFormのJSONを書き出す。
+  BluePrompt open-webui-sync <モデル定義ディレクトリ> <ベースURL> [--base-model-id <id>] [--api-key-file <パス>]
+    open-webui-modelが生成したModelFormのJSON群をOpen WebUIのインスタンスへ同期する。
+    無ければ作成し、差分があれば上書きし、差分が無ければ書き込まない。
   BluePrompt wikiru-html <ページ名> <出力ファイル>
     wikiruの記事から抽出した本文をMarkdown化せずHTMLのまま書き出す。
   BluePrompt wikiru-student-html <ページ名> <出力ファイル>
@@ -40,6 +46,21 @@ let main argv =
     | [| "roleplay-skill"; caller; jsonPath; outputPath |] ->
         (Wikiru.writeRolePlaySkill caller jsonPath outputPath).GetAwaiter().GetResult()
         0
+    | [| "open-webui-model"; skillDirectory; outputPath |] ->
+        (OpenWebui.writeModel skillDirectory outputPath).GetAwaiter().GetResult()
+        0
+    // 引数の個数の検証と説明はparseOptionsへ一本化する。
+    | argv when 1 <= argv.Length && argv[0] = "open-webui-sync" ->
+        try
+            (OpenWebuiSync.sync (OpenWebuiSync.parseOptions (List.ofArray argv[1..])))
+                .GetAwaiter()
+                .GetResult()
+
+            0
+        with OpenWebuiSync.SyncError message ->
+            // 引数や同期の失敗はスタックトレースではなく理由だけを表示する。
+            eprintfn $"%s{message}"
+            1
     | [| "wikiru-html"; pageName; outputPath |] ->
         (Wikiru.writeContentHtml Wikiru.contentQuery pageName outputPath).GetAwaiter().GetResult()
 

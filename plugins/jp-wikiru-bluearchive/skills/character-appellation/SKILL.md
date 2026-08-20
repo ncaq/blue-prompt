@@ -13,7 +13,7 @@ description: Lookup how Blue Archive characters address themselves and each othe
 
 # データの引き方
 
-呼称の一覧は同じディレクトリの[reference.md](./reference.md)にあります。
+呼称の一覧は同じディレクトリのreference.mdにあります。
 [キャラ呼称表 - ブルーアーカイブ(ブルアカ)攻略有志Wiki](https://bluearchive.wikiru.jp/?%E3%82%AD%E3%83%A3%E3%83%A9%E5%91%BC%E7%A7%B0%E8%A1%A8)
 を機械的に整形したものです。
 
@@ -30,7 +30,7 @@ Grepで`#### キャラクター名`を検索して該当セクションの周辺
 
 # appellation.json
 
-同じディレクトリの[appellation.json](./appellation.json)は、
+同じディレクトリのappellation.jsonは、
 reference.mdと同じ内容の機械読み出し用のレコード集です。
 jqやスクリプトで機械的に抽出したい時はこちらを使ってください。
 
@@ -58,3 +58,8 @@ JSONでは呼称ごとに1レコードへ分かれます。
 
 - ある呼び方が表に無い場合、勝手に補完せず「呼称は確認できていない」として扱ってください。似た名前のキャラクターの呼称を混ぜないでください
 - 呼ぶ側のキャラクターを演じる時は、括弧の条件も含めて場面に合った呼称を選んでください
+
+# 参照ファイル
+
+- [reference.md](./reference.md): 呼称一覧のLLM参照用Markdown
+- [appellation.json](./appellation.json): 同じ内容の機械読み出し用JSON

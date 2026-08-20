@@ -77,10 +77,20 @@
 
       systems = [ "x86_64-linux" ];
 
-      # プラグインとスキル一式をClaude CodeやOpenCodeへ接続するhome-managerモジュール。
-      flake.homeModules.default = import ./modules/home-manager.nix {
-        plugins = pluginPaths;
-        skills = skillPaths;
+      flake = {
+        # プラグインとスキル一式をClaude CodeやOpenCodeへ接続するhome-managerモジュール。
+        homeModules.default = import ./modules/home-manager.nix {
+          plugins = pluginPaths;
+          skills = skillPaths;
+        };
+
+        # スキルから生成したOpen WebUIのワークスペースModelを、
+        # 対象インスタンスへ宣言的に同期するNixOSモジュール。
+        # 同期コマンドとモデル定義の生成物はsystemに依存するため、
+        # モジュール側でホストのsystemに応じて解決する。
+        nixosModules.default = import ./modules/nixos.nix {
+          packagesFor = system: inputs.self.packages.${system};
+        };
       };
 
       perSystem =
@@ -244,6 +254,27 @@
                   ''
                 ) skills}
               '';
+          # Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
+          # SKILL.mdと参照ファイルをインライン化したシステムプロンプトを持つ、
+          # ワークスペースModelの作成フォームJSONをスキルごとに生成する。
+          # POST /api/v1/models/createへそのまま渡して登録できる。
+          open-webui-model = pkgs.runCommand "open-webui-model-${marketplace.metadata.version}" { } ''
+            # dotnetランタイムがユーザプロファイルへ書き込もうとするため、
+            # サンドボックス内でも書けるHOMEを用意する。
+            export HOME="$TMPDIR"
+            mkdir -p $out
+            ${lib.concatMapStrings (
+              { pluginName, skillName }:
+              # claude-ai-skillと同様に、
+              # プラグインを跨いだスキル名の重複で出力が衝突しないように、
+              # 出力ファイル名はプラグイン名で名前空間に分ける。
+              ''
+                ${lib.getExe blue-prompt} open-webui-model \
+                  ${./plugins + "/${pluginName}/skills/${skillName}"} \
+                  $out/${pluginName}-${skillName}.json
+              ''
+            ) skills}
+          '';
         in
         {
           treefmt.config = {
@@ -278,6 +309,7 @@
           checks = {
             package-blue-prompt = blue-prompt;
             package-claude-ai-skill = claude-ai-skill;
+            package-open-webui-model = open-webui-model;
 
             # home-managerモジュールを実際のhome-manager構成へ組み込んで、
             # プラグインとスキルが実際に接続されていることを検証する。
@@ -328,6 +360,47 @@
                 test -f ${skills.kotori}/SKILL.md
                 touch $out
               '';
+
+            # NixOSモジュールを実際のNixOS構成へ組み込んで、
+            # 同期サービスがスクリプトの実体ごと構成されることを検証する。
+            # スクリプトにはモデル定義のディレクトリが焼き込まれているため、
+            # この検証は生成物のビルドまで含めて通す。
+            nixos-module =
+              let
+                nixosConfiguration = inputs.nixpkgs.lib.nixosSystem {
+                  inherit (pkgs.stdenv.hostPlatform) system;
+                  modules = [
+                    inputs.self.nixosModules.default
+                    {
+                      system.stateVersion = "26.05";
+                      blue-prompt.open-webui = {
+                        enable = true;
+                        url = "http://127.0.0.1:8080";
+                        baseModelId = "test-model";
+                        apiKeyFile = "/run/secrets/open-webui-api-key";
+                      };
+                    }
+                  ];
+                };
+                inherit (nixosConfiguration.config.systemd.services.blue-prompt-open-webui-model-sync.serviceConfig)
+                  ExecStart
+                  ;
+              in
+              # ブートローダなどを持たない最小構成のため、
+              # システム全体(toplevel)ではなくExecStartのコマンドラインだけを検証する。
+              # ExecStartには同期コマンドとモデル定義のstoreパスが含まれるため、
+              # このファイル経由の参照で両方のビルドまで検証される。
+              pkgs.runCommand "nixos-module" { } ''
+                execStartFile=${pkgs.writeText "blue-prompt-open-webui-model-sync-exec-start" ExecStart}
+                grep -- open-webui-sync "$execStartFile"
+                # APIキーはsystemdが実行時に展開するcredentialのパスで渡される。
+                grep -- '$'{CREDENTIALS_DIRECTORY}/api-key "$execStartFile"
+                # コマンドラインの先頭は実行可能な同期コマンドの実体を指している。
+                # escapeSystemdExecArgsが引数をダブルクォートで包むため外して読む。
+                program=$(cut --delimiter ' ' --fields 1 "$execStartFile" | tr --delete '"')
+                test -x "$program"
+                touch $out
+              '';
           };
 
           packages = {
@@ -339,6 +412,7 @@
             inherit
               blue-prompt
               claude-ai-skill
+              open-webui-model
               update-deps
               ;
           };

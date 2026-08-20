@@ -178,6 +178,41 @@ dotnet run --project src/BluePrompt -- wikiru-html '<ページ名>' <出力フ�
 dotnet run --project src/BluePrompt -- wikiru-student-html '<生徒のページ名>' <出力ファイル>
 ```
 
+# Open WebUI向けモデル定義の生成
+
+Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
+SKILL.mdと本文から明示的にリンクされた参照ファイルをインライン化して、
+システムプロンプトへ焼き込んだワークスペースModelの作成フォームJSONへ変換します。
+生成物は`POST /api/v1/models/create`へそのまま渡して登録できる形式です。
+
+全スキル分をまとめて生成するのは以下です。
+出力はビルド成果物でリポジトリへはコミットしないため、
+`nix fmt`は実行しません。
+
+```console
+nix build .#open-webui-model
+```
+
+スキル1つ分を単体で変換したい時は以下を使います。
+
+```console
+dotnet run --project src/BluePrompt -- open-webui-model <スキルディレクトリ> <出力ファイル>
+```
+
+生成したModelは`open-webui-sync`サブコマンドで対象インスタンスへ同期できます。
+APIで登録済みのModelと突き合わせて、
+無ければ作成し、差分があれば上書きし、差分が無ければ書き込みません。
+
+```console
+dotnet run --project src/BluePrompt -- open-webui-sync <モデル定義ディレクトリ> <ベースURL> [--base-model-id <id>] [--api-key-file <パス>]
+```
+
+この同期を宣言的に行うNixOSモジュールが、
+`modules/nixos.nix`にあり`nixosModules.default`として公開されています。
+エンドポイントのURLなど登録先に依存する情報だけをオプションで入力すると、
+oneshotのsystemdサービスが起動時とモデル定義の変更時に同期を実行します。
+モジュールの検証はnix-fast-buildのchecks(`nixos-module`)に含まれています。
+
 # テスト方針
 
 このリポジトリのプログラムは外部に配布したりする性質のものではないので、
