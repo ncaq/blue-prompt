@@ -166,6 +166,47 @@ curl -X POST "$OPEN_WEBUI_URL/api/v1/models/create" \
 全キャラクターの呼称表がシステムプロンプトへ丸ごと入るため、
 コンテキスト消費が大きく実用には向きません。
 
+### NixOSモジュールによる宣言的な同期
+
+Open WebUIをNixOSで運用している場合は、
+`nixosModules.default`をimportすると、
+全スキル分のModelを対象インスタンスへ宣言的に同期できます。
+エンドポイントのURLのような、
+登録先のインスタンスに依存してこのリポジトリからは知り得ない情報だけを入力します。
+
+```nix
+{
+  imports = [ inputs.blue-prompt.nixosModules.default ];
+
+  blue-prompt.open-webui = {
+    enable = true;
+    url = "http://192.168.0.10:8080";
+    # 実際に推論へ使う上流モデル。
+    # 省略すると新規作成時はnullになり、登録後にUIで選んだ値を保持します。
+    baseModelId = "qwen3:32b";
+    # 認証を有効にしているインスタンスではAPIキーのファイルを指定します。
+    # systemdのcredentialとして実行時に読むためNix storeへは入りません。
+    # apiKeyFile = "/run/secrets/open-webui-api-key";
+  };
+}
+```
+
+oneshotのsystemdサービスが、
+起動時とスキルの変更時にAPIで登録済みのModelと突き合わせて、
+無ければ作成し、
+差分があれば更新し、
+差分が無ければ何も書き込みません。
+繰り返し実行しても結果は同じです。
+
+スキルが改良された時は、
+flake inputを更新して構成を切り替えるだけで、
+変わったModelが自動で上書きされます。
+UIでシステムプロンプトなどを書き換えていても、
+スキル側の内容で上書きされます(`base_model_id`の選択は保持されます)。
+
+スキル側から消えたModelの削除までは行わないので、
+不要になったModelはUIか削除APIで消してください。
+
 ## モバイルアプリ
 
 [公式ドキュメント](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)

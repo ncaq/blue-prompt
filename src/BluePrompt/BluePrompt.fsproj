@@ -15,6 +15,7 @@
     <Compile Include="Scrape.fs" />
     <Compile Include="Wikiru.fs" />
     <Compile Include="OpenWebui.fs" />
+    <Compile Include="OpenWebuiSync.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

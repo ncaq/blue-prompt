@@ -199,6 +199,20 @@ nix build .#open-webui-model
 dotnet run --project src/BluePrompt -- open-webui-model <スキルディレクトリ> <出力ファイル>
 ```
 
+生成したModelは`open-webui-sync`サブコマンドで対象インスタンスへ同期できます。
+APIで登録済みのModelと突き合わせて、
+無ければ作成し、差分があれば上書きし、差分が無ければ書き込みません。
+
+```console
+dotnet run --project src/BluePrompt -- open-webui-sync <モデル定義ディレクトリ> <ベースURL> [--base-model-id <id>] [--api-key-file <パス>]
+```
+
+この同期を宣言的に行うNixOSモジュールが、
+`modules/nixos.nix`にあり`nixosModules.default`として公開されています。
+エンドポイントのURLなど登録先に依存する情報だけをオプションで入力すると、
+oneshotのsystemdサービスが起動時とモデル定義の変更時に同期を実行します。
+モジュールの検証はnix-fast-buildのchecks(`nixos-module`)に含まれています。
+
 # テスト方針
 
 このリポジトリのプログラムは外部に配布したりする性質のものではないので、

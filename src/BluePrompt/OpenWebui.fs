@@ -186,6 +186,12 @@ let private serializerOptions =
 let toJson (form: ModelForm) : string =
     JsonSerializer.Serialize(form, serializerOptions) + "\n"
 
+/// toJsonの逆変換としてJSONをModelFormへ読み戻す。
+/// ModelFormに無いフィールドは無視されるため、
+/// APIの応答を管理対象のフィールドだけへ正規化する用途にも使える。
+let ofJson (json: string) : ModelForm =
+    JsonSerializer.Deserialize<ModelForm>(json, serializerOptions)
+
 /// スキルディレクトリからModelFormのJSONを書き出す。
 /// 出力はNixのビルド成果物でリポジトリへはコミットしないため、nix fmtは掛けない。
 let writeModel (skillDirectory: string) (outputPath: string) : Task<unit> =
