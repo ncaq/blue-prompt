@@ -180,6 +180,22 @@ let ``呼称が空の行は落ちる`` () =
     Assert.Equal("カンナ", (List.exactlyOne (parseHtml html)).Callee)
 
 [<Fact>]
+let ``セル内に入れ子のテーブルがあっても外側の行だけが読まれる`` () =
+    // trの走査が子孫全体に及ぶと、内側のテーブルの行が外側の行としても読まれ、
+    // セル数の食い違いでRowShapeErrorになるか同じ行が二重にレコード化される。
+    // さらに#body tableのセレクタは入れ子のテーブル自体にも一致するため、
+    // 独立したテーブルとして重ねて読まれる経路もある。
+    let html =
+        "<div id=\"body\"><h2>学校</h2><h3>部活</h3><h4>ホシノ</h4>"
+        + appellationTable (
+            "<tr><td>ホシノ</td><td>シロコ</td>"
+            + "<td>シロコちゃん<table><tbody><tr><td></td></tr></tbody></table></td></tr>"
+        )
+        + "</div>"
+
+    Assert.Equal("シロコちゃん", (List.exactlyOne (parseHtml html)).Name)
+
+[<Fact>]
 let ``完全に同じ内容の行はレコードとしては1件になる`` () =
     // wiki側の編集ミスで同じ行が2度書かれることがあり、
     // そのまま残すとJSONにもMarkdownにも同じ呼称が重複して出る。
