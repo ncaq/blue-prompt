@@ -12,6 +12,7 @@ open System.Net
 open System.Net.Http
 open System.Net.Http.Headers
 open System.Text
+open System.Threading
 open System.Threading.Tasks
 
 /// 同期先のインスタンスに依存していてこちらからは知り得ない接続情報。
@@ -61,11 +62,17 @@ let private waitForHealth (client: HttpClient) (url: string) : Task<unit> =
         while not ready do
             let! healthy =
                 task {
+                    // 接続が確立しない環境ではHttpClientの既定タイムアウト(100秒)まで、
+                    // 1試行がブロックし得るため、試行ごとに短い打ち切りを設ける。
+                    use timeout = new CancellationTokenSource(TimeSpan.FromSeconds 5.0)
+
                     try
-                        let! response = client.GetAsync $"%s{url}/health"
+                        let! response = client.GetAsync($"%s{url}/health", timeout.Token)
                         return response.IsSuccessStatusCode
-                    with :? HttpRequestException ->
-                        return false
+                    with
+                    | :? HttpRequestException -> return false
+                    // 打ち切りはTaskCanceledExceptionとして届くためリトライ対象へ含める。
+                    | :? OperationCanceledException -> return false
                 }
 
             if healthy then
