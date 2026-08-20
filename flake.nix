@@ -135,7 +135,13 @@
                 ./test
               ];
             };
-            projectFile = "src/BluePrompt/BluePrompt.fsproj";
+            # BluePrompt.Analyzersはリント専用の自作アナライザーで配布物ではないが、
+            # NuGet依存をdeps.jsonへ含めてサンドボックス内でビルドできるようにするため、
+            # projectFileの一覧に含める。
+            projectFile = [
+              "src/BluePrompt/BluePrompt.fsproj"
+              "src/BluePrompt.Analyzers/BluePrompt.Analyzers.fsproj"
+            ];
             testProjectFile = "test/BluePrompt.Test/BluePrompt.Test.fsproj";
             nugetDeps = ./deps.json;
             dotnet-sdk = pkgs.dotnet-sdk_10;
@@ -153,6 +159,7 @@
             # -warnaserrorで警告も失敗へ昇格して違反を検出する。
             postCheck = ''
               dotnet msbuild src/BluePrompt/BluePrompt.fsproj /t:AnalyzeFSharpProject -warnaserror
+              dotnet msbuild src/BluePrompt.Analyzers/BluePrompt.Analyzers.fsproj /t:AnalyzeFSharpProject -warnaserror
               dotnet msbuild test/BluePrompt.Test/BluePrompt.Test.fsproj /t:AnalyzeFSharpProject -warnaserror
             '';
             executables = [ "BluePrompt" ];
