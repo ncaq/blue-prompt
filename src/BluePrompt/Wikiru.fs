@@ -363,3 +363,28 @@ let writeRolePlayReference (pageName: string) (outputPath: string) : Task<unit> 
         do! writeFile outputPath (knowledgeHeader pageName + markdown)
         do! Fmt.formatFile outputPath
     }
+
+/// wikiruのキャラ呼称表ページを構造化データへパースし、
+/// LLM参照用のreference.mdと機械読み出し用のJSONを一度の取得から書き出す。
+/// JSONをリポジトリへ併置することで、
+/// 後段の生成処理がwikiruへ再アクセスせずに呼称を読み出せるようにする。
+/// どちらも書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
+let writeAppellation (pageName: string) (markdownPath: string) (jsonPath: string) : Task<unit> =
+    task {
+        let! html = Page.fetchHtml (pageUri pageName)
+        let entries = Appellation.parseHtml html
+
+        do!
+            writeFile
+                markdownPath
+                (knowledgeHeader pageName + Appellation.toReferenceMarkdown entries)
+
+        do! Fmt.formatFile markdownPath
+
+        let document: Appellation.Document =
+            { Source = (pageUri pageName).AbsoluteUri
+              Entries = entries }
+
+        do! writeFile jsonPath (Appellation.toJson document)
+        do! Fmt.formatFile jsonPath
+    }

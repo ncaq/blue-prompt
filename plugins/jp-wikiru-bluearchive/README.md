@@ -55,11 +55,15 @@ LLMに記憶を頼らせるのではなく、
 各スキルのナレッジは、
 このリポジトリのF#プログラムでwikiruの記事から自動生成しています。
 
-一覧ページを整形するスキルは、
-`reference.md`をスキルの説明とは別のファイルとして生成します。
+キャラ呼称表のスキルは、
+テーブルを「誰が誰をどう呼ぶか」のレコードへ構造化した上で、
+LLM参照用の`reference.md`と機械読み出し用の`appellation.json`を、
+どちらもスキルの一部として同時に生成します。
+JSONをリポジトリへ置くことで、
+後段の生成処理が呼称を読み出すたびにwikiruへアクセスせずに済みます。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru-knowledge 'キャラ呼称表' plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md
+dotnet run --project src/BluePrompt -- wikiru-appellation 'キャラ呼称表' plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json
 ```
 
 生徒個別のスキルは1人分の量が少ないため、
@@ -70,14 +74,19 @@ dotnet run --project src/BluePrompt -- wikiru-knowledge 'キャラ呼称表' plu
 dotnet run --project src/BluePrompt -- wikiru-student-skill 'ユウカ' plugins/jp-wikiru-bluearchive/skills/character-yuuka/SKILL.md
 ```
 
+生徒個別のスキルは、
 AngleSharpでページを取得して本文と脚注だけを抜き出し、
 編集リンクや広告やコメント欄を取り除き、
 GFMのテーブルで表現できない結合セルを展開した上で、
 pandocでMarkdownへ変換しています。
-生徒個別のページではさらに、
-折りたたみの中身を残し、
+さらに折りたたみの中身を残し、
 素材などを表す画像をaltの名前へ置き換え、
 wiki独自の解説・考察を除いた事実セクションだけへ選別しています。
+
+キャラ呼称表はpandocを通さず、
+テーブルをレコードへ直接パースしてからMarkdownとJSONを書き出しています。
+脚注は末尾の定義ではなく、
+呼称の直後の半角括弧の注記としてその場に置いています。
 
 wikiの更新を取り込みたい時に同じコマンドを再実行してください。
 

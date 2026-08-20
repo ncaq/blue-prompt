@@ -10,6 +10,9 @@ let private usage =
   BluePrompt wikiru-roleplay-reference <ページ名> <出力ファイル>
     wikiruの生徒個別ページからプロフィールとボイスを抜き出し、
     role-playスキルが参照する衣装別の参照ファイルとして書き出す。
+  BluePrompt wikiru-appellation <ページ名> <reference.mdの出力> <JSONの出力>
+    wikiruのキャラ呼称表を構造化し、
+    LLM参照用のreference.mdと機械読み出し用のJSONを書き出す。
   BluePrompt wikiru-html <ページ名> <出力ファイル>
     wikiruの記事から抽出した本文をMarkdown化せずHTMLのまま書き出す。
   BluePrompt wikiru-student-html <ページ名> <出力ファイル>
@@ -26,6 +29,9 @@ let main argv =
         0
     | [| "wikiru-roleplay-reference"; pageName; outputPath |] ->
         (Wikiru.writeRolePlayReference pageName outputPath).GetAwaiter().GetResult()
+        0
+    | [| "wikiru-appellation"; pageName; markdownPath; jsonPath |] ->
+        (Wikiru.writeAppellation pageName markdownPath jsonPath).GetAwaiter().GetResult()
         0
     | [| "wikiru-html"; pageName; outputPath |] ->
         (Wikiru.writeContentHtml Wikiru.contentQuery pageName outputPath).GetAwaiter().GetResult()

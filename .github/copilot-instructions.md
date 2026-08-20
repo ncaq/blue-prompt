@@ -123,10 +123,18 @@ wikiruの記事からの自動生成ファイルです。
 書き出した直後に`nix fmt`まで実行するので、
 生成コマンドだけで内容が確定します。
 
-一覧ページを整形するスキルの`reference.md`は以下で生成します。
+一般的なページを整形した`reference.md`は以下で生成します。
 
 ```console
 dotnet run --project src/BluePrompt -- wikiru-knowledge '<ページ名>' <出力ファイル>
+```
+
+キャラ呼称表のスキルは、
+テーブルを構造化した上でLLM参照用の`reference.md`と、
+機械読み出し用の`appellation.json`を以下で同時に生成します。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-appellation 'キャラ呼称表' plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json
 ```
 
 生徒個別のスキルはナレッジを埋め込んだ`SKILL.md`全体を以下で生成します。
