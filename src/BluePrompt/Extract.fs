@@ -3,6 +3,7 @@
 /// AngleSharpによる純粋なF#実装なので、ネットワークもブラウザも使わずに単体テストで検証できる。
 module BluePrompt.Extract
 
+open System
 open System.Text.RegularExpressions
 open AngleSharp.Dom
 open AngleSharp.Html.Parser
@@ -57,7 +58,7 @@ let private replaceImagesWithAlt (document: IDocument) : unit =
             | null -> ""
             | alt -> alt.Trim()
 
-        if alt = "" || fileNameAltPattern.IsMatch alt then
+        if String.IsNullOrEmpty alt || fileNameAltPattern.IsMatch alt then
             image.Remove()
         else
             image.Replace [| document.CreateTextNode alt :> INode |]

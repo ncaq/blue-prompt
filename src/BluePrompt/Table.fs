@@ -353,10 +353,12 @@ let private dropEmptyColumns (table: IHtmlTableElement) : unit =
             if index < texts.Length then texts[index] else ""
 
         for index in columnCount - 1 .. -1 .. 0 do
-            let headerIsEmpty = cellTextAt index rowTexts[0] = ""
+            let headerIsEmpty = String.IsNullOrEmpty(cellTextAt index rowTexts[0])
 
             let bodyIsEmpty =
-                rowTexts |> Seq.skip 1 |> Seq.forall (fun texts -> cellTextAt index texts = "")
+                rowTexts
+                |> Seq.skip 1
+                |> Seq.forall (fun texts -> String.IsNullOrEmpty(cellTextAt index texts))
 
             if bodyIsEmpty && (headerIsEmpty || (hasHeaderRow && 3 <= survivingRows.Length)) then
                 for cells in rowCells do
