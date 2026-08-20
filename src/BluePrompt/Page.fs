@@ -47,18 +47,21 @@ let private withDocument (url: Uri) (action: AngleSharp.Dom.IDocument -> 'T) : T
         use context = BrowsingContext.New configuration
         use! document = context.OpenAsync url.AbsoluteUri
 
-        // AngleSharpのローダーは接続拒否やDNS解決失敗でも例外を投げず、
-        // status=200の空ドキュメントを返す。
-        // 素通りすると空のHTMLが正常な取得として流れてしまうため、
-        // ソースが空のドキュメントを取得失敗としてstatus=0のFetchErrorへ写像する。
-        // 本文が完全に空の応答も同じ姿になるが、抽出できるものが無い点は取得失敗と変わらない。
-        if document.Source.Text.Length = 0 then
-            raise (FetchError(url = url, status = 0))
-
+        // ステータス検査を空ドキュメントの検知より先に行うことで、
+        // ボディ無しの404のような本文が空のエラー応答を本来のステータスで報告する。
         let status = int document.StatusCode
 
         if status < 200 || 300 <= status then
             raise (FetchError(url = url, status = status))
+
+        // AngleSharpのローダーは接続拒否やDNS解決失敗でも例外を投げず、
+        // status=200の空ドキュメントを返すため、ステータス検査を素通りする。
+        // 素通りすると空のHTMLが正常な取得として流れてしまうので、
+        // ソースが空のドキュメントを取得失敗としてstatus=0のFetchErrorへ写像する。
+        // 成功ステータスで本文が完全に空の応答も同じ姿になるが、
+        // 抽出できるものが無い点は取得失敗と変わらない。
+        if document.Source.Text.Length = 0 then
+            raise (FetchError(url = url, status = 0))
 
         return action document
     }
