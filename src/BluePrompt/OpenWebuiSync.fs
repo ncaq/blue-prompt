@@ -67,7 +67,8 @@ let private waitForHealth (client: HttpClient) (url: string) : Task<unit> =
                     use timeout = new CancellationTokenSource(TimeSpan.FromSeconds 5.0)
 
                     try
-                        let! response = client.GetAsync($"%s{url}/health", timeout.Token)
+                        // 応答は読まずに捨てるため、接続をすぐプールへ返せるように破棄する。
+                        use! response = client.GetAsync($"%s{url}/health", timeout.Token)
                         return response.IsSuccessStatusCode
                     with
                     | :? HttpRequestException -> return false
@@ -90,7 +91,7 @@ let private postForm (client: HttpClient) (url: string) (form: OpenWebui.ModelFo
         use content =
             new StringContent(OpenWebui.toJson form, Encoding.UTF8, "application/json")
 
-        let! response = client.PostAsync(url, content)
+        use! response = client.PostAsync(url, content)
 
         if not response.IsSuccessStatusCode then
             let! body = response.Content.ReadAsStringAsync()
@@ -114,7 +115,7 @@ let private syncModel (client: HttpClient) (options: Options) (path: string) : T
 
         let id = desired.Id
 
-        let! response =
+        use! response =
             client.GetAsync $"%s{options.Url}/api/v1/models/model?id=%s{Uri.EscapeDataString id}"
 
         if response.IsSuccessStatusCode then
