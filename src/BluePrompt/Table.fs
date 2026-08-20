@@ -4,6 +4,7 @@
 /// 変換前にDOMの段階で表を平坦化する。
 module BluePrompt.Table
 
+open System
 open System.Collections.Generic
 open AngleSharp.Dom
 open AngleSharp.Html.Dom
@@ -266,28 +267,40 @@ let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) :
 
                 columnIndex <- columnIndex + columnSpan)
 
+        // 元セルのTextContentはアクセスごとに部分木を走査して文字列を新規生成するため、
+        // 元セルごとに一度だけ計算してキャッシュし、rowspan分の複製の生成で使い回す。
+        let cellTexts = Dictionary<IHtmlTableCellElement, string>()
+
+        let cellText (cell: IHtmlTableCellElement) : string =
+            match cellTexts.TryGetValue cell with
+            | true, text -> text
+            | false, _ ->
+                let text = cell.TextContent
+                cellTexts[cell] <- text
+                text
+
         rows
         |> Array.iteri (fun rowIndex row ->
+            // セルと空判定の組で持ち回り、
+            // 生成した複製のTextContentを空行判定のために走査し直さない。
             let cells =
                 grid[rowIndex].Values
                 |> Seq.map (fun entry ->
                     if entry.IsOrigin then
                         entry.Cell.RemoveAttribute "rowspan" |> ignore
                         entry.Cell.RemoveAttribute "colspan" |> ignore
-                        entry.Cell :> IElement
+                        entry.Cell :> IElement, String.IsNullOrWhiteSpace(cellText entry.Cell)
                     else
+                        let text = if entry.KeepsText then cellText entry.Cell else ""
                         let copy = document.CreateElement entry.Cell.LocalName
-
-                        copy.TextContent <-
-                            (if entry.KeepsText then entry.Cell.TextContent else "")
-
-                        copy)
+                        copy.TextContent <- text
+                        copy, String.IsNullOrWhiteSpace text)
                 |> Seq.toArray
 
-            if Array.forall (fun (cell: IElement) -> cell.TextContent.Trim() = "") cells then
+            if Array.forall snd cells then
                 row.Remove()
             else
-                replaceChildren row cells)
+                replaceChildren row (Array.map fst cells))
 
         true
 
