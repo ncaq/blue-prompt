@@ -64,8 +64,7 @@ let private noteMap (document: IDocument) : Map<string, string> =
                     match node.NextSibling with
                     | null -> None
                     | :? IElement as element when element.LocalName = "br" -> None
-                    | :? IElement as element when element.ClassList.Contains "note_super" ->
-                        None
+                    | :? IElement as element when element.ClassList.Contains "note_super" -> None
                     | next -> Some(next.TextContent, next))
                 |> String.concat ""
                 |> _.Trim()
