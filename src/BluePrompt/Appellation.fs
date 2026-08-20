@@ -49,6 +49,9 @@ exception CallerNotFound of caller: string
 /// 脚注アンカーのidから注釈本文への対応表を#noteから組み立てる。
 /// wikiruの脚注定義は「アンカー、本文のspan、brの繰り返し」の並びなので、
 /// アンカーから次のbrまでの兄弟ノードのテキストを本文として集める。
+/// 区切りのbrが欠けたマークアップでも次の脚注を巻き込まないように、
+/// 次の脚注アンカーでも走査を打ち切る。
+/// これにより走査は常に自分の定義の範囲で閉じ、全体でもO(ノード数)で済む。
 let private noteMap (document: IDocument) : Map<string, string> =
     document.QuerySelectorAll "#note a.note_super"
     |> Seq.choose (fun anchor ->
@@ -61,6 +64,8 @@ let private noteMap (document: IDocument) : Map<string, string> =
                     match node.NextSibling with
                     | null -> None
                     | :? IElement as element when element.LocalName = "br" -> None
+                    | :? IElement as element when element.ClassList.Contains "note_super" ->
+                        None
                     | next -> Some(next.TextContent, next))
                 |> String.concat ""
                 |> _.Trim()
