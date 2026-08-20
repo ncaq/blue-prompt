@@ -414,14 +414,13 @@ let writeAppellation (pageName: string) (markdownPath: string) (jsonPath: string
                 markdownPath
                 (knowledgeHeader pageName + Appellation.toReferenceMarkdown entries)
 
-        do! Fmt.formatFile markdownPath
-
         let document: Appellation.Document =
             { Source = (pageUri pageName).AbsoluteUri
               Entries = entries }
 
         do! writeFile jsonPath (Appellation.toJson document)
-        do! Fmt.formatFile jsonPath
+        // nix fmtの起動が所要時間の支配項なので、2ファイルを1回の起動でまとめて整形する。
+        do! Fmt.formatFiles [ markdownPath; jsonPath ]
     }
 
 /// role-playスキルのテンプレート内で呼称表を差し込む位置を示すプレースホルダ。
