@@ -60,7 +60,8 @@ let private withDocument (url: Uri) (action: AngleSharp.Dom.IDocument -> 'T) : T
         // ソースが空のドキュメントを取得失敗としてstatus=0のFetchErrorへ写像する。
         // 成功ステータスで本文が完全に空の応答も同じ姿になるが、
         // 抽出できるものが無い点は取得失敗と変わらない。
-        if document.Source.Text.Length = 0 then
+        // Source.Textはページ全体の文字列を毎回新規生成するため、O(1)のLengthで判定する。
+        if document.Source.Length = 0 then
             raise (FetchError(url = url, status = 0))
 
         return action document
