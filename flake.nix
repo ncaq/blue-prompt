@@ -159,8 +159,12 @@
             # F#アナライザーによるリントもテストに続けて実行する。
             # nix-fast-buildの統合チェックにリンターを含めるため。
             # -warnaserrorで警告も失敗へ昇格して違反を検出する。
+            # Configurationをビルドと同じ構成(既定はRelease)へ揃えることで、
+            # 実際に配布・テストされる構成を解析しつつ、
+            # buildPhaseで生成済みの出力を再利用してDebugビルドの追加実行を避ける。
             postCheck = ''
-              dotnet msbuild lint.proj /t:AnalyzeFSharpProject -warnaserror -m
+              dotnet msbuild lint.proj /t:AnalyzeFSharpProject -warnaserror -m \
+                -p:Configuration="$dotnetBuildType"
             '';
             executables = [ "BluePrompt" ];
             # nix runで単体実行できるようにpandocのパスをラッパーに焼き込む。
