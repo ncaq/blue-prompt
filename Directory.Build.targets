@@ -18,11 +18,14 @@
   <!--
     自作アナライザー(BluePrompt.Analyzers)は解析の実行前にビルドされている必要があるため、
     AnalyzeFSharpProjectの実体のターゲットの前にビルドを差し込む。
+    AnalyzeFSharpProjectはBuildに依存しないので、
+    BluePrompt.Analyzers自身の解析でもこのビルドは省略できない。
+    Propertiesを指定せず現在のグローバルプロパティを継承させることで、
+    同一ビルド内の複数プロジェクトからの呼び出しがプロジェクト結果キャッシュへ当たる。
   -->
   <Target Name="BuildBluePromptAnalyzers" BeforeTargets="_AnalyzeFSharpProject">
     <MSBuild
       Projects="$(MSBuildThisFileDirectory)src/BluePrompt.Analyzers/BluePrompt.Analyzers.fsproj"
-      Targets="Build"
-      Properties="Configuration=$(Configuration)" />
+      Targets="Build" />
   </Target>
 </Project>
