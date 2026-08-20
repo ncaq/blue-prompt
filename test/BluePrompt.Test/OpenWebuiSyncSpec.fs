@@ -235,6 +235,23 @@ let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり�
     Assert.Equal(0, server.CreateCount)
 
 [<Fact>]
+let ``同じidのModel定義が複数あるとSyncErrorで止まる`` () =
+    use server = new MockServer()
+    let directory = makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]
+    // 別のファイル名で同じidの定義を置く。
+    File.WriteAllText(Path.Combine(directory, "duplicated.json"), OpenWebui.toJson (makeForm "yuuka" "別のプロンプト"))
+
+    let error = Assert.Throws<SyncError>(fun () -> run (makeOptions server directory))
+
+    // どの定義が衝突したのか調査できるようにidが含まれる。
+    match error :> exn with
+    | SyncError message -> Assert.Contains("yuuka", message)
+    | unexpected -> failwith unexpected.Message
+
+    // 後勝ちの上書きが起きないように書き込みの前に止まる。
+    Assert.Equal(0, server.CreateCount)
+
+[<Fact>]
 let ``解釈できない引数はSyncErrorになる`` () =
     Assert.Throws<SyncError>(fun () ->
         parseOptions [ "/tmp/models"; "http://127.0.0.1:8080"; "--unknown" ] |> ignore)

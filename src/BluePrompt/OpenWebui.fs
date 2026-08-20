@@ -155,8 +155,8 @@ let private buildSystemPrompt (skillDirectory: string) (skillPath: string) (body
         |> fun prompt -> prompt + "\n"
 
 /// スキルディレクトリからModelFormを組み立てる。
-/// idとnameにはフロントマターのnameを使う。
-/// スキル名のプラグイン間の衝突はflake.nixの評価時に検出される前提。
+/// idとnameにはフロントマターのnameを使い、ここでは一意性を保証しない。
+/// 同じ一覧の中のidの重複は、open-webui-syncが同期の前に検出して止める。
 let buildModelForm (skillDirectory: string) : ModelForm =
     let skillPath = Path.Combine(skillDirectory, "SKILL.md")
 

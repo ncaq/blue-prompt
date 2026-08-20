@@ -98,21 +98,9 @@ let private postForm (client: HttpClient) (url: string) (form: OpenWebui.ModelFo
             raise (SyncError $"%s{url}への書き込みに失敗しました: %d{int response.StatusCode} %s{body}")
     }
 
-/// ModelFormのJSONファイル1つを同期する。
-let private syncModel (client: HttpClient) (options: Options) (path: string) : Task<unit> =
+/// ModelForm1件を同期する。
+let private syncModel (client: HttpClient) (options: Options) (desired: OpenWebui.ModelForm) : Task<unit> =
     task {
-        let! json = File.ReadAllTextAsync path
-
-        let desired =
-            let form = OpenWebui.ofJson json
-
-            // 生成物のbase_model_idはnullなので、指定があれば流し込む。
-            match options.BaseModelId with
-            | Some _ ->
-                { form with
-                    BaseModelId = options.BaseModelId }
-            | None -> form
-
         let id = desired.Id
 
         use! response =
@@ -169,8 +157,31 @@ let sync (options: Options) : Task<unit> =
                 AuthenticationHeaderValue("Bearer", apiKey.Trim())
         | None -> ()
 
-        do! waitForHealth client options.Url
+        // 生成物のbase_model_idはnullなので、指定があれば流し込む。
+        let withBaseModelId (form: OpenWebui.ModelForm) =
+            match options.BaseModelId with
+            | Some _ ->
+                { form with
+                    BaseModelId = options.BaseModelId }
+            | None -> form
+
+        let mutable reversedForms = []
 
         for path in Directory.GetFiles(options.ModelsDirectory, "*.json") |> Array.sort do
-            do! syncModel client options path
+            let! json = File.ReadAllTextAsync path
+            reversedForms <- (path, withBaseModelId (OpenWebui.ofJson json)) :: reversedForms
+
+        let forms = List.rev reversedForms
+
+        // idが重複すると同じModelへ交互に上書きする後勝ちになり、
+        // どのスキルが反映されたのか分からなくなるため、同期の前に検出して止める。
+        for id, group in List.groupBy (fun (_, form: OpenWebui.ModelForm) -> form.Id) forms do
+            if 1 < List.length group then
+                let fileNames = group |> List.map (fst >> Path.GetFileName) |> String.concat ", "
+                raise (SyncError $"Modelのidが重複しています: %s{id} (%s{fileNames})")
+
+        do! waitForHealth client options.Url
+
+        for _, desired in forms do
+            do! syncModel client options desired
     }
