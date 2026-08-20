@@ -36,7 +36,7 @@ let withServer (respond: string -> Response) (action: Uri -> Task<'T>) : Task<'T
         listener.Start()
         let port = (listener.LocalEndpoint :?> IPEndPoint).Port
 
-        // クライアントはfaviconなども取りに来るため、全リクエストへ応答し続ける。
+        // リダイレクトの追跡などで1回の取得でも複数回リクエストが来るため、全リクエストへ応答し続ける。
         // listener.Stop()でAcceptが例外になりループごと終了する。
         let serving =
             task {
