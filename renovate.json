@@ -1,4 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>ncaq/renovate-config"]
+  "extends": ["github>ncaq/renovate-config"],
+  "packageRules": [
+    {
+      "description": "FSharp.CoreはFSharp.Analyzers.SDKが完全一致で要求する版に従うため、単独で上げるとNU1608で復元が失敗する。SDKの更新に合わせて手動で揃える。",
+      "matchPackageNames": ["FSharp.Core"],
+      "enabled": false
+    }
+  ]
 }
