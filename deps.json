@@ -10,6 +10,21 @@
     "hash": "sha256-nkSCqy0kVUDCTvrPQzpu8dNek7sg8DeuNg0L5M06y64="
   },
   {
+    "pname": "FSharp.Analyzers.SDK",
+    "version": "0.37.2",
+    "hash": "sha256-W+4jWsOaMXDCAFpPPjUbtIbGxZPZyA2Z97Nr7Zw+h9E="
+  },
+  {
+    "pname": "FSharp.Compiler.Service",
+    "version": "43.12.201",
+    "hash": "sha256-lYlDHWSRUqkyUwzdSJnFlB6dfrclDlPo7n8dJiGQvC4="
+  },
+  {
+    "pname": "FSharp.Core",
+    "version": "10.1.201",
+    "hash": "sha256-NzxdRJgL+5RQpUm8Y6Mc0w7sakxqThv6qHpP+u0x5x0="
+  },
+  {
     "pname": "G-Research.FSharp.Analyzers",
     "version": "0.23.0",
     "hash": "sha256-rS7eh5dmY5eqWVPadyL5E4fljJJv/gDlCOUU+2rBl5Y="
@@ -20,9 +35,19 @@
     "hash": "sha256-4TKsLpC3u1vU0gmxA6mGE0C5Nb/yAkhQ6aQkbdDnMh8="
   },
   {
+    "pname": "McMaster.NETCore.Plugins",
+    "version": "2.0.0",
+    "hash": "sha256-baHzhBAK/4gdRP6uE+82UvLRwdTkXSa13uTradlEvdM="
+  },
+  {
     "pname": "Microsoft.CodeCoverage",
     "version": "18.9.0",
     "hash": "sha256-fubaxGJ8F22BnbJGfx9B7DVZcKPqHopri6eD6gcvwz0="
+  },
+  {
+    "pname": "Microsoft.Extensions.Logging.Abstractions",
+    "version": "6.0.0",
+    "hash": "sha256-QNqcQ3x+MOK7lXbWkCzSOWa/2QyYNbdM/OEEbWN15Sw="
   },
   {
     "pname": "Microsoft.NET.Test.Sdk",
