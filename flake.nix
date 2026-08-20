@@ -376,6 +376,8 @@
                       blue-prompt.open-webui = {
                         enable = true;
                         url = "http://127.0.0.1:8080";
+                        baseModelId = "test-model";
+                        apiKeyFile = "/run/secrets/open-webui-api-key";
                       };
                     }
                   ];
@@ -391,8 +393,11 @@
               pkgs.runCommand "nixos-module" { } ''
                 execStartFile=${pkgs.writeText "blue-prompt-open-webui-model-sync-exec-start" ExecStart}
                 grep -- open-webui-sync "$execStartFile"
+                # APIキーはsystemdが実行時に展開するcredentialのパスで渡される。
+                grep -- '$'{CREDENTIALS_DIRECTORY}/api-key "$execStartFile"
                 # コマンドラインの先頭は実行可能な同期コマンドの実体を指している。
-                program=$(cut --delimiter ' ' --fields 1 "$execStartFile")
+                # escapeSystemdExecArgsが引数をダブルクォートで包むため外して読む。
+                program=$(cut --delimiter ' ' --fields 1 "$execStartFile" | tr --delete '"')
                 test -x "$program"
                 touch $out
               '';

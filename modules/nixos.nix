@@ -19,6 +19,7 @@
   lib,
   pkgs,
   config,
+  utils,
   ...
 }:
 let
@@ -82,23 +83,25 @@ in
         Type = "oneshot";
         RemainAfterExit = true;
         DynamicUser = true;
-        # %dはsystemdがcredentialのディレクトリへ展開する指定子。
-        ExecStart = lib.escapeShellArgs (
-          [
-            (lib.getExe packages.blue-prompt)
-            "open-webui-sync"
-            "${cfg.models}"
-            cfg.url
-          ]
-          ++ lib.optionals (cfg.baseModelId != null) [
-            "--base-model-id"
-            cfg.baseModelId
-          ]
-          ++ lib.optionals (cfg.apiKeyFile != null) [
-            "--api-key-file"
-            "%d/api-key"
-          ]
-        );
+        # ExecStartはシェルを経由しないため、
+        # エスケープにはsystemdの構文に合わせたescapeSystemdExecArgsを使う。
+        # credentialのパスはsystemdが実行時に環境変数として展開する必要があり、
+        # エスケープすると`$`が潰れてしまうため、エスケープ対象外として末尾へ連結する。
+        # credentialのディレクトリパスに空白は含まれないので、そのまま1引数になる。
+        ExecStart =
+          utils.escapeSystemdExecArgs (
+            [
+              (lib.getExe packages.blue-prompt)
+              "open-webui-sync"
+              "${cfg.models}"
+              cfg.url
+            ]
+            ++ lib.optionals (cfg.baseModelId != null) [
+              "--base-model-id"
+              cfg.baseModelId
+            ]
+          )
+          + lib.optionalString (cfg.apiKeyFile != null) " --api-key-file \${CREDENTIALS_DIRECTORY}/api-key";
         LoadCredential = lib.optional (cfg.apiKeyFile != null) "api-key:${cfg.apiKeyFile}";
       };
     };
