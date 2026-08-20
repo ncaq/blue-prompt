@@ -83,21 +83,23 @@ let private parseFrontmatter (path: string) (content: string) : Frontmatter =
 /// Markdownのインラインリンクの参照先。
 let private linkPattern = Regex @"\[[^\]]*\]\(([^)]+)\)"
 
-/// 本文中で明示的にリンクされている同じディレクトリ内のファイル名を、
+/// URLのスキーム。`https:`のような形で参照ファイルのパスと区別する。
+let private schemePattern = Regex @"^[A-Za-z][A-Za-z0-9+.-]*:"
+
+/// 本文中で明示的にリンクされている参照ファイルの相対パスを、
 /// 登場順の重複なしで列挙する。
-/// URLやページ内アンカーは参照ファイルではないので除外する。
-/// スキルのリンクは`./ファイル名`の形しか使っていないため、
-/// ディレクトリを跨ぐ相対パスは対象外としてそのまま残す。
+/// スキーム付きのURLとページ内アンカーは参照ファイルではないので除外し、
+/// それ以外のリンクは黙って無視せず全て参照ファイルとして扱う。
+/// 表記ゆれの`./`は落として`./`有りと無しが同じファイルへまとまるようにする。
 let localLinkTargets (body: string) : string list =
     linkPattern.Matches body
     |> Seq.map (fun m -> m.Groups[1].Value)
-    |> Seq.choose (fun target ->
+    |> Seq.filter (fun target -> not (target.StartsWith '#') && not (schemePattern.IsMatch target))
+    |> Seq.map (fun target ->
         if target.StartsWith("./", System.StringComparison.Ordinal) then
-            let name = target.Substring 2
-
-            if name.Contains '/' then None else Some name
+            target.Substring 2
         else
-            None)
+            target)
     |> Seq.distinct
     |> Seq.toList
 
@@ -134,6 +136,10 @@ let private buildSystemPrompt (skillDirectory: string) (skillPath: string) (body
     let sections =
         localLinkTargets body
         |> List.map (fun fileName ->
+            // ディレクトリを遡る参照はスキルディレクトリの外に出るため受け付けない。
+            if fileName.Split '/' |> Array.contains ".." then
+                raise (SkillFormatError(skillPath, $"%s{fileName}はスキルディレクトリの外を参照しています"))
+
             let filePath = Path.Combine(skillDirectory, fileName)
 
             if not (File.Exists filePath) then
