@@ -3,6 +3,14 @@
     F#アナライザー(リンター)を全F#プロジェクトへ一括導入する。
     実行方法はCLAUDE.mdのリンターの節を参照。
   -->
+  <PropertyGroup>
+    <!--
+      自作アナライザー(BluePrompt.Analyzers)のTargetFramework。
+      fsprojのTargetFrameworkとDirectory.Build.targetsのanalyzers-pathの
+      出力パスの双方から参照して、二重管理によるパスのずれを防ぐ。
+    -->
+    <BluePromptAnalyzersTargetFramework>net10.0</BluePromptAnalyzersTargetFramework>
+  </PropertyGroup>
   <ItemGroup>
     <!-- AnalyzeFSharpProjectターゲットを提供するMSBuildアダプタ。 -->
     <PackageReference Include="FSharp.Analyzers.Build" Version="0.5.0">

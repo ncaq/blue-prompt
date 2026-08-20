@@ -12,7 +12,7 @@
       dotnet CLIのツール解決によってPATH上の`dotnet-fsharp-analyzers`へ解決される。
     -->
     <!-- exclude-filesはobj配下のAssemblyInfo.fsなどの自動生成ソースを解析から除外する。 -->
-    <FSharpAnalyzersOtherFlags>--analyzers-path "$(PkgG-Research_FSharp_Analyzers)/analyzers/dotnet/fs" --analyzers-path "$(PkgIonide_Analyzers)/analyzers/dotnet/fs" --analyzers-path "$(MSBuildThisFileDirectory)src/BluePrompt.Analyzers/bin/$(Configuration)/net10.0" --exclude-files "**/obj/**"</FSharpAnalyzersOtherFlags>
+    <FSharpAnalyzersOtherFlags>--analyzers-path "$(PkgG-Research_FSharp_Analyzers)/analyzers/dotnet/fs" --analyzers-path "$(PkgIonide_Analyzers)/analyzers/dotnet/fs" --analyzers-path "$(MSBuildThisFileDirectory)src/BluePrompt.Analyzers/bin/$(Configuration)/$(BluePromptAnalyzersTargetFramework)" --exclude-files "**/obj/**"</FSharpAnalyzersOtherFlags>
   </PropertyGroup>
 
   <!--
