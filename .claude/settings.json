@@ -6,12 +6,21 @@
         "source": "github",
         "repo": "ncaq/konoka"
       }
+    },
+    "blue-prompt": {
+      "source": {
+        "source": "github",
+        "repo": "ncaq/blue-prompt"
+      }
     }
   },
   "enabledPlugins": {
     "kyosei@konoka": true,
     "nix-tasuke@konoka": true,
-    "programming-tasuke@konoka": true
+    "programming-tasuke@konoka": true,
+
+    "jp-wikiru-bluearchive@blue-prompt": true,
+    "role-play@blue-prompt": true
   },
   "enableAllProjectMcpServers": true,
   "permissions": {
