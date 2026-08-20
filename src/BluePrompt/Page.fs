@@ -7,9 +7,8 @@ open AngleSharp
 open AngleSharp.Io
 
 /// HTTPステータスが成功以外だった時のURLとステータスコード。
-/// DNS解決失敗や接続拒否などでレスポンス自体を得られなかった場合、
-/// AngleSharpのローダーは例外を投げず空のドキュメントを返すため、
-/// 取得自体の失敗はstatus=0として現れる。
+/// 接続拒否やDNS解決失敗などでレスポンス自体を得られなかった取得失敗は、
+/// withDocumentが空ドキュメントの検知で写像したstatus=0として現れる。
 exception FetchError of url: Uri * status: int
 
 /// コンテンツ抽出でどのセレクタも要素に一致しなかった時の取得元URLとセレクタ一覧。
@@ -46,6 +45,15 @@ let private withDocument (url: Uri) (action: AngleSharp.Dom.IDocument -> 'T) : T
 
         use context = BrowsingContext.New configuration
         use! document = context.OpenAsync url.AbsoluteUri
+
+        // AngleSharpのローダーは接続拒否やDNS解決失敗でも例外を投げず、
+        // status=200の空ドキュメントを返す。
+        // 素通りすると空のHTMLが正常な取得として流れてしまうため、
+        // ソースが空のドキュメントを取得失敗としてstatus=0のFetchErrorへ写像する。
+        // 本文が完全に空の応答も同じ姿になるが、抽出できるものが無い点は取得失敗と変わらない。
+        if document.Source.Text.Length = 0 then
+            raise (FetchError(url = url, status = 0))
+
         let status = int document.StatusCode
 
         if status < 200 || 300 <= status then
