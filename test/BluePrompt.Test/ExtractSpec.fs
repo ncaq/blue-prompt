@@ -377,6 +377,53 @@ let ``過大なrowspanは実際の行数で切り詰められる`` () =
     Assert.DoesNotContain("rowspan", extracted)
 
 [<Fact>]
+let ``過大なcolspanは上限の列数で切り詰められる`` () =
+    // colspanの切り詰めを直接検証する。
+    // 総量上限のテストは展開されない経路しか通らず、
+    // rowspanのテストは縦方向しか見ないため、この定数を変えても検知できなかった。
+    let html =
+        """<html><body><main id="content">
+<table>
+<tbody>
+<tr><td colspan="1000">wide</td><td>y</td></tr>
+</tbody>
+</table>
+</main></body></html>"""
+
+    let query =
+        { fixtureQuery with
+            ContentSelectors = [ "#content" ] }
+
+    let extracted = BluePrompt.Extract.contentHtml query html
+
+    // 1000列ではなく上限の100列(元セル1つと空の複製99個)とyで101セルになる。
+    Assert.Equal(101, Text.RegularExpressions.Regex.Matches(extracted, "<td").Count)
+    Assert.DoesNotContain("colspan", extracted)
+
+[<Fact>]
+let ``2行の表では見出しに中身のある空列も残る`` () =
+    // 2行の表では空セルがデータの欠けを意味しうるため、
+    // 見出しに中身のある列の削除は3行以上の表に限られる。その境界を固定する。
+    let html =
+        """<html><body><main id="content">
+<table>
+<tbody>
+<tr><th>画像</th><th>名前</th></tr>
+<tr><td></td><td>ユウカ</td></tr>
+</tbody>
+</table>
+</main></body></html>"""
+
+    let query =
+        { fixtureQuery with
+            ContentSelectors = [ "#content" ] }
+
+    let extracted = BluePrompt.Extract.contentHtml query html
+
+    Assert.Contains("画像", extracted)
+    Assert.Contains("ユウカ", extracted)
+
+[<Fact>]
 let ``rowspan0のセルは残りの行の末尾まで展開される`` () =
     // HTML仕様のrowspan="0"は「セクションの最後まで」を意味し、DOMのrowSpanは0を返す。
     // 0のまま展開するとループが1度も回らずセルが格子から消え、事実データが静かに落ちる。
