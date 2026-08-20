@@ -208,14 +208,16 @@ let private parseTable
 let parse (document: IDocument) : Entry list =
     let notes = noteMap document
 
+    // 累積へ後ろから連結するとテーブルごとに累積全体のコピーが走るため、
+    // テーブル単位の結果を先頭へ積み、最後に反転して平坦化することでO(レコード数)に保つ。
     let entries =
         document.QuerySelectorAll "#body h2, #body h3, #body h4, #body table"
         |> Seq.fold
-            (fun (entries, (school, club, character)) element ->
+            (fun (tableEntries, (school, club, character)) element ->
                 match element.LocalName with
-                | "h2" -> entries, (Some(headingText element), None, None)
-                | "h3" -> entries, (school, Some(headingText element), None)
-                | "h4" -> entries, (school, club, Some(headingText element))
+                | "h2" -> tableEntries, (Some(headingText element), None, None)
+                | "h3" -> tableEntries, (school, Some(headingText element), None)
+                | "h4" -> tableEntries, (school, club, Some(headingText element))
                 | _ when
                     (match element.ParentElement with
                      | null -> false
@@ -223,15 +225,17 @@ let parse (document: IDocument) : Entry list =
                     ->
                     // 他のテーブルの内側にあるテーブルは外側の行のセルの一部なので、
                     // 独立したテーブルとしては読まない。
-                    entries, (school, club, character)
+                    tableEntries, (school, club, character)
                 | _ ->
                     match school, character with
                     | Some school, Some character ->
-                        entries @ parseTable notes school club character element,
+                        parseTable notes school club character element :: tableEntries,
                         (Some school, club, Some character)
-                    | _ -> entries, (school, club, character))
+                    | _ -> tableEntries, (school, club, character))
             ([], (None, None, None))
         |> fst
+        |> List.rev
+        |> List.concat
         |> List.distinct
 
     if List.isEmpty entries then
