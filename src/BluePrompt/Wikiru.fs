@@ -76,6 +76,30 @@ let studentContentQuery: Extract.ContentQuery =
                 contentQuery.RemoveSelectors
         ReplaceImagesWithAlt = true }
 
+/// キャラ呼称表ページ用の抽出設定。
+/// Appellation.parseが読む#bodyと#noteだけを残し、
+/// contentQueryと同じ理由でスクリプト片・広告タグ・コメント欄と投稿フォーム由来の、
+/// 任意ユーザー入力がレコードへ紛れ込む余地を断つ。
+/// 一方でパースはDOMの構造をそのまま読むため、Markdown化前提の変形は掛けない。
+/// リンクは脚注アンカー(note_super)のhref/titleと編集リンクの判定に必要なので外さず、
+/// rowspanもparseTableが自前で扱うのでテーブルは平坦化しない。
+/// セル内のアイコン画像はTextContentが空で無害なので、altへの置き換えもしない。
+let appellationContentQuery: Extract.ContentQuery =
+    { ContentSelectors = [ "#body"; "#note" ]
+      RemoveSelectors =
+        [ ".sticky-ads"
+          "ins.adsbygoogle"
+          ".pcomment"
+          "#pcomment-form"
+          "div[class*='pcmt-']"
+          "script"
+          "style"
+          "noscript"
+          "template" ]
+      UnwrapLinks = false
+      ReplaceImagesWithAlt = false
+      FlattenTables = false }
+
 /// 生徒個別ページからナレッジとして残すセクションの見出し。
 /// ゲーム内の事実を載せているセクションだけを列挙するホワイトリスト。
 /// 「ゲームにおいて」「運用考察」「小ネタ」などのwiki独自の解説・考察は
@@ -371,7 +395,7 @@ let writeRolePlayReference (pageName: string) (outputPath: string) : Task<unit> 
 /// どちらも書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
 let writeAppellation (pageName: string) (markdownPath: string) (jsonPath: string) : Task<unit> =
     task {
-        let! html = Page.fetchHtml (pageUri pageName)
+        let! html = Page.fetchContentHtml (pageUri pageName) appellationContentQuery
         let entries = Appellation.parseHtml html
 
         do!

@@ -106,6 +106,19 @@ let ``studentContentQueryは画像を除去せずaltのテキストへ置き換�
     Assert.True query.ReplaceImagesWithAlt
 
 [<Fact>]
+let ``appellationContentQueryはDOM構造を保ったままスクリプトとコメント欄を除く`` () =
+    // Appellation.parseは脚注アンカーのhrefやrowspanをDOMのまま読むため、
+    // Markdown化前提の変形を掛けるとパースが壊れる。
+    // 一方でスクリプト片や投稿フォーム由来の任意ユーザー入力の除去は、
+    // contentQueryと同じ理由でこの経路にも必要。
+    let query = BluePrompt.Wikiru.appellationContentQuery
+    Assert.False query.UnwrapLinks
+    Assert.False query.FlattenTables
+    Assert.Contains("script", query.RemoveSelectors)
+    Assert.Contains(".pcomment", query.RemoveSelectors)
+    Assert.Contains("#pcomment-form", query.RemoveSelectors)
+
+[<Fact>]
 let ``filterSectionsはホワイトリストにあるh2セクションだけ残す`` () =
     let markdown = "## 基本情報\n\n名前\n\n## 運用考察\n\n考察本文\n\n## スキル\n\nEX\n"
 
