@@ -201,9 +201,9 @@ type private GridEntry =
 /// rowspanは実際の残り行数で、colspanは現実のwikiテーブルを大きく超えるこの定数で切り詰める。
 let private maxColumnSpan = 100
 
-/// 格子の総エントリ数の上限。
+/// 文書全体で共有する格子の総エントリ数の既定の予算。
 /// 1セルあたりの切り詰めだけでは総量が行数×1行のセル数×rowSpan×colSpanで二次的に膨らむため、
-/// 見積りがこれを超える表は展開を諦める。現実のwikiテーブルを大きく超える値。
+/// 見積りが残り予算を超える表は展開を諦める。現実のwikiのページを大きく超える値。
 let private maxGridEntries = 1_000_000L
 
 /// セルが格子で占める行方向と列方向の広がり。
@@ -231,9 +231,14 @@ let private replaceChildren (parent: IElement) (children: IElement array) : unit
 /// 複製はサブツリーをコピーしない。
 /// 深いコピーを繰り返すと入れ子テーブルを含むセルで乗算的に膨らむため。
 /// 画像の除去などで全セルが空になった行はノイズでしかないので取り除く。
-/// 総エントリ数の見積りが上限を超える表は、
-/// メモリ枯渇やハングを防ぐため展開せずそのまま残す。
-let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) : bool =
+/// 展開した場合は消費した格子のエントリ数をSomeで返す。
+/// 総エントリ数の見積りが残り予算budgetを超える表は、
+/// メモリ枯渇やハングを防ぐため展開せずそのまま残してNoneを返す。
+let private expandMergedCells
+    (document: IDocument)
+    (budget: int64)
+    (table: IHtmlTableElement)
+    : int64 option =
     let rows = Seq.toArray table.Rows
 
     let estimatedEntries =
@@ -245,8 +250,8 @@ let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) :
                 int64 rowSpan * int64 columnSpan))
         |> Array.sum
 
-    if maxGridEntries < estimatedEntries then
-        false
+    if budget < estimatedEntries then
+        None
     else
 
         // 列インデックスは0から連続する密な整数なので、
@@ -318,7 +323,7 @@ let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) :
             else
                 replaceChildren row (Array.map fst cells))
 
-        true
+        Some estimatedEntries
 
 /// 見出しの下が全て空になった列を列ごと取り除く。
 /// 画像の除去などで空になった列はノイズでしかないため。
@@ -407,21 +412,32 @@ let private normalizePairsRows (document: IDocument) (table: IHtmlTableElement) 
             // 末尾のセルは必ず非空なので、最後のペアが常に残りpairRowsが空になることはない。
             row.Replace pairRows
 
-/// 文書中の全テーブルを平坦化する。
+/// 予算budgetを格子の総エントリ数の上限として、文書中の全テーブルを平坦化する。
 /// 区切り行の段落化とセル内改行・ブロック要素の結合を施した後に、
 /// 結合セルの複製展開と空行・空列の除去とキー値ペア行の正規化を行う。
 /// 列位置はrowspan/colspanを考慮した格子を組み立てて求める。
 /// 内側のテーブルを先に処理しないと外側のセル複製で処理前の姿が固定されるため、逆順に走査する。
-let flatten (document: IDocument) : unit =
+let flattenWithBudget (budget: int64) (document: IDocument) : unit =
     splitDividerRows document
     joinCellLineBreaks document
     unwrapCellBlocks document
+
+    // 上限を1テーブル単位で掛けると文書全体では上限×テーブル数まで膨らむため、
+    // 残り予算を文書全体で持ち回り、使い切った以降のテーブルは展開しない。
+    let mutable remainingEntries = budget
 
     for table in Array.rev (Seq.toArray (document.QuerySelectorAll "table")) do
         let table = table :?> IHtmlTableElement
 
         // 展開を諦めた過大な表は結合セルが残ったままで、
         // 後段の列単位の処理も同じ規模で膨らむため丸ごと飛ばす。
-        if expandMergedCells document table then
+        match expandMergedCells document remainingEntries table with
+        | None -> ()
+        | Some consumedEntries ->
+            remainingEntries <- remainingEntries - consumedEntries
             dropEmptyColumns table
             normalizePairsRows document table
+
+/// 既定の予算で文書中の全テーブルを平坦化する。挙動はflattenWithBudgetと同じ。
+let flatten (document: IDocument) : unit =
+    flattenWithBudget maxGridEntries document
