@@ -2,6 +2,7 @@
 module BluePrompt.Fmt
 
 open System
+open System.ComponentModel
 open System.Diagnostics
 open System.IO
 open System.Text
@@ -52,7 +53,7 @@ let formatFile (path: string) : Task<unit> =
                 match Process.Start startInfo with
                 | null -> raise (InvalidOperationException startFailedMessage)
                 | started -> started
-            with :? System.ComponentModel.Win32Exception as error ->
+            with :? Win32Exception as error ->
                 raise (InvalidOperationException(startFailedMessage, error))
         // パイプバッファが満杯になるとプロセスと相互待ちになるため、
         // 終了待ちより先に標準出力と標準エラーの読み取りを開始しておく。

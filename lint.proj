@@ -1,0 +1,24 @@
+<Project>
+  <!--
+    リント(AnalyzeFSharpProject)対象のF#プロジェクトをglobで集約する単一エントリポイント。
+    対象をここへ列挙しないことで、プロジェクトを追加した時の更新漏れを構造的に防ぐ。
+    実行方法はCLAUDE.mdのリンターの節を参照。
+  -->
+  <ItemGroup>
+    <ProjectToAnalyze Include="src/**/*.fsproj" />
+    <ProjectToAnalyze Include="test/**/*.fsproj" />
+  </ItemGroup>
+  <Target Name="AnalyzeFSharpProject">
+    <!--
+      MSBuildタスクはProjectsが空でも成功するため、
+      globが1件も一致しない状態を「全プロジェクトを解析した」と誤認しないように失敗させる。
+    -->
+    <Error
+      Condition="'@(ProjectToAnalyze)' == ''"
+      Text="リント対象のfsprojが1件も見つかりません。globの前提が崩れています。" />
+    <MSBuild
+      Projects="@(ProjectToAnalyze)"
+      Targets="AnalyzeFSharpProject"
+      BuildInParallel="true" />
+  </Target>
+</Project>

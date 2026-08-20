@@ -50,7 +50,7 @@ let withServer (respond: string -> Response) (action: Uri -> Task<'T>) : Task<'T
 
                         // TCPはメッセージ境界を保証しないため、
                         // リクエスト行の終端(\r\n)が現れるまで読み足す。
-                        let chunk = (Array.zeroCreate 8192: byte array)
+                        let chunk: byte array = Array.zeroCreate 8192
                         let mutable request = ""
 
                         while not (request.Contains "\r\n") do

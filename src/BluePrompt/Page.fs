@@ -4,6 +4,7 @@ module BluePrompt.Page
 open System
 open System.Threading.Tasks
 open AngleSharp
+open AngleSharp.Dom
 open AngleSharp.Io
 
 /// HTTPステータスが成功以外だった時のURLとステータスコード。
@@ -39,7 +40,7 @@ let private configuration =
 /// file:等によるローカル読み出しを防ぐため、スキームはhttpとhttpsに限定する。
 /// ブラウジングコンテキストは開いているドキュメントを持つ状態機械なので、
 /// 共有せず呼び出しごとに作って破棄する。
-let private withDocument (url: Uri) (action: AngleSharp.Dom.IDocument -> 'T) : Task<'T> =
+let private withDocument (url: Uri) (action: IDocument -> 'T) : Task<'T> =
     task {
         if url.Scheme <> Uri.UriSchemeHttp && url.Scheme <> Uri.UriSchemeHttps then
             raise (ArgumentException($"http/https以外のスキームは扱えません: %O{url}", nameof url))

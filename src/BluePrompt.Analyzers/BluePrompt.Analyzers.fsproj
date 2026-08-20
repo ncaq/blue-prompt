@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <!-- Directory.Build.propsで定義する共有プロパティ。値の変更はそちらで行う。 -->
+    <TargetFramework>$(BluePromptAnalyzersTargetFramework)</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!--
+      FSharp.Compiler.ServiceはFSharp.Coreのバージョン完全一致を要求するため、
+      SDKの暗黙参照ではなく下のPackageReferenceで明示的に固定する。
+    -->
+    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="EditorServiceAnalyzer.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      バージョンはfsharp-analyzers CLI(flake.nixで供給)と一致させる必要がある。
+      アナライザーはCLIホストが読み込んだSDKとFSharp.Compiler.Serviceで実行されるため、
+      実行時アセンブリは出力へコピーしない。
+    -->
+    <PackageReference Include="FSharp.Analyzers.SDK" Version="0.37.2" ExcludeAssets="runtime" />
+    <PackageReference Include="FSharp.Core" Version="[10.1.201]" ExcludeAssets="runtime" />
+  </ItemGroup>
+</Project>

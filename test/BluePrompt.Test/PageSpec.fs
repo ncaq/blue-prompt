@@ -1,6 +1,7 @@
 module BluePrompt.Test.PageSpec
 
 open System
+open System.Collections.Concurrent
 open System.Net
 open System.Net.Sockets
 open System.Text
@@ -130,7 +131,7 @@ let ``ページ内のリソースは追加取得されない`` () : Task =
     task {
         // IsResourceLoadingEnabled = falseはAngleSharpの既定値の変化への防御なので、
         // 設定が効かなくなった時に検知できるようにテストで固定する。
-        let requestedPaths = System.Collections.Concurrent.ConcurrentQueue<string>()
+        let requestedPaths = ConcurrentQueue<string>()
 
         let respond (path: string) : Response =
             requestedPaths.Enqueue path
