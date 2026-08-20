@@ -188,6 +188,24 @@ let ``studentSkillMarkdownはフロントマターと出典とナレッジを含
     Assert.Contains("## 基本情報", skill)
 
 [<Fact>]
+let ``sourceHeaderはURLをそのまま使いページ名をデコードで復元する`` () =
+    let header =
+        BluePrompt.Wikiru.sourceHeader (
+            System.Uri "https://bluearchive.wikiru.jp/?%E3%83%A6%E3%82%A6%E3%82%AB"
+        )
+
+    Assert.Contains("[ユウカ - ", header)
+    Assert.Contains("(https://bluearchive.wikiru.jp/?%E3%83%A6%E3%82%A6%E3%82%AB)", header)
+
+[<Fact>]
+let ``sourceHeaderはクエリの無いURLではURL全体を表示名にする`` () =
+    // ページ名を復元できないURLでも表記が空欄にならないようにする。
+    let header =
+        BluePrompt.Wikiru.sourceHeader (System.Uri "https://bluearchive.wikiru.jp/")
+
+    Assert.Contains("[https://bluearchive.wikiru.jp/ - ", header)
+
+[<Fact>]
 let ``knowledgeHeaderは出典URLを含む`` () =
     Assert.Contains(
         "https://bluearchive.wikiru.jp/?%E3%82%AD%E3%83%A3%E3%83%A9%E5%91%BC%E7%A7%B0%E8%A1%A8",

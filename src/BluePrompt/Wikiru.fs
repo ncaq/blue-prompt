@@ -250,10 +250,21 @@ let fetchMarkdownWith (pandocArguments: string list) (pageName: string) : Task<s
 let fetchMarkdown (pageName: string) : Task<string> =
     fetchMarkdownWith Pandoc.defaultMarkdownArguments pageName
 
-/// ナレッジファイル先頭に付ける出典の表記。
+/// 出典URLからナレッジファイル先頭に付ける出典の表記を組み立てる。
+/// リンクには渡されたURLをそのまま使い、ページ名を経由した再エンコードの往復をしない。
+/// 表示するページ名はクエリのパーセントデコードで復元し、
+/// クエリの無いURLはページ名を復元できないのでURL全体を表示名にする。
 /// Uri.ToStringはパーセントエンコードを解いた表示用文字列を返すため、リンクにはAbsoluteUriを使う。
-let knowledgeHeader (pageName: string) : string =
-    $"出典: [%s{pageName} - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{(pageUri pageName).AbsoluteUri})\n\n"
+let sourceHeader (source: Uri) : string =
+    let pageName =
+        match source.Query.TrimStart '?' with
+        | "" -> source.AbsoluteUri
+        | query -> Uri.UnescapeDataString query
+
+    $"出典: [%s{pageName} - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{source.AbsoluteUri})\n\n"
+
+/// ページ名からナレッジファイル先頭に付ける出典の表記を組み立てる。
+let knowledgeHeader (pageName: string) : string = sourceHeader (pageUri pageName)
 
 /// 出力先の親ディレクトリを作ってからファイルへ書き出す。
 let private writeFile (outputPath: string) (content: string) : Task<unit> =
@@ -447,10 +458,10 @@ let writeRolePlaySkill (caller: string) (jsonPath: string) (outputPath: string) 
         let! template = File.ReadAllTextAsync templatePath
         let! json = File.ReadAllTextAsync jsonPath
         let document = Appellation.ofJson json
-        let pageName = Uri.UnescapeDataString((Uri document.Source).Query.TrimStart '?')
 
         let appellation =
-            knowledgeHeader pageName + Appellation.toCallerMarkdown caller document.Entries
+            sourceHeader (Uri document.Source)
+            + Appellation.toCallerMarkdown caller document.Entries
 
         match renderRolePlaySkill appellation template with
         | None -> raise (AppellationPlaceholderNotFound templatePath)
