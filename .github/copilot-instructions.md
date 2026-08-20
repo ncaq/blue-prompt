@@ -178,6 +178,27 @@ dotnet run --project src/BluePrompt -- wikiru-html '<ページ名>' <出力フ�
 dotnet run --project src/BluePrompt -- wikiru-student-html '<生徒のページ名>' <出力ファイル>
 ```
 
+# Open WebUI向けモデル定義の生成
+
+Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
+SKILL.mdと本文から明示的にリンクされた参照ファイルをインライン化して、
+システムプロンプトへ焼き込んだワークスペースModelの作成フォームJSONへ変換します。
+生成物は`POST /api/v1/models/create`へそのまま渡して登録できる形式です。
+
+全スキル分をまとめて生成するのは以下です。
+出力はビルド成果物でリポジトリへはコミットしないため、
+`nix fmt`は実行しません。
+
+```console
+nix build .#open-webui-model
+```
+
+スキル1つ分を単体で変換したい時は以下を使います。
+
+```console
+dotnet run --project src/BluePrompt -- open-webui-model <スキルディレクトリ> <出力ファイル>
+```
+
 # テスト方針
 
 このリポジトリのプログラムは外部に配布したりする性質のものではないので、

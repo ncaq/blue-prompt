@@ -17,6 +17,9 @@ let private usage =
     出力先と同じディレクトリの手書きテンプレートSKILL.template.mdのプレースホルダへ、
     生成済みのappellation.jsonから抜き出した指定キャラクターの呼称表を流し込み、
     role-playスキルのSKILL.md全体を生成する。wikiruへはアクセスしない。
+  BluePrompt open-webui-model <スキルディレクトリ> <出力ファイル>
+    スキルのSKILL.mdとリンクされた参照ファイルをインライン化して、
+    システムプロンプトへ焼き込んだOpen WebUIのModelFormのJSONを書き出す。
   BluePrompt wikiru-html <ページ名> <出力ファイル>
     wikiruの記事から抽出した本文をMarkdown化せずHTMLのまま書き出す。
   BluePrompt wikiru-student-html <ページ名> <出力ファイル>
@@ -39,6 +42,9 @@ let main argv =
         0
     | [| "roleplay-skill"; caller; jsonPath; outputPath |] ->
         (Wikiru.writeRolePlaySkill caller jsonPath outputPath).GetAwaiter().GetResult()
+        0
+    | [| "open-webui-model"; skillDirectory; outputPath |] ->
+        (OpenWebui.writeModel skillDirectory outputPath).GetAwaiter().GetResult()
         0
     | [| "wikiru-html"; pageName; outputPath |] ->
         (Wikiru.writeContentHtml Wikiru.contentQuery pageName outputPath).GetAwaiter().GetResult()

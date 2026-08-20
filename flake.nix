@@ -244,6 +244,27 @@
                   ''
                 ) skills}
               '';
+          # Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
+          # SKILL.mdと参照ファイルをインライン化したシステムプロンプトを持つ、
+          # ワークスペースModelの作成フォームJSONをスキルごとに生成する。
+          # POST /api/v1/models/createへそのまま渡して登録できる。
+          open-webui-model = pkgs.runCommand "open-webui-model-${marketplace.metadata.version}" { } ''
+            # dotnetランタイムがユーザプロファイルへ書き込もうとするため、
+            # サンドボックス内でも書けるHOMEを用意する。
+            export HOME="$TMPDIR"
+            mkdir -p $out
+            ${lib.concatMapStrings (
+              { pluginName, skillName }:
+              # claude-ai-skillと同様に、
+              # プラグインを跨いだスキル名の重複で出力が衝突しないように、
+              # 出力ファイル名はプラグイン名で名前空間に分ける。
+              ''
+                ${lib.getExe blue-prompt} open-webui-model \
+                  ${./plugins + "/${pluginName}/skills/${skillName}"} \
+                  $out/${pluginName}-${skillName}.json
+              ''
+            ) skills}
+          '';
         in
         {
           treefmt.config = {
@@ -278,6 +299,7 @@
           checks = {
             package-blue-prompt = blue-prompt;
             package-claude-ai-skill = claude-ai-skill;
+            package-open-webui-model = open-webui-model;
 
             # home-managerモジュールを実際のhome-manager構成へ組み込んで、
             # プラグインとスキルが実際に接続されていることを検証する。
@@ -339,6 +361,7 @@
             inherit
               blue-prompt
               claude-ai-skill
+              open-webui-model
               update-deps
               ;
           };

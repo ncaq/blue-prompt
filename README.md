@@ -126,6 +126,46 @@ nix build .#claude-ai-skill
 `Settings`の`Capabilities`で`Code execution and file creation`を有効にした上で、
 `Customize`の`Skills`から行います。
 
+## Open WebUI
+
+[Open WebUI](https://github.com/open-webui/open-webui)には、
+Claude Codeのスキルのような指示書と参照ファイルの組をオンデマンドで読み込む仕組みがありません。
+そのため、
+SKILL.mdと本文から明示的にリンクされた参照ファイルをインライン化して、
+システムプロンプトへ焼き込んだワークスペースModelの作成フォームJSONへ変換します。
+
+cloneしていなくても以下のコマンドで生成できます。
+
+```console
+nix build github:ncaq/blue-prompt#open-webui-model
+ls result
+```
+
+cloneしている場合はリポジトリのルートで以下を実行してください。
+
+```console
+nix build .#open-webui-model
+```
+
+生成されるJSONファイルは`<プラグイン名>-<スキル名>.json`の形式で、
+スキルごとに1つずつ作られます。
+Open WebUIの`POST /api/v1/models/create`へそのまま渡して登録できます。
+
+```console
+curl -X POST "$OPEN_WEBUI_URL/api/v1/models/create" \
+  -H "Authorization: Bearer $OPEN_WEBUI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d @result/role-play-yuuka.json
+```
+
+実際に推論へ使う上流モデルを表す`base_model_id`は、
+登録先のインスタンスに依存するため`null`で生成されます。
+登録後にワークスペースのモデル編集画面か更新APIで基盤モデルを設定してください。
+
+なお`character-appellation`のような巨大な参照ファイルを持つスキルも一応変換されますが、
+全キャラクターの呼称表がシステムプロンプトへ丸ごと入るため、
+コンテキスト消費が大きく実用には向きません。
+
 ## モバイルアプリ
 
 [公式ドキュメント](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/overview)
