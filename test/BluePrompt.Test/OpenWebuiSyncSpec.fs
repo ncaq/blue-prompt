@@ -86,8 +86,7 @@ type private MockServer() =
 
     member _.Url = $"http://127.0.0.1:%d{port}"
 
-    member _.OverrideModelGet(status: int, body: string) =
-        modelGetOverride <- Some(status, body)
+    member _.OverrideModelGet(status: int, body: string) = modelGetOverride <- Some(status, body)
     member _.Models = models
     member _.CreateCount = createCount
     member _.UpdateCount = updateCount
@@ -239,7 +238,10 @@ let ``同じidのModel定義が複数あるとSyncErrorで止まる`` () =
     use server = new MockServer()
     let directory = makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]
     // 別のファイル名で同じidの定義を置く。
-    File.WriteAllText(Path.Combine(directory, "duplicated.json"), OpenWebui.toJson (makeForm "yuuka" "別のプロンプト"))
+    File.WriteAllText(
+        Path.Combine(directory, "duplicated.json"),
+        OpenWebui.toJson (makeForm "yuuka" "別のプロンプト")
+    )
 
     let error = Assert.Throws<SyncError>(fun () -> run (makeOptions server directory))
 

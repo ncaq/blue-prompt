@@ -99,7 +99,11 @@ let private postForm (client: HttpClient) (url: string) (form: OpenWebui.ModelFo
     }
 
 /// ModelForm1件を同期する。
-let private syncModel (client: HttpClient) (options: Options) (desired: OpenWebui.ModelForm) : Task<unit> =
+let private syncModel
+    (client: HttpClient)
+    (options: Options)
+    (desired: OpenWebui.ModelForm)
+    : Task<unit> =
     task {
         let id = desired.Id
 

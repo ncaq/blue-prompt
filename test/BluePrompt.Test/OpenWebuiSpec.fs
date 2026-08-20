@@ -75,7 +75,10 @@ let ``URLとアンカーのリンクはインライン化の対象にならな�
 let ``ドットスラッシュ無しの相対リンクも参照ファイルとして扱われる`` () =
     Assert.Equal<string list>([ "reference.md" ], localLinkTargets "[reference.md](reference.md)")
     // ./有りと無しは同じファイルなので1つにまとまる。
-    Assert.Equal<string list>([ "reference.md" ], localLinkTargets "[a](reference.md) [b](./reference.md)")
+    Assert.Equal<string list>(
+        [ "reference.md" ],
+        localLinkTargets "[a](reference.md) [b](./reference.md)"
+    )
 
 [<Fact>]
 let ``サブディレクトリの参照ファイルもインライン化される`` () =
