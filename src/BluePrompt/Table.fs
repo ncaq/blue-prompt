@@ -73,8 +73,8 @@ let private joinSeparator (previousText: string) (nextText: string) : string opt
     let flushAfter = "/／・、。,)）」』(（"
 
     let flushable =
-        (previousText <> "" && flushBefore.Contains previousText[previousText.Length - 1])
-        || (nextText <> "" && flushAfter.Contains nextText[0])
+        previousText <> "" && flushBefore.Contains previousText[previousText.Length - 1]
+        || nextText <> "" && flushAfter.Contains nextText[0]
 
     if flushable then None else Some "、"
 
@@ -111,9 +111,9 @@ let private isSameLinkFold (previousNode: INode) (nextNode: INode) : bool =
     | (:? IElement as previous), (:? IElement as next) ->
         previous.TagName = "A"
         && next.TagName = "A"
-        && (match previous.GetAttribute "href" with
-            | null -> false
-            | href -> href = next.GetAttribute "href")
+        && match previous.GetAttribute "href" with
+           | null -> false
+           | href -> href = next.GetAttribute "href"
     | _ -> false
 
 /// セル内のbrを前後の文脈に合わせて詰めるか読点で繋ぐ。
@@ -360,7 +360,7 @@ let private dropEmptyColumns (table: IHtmlTableElement) : unit =
                 |> Seq.skip 1
                 |> Seq.forall (fun texts -> String.IsNullOrEmpty(cellTextAt index texts))
 
-            if bodyIsEmpty && (headerIsEmpty || (hasHeaderRow && 3 <= survivingRows.Length)) then
+            if bodyIsEmpty && (headerIsEmpty || hasHeaderRow && 3 <= survivingRows.Length) then
                 for cells in rowCells do
                     if index < cells.Length then
                         cells[index].Remove()
@@ -393,7 +393,7 @@ let private normalizePairsRows (document: IDocument) (table: IHtmlTableElement) 
             && pairCells
                |> Array.indexed
                |> Array.forall (fun (index, cell) ->
-                   cell.TagName = (if index % 2 = 0 then "TH" else "TD"))
+                   cell.TagName = if index % 2 = 0 then "TH" else "TD")
 
         if isPairsRow then
             let pairRows =

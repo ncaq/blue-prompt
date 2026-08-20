@@ -153,10 +153,10 @@ let cleanupMarkdown (markdown: string) : string =
     normalizeBlankLines (convertFootnotes withoutSeparatorRemnant)
 
 /// GFMの脚注定義行(「[^1]: 本文」)への一致。
-let private footnoteDefinitionPattern = Regex(@"^\[\^(\d+)\]: ")
+let private footnoteDefinitionPattern = Regex @"^\[\^(\d+)\]: "
 
 /// h2見出し行への一致。見出しのテキストを捕捉する。
-let private sectionHeadingPattern = Regex(@"^## +(.*?)\s*$")
+let private sectionHeadingPattern = Regex @"^## +(.*?)\s*$"
 
 /// h2見出しのホワイトリストでMarkdownのセクションを選別する。
 /// h2の見出しがtitlesに載っているセクションだけを、h3以下の小見出しごと残す。
@@ -180,7 +180,7 @@ let filterSections (titles: string list) (markdown: string) : string =
                     | m when m.Success -> List.contains m.Groups[1].Value titles
                     | _ -> keeping
 
-                ((if keeping then line :: kept else kept), keeping))
+                (if keeping then line :: kept else kept), keeping)
             ([], true)
         |> fst
         |> List.rev
