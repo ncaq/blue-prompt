@@ -19,6 +19,28 @@ let private collapsibleSelector = ".rgn-container"
 /// contentQueryは除去し、studentContentQueryは除去対象から外してaltのテキストへ置き換える。
 let private imageSelector = "img"
 
+/// どの抽出経路でも本文として扱わないノイズのセレクタ。
+/// contentQueryとappellationContentQueryの双方がこの値を参照することで、
+/// セレクタの追加が片方だけに伝わって取りこぼしへ戻ることを防ぐ。
+let private noiseSelectors =
+    [
+      // 広告。
+      ".sticky-ads"
+      "ins.adsbygoogle"
+      // コメント欄と投稿フォームとその部品(絵文字ピッカーなど)。
+      // wiki独自コンテンツは扱わない方針な上に、
+      // 誰でも投稿できる欄由来の任意ユーザー入力を成果物へ入れないため。
+      ".pcomment"
+      "#pcomment-form"
+      "div[class*='pcmt-']"
+      // 表示対象ではない要素。pandocのMarkdown化もDOMのTextContentの読み出しも、
+      // タグを落としてもテキスト内容を本文へ混ぜることがあり、
+      // wikiのプラグインや広告タグ由来のスクリプト片が成果物へ紛れ込む余地がある。
+      "script"
+      "style"
+      "noscript"
+      "template" ]
+
 /// wikiruの記事からナレッジとして使う部分を抜き出す設定。
 /// 本文(#body)と脚注(#note)を残し、サイトのヘッダ・サイドバー・フッタは含めない。
 let contentQuery: Extract.ContentQuery =
@@ -35,14 +57,6 @@ let contentQuery: Extract.ContentQuery =
           // ジャンプできないMarkdownではどちらも要らない。
           // 折りたたみに本文が入っている生徒個別ページはstudentContentQueryで扱う。
           collapsibleSelector
-          // 広告。
-          ".sticky-ads"
-          "ins.adsbygoogle"
-          // コメント欄と投稿フォームとその部品(絵文字ピッカーなど)。
-          // wiki独自コンテンツは扱わない方針のため。
-          ".pcomment"
-          "#pcomment-form"
-          "div[class*='pcmt-']"
           // 表内などに埋め込まれた他ページの編集リンク。
           // リンクアンラップの後に「EDIT」という文字列だけが残ってノイズになる。
           "a[href*='cmd=edit']"
@@ -50,13 +64,8 @@ let contentQuery: Extract.ContentQuery =
           // リンクアンラップの後にページ名だけの行が残り、直前の表の一部と誤読される。
           ".permalink"
           // 画像。lazyload用プレースホルダのdata URIしか取れずノイズになる。
-          imageSelector
-          // 表示対象ではない要素。pandocはタグを落としてもテキスト内容を本文へ混ぜることがあり、
-          // wikiのプラグインや広告タグ由来のスクリプト片がナレッジへ紛れ込む余地がある。
-          "script"
-          "style"
-          "noscript"
-          "template" ]
+          imageSelector ]
+        @ noiseSelectors
       UnwrapLinks = true
       ReplaceImagesWithAlt = false
       FlattenTables = true }
@@ -76,6 +85,21 @@ let studentContentQuery: Extract.ContentQuery =
                 contentQuery.RemoveSelectors
         ReplaceImagesWithAlt = true }
 
+/// キャラ呼称表ページ用の抽出設定。
+/// Appellation.parseが読む#bodyと#noteだけを残し、
+/// contentQueryと同じ理由でスクリプト片・広告タグ・コメント欄と投稿フォーム由来の、
+/// 任意ユーザー入力がレコードへ紛れ込む余地を断つ。
+/// 一方でパースはDOMの構造をそのまま読むため、Markdown化前提の変形は掛けない。
+/// リンクは脚注アンカー(note_super)のhref/titleと編集リンクの判定に必要なので外さず、
+/// rowspanもparseTableが自前で扱うのでテーブルは平坦化しない。
+/// セル内のアイコン画像はTextContentが空で無害なので、altへの置き換えもしない。
+let appellationContentQuery: Extract.ContentQuery =
+    { ContentSelectors = [ "#body"; "#note" ]
+      RemoveSelectors = noiseSelectors
+      UnwrapLinks = false
+      ReplaceImagesWithAlt = false
+      FlattenTables = false }
+
 /// 生徒個別ページからナレッジとして残すセクションの見出し。
 /// ゲーム内の事実を載せているセクションだけを列挙するホワイトリスト。
 /// 「ゲームにおいて」「運用考察」「小ネタ」などのwiki独自の解説・考察は
@@ -85,6 +109,11 @@ let studentContentQuery: Extract.ContentQuery =
 /// 画像除去後は数量だけが残り事実として読めないため外している。
 let studentSectionTitles: string list =
     [ "基本情報"; "スキル"; "固有武器"; "愛用品"; "能力解放"; "絆ランクボーナス"; "絆ストーリー"; "ボイス" ]
+
+/// 生徒個別ページからrole-playスキルの参照として残すセクションの見出し。
+/// 人格と話し方を示す基本情報とボイスだけを残し、
+/// 性能データの参照はjp-wikiru-bluearchive側のスキルに任せる。
+let rolePlaySectionTitles: string list = [ "基本情報"; "ボイス" ]
 
 /// 最初の見出しより前を切り落とす。
 /// wikiruの記事は本文が最初の見出しから始まり、
@@ -221,10 +250,21 @@ let fetchMarkdownWith (pandocArguments: string list) (pageName: string) : Task<s
 let fetchMarkdown (pageName: string) : Task<string> =
     fetchMarkdownWith Pandoc.defaultMarkdownArguments pageName
 
-/// ナレッジファイル先頭に付ける出典の表記。
+/// 出典URLからナレッジファイル先頭に付ける出典の表記を組み立てる。
+/// リンクには渡されたURLをそのまま使い、ページ名を経由した再エンコードの往復をしない。
+/// 表示するページ名はクエリのパーセントデコードで復元し、
+/// クエリの無いURLはページ名を復元できないのでURL全体を表示名にする。
 /// Uri.ToStringはパーセントエンコードを解いた表示用文字列を返すため、リンクにはAbsoluteUriを使う。
-let knowledgeHeader (pageName: string) : string =
-    $"出典: [%s{pageName} - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{(pageUri pageName).AbsoluteUri})\n\n"
+let sourceHeader (source: Uri) : string =
+    let pageName =
+        match source.Query.TrimStart '?' with
+        | "" -> source.AbsoluteUri
+        | query -> Uri.UnescapeDataString query
+
+    $"出典: [%s{pageName} - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{source.AbsoluteUri})\n\n"
+
+/// ページ名からナレッジファイル先頭に付ける出典の表記を組み立てる。
+let knowledgeHeader (pageName: string) : string = sourceHeader (pageUri pageName)
 
 /// 出力先の親ディレクトリを作ってからファイルへ書き出す。
 let private writeFile (outputPath: string) (content: string) : Task<unit> =
@@ -260,13 +300,35 @@ let writeContentHtml
         do! writeFile outputPath html
     }
 
-/// wikiruの生徒個別ページをナレッジ用Markdownへ変換する。
-/// 折りたたみの中身を残した設定で取得し、事実を載せているセクションだけへ選別する。
-let fetchStudentMarkdown (pageName: string) : Task<string> =
+/// wikiruの生徒個別ページを取得し、指定した見出しのセクションだけのMarkdownへ変換する。
+/// 折りたたみの中身を残した設定で取得する。
+let private fetchStudentSections (titles: string list) (pageName: string) : Task<string> =
     task {
         let! html = Page.fetchContentHtml (pageUri pageName) studentContentQuery
         let! markdown = Pandoc.toMarkdown html
-        return filterSections studentSectionTitles (cleanupMarkdown markdown)
+        return filterSections titles (cleanupMarkdown markdown)
+    }
+
+/// wikiruの生徒個別ページをナレッジ用Markdownへ変換する。
+/// 事実を載せているセクションだけへ選別する。
+let fetchStudentMarkdown (pageName: string) : Task<string> =
+    fetchStudentSections studentSectionTitles pageName
+
+/// 基本情報セクションの「入手方法」の見出し以降(入手方法・ステータス・装備)を切り落とす。
+/// role-playの参照に要るのはプロフィールと紹介文だけで、
+/// 性能データはrole-playには使わないため。
+/// 「入手方法」は見出しプラグイン由来の太字行で、h3以下の見出しにはならない。
+let trimGameplayDetails (markdown: string) : string =
+    normalizeBlankLines (
+        Regex.Replace(markdown, @"^\*\*入手方法\*\*[\s\S]*?(?=^## |\z)", "", RegexOptions.Multiline)
+    )
+
+/// wikiruの生徒個別ページをrole-playスキルの参照用Markdownへ変換する。
+/// プロフィールと紹介文とボイスだけを残す。
+let fetchRolePlayMarkdown (pageName: string) : Task<string> =
+    task {
+        let! markdown = fetchStudentSections rolePlaySectionTitles pageName
+        return trimGameplayDetails markdown
     }
 
 /// 生徒スキルのSKILL.md全体を組み立てる。
@@ -325,4 +387,84 @@ let writeStudentSkill (pageName: string) (outputPath: string) : Task<unit> =
         let! markdown = fetchStudentMarkdown pageName
         do! writeFile outputPath (studentSkillMarkdown skillName pageName markdown)
         do! Fmt.formatFile outputPath
+    }
+
+/// wikiruの生徒個別ページをMarkdown化し、
+/// role-playスキルが参照する衣装別の参照ファイルとして書き出す。
+/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
+let writeRolePlayReference (pageName: string) (outputPath: string) : Task<unit> =
+    task {
+        let! markdown = fetchRolePlayMarkdown pageName
+        do! writeFile outputPath (knowledgeHeader pageName + markdown)
+        do! Fmt.formatFile outputPath
+    }
+
+/// wikiruのキャラ呼称表ページを構造化データへパースし、
+/// LLM参照用のreference.mdと機械読み出し用のJSONを一度の取得から書き出す。
+/// JSONをリポジトリへ併置することで、
+/// 後段の生成処理がwikiruへ再アクセスせずに呼称を読み出せるようにする。
+/// どちらも書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
+let writeAppellation (pageName: string) (markdownPath: string) (jsonPath: string) : Task<unit> =
+    task {
+        let! html = Page.fetchContentHtml (pageUri pageName) appellationContentQuery
+        let entries = Appellation.parseHtml html
+
+        do!
+            writeFile
+                markdownPath
+                (knowledgeHeader pageName + Appellation.toReferenceMarkdown entries)
+
+        let document: Appellation.Document =
+            { Source = (pageUri pageName).AbsoluteUri
+              Entries = entries }
+
+        do! writeFile jsonPath (Appellation.toJson document)
+        // nix fmtの起動が所要時間の支配項なので、2ファイルを1回の起動でまとめて整形する。
+        do! Fmt.formatFiles [ markdownPath; jsonPath ]
+    }
+
+/// role-playスキルのテンプレート内で呼称表を差し込む位置を示すプレースホルダ。
+let appellationPlaceholder: string = "{{appellation}}"
+
+/// テンプレートに呼称表のプレースホルダが見つからなかった時のファイルパス。
+exception AppellationPlaceholderNotFound of path: string
+
+/// role-playスキルのテンプレートのプレースホルダへ呼称表を流し込んでSKILL.mdの内容を組み立てる。
+/// プレースホルダが無いテンプレートは呼称表が黙って落ちるため、Noneを返して失敗にする。
+let renderRolePlaySkill (appellation: string) (template: string) : string option =
+    if template.Contains appellationPlaceholder then
+        Some(template.Replace(appellationPlaceholder, appellation))
+    else
+        None
+
+/// 手書きのテンプレートと生成済みのappellation.jsonから、
+/// role-playスキルのSKILL.md全体を生成する。
+/// 没入感を左右する呼称は別ファイルへ分けず、スキル本体へ直接埋め込む。
+/// テンプレートは出力先と同じディレクトリのSKILL.template.mdから読む。
+/// wikiruへはアクセスせず、リポジトリへ併置したJSONだけで完結する。
+/// 出典の表記はJSONに記録された出典URLからページ名を復元して組み立てる。
+/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
+let writeRolePlaySkill (caller: string) (jsonPath: string) (outputPath: string) : Task<unit> =
+    task {
+        let templatePath =
+            Path.Combine(
+                (match Path.GetDirectoryName outputPath with
+                 | null -> ""
+                 | directory -> directory),
+                "SKILL.template.md"
+            )
+
+        let! template = File.ReadAllTextAsync templatePath
+        let! json = File.ReadAllTextAsync jsonPath
+        let document = Appellation.ofJson json
+
+        let appellation =
+            sourceHeader (Uri document.Source)
+            + Appellation.toCallerMarkdown caller document.Entries
+
+        match renderRolePlaySkill appellation template with
+        | None -> raise (AppellationPlaceholderNotFound templatePath)
+        | Some skill ->
+            do! writeFile outputPath skill
+            do! Fmt.formatFile outputPath
     }

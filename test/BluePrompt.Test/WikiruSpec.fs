@@ -106,6 +106,28 @@ let ``studentContentQueryは画像を除去せずaltのテキストへ置き換�
     Assert.True query.ReplaceImagesWithAlt
 
 [<Fact>]
+let ``appellationContentQueryはDOM構造を保ったままスクリプトとコメント欄を除く`` () =
+    // Appellation.parseは脚注アンカーのhrefやrowspanをDOMのまま読むため、
+    // Markdown化前提の変形を掛けるとパースが壊れる。
+    // 一方でスクリプト片や投稿フォーム由来の任意ユーザー入力の除去は、
+    // contentQueryと同じ理由でこの経路にも必要。
+    let query = BluePrompt.Wikiru.appellationContentQuery
+    Assert.False query.UnwrapLinks
+    Assert.False query.FlattenTables
+    Assert.Contains("script", query.RemoveSelectors)
+    Assert.Contains(".pcomment", query.RemoveSelectors)
+    Assert.Contains("#pcomment-form", query.RemoveSelectors)
+
+[<Fact>]
+let ``appellationContentQueryの除去セレクタはcontentQueryの部分集合である`` () =
+    // 呼称表の経路はMarkdown化固有の除去を持たないだけで、
+    // ノイズの除去はcontentQueryと同じ集合を共有する。
+    // ここが乖離すると呼称表の経路だけスクリプト片や投稿フォームの除去が漏れる。
+    let noise = BluePrompt.Wikiru.appellationContentQuery.RemoveSelectors
+    let markdown = BluePrompt.Wikiru.contentQuery.RemoveSelectors
+    Assert.All(noise, (fun selector -> Assert.Contains(selector, markdown)))
+
+[<Fact>]
 let ``filterSectionsはホワイトリストにあるh2セクションだけ残す`` () =
     let markdown = "## 基本情報\n\n名前\n\n## 運用考察\n\n考察本文\n\n## スキル\n\nEX\n"
 
@@ -142,6 +164,30 @@ let ``filterSectionsは残った本文から参照される脚注定義を文書
     )
 
 [<Fact>]
+let ``trimGameplayDetailsは入手方法から次のh2までを切り落とす`` () =
+    // 基本情報セクションの入手方法・ステータス・装備は性能データで、
+    // role-playの参照にはプロフィールと紹介文とボイスだけが要る。
+    let markdown =
+        "## 基本情報\n\n| 名前 | ユウカ |\n\n**基本情報**\n\n紹介文\n\n"
+        + "**入手方法**\n\n通常募集\n\n**ステータス(初期値/MAX値)**\n\n| HP | 3146 |\n\n"
+        + "## ボイス\n\n| 獲得 | セリフ |\n"
+
+    Assert.Equal(
+        "## 基本情報\n\n| 名前 | ユウカ |\n\n**基本情報**\n\n紹介文\n\n## ボイス\n\n| 獲得 | セリフ |\n",
+        BluePrompt.Wikiru.trimGameplayDetails markdown
+    )
+
+[<Fact>]
+let ``trimGameplayDetailsは続くh2が無ければ末尾まで切り落とす`` () =
+    let markdown = "## 基本情報\n\n紹介文\n\n**入手方法**\n\n通常募集\n"
+    Assert.Equal("## 基本情報\n\n紹介文\n", BluePrompt.Wikiru.trimGameplayDetails markdown)
+
+[<Fact>]
+let ``trimGameplayDetailsは入手方法が無ければ何も変えない`` () =
+    let markdown = "## 基本情報\n\n紹介文\n\n## ボイス\n\n| 獲得 | セリフ |\n"
+    Assert.Equal(markdown, BluePrompt.Wikiru.trimGameplayDetails markdown)
+
+[<Fact>]
 let ``studentSkillMarkdownはフロントマターと出典とナレッジを含む`` () =
     let skill =
         BluePrompt.Wikiru.studentSkillMarkdown "character-yuuka" "ユウカ" "## 基本情報\n"
@@ -151,8 +197,41 @@ let ``studentSkillMarkdownはフロントマターと出典とナレッジを含
     Assert.Contains("## 基本情報", skill)
 
 [<Fact>]
+let ``sourceHeaderはURLをそのまま使いページ名をデコードで復元する`` () =
+    let header =
+        BluePrompt.Wikiru.sourceHeader (
+            System.Uri "https://bluearchive.wikiru.jp/?%E3%83%A6%E3%82%A6%E3%82%AB"
+        )
+
+    Assert.Contains("[ユウカ - ", header)
+    Assert.Contains("(https://bluearchive.wikiru.jp/?%E3%83%A6%E3%82%A6%E3%82%AB)", header)
+
+[<Fact>]
+let ``sourceHeaderはクエリの無いURLではURL全体を表示名にする`` () =
+    // ページ名を復元できないURLでも表記が空欄にならないようにする。
+    let header =
+        BluePrompt.Wikiru.sourceHeader (System.Uri "https://bluearchive.wikiru.jp/")
+
+    Assert.Contains("[https://bluearchive.wikiru.jp/ - ", header)
+
+[<Fact>]
 let ``knowledgeHeaderは出典URLを含む`` () =
     Assert.Contains(
         "https://bluearchive.wikiru.jp/?%E3%82%AD%E3%83%A3%E3%83%A9%E5%91%BC%E7%A7%B0%E8%A1%A8",
         BluePrompt.Wikiru.knowledgeHeader "キャラ呼称表"
     )
+
+[<Fact>]
+let ``renderRolePlaySkillはテンプレートのプレースホルダへ呼称表を流し込む`` () =
+    let template =
+        "# 呼称\n\n前書き\n\n" + BluePrompt.Wikiru.appellationPlaceholder + "\n\n# 次のセクション\n"
+
+    Assert.Equal(
+        Some "# 呼称\n\n前書き\n\n| 相手 | 呼称 |\n\n# 次のセクション\n",
+        BluePrompt.Wikiru.renderRolePlaySkill "| 相手 | 呼称 |" template
+    )
+
+[<Fact>]
+let ``renderRolePlaySkillはプレースホルダが無いテンプレートにNoneを返す`` () =
+    // プレースホルダの書き間違いで呼称表が黙って落ちるのを防ぐ。
+    Assert.Equal(None, BluePrompt.Wikiru.renderRolePlaySkill "| 相手 | 呼称 |" "# 呼称\n\n本文\n")

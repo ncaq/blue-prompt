@@ -10,6 +10,7 @@
     <Compile Include="Pandoc.fs" />
     <Compile Include="Table.fs" />
     <Compile Include="Extract.fs" />
+    <Compile Include="Appellation.fs" />
     <Compile Include="Page.fs" />
     <Compile Include="Scrape.fs" />
     <Compile Include="Wikiru.fs" />
@@ -17,5 +18,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="1.7.1" />
+    <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
   </ItemGroup>
 </Project>
