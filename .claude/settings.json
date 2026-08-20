@@ -5,13 +5,15 @@
       "source": {
         "source": "github",
         "repo": "ncaq/konoka"
-      }
+      },
+      "autoUpdate": true
     },
     "blue-prompt": {
       "source": {
-        "source": "github",
-        "repo": "ncaq/blue-prompt"
-      }
+        "source": "directory",
+        "path": "./"
+      },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {
