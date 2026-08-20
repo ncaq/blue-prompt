@@ -32,7 +32,7 @@ let htmlResponse (html: string) : Response =
 /// ポート0でOSに空きポートを割り当てさせて他のテストとの衝突を避ける。
 let withServer (respond: string -> Response) (action: Uri -> Task<'T>) : Task<'T> =
     task {
-        let listener = new TcpListener(IPAddress.Loopback, 0)
+        use listener = new TcpListener(IPAddress.Loopback, 0)
         listener.Start()
         let port = (listener.LocalEndpoint :?> IPEndPoint).Port
 
@@ -42,27 +42,46 @@ let withServer (respond: string -> Response) (action: Uri -> Task<'T>) : Task<'T
             task {
                 while true do
                     use! client = listener.AcceptTcpClientAsync()
-                    let stream = client.GetStream()
-                    let buffer = (Array.zeroCreate 8192: byte array)
-                    let! read = stream.ReadAsync(buffer.AsMemory())
 
-                    // リクエスト行「GET /path HTTP/1.1」からパスを取り出す。
-                    let path =
-                        match (Encoding.ASCII.GetString(buffer, 0, read)).Split ' ' with
-                        | parts when 2 <= parts.Length -> parts[1]
-                        | _ -> "/"
+                    // サーバ側の処理が失敗した時にテストが原因不明のハングにならないように、
+                    // 接続単位でtry-withで包み、失敗した接続は閉じてクライアント側のエラーとして観測させる。
+                    try
+                        let stream = client.GetStream()
 
-                    let response = respond path
+                        // TCPはメッセージ境界を保証しないため、
+                        // リクエスト行の終端(\r\n)が現れるまで読み足す。
+                        let chunk = (Array.zeroCreate 8192: byte array)
+                        let mutable request = ""
 
-                    let header =
-                        $"HTTP/1.1 %s{response.Status}\r\n"
-                        + $"Content-Type: %s{response.ContentType}\r\n"
-                        + $"Content-Length: %d{response.Body.Length}\r\n"
-                        + String.concat "" (List.map (fun h -> h + "\r\n") response.ExtraHeaders)
-                        + "Connection: close\r\n\r\n"
+                        while not (request.Contains "\r\n") do
+                            let! read = stream.ReadAsync(chunk.AsMemory())
 
-                    do! stream.WriteAsync((Encoding.ASCII.GetBytes header).AsMemory())
-                    do! stream.WriteAsync(response.Body.AsMemory())
+                            if read = 0 then
+                                failwith "リクエスト行が完結する前に接続が閉じられました"
+
+                            request <- request + Encoding.ASCII.GetString(chunk, 0, read)
+
+                        // リクエスト行「GET /path HTTP/1.1」からパスを取り出す。
+                        let path =
+                            match request.Split ' ' with
+                            | parts when 2 <= parts.Length -> parts[1]
+                            | _ -> "/"
+
+                        let response = respond path
+
+                        let header =
+                            $"HTTP/1.1 %s{response.Status}\r\n"
+                            + $"Content-Type: %s{response.ContentType}\r\n"
+                            + $"Content-Length: %d{response.Body.Length}\r\n"
+                            + String.concat "" (List.map (fun h -> h + "\r\n") response.ExtraHeaders)
+                            + "Connection: close\r\n\r\n"
+
+                        do! stream.WriteAsync((Encoding.ASCII.GetBytes header).AsMemory())
+                        do! stream.WriteAsync(response.Body.AsMemory())
+                    with error ->
+                        // 応答せず接続だけ閉じることで、
+                        // クライアント側では取得失敗のエラーとして現れる。
+                        eprintfn $"LocalServer: 接続の処理に失敗しました: %O{error}"
             }
 
         try
