@@ -51,6 +51,31 @@ let ``成功以外のHTTPステータスはFetchErrorになる`` () : Task =
     }
 
 [<Fact>]
+let ``本文が空のエラー応答は本来のステータスで報告される`` () : Task =
+    task {
+        // 空ドキュメント検知が先に働くと、ボディ無しの404が接続失敗と同じstatus=0へ潰れて、
+        // 原因調査時に「サーバへ繋がらなかった」と誤読させる。
+        do!
+            withServer
+                (fun _ ->
+                    { htmlResponse "" with
+                        Status = "404 Not Found"
+                        Body = [||] })
+                (fun url ->
+                    task {
+                        let! error =
+                            Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                                BluePrompt.Page.fetchHtml url :> Task)
+
+                        match error :> exn with
+                        | BluePrompt.Page.FetchError(failedUrl, status) ->
+                            Assert.Equal(url, failedUrl)
+                            Assert.Equal(404, status)
+                        | unexpected -> raise unexpected
+                    })
+    }
+
+[<Fact>]
 let ``接続できない場合はFetchErrorになる`` () : Task =
     task {
         // AngleSharpのローダーは接続拒否やDNS解決失敗でも例外を投げず、
