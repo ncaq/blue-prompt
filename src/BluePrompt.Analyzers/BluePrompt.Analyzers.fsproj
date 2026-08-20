@@ -20,6 +20,6 @@
       実行時アセンブリは出力へコピーしない。
     -->
     <PackageReference Include="FSharp.Analyzers.SDK" Version="0.37.2" ExcludeAssets="runtime" />
-    <PackageReference Include="FSharp.Core" Version="[10.1.201]" ExcludeAssets="runtime" />
+    <PackageReference Include="FSharp.Core" Version="[10.1.400]" ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>
