@@ -216,8 +216,21 @@ let ``セル内に入れ子のテーブルがあっても外側の行だけが�
 
 [<Fact>]
 let ``完全に同じ内容の行はレコードとしては1件になる`` () =
-    // wiki側の編集ミスで同じ行が2度書かれることがあり、
+    // wiki側の編集ミスで同じ行が丸ごと2度書かれることがあり、
     // そのまま残すとJSONにもMarkdownにも同じ呼称が重複して出る。
+    let html =
+        "<div id=\"body\"><h2>学校</h2><h3>部活</h3><h4>チナツ</h4>"
+        + appellationTable (
+            "<tr><td>チナツ</td><td>セナ</td><td>セナ部長、部長</td></tr>"
+            + "<tr><td>チナツ</td><td>セナ</td><td>セナ部長、部長</td></tr>"
+        )
+        + "</div>"
+
+    Assert.Equal<string list>([ "セナ部長"; "部長" ], parseHtml html |> List.map _.Name)
+
+[<Fact>]
+let ``同じ呼称が複数行に現れても1件にまとまり差分のある呼称は残る`` () =
+    // 行の一部だけが重なる場合も、重複除去は呼称のレコード単位で効く。
     let html =
         "<div id=\"body\"><h2>学校</h2><h3>部活</h3><h4>チナツ</h4>"
         + appellationTable (
@@ -227,6 +240,27 @@ let ``完全に同じ内容の行はレコードとしては1件になる`` () =
         + "</div>"
 
     Assert.Equal<string list>([ "セナ部長"; "部長"; "先輩" ], parseHtml html |> List.map _.Name)
+
+[<Fact>]
+let ``注釈だけが異なる呼称は別レコードとして残る`` () =
+    // 重複除去はレコードの完全一致だけを潰す。
+    // 注釈が違えば別の事実なので、まとめずに両方残す。
+    let html =
+        "<div id=\"body\"><h2>学校</h2><h3>部活</h3><h4>チナツ</h4>"
+        + appellationTable (
+            "<tr><td>チナツ</td><td>セナ</td>"
+            + "<td>部長<a class=\"note_super\" href=\"#notefoot_1\">*1</a></td></tr>"
+            + "<tr><td>チナツ</td><td>セナ</td><td>部長</td></tr>"
+        )
+        + "</div><div id=\"note\">"
+        + "<a id=\"notefoot_1\" class=\"note_super\" href=\"#notetext_1\">*1</a>"
+        + "<span>正式な役職</span><br>"
+        + "</div>"
+
+    Assert.Equal<(string * string option) list>(
+        [ "部長", Some "正式な役職"; "部長", None ],
+        parseHtml html |> List.map (fun entry -> entry.Name, entry.Note)
+    )
 
 [<Fact>]
 let ``セル数が想定外の行はRowShapeErrorになる`` () =
