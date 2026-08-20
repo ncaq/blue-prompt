@@ -249,21 +249,33 @@ let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) :
         false
     else
 
-        let grid = Array.init rows.Length (fun _ -> SortedDictionary<int, GridEntry>())
+        // 列インデックスは0から連続する密な整数なので、
+        // マスごとに木ノードを確保するSortedDictionaryではなく行ごとの密な配列で格子を持つ。
+        // 挿入はO(1)で、走査も挿入順ではなく列順が自然に得られる。
+        let grid = Array.init rows.Length (fun _ -> ResizeArray<GridEntry voption>())
+
+        let setEntry (rowEntries: ResizeArray<GridEntry voption>) (index: int) (entry: GridEntry) =
+            while rowEntries.Count <= index do
+                rowEntries.Add ValueNone
+
+            rowEntries[index] <- ValueSome entry
 
         rows
         |> Array.iteri (fun rowIndex row ->
+            let rowEntries = grid[rowIndex]
             let mutable columnIndex = 0
 
             for cell in Seq.toArray row.Cells do
-                while grid[rowIndex].ContainsKey columnIndex do
+                while columnIndex < rowEntries.Count && rowEntries[columnIndex].IsSome do
                     columnIndex <- columnIndex + 1
 
                 let rowSpan, columnSpan = cellSpans rows.Length rowIndex cell
 
                 for i in 0 .. rowSpan - 1 do
                     for j in 0 .. columnSpan - 1 do
-                        grid[rowIndex + i][columnIndex + j] <-
+                        setEntry
+                            (grid[rowIndex + i])
+                            (columnIndex + j)
                             { Cell = cell
                               IsOrigin = i = 0 && j = 0
                               KeepsText = j = 0 }
@@ -287,7 +299,8 @@ let private expandMergedCells (document: IDocument) (table: IHtmlTableElement) :
             // セルと空判定の組で持ち回り、
             // 生成した複製のTextContentを空行判定のために走査し直さない。
             let cells =
-                grid[rowIndex].Values
+                grid[rowIndex]
+                |> Seq.choose ValueOption.toOption
                 |> Seq.map (fun entry ->
                     if entry.IsOrigin then
                         entry.Cell.RemoveAttribute "rowspan" |> ignore
