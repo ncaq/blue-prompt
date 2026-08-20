@@ -49,12 +49,18 @@ let main argv =
     | [| "open-webui-model"; skillDirectory; outputPath |] ->
         (OpenWebui.writeModel skillDirectory outputPath).GetAwaiter().GetResult()
         0
-    | argv when 3 <= argv.Length && argv[0] = "open-webui-sync" ->
-        (OpenWebuiSync.sync (OpenWebuiSync.parseOptions (List.ofArray argv[1..])))
-            .GetAwaiter()
-            .GetResult()
+    // 引数の個数の検証と説明はparseOptionsへ一本化する。
+    | argv when 1 <= argv.Length && argv[0] = "open-webui-sync" ->
+        try
+            (OpenWebuiSync.sync (OpenWebuiSync.parseOptions (List.ofArray argv[1..])))
+                .GetAwaiter()
+                .GetResult()
 
-        0
+            0
+        with OpenWebuiSync.SyncError message ->
+            // 引数や同期の失敗はスタックトレースではなく理由だけを表示する。
+            eprintfn $"%s{message}"
+            1
     | [| "wikiru-html"; pageName; outputPath |] ->
         (Wikiru.writeContentHtml Wikiru.contentQuery pageName outputPath).GetAwaiter().GetResult()
 
