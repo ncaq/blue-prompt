@@ -388,3 +388,49 @@ let writeAppellation (pageName: string) (markdownPath: string) (jsonPath: string
         do! writeFile jsonPath (Appellation.toJson document)
         do! Fmt.formatFile jsonPath
     }
+
+/// role-playスキルのテンプレート内で呼称表を差し込む位置を示すプレースホルダ。
+let appellationPlaceholder: string = "{{appellation}}"
+
+/// テンプレートに呼称表のプレースホルダが見つからなかった時のファイルパス。
+exception AppellationPlaceholderNotFound of path: string
+
+/// role-playスキルのテンプレートのプレースホルダへ呼称表を流し込んでSKILL.mdの内容を組み立てる。
+/// プレースホルダが無いテンプレートは呼称表が黙って落ちるため、Noneを返して失敗にする。
+let renderRolePlaySkill (appellation: string) (template: string) : string option =
+    if template.Contains appellationPlaceholder then
+        Some(template.Replace(appellationPlaceholder, appellation))
+    else
+        None
+
+/// 手書きのテンプレートと生成済みのappellation.jsonから、
+/// role-playスキルのSKILL.md全体を生成する。
+/// 没入感を左右する呼称は別ファイルへ分けず、スキル本体へ直接埋め込む。
+/// テンプレートは出力先と同じディレクトリのSKILL.template.mdから読む。
+/// wikiruへはアクセスせず、リポジトリへ併置したJSONだけで完結する。
+/// 出典の表記はJSONに記録された出典URLからページ名を復元して組み立てる。
+/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
+let writeRolePlaySkill (caller: string) (jsonPath: string) (outputPath: string) : Task<unit> =
+    task {
+        let templatePath =
+            Path.Combine(
+                (match Path.GetDirectoryName outputPath with
+                 | null -> ""
+                 | directory -> directory),
+                "SKILL.template.md"
+            )
+
+        let! template = File.ReadAllTextAsync templatePath
+        let! json = File.ReadAllTextAsync jsonPath
+        let document = Appellation.ofJson json
+        let pageName = Uri.UnescapeDataString((Uri document.Source).Query.TrimStart '?')
+
+        let appellation =
+            knowledgeHeader pageName + Appellation.toCallerMarkdown caller document.Entries
+
+        match renderRolePlaySkill appellation template with
+        | None -> raise (AppellationPlaceholderNotFound templatePath)
+        | Some skill ->
+            do! writeFile outputPath skill
+            do! Fmt.formatFile outputPath
+    }
