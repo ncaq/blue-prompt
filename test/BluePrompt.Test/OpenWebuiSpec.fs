@@ -11,7 +11,14 @@ let private makeSkillDirectory (files: (string * string) list) : string =
     Directory.CreateDirectory directory |> ignore
 
     for fileName, content in files do
-        File.WriteAllText(Path.Combine(directory, fileName), content)
+        let path = Path.Combine(directory, fileName)
+
+        match Path.GetDirectoryName path with
+        | null
+        | "" -> ()
+        | parent -> Directory.CreateDirectory parent |> ignore
+
+        File.WriteAllText(path, content)
 
     directory
 
@@ -63,6 +70,47 @@ let ``URLとアンカーのリンクはインライン化の対象にならな�
         [ "normal.md" ],
         localLinkTargets "[wiki](https://example.com/?page) [節](#anchor) [normal.md](./normal.md)"
     )
+
+[<Fact>]
+let ``ドットスラッシュ無しの相対リンクも参照ファイルとして扱われる`` () =
+    Assert.Equal<string list>([ "reference.md" ], localLinkTargets "[reference.md](reference.md)")
+    // ./有りと無しは同じファイルなので1つにまとまる。
+    Assert.Equal<string list>([ "reference.md" ], localLinkTargets "[a](reference.md) [b](./reference.md)")
+
+[<Fact>]
+let ``サブディレクトリの参照ファイルもインライン化される`` () =
+    let body =
+        """---
+name: nested
+description: desc
+---
+
+[data.md](./sub/data.md)
+"""
+
+    let directory =
+        makeSkillDirectory [ "SKILL.md", body; "sub/data.md", "# 入れ子\n\n中身。\n" ]
+
+    let system = (buildModelForm directory).Params.System
+
+    Assert.Contains("# 参照ファイル: sub/data.md", system)
+    Assert.Contains("中身。", system)
+
+[<Fact>]
+let ``ディレクトリを遡る参照はSkillFormatErrorになる`` () =
+    let body =
+        """---
+name: escape
+description: desc
+---
+
+[outside.md](../outside.md)
+"""
+
+    let directory = makeSkillDirectory [ "SKILL.md", body ]
+
+    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
+    |> ignore
 
 [<Fact>]
 let ``Markdown以外の参照ファイルは拡張子を言語タグにしたコードブロックで包まれる`` () =
