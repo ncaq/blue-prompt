@@ -119,6 +119,15 @@ let ``appellationContentQueryはDOM構造を保ったままスクリプトとコ
     Assert.Contains("#pcomment-form", query.RemoveSelectors)
 
 [<Fact>]
+let ``appellationContentQueryの除去セレクタはcontentQueryの部分集合である`` () =
+    // 呼称表の経路はMarkdown化固有の除去を持たないだけで、
+    // ノイズの除去はcontentQueryと同じ集合を共有する。
+    // ここが乖離すると呼称表の経路だけスクリプト片や投稿フォームの除去が漏れる。
+    let noise = BluePrompt.Wikiru.appellationContentQuery.RemoveSelectors
+    let markdown = BluePrompt.Wikiru.contentQuery.RemoveSelectors
+    Assert.All(noise, (fun selector -> Assert.Contains(selector, markdown)))
+
+[<Fact>]
 let ``filterSectionsはホワイトリストにあるh2セクションだけ残す`` () =
     let markdown = "## 基本情報\n\n名前\n\n## 運用考察\n\n考察本文\n\n## スキル\n\nEX\n"
 

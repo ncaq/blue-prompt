@@ -19,6 +19,28 @@ let private collapsibleSelector = ".rgn-container"
 /// contentQueryは除去し、studentContentQueryは除去対象から外してaltのテキストへ置き換える。
 let private imageSelector = "img"
 
+/// どの抽出経路でも本文として扱わないノイズのセレクタ。
+/// contentQueryとappellationContentQueryの双方がこの値を参照することで、
+/// セレクタの追加が片方だけに伝わって取りこぼしへ戻ることを防ぐ。
+let private noiseSelectors =
+    [
+      // 広告。
+      ".sticky-ads"
+      "ins.adsbygoogle"
+      // コメント欄と投稿フォームとその部品(絵文字ピッカーなど)。
+      // wiki独自コンテンツは扱わない方針な上に、
+      // 誰でも投稿できる欄由来の任意ユーザー入力を成果物へ入れないため。
+      ".pcomment"
+      "#pcomment-form"
+      "div[class*='pcmt-']"
+      // 表示対象ではない要素。pandocのMarkdown化もDOMのTextContentの読み出しも、
+      // タグを落としてもテキスト内容を本文へ混ぜることがあり、
+      // wikiのプラグインや広告タグ由来のスクリプト片が成果物へ紛れ込む余地がある。
+      "script"
+      "style"
+      "noscript"
+      "template" ]
+
 /// wikiruの記事からナレッジとして使う部分を抜き出す設定。
 /// 本文(#body)と脚注(#note)を残し、サイトのヘッダ・サイドバー・フッタは含めない。
 let contentQuery: Extract.ContentQuery =
@@ -35,14 +57,6 @@ let contentQuery: Extract.ContentQuery =
           // ジャンプできないMarkdownではどちらも要らない。
           // 折りたたみに本文が入っている生徒個別ページはstudentContentQueryで扱う。
           collapsibleSelector
-          // 広告。
-          ".sticky-ads"
-          "ins.adsbygoogle"
-          // コメント欄と投稿フォームとその部品(絵文字ピッカーなど)。
-          // wiki独自コンテンツは扱わない方針のため。
-          ".pcomment"
-          "#pcomment-form"
-          "div[class*='pcmt-']"
           // 表内などに埋め込まれた他ページの編集リンク。
           // リンクアンラップの後に「EDIT」という文字列だけが残ってノイズになる。
           "a[href*='cmd=edit']"
@@ -50,13 +64,8 @@ let contentQuery: Extract.ContentQuery =
           // リンクアンラップの後にページ名だけの行が残り、直前の表の一部と誤読される。
           ".permalink"
           // 画像。lazyload用プレースホルダのdata URIしか取れずノイズになる。
-          imageSelector
-          // 表示対象ではない要素。pandocはタグを落としてもテキスト内容を本文へ混ぜることがあり、
-          // wikiのプラグインや広告タグ由来のスクリプト片がナレッジへ紛れ込む余地がある。
-          "script"
-          "style"
-          "noscript"
-          "template" ]
+          imageSelector ]
+        @ noiseSelectors
       UnwrapLinks = true
       ReplaceImagesWithAlt = false
       FlattenTables = true }
@@ -86,16 +95,7 @@ let studentContentQuery: Extract.ContentQuery =
 /// セル内のアイコン画像はTextContentが空で無害なので、altへの置き換えもしない。
 let appellationContentQuery: Extract.ContentQuery =
     { ContentSelectors = [ "#body"; "#note" ]
-      RemoveSelectors =
-        [ ".sticky-ads"
-          "ins.adsbygoogle"
-          ".pcomment"
-          "#pcomment-form"
-          "div[class*='pcmt-']"
-          "script"
-          "style"
-          "noscript"
-          "template" ]
+      RemoveSelectors = noiseSelectors
       UnwrapLinks = false
       ReplaceImagesWithAlt = false
       FlattenTables = false }
