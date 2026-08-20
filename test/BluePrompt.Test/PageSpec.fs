@@ -101,6 +101,23 @@ let ``Content-Typeのcharsetに従って文字コードが判定される`` () :
     }
 
 [<Fact>]
+let ``ページ内のリソースは追加取得されない`` () : Task =
+    task {
+        // IsResourceLoadingEnabled = falseはAngleSharpの既定値の変化への防御なので、
+        // 設定が効かなくなった時に検知できるようにテストで固定する。
+        let requestedPaths = System.Collections.Concurrent.ConcurrentQueue<string>()
+
+        let respond (path: string) : Response =
+            requestedPaths.Enqueue path
+            htmlResponse """<html><body><img src="/image.png"><p>resource test</p></body></html>"""
+
+        let! fetched = withServer respond (fun url -> BluePrompt.Page.fetchHtml url)
+
+        Assert.Contains("resource test", fetched)
+        Assert.DoesNotContain("/image.png", requestedPaths)
+    }
+
+[<Fact>]
 let ``別スキームへのリダイレクトは追跡されずFetchErrorになる`` () : Task =
     task {
         // file:等へのリダイレクトを実際に弾いているのはLoaderOptionsのフィルタではなく、
