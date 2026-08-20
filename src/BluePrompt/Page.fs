@@ -64,13 +64,16 @@ let private withDocument (url: Uri) (action: AngleSharp.Dom.IDocument -> 'T) : T
     }
 
 /// URLを取得し、パース済みDOM全体をHTML文字列で返す。
-/// エラー条件はwithDocumentと同じ。
+/// HTTPステータスが成功以外の場合と取得自体の失敗(status=0)はFetchErrorを、
+/// http/https以外のスキームにはArgumentExceptionを送出する。
 let fetchHtml (url: Uri) : Task<string> =
     withDocument url (fun document -> document.ToHtml())
 
 /// URLを取得し、queryに従って本文だけをHTML文字列として抜き出す。
 /// ローダーが構築したDOMをそのままExtractへ渡すため、直列化と再パースは行わない。
-/// 抽出の挙動はExtract.contentHtmlOfDocumentと同じで、取得のエラー条件はwithDocumentと同じ。
+/// 抽出の挙動はExtract.contentHtmlOfDocumentと同じ。
+/// HTTPステータスが成功以外の場合と取得自体の失敗(status=0)はFetchErrorを、
+/// http/https以外のスキームにはArgumentExceptionを送出する。
 /// 抽出が全滅した場合はExtract.ContentNotFoundを取得元URL付きのContentNotFoundへ包み直す。
 let fetchContentHtml (url: Uri) (query: Extract.ContentQuery) : Task<string> =
     task {
