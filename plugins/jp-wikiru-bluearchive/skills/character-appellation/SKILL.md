@@ -6,11 +6,6 @@ description: Lookup how Blue Archive characters address themselves and each othe
 『ブルーアーカイブ』のキャラクターが、
 自分や他のキャラクターをどう呼ぶかを調べるためのスキルです。
 
-一人称、
-あだ名、
-敬称の有無といった呼び方は捏造されやすい知識なので、
-記憶で答えずにこの表を引いてください。
-
 # データの引き方
 
 呼称の一覧は同じディレクトリのreference.mdにあります。

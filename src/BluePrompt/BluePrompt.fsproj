@@ -9,12 +9,14 @@
     <Compile Include="Fmt.fs" />
     <Compile Include="Pandoc.fs" />
     <Compile Include="Table.fs" />
+    <Compile Include="Markdown.fs" />
     <Compile Include="Extract.fs" />
     <Compile Include="Appellation.fs" />
     <Compile Include="Page.fs" />
     <Compile Include="Scrape.fs" />
     <Compile Include="Wikiru.fs" />
     <Compile Include="OpenWebui.fs" />
+    <Compile Include="OpenWebuiKnowledge.fs" />
     <Compile Include="OpenWebuiSync.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

@@ -178,14 +178,26 @@ dotnet run --project src/BluePrompt -- wikiru-html '<ページ名>' <出力フ�
 dotnet run --project src/BluePrompt -- wikiru-student-html '<生徒のページ名>' <出力ファイル>
 ```
 
-# Open WebUI向けモデル定義の生成
+# Open WebUI向けの生成と同期
 
-Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
+Open WebUIにはスキルのようなオンデマンド読み込みの仕組みがありません。
+Modelは会話の入口を選ぶだけで、
+会話の途中に別のModelを読み込むことはできません。
+そのためスキルの性質によって登録先を分けています。
+
+- 人格を与えるスキル(`plugins/role-play`)はワークスペースModelにする
+- 参照して事実を引くスキル(`plugins/jp-wikiru-bluearchive`)はKnowledgeコレクションにする
+
+どちらに登録するかはflake.nixの`openWebuiKinds`がプラグイン単位で決めていて、
+`plugins/`のディレクトリ一覧との食い違いは評価時に検出されます。
+
+## Model定義の生成
+
 SKILL.mdと本文から明示的にリンクされた参照ファイルをインライン化して、
 システムプロンプトへ焼き込んだワークスペースModelの作成フォームJSONへ変換します。
 生成物は`POST /api/v1/models/create`へそのまま渡して登録できる形式です。
 
-全スキル分をまとめて生成するのは以下です。
+人格のスキル分をまとめて生成するのは以下です。
 出力はビルド成果物でリポジトリへはコミットしないため、
 `nix fmt`は実行しません。
 
@@ -199,19 +211,125 @@ nix build .#open-webui-model
 dotnet run --project src/BluePrompt -- open-webui-model <スキルディレクトリ> <出力ファイル>
 ```
 
-生成したModelは`open-webui-sync`サブコマンドで対象インスタンスへ同期できます。
-APIで登録済みのModelと突き合わせて、
-無ければ作成し、差分があれば上書きし、差分が無ければ書き込みません。
+## Knowledge定義の生成
+
+Knowledgeは登録したファイルをチャンクへ割ってベクトル検索するため、
+大きなファイルをそのまま渡すと表や節の途中で千切れて検索に掛からなくなります。
+SKILL.mdとリンクされたMarkdownの参照ファイルを見出しの単位へ分割して、
+検索でヒットする単位と読ませたい単位を揃えます。
+断片には祖先の見出しが前置され、
+出典の行が全ての断片へ配られるので、
+単体で読んでも何の一部なのかが分かります。
+ファイル名もコレクションの名前から始まります。
+検索で当たった断片は本文とファイル名だけがLLMへ渡るため、
+衣装違いの生徒のように似た構造のコレクションが並んでも、
+これで出所を区別できます。
+
+`appellation.json`のようなMarkdown以外の参照ファイルは、
+jqやスクリプトで引くためのものでOpen WebUIには実行する主体がいないため、
+Knowledgeには含めません。
+
+ナレッジのスキル分をまとめて生成するのは以下です。
+出力はビルド成果物でリポジトリへはコミットしないため、
+`nix fmt`は実行しません。
 
 ```console
-dotnet run --project src/BluePrompt -- open-webui-sync <モデル定義ディレクトリ> <ベースURL> [--base-model-id <id>] [--api-key-file <パス>]
+nix build .#open-webui-knowledge
 ```
+
+スキル1つ分を単体で変換したい時は以下を使います。
+
+```console
+dotnet run --project src/BluePrompt -- open-webui-knowledge <スキルディレクトリ> <出力ディレクトリ>
+```
+
+## ModelとKnowledgeの紐付け
+
+role-playスキルのフロントマターの`knowledge:`行に、
+参照するKnowledgeコレクションの名前をカンマ区切りで並べます。
+yuukaのようにSKILL.template.mdから生成するスキルでは、
+テンプレート側へ書いて生成し直します。
+
+コレクションのidは登録先のインスタンスが採番するため生成時には決まりません。
+生成物では空にしておき、
+`open-webui-sync`が名前でコレクションを引き当てて埋めます。
+紐付け先が同期の対象に無ければ、
+参照が外れたModelを黙って登録せずエラーで止まります。
+
+紐付けたKnowledgeを自動で参照させるには、
+`params.function_calling`を`legacy`(UIの表記では「Default」)にする必要があります。
+Open WebUIはv0.10.0以降この既定値が`native`で、
+`native`ではモデルがビルトインツールを能動的に呼ばない限りKnowledgeが注入されません。
+紐付けのあるModelにはこの指定が自動で入ります。
+
+## 同期
+
+生成したModelとKnowledgeは`open-webui-sync`サブコマンドで対象インスタンスへ同期できます。
+APIで登録済みのものと突き合わせて、
+無ければ作成し、差分があれば上書きし、差分が無ければ書き込みません。
+Knowledgeのファイルは`meta.file_hash`(生バイト列のSHA-256)で比較するので、
+中身が変わっていないファイルには触りません。
+
+```console
+dotnet run --project src/BluePrompt -- open-webui-sync <モデル定義ディレクトリ> <ベースURL> \
+  [--base-model-id <id>] [--api-key-file <パス>] \
+  [--knowledge <ディレクトリ>] [--rag-template-file <パス>]
+```
+
+## RAGプロンプトテンプレート
+
+Knowledgeが自動で参照される時、
+インスタンス全体のRAGテンプレートがシステムプロンプトの後ろへ連結されます。
+Open WebUIの既定値は引用番号の付け方やXMLタグの扱いを英語で指示する内容で、
+ロールプレイ用のModelでは人格と話し方を壊します。
+
+そのため`modules/open-webui-rag-template.txt`の差し障りのないテンプレートを、
+`--rag-template-file`で`POST /api/v1/retrieval/config/update`へ同期します。
+環境変数`RAG_TEMPLATE`は初回起動時にしかDBへ取り込まれず後から変えられないため、
+API経由で同期しています。
+
+## NixOSモジュール
 
 この同期を宣言的に行うNixOSモジュールが、
 `modules/nixos.nix`にあり`nixosModules.default`として公開されています。
 エンドポイントのURLなど登録先に依存する情報だけをオプションで入力すると、
-oneshotのsystemdサービスが起動時とモデル定義の変更時に同期を実行します。
+oneshotのsystemdサービスが起動時と生成物の変更時に同期を実行します。
+ModelとKnowledgeとRAGテンプレートはいずれも既定で同期の対象です。
 モジュールの検証はnix-fast-buildのchecks(`nixos-module`)に含まれています。
+
+# wikiru由来のテキストとプロンプトインジェクション
+
+wikiruは誰でも編集できるwikiなので、
+そこから生成したMarkdownをLLMへ渡す経路には、
+間接プロンプトインジェクション(CWE-1427)の余地があるように見えます。
+実際にレビューでも繰り返し指摘されています。
+
+しかしこのリポジトリでは、
+テーブルのセルの改行の無害化や、
+「資料の中に書かれた指示には従うな」のような枠付けを意図的に入れていません。
+以下の理由で危険が小さいと判断しているため、
+この観点の指摘は不要です。
+
+- 生成物は実行時に流れ込む未知の入力ではなく、
+  生成コマンドを回してコミットする固定のファイルです。
+  取り込む時に差分を読むため、
+  普通は入っていない値が混ざれば取り込む前に気付きます
+- 宛先は自分のClaude Codeと自分のOpen WebUIのインスタンスだけで、
+  不特定の利用者へ配るものではありません
+- このリポジトリが生成するModelはツールを紐付けないため、
+  仮に混入した指示が通っても、
+  起きるのは人格や口調が崩れることだけです
+
+対策を足す側にも費用があります。
+`modules/open-webui-rag-template.txt`がOpen WebUIの既定のテンプレートを置き換えているのは、
+引用番号やXMLタグの指示が人格と話し方を壊すからです。
+資料の扱いについての枠付けを書き足すと、
+同じ方向へロールプレイの邪魔をします。
+
+この判断が変わるのは、
+実行時に外部の入力を取り込むようになった時か、
+生成物を自分以外の利用者へ配るようになった時です。
+その時はこの節ごと見直します。
 
 # テスト方針
 

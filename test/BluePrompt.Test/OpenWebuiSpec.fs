@@ -116,6 +116,25 @@ description: desc
     |> ignore
 
 [<Fact>]
+let ``絶対パスの参照はSkillFormatErrorになる`` () =
+    // Path.Combineは絶対パスを渡されると連結せずそれ自体を返すため、
+    // `..`を含むかどうかだけを見る検査ではスキルディレクトリの外へ抜けられる。
+    // 内容はシステムプロンプトへ焼き込まれ、Knowledgeとして外部へも送られる。
+    let body =
+        """---
+name: absolute
+description: desc
+---
+
+[passwd](/etc/passwd)
+"""
+
+    let directory = makeSkillDirectory [ "SKILL.md", body ]
+
+    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
+    |> ignore
+
+[<Fact>]
 let ``Markdown以外の参照ファイルは拡張子を言語タグにしたコードブロックで包まれる`` () =
     let body =
         """---
@@ -182,3 +201,64 @@ let ``ModelFormはsnake_caseのキーでJSONへ直列化される`` () =
     Assert.Contains("\"base_model_id\": null", json)
     Assert.Contains("\"is_active\": true", json)
     Assert.Contains("\"system\": \"あなたは早瀬ユウカとして振る舞います。\\n\"", json)
+
+[<Fact>]
+let ``フロントマターのknowledgeがModelの紐付けへ対応付く`` () =
+    let body =
+        """---
+name: yuuka
+description: desc
+knowledge: character-yuuka, character-appellation
+---
+
+あなたは早瀬ユウカとして振る舞います。
+"""
+
+    let form = buildModelForm (makeSkillDirectory [ "SKILL.md", body ])
+
+    // idとnameはModelFormにも同じ名前のフィールドがあるため、型を明示して取り違えを防ぐ。
+    let knowledge: KnowledgeReference list = Option.defaultValue [] form.Meta.Knowledge
+
+    Assert.Equal<string list>(
+        [ "character-yuuka"; "character-appellation" ],
+        knowledge |> List.map (fun reference -> reference.Name)
+    )
+
+    // typeがcollectionの項目はファイルのアクセス権検証を通らずに紐付く。
+    Assert.True(knowledge |> List.forall (fun reference -> reference.Type = collectionType))
+    // idは登録先のインスタンスが採番するため、生成の時点では空にしておく。
+    Assert.True(knowledge |> List.forall (fun reference -> reference.Id = None))
+    // 紐付けたKnowledgeを自動で参照させるにはツール呼び出しの方式の指定が要る。
+    Assert.Equal(Some legacyFunctionCalling, form.Params.FunctionCalling)
+
+[<Fact>]
+let ``knowledgeを書かないスキルでは紐付けも方式の指定もされない`` () =
+    let form = buildModelForm (makeSkillDirectory [ "SKILL.md", skillMd ])
+
+    Assert.Equal(None, form.Meta.Knowledge)
+    // このリポジトリと関係のない理由で選ばれた設定を上書きしないようにする。
+    Assert.Equal(None, form.Params.FunctionCalling)
+
+[<Fact>]
+let ``管理対象へ後から足したフィールドが無い応答も読み戻せる`` () =
+    // function_callingを導入する前に登録したModelの応答を模す。
+    // 実際にOpen WebUIへ登録済みのModelのparamsにはsystemしかない。
+    //
+    // optionalFieldPathsの安全網として働くように、
+    // 管理対象のoption型のフィールドは1つも書かない。
+    // nullで明示すると、補う処理を落としてもこのテストが通ってしまう。
+    let json =
+        """{
+  "id": "yuuka",
+  "name": "yuuka",
+  "meta": { "description": "説明", "profile_image_url": "/static/favicon.png" },
+  "params": { "system": "プロンプト" },
+  "is_active": true
+}"""
+
+    let form = ofJson "登録済みのModelの応答" json
+
+    Assert.Equal("yuuka", form.Id)
+    Assert.Equal(None, form.BaseModelId)
+    Assert.Equal(None, form.Params.FunctionCalling)
+    Assert.Equal(None, form.Meta.Knowledge)
