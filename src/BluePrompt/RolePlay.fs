@@ -51,10 +51,18 @@ let parseReference (path: string) (markdown: string) : Reference =
     let missing name =
         raise (ReferenceShapeError(path = path, missing = name))
 
+    // 壊れたリンクをUriのコンストラクタへ渡すとUriFormatExceptionが飛び、
+    // どのファイルが壊れているのかがメッセージから消えるため、
+    // 絶対URLかどうかはここで判定して他の失敗と同じ形へ寄せる。
+    let sourceUri (url: string) : Uri =
+        match Uri.TryCreate(url, UriKind.Absolute) with
+        | true, uri -> uri
+        | _ -> missing "出典のURL"
+
     let pageName =
         match sourcePattern.Match markdown with
         | source when source.Success ->
-            match (Uri source.Groups["url"].Value).Query.TrimStart '?' with
+            match (sourceUri source.Groups["url"].Value).Query.TrimStart '?' with
             | "" -> missing "出典のページ名"
             | query -> Uri.UnescapeDataString query
         | _ -> missing "出典の行"
