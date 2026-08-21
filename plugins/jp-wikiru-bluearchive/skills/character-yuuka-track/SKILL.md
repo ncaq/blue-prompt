@@ -1,6 +1,7 @@
 ---
 name: character-yuuka-track
 description: Lookup facts about ユウカ（体操服）, a Blue Archive student, such as profile, stats, skills, unique weapon, gear, bond stories and voice lines. Use when answering questions about ユウカ（体操服）, checking the in-game performance data, or role-playing scenes that involve ユウカ（体操服）.
+user-invocable: false
 ---
 
 『ブルーアーカイブ』の生徒「ユウカ（体操服）」のゲーム内の事実を調べるためのスキルです。

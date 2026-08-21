@@ -113,6 +113,20 @@ deps.jsonの再生成・整形・コミットまで自動で完了します。
 nix run .#update-deps
 ```
 
+# スキルの呼び出し制御
+
+`plugins/jp-wikiru-bluearchive/`配下のナレッジのスキルは、
+フロントマターへ`user-invocable: false`を書いています。
+事実を引くための参照専用で、
+ユーザが`/character-yuuka`のように直接呼んでも意味が無いため、
+スラッシュコマンドの一覧から外してモデルからの読み込みだけを残しています。
+
+`plugins/role-play/`配下の人格のスキルはユーザが会話を始める入口なので、
+この指定は付けません。
+
+生徒個別のスキルのフロントマターは生成物なので、
+指定を変える時は`src/BluePrompt/Wikiru.fs`の`studentSkillMarkdown`を直します。
+
 # wikiruナレッジの生成
 
 `plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジと、

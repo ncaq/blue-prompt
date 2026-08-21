@@ -1,6 +1,7 @@
 ---
 name: character-appellation
 description: Lookup how Blue Archive characters address themselves and each other, including first-person pronouns, nicknames and honorifics. Use when writing dialogue, role-playing a character, or checking what a character calls another character or themselves.
+user-invocable: false
 ---
 
 『ブルーアーカイブ』のキャラクターが、

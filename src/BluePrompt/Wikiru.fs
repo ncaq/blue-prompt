@@ -334,6 +334,8 @@ let fetchRolePlayMarkdown (pageName: string) : Task<string> =
 /// 生徒スキルのSKILL.md全体を組み立てる。
 /// 生徒1人分のナレッジは別ファイルへ分けるほどの量にならないため、
 /// フロントマターと使い方の説明とナレッジ本体を1つのSKILL.mdに収める。
+/// 事実を引くための参照専用で、ユーザがスラッシュコマンドとして呼ぶ意味が無いため、
+/// user-invocable: falseでコマンドの一覧からは外す。
 let studentSkillMarkdown (skillName: string) (pageName: string) (markdown: string) : string =
     // フロントマターのdescriptionは1行である必要があるため、ソース上でだけ分割して結合する。
     let description =
@@ -348,6 +350,7 @@ let studentSkillMarkdown (skillName: string) (pageName: string) (markdown: strin
     $"""---
 name: %s{skillName}
 description: %s{description}
+user-invocable: false
 ---
 
 『ブルーアーカイブ』の生徒「%s{pageName}」のゲーム内の事実を調べるためのスキルです。

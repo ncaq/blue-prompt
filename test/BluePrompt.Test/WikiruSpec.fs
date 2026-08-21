@@ -193,6 +193,7 @@ let ``studentSkillMarkdownはフロントマターと出典とナレッジを含
         BluePrompt.Wikiru.studentSkillMarkdown "character-yuuka" "ユウカ" "## 基本情報\n"
 
     Assert.StartsWith("---\nname: character-yuuka\n", skill)
+    Assert.Contains("\nuser-invocable: false\n", skill)
     Assert.Contains("https://bluearchive.wikiru.jp/?%E3%83%A6%E3%82%A6%E3%82%AB", skill)
     Assert.Contains("## 基本情報", skill)
 
