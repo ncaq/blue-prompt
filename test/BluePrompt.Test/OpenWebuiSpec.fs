@@ -116,6 +116,25 @@ description: desc
     |> ignore
 
 [<Fact>]
+let ``絶対パスの参照はSkillFormatErrorになる`` () =
+    // Path.Combineは絶対パスを渡されると連結せずそれ自体を返すため、
+    // `..`を含むかどうかだけを見る検査ではスキルディレクトリの外へ抜けられる。
+    // 内容はシステムプロンプトへ焼き込まれ、Knowledgeとして外部へも送られる。
+    let body =
+        """---
+name: absolute
+description: desc
+---
+
+[passwd](/etc/passwd)
+"""
+
+    let directory = makeSkillDirectory [ "SKILL.md", body ]
+
+    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
+    |> ignore
+
+[<Fact>]
 let ``Markdown以外の参照ファイルは拡張子を言語タグにしたコードブロックで包まれる`` () =
     let body =
         """---
