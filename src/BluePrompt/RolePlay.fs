@@ -185,6 +185,9 @@ type SkillInput =
         Appellation: Appellation.Document
     }
 
+/// character.mdが本文を持たなかった時のcharacter.mdのパス。
+exception CharacterBodyNotFound of path: string
+
 /// 読み終えた入力からrole-playスキルの本文の文字列を組み立てる。
 /// フロントマターは解釈せず、テンプレートを差し込んだ本文の前へそのまま置く。
 /// 没入感を左右する呼称は別ファイルへ分けず、本文へ直接埋め込む。
@@ -192,6 +195,13 @@ type SkillInput =
 /// その生徒をどう位置付けるかを書いた手書きの部分だけなので、
 /// 本文の骨格は生徒が増えても1つのテンプレートのまま保たれる。
 let renderSkill (input: SkillInput) : string =
+    // 参照ファイルが0件なら、ナレッジが0件ならと同じく、
+    // 差し込むものが無いまま本文を書き出さない。
+    // その生徒をどう位置付けるかは手で書く唯一の場所なので、
+    // 移行の時に書き忘れると黙って落ちる。
+    if String.IsNullOrEmpty input.Character.Body then
+        raise (CharacterBodyNotFound input.CharacterPath)
+
     let appellation =
         Wikiru.sourceHeader (Uri input.Appellation.Source)
         + Appellation.toCallerMarkdown input.Caller input.Appellation.Entries

@@ -185,6 +185,29 @@ let ``renderSkillはフロントマターと差し込んだ本文を並べる`` 
     )
 
 [<Fact>]
+let ``本文の無いcharacter.mdはCharacterBodyNotFoundになる`` () =
+    // 参照ファイルとナレッジは0件で止まるのに本文だけ素通りすると、
+    // その生徒の位置付けが黙って落ちた本文が生成される。
+    let error =
+        Assert.Throws<CharacterBodyNotFound>(fun () ->
+            renderSkill
+                { Caller = "ユウカ"
+                  TemplatePath = "SKILL.template.md"
+                  Template = template
+                  CharacterPath = "character.md"
+                  Character =
+                    BluePrompt.OpenWebui.parseFrontmatter
+                        "character.md"
+                        "---\nname: yuuka\ndescription: d\nknowledge: character-yuuka\n---\n"
+                  References = [ parseReference "normal.md" (reference "ユウカ") ]
+                  Appellation = document "ユウカ" }
+            |> ignore)
+
+    match error :> exn with
+    | CharacterBodyNotFound path -> Assert.Equal("character.md", path)
+    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+
+[<Fact>]
 let ``renderSkillはテンプレートのプレースホルダが欠けると止まる`` () =
     // 差し込むはずの内容が黙って落ちないようにする。
     Assert.Throws<BluePrompt.Template.PlaceholderMismatch>(fun () ->
