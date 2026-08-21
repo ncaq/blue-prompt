@@ -139,6 +139,28 @@ let ``ファイル名に使えない文字は見出しから落とされる`` ()
     Assert.Contains("character-appellation-reference-対策委員会-補習.md", fileNames)
 
 [<Fact>]
+let ``ファイル名に使えない文字はコレクションの名前からも落とされる`` () =
+    // `toFileNameBase`は見出しだけをサニタイズしていて、
+    // コレクションの名前と参照ファイル名から作る先頭部分は素通りする。
+    // どちらもフロントマターとリンクという入力に由来するため、
+    // 区切り文字が混ざると生成物のディレクトリの外へ書き出せてしまう。
+    let skill =
+        """---
+name: ../../escape
+description: 外へ出るスキル。
+---
+
+呼び方を調べるためのスキルです。
+"""
+
+    let directory = makeSkillDirectory [ "SKILL.md", skill ]
+
+    let fileNames = (buildKnowledge directory).Files |> List.map _.FileName
+
+    // 書き出しはPath.Combineへ渡されるため、名前がそのままファイル名でなければならない。
+    Assert.All(fileNames, fun fileName -> Assert.Equal(fileName, Path.GetFileName fileName))
+
+[<Fact>]
 let ``KnowledgeFormはJSONへ往復できる`` () =
     let form =
         { Name = "character-appellation"
