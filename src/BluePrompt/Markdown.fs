@@ -53,29 +53,31 @@ type private Line =
 
 /// 本文をコードフェンスの内外を見分けながら行の並びへ分解する。
 /// フェンスの中の`#`で始まる行は見出しではなくコードなので、本文として扱う。
+/// 開いているフェンスは行から行へ持ち回る状態なので、mapFoldの状態として畳み込む。
 let private toLines (markdown: string) : Line list =
-    let mutable openFence: string option = None
-
     markdown.Replace("\r\n", "\n").Split '\n'
     |> Array.toList
-    |> List.map (fun line ->
-        match openFence, fencePattern.Match line with
-        | None, fence when fence.Success ->
-            openFence <- Some fence.Groups[1].Value
-            TextLine line
-        | Some opened, fence when
-            fence.Success
-            && fence.Groups[1].Value[0] = opened[0]
-            && opened.Length <= fence.Groups[1].Value.Length
-            ->
-            openFence <- None
-            TextLine line
-        | None, _ ->
-            match headingPattern.Match line with
-            | heading when heading.Success ->
-                HeadingLine(heading.Groups[1].Value.Length, heading.Groups[2].Value)
-            | _ -> TextLine line
-        | Some _, _ -> TextLine line)
+    |> List.mapFold
+        (fun (openFence: string option) line ->
+            match openFence, fencePattern.Match line with
+            | None, fence when fence.Success -> TextLine line, Some fence.Groups[1].Value
+            | Some opened, fence when
+                fence.Success
+                && fence.Groups[1].Value[0] = opened[0]
+                && opened.Length <= fence.Groups[1].Value.Length
+                ->
+                TextLine line, None
+            | None, _ ->
+                let parsed =
+                    match headingPattern.Match line with
+                    | heading when heading.Success ->
+                        HeadingLine(heading.Groups[1].Value.Length, heading.Groups[2].Value)
+                    | _ -> TextLine line
+
+                parsed, None
+            | Some _, _ -> TextLine line, openFence)
+        None
+    |> fst
 
 /// 先頭に続く本文行を取り出す。
 let private takeText (lines: Line list) : string list * Line list =

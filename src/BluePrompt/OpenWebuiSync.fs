@@ -69,12 +69,10 @@ let parseOptions (args: string list) : Options =
 /// socket activationで初回アクセス時に起動する構成でも同期できるように、
 /// 接続エラーも含めてリトライしながらインスタンスの起動を待つ。
 let private waitForHealth (client: HttpClient) (url: string) : Task<unit> =
-    task {
-        let maxAttempts = 30
-        let mutable attempt = 1
-        let mutable ready = false
+    let maxAttempts = 30
 
-        while not ready do
+    let rec attemptFrom (attempt: int) : Task<unit> =
+        task {
             let! healthy =
                 task {
                     // 接続が確立しない環境ではHttpClientの既定タイムアウト(100秒)まで、
@@ -92,13 +90,15 @@ let private waitForHealth (client: HttpClient) (url: string) : Task<unit> =
                 }
 
             if healthy then
-                ready <- true
+                return ()
             elif maxAttempts <= attempt then
-                raise (SyncError $"%s{url}の起動を待ちましたが応答がありません")
+                return raise (SyncError $"%s{url}の起動を待ちましたが応答がありません")
             else
-                attempt <- attempt + 1
                 do! Task.Delay(TimeSpan.FromSeconds 2.0)
-    }
+                return! attemptFrom (attempt + 1)
+        }
+
+    attemptFrom 1
 
 /// 認証を無効化したインスタンスがadminへ割り当てる資格情報。
 /// backend/open_webui/routers/auths.pyのsigninが`WEBUI_AUTH`無効時に使う定数で、
@@ -242,30 +242,29 @@ let private totalOf (root: JsonNode) : int option =
 /// 1ページだけを見ると登録済みのファイルを未登録と取り違えて、
 /// 同じ内容を登録し直そうとしてDuplicate contentで弾かれる。
 let private getAllItems (client: HttpClient) (url: string) : Task<JsonNode list> =
-    task {
-        let mutable page = 1
-        let mutable collected = []
-        let mutable finished = false
-
-        while not finished do
+    let rec fromPage (page: int) (collected: JsonNode list) : Task<JsonNode list> =
+        task {
             let pageUrl = $"%s{url}?page=%d{page}"
             let! response = getJson client pageUrl
             let items = listItems pageUrl response
-            collected <- collected @ items
+            let accumulated = collected @ items
 
             // 総件数を返さない形の応答では1ページで全件とみなす。
             // 進まないページを延々と辿らないように、
             // 空のページが返った時点でも打ち切る。
-            finished <-
+            let finished =
                 List.isEmpty items
                 || (match totalOf response with
                     | None -> true
-                    | Some total -> total <= List.length collected)
+                    | Some total -> total <= List.length accumulated)
 
-            page <- page + 1
+            if finished then
+                return accumulated
+            else
+                return! fromPage (page + 1) accumulated
+        }
 
-        return collected
-    }
+    fromPage 1 []
 
 /// JSONの文字列フィールドを読む。無ければ空文字として扱う。
 let private stringField (node: JsonNode) (keys: string list) : string =
@@ -405,35 +404,51 @@ let private syncKnowledge
             }
 
         // 生成物から消えたファイルと、名前が重複した余りを取り除く。
-        let mutable removed = 0
+        let staleIds =
+            registered
+            |> List.choose (fun (fileName, (fileId, _)) ->
+                // 名前で引いた時に選ばれなかった同名のファイルは、
+                // 以降の比較の対象にならないまま残り続けるため取り除く。
+                let chosen =
+                    match Map.tryFind fileName registeredByName with
+                    | Some(chosenId, _) -> chosenId = fileId
+                    | None -> false
 
-        for fileName, (fileId, _) in registered do
-            // 名前で引いた時に選ばれなかった同名のファイルは、
-            // 以降の比較の対象にならないまま残り続けるため取り除く。
-            let chosen =
+                if not (Set.contains fileName desiredNames) || not chosen then
+                    Some fileId
+                else
+                    None)
+
+        for fileId in staleIds do
+            do! removeFile fileId
+
+        // 登録し直すファイルを、登録済みのidと組にして先に選び出す。
+        // idがあるものは中身が変わったファイルで、無いものは新しいファイル。
+        let pending =
+            desired.Files
+            |> List.choose (fun (fileName, content) ->
                 match Map.tryFind fileName registeredByName with
-                | Some(chosenId, _) -> chosenId = fileId
-                | None -> false
+                | Some(_, hash) when hash = sha256Hex content -> None
+                | Some(fileId, _) -> Some(Some fileId, fileName, content)
+                | None -> Some(None, fileName, content))
 
-            if not (Set.contains fileName desiredNames) || not chosen then
-                do! removeFile fileId
-                removed <- removed + 1
+        for registeredId, fileName, content in pending do
+            // 中身が変わったファイルは、
+            // 登録し直すことで古い埋め込みが残らないようにする。
+            match registeredId with
+            | Some fileId -> do! removeFile fileId
+            | None -> ()
 
-        let mutable added = 0
-        let mutable updated = 0
+            do! addFile fileName content
 
-        for fileName, content in desired.Files do
-            match Map.tryFind fileName registeredByName with
-            | Some(_, hash) when hash = sha256Hex content -> ()
-            | Some(fileId, _) ->
-                // 中身が変わったファイルは、
-                // 登録し直すことで古い埋め込みが残らないようにする。
-                do! removeFile fileId
-                do! addFile fileName content
-                updated <- updated + 1
-            | None ->
-                do! addFile fileName content
-                added <- added + 1
+        let removed = List.length staleIds
+
+        let updated =
+            pending
+            |> List.filter (fun (registeredId, _, _) -> Option.isSome registeredId)
+            |> List.length
+
+        let added = List.length pending - updated
 
         if added = 0 && updated = 0 && removed = 0 then
             printfn $"%s{name}: ファイルの変更なし"
@@ -441,6 +456,26 @@ let private syncKnowledge
             printfn $"%s{name}: ファイルを追加%d{added}件、更新%d{updated}件、削除%d{removed}件"
 
         return id
+    }
+
+/// Knowledgeコレクションを先頭から順に同期して、名前からidへの対応を組み立てる。
+/// 採番されたidは次のコレクションの同期へ持ち越す状態なので、畳み込みの状態として持ち回る。
+let rec private syncKnowledgeFrom
+    (client: HttpClient)
+    (url: string)
+    (existingByName: Map<string, JsonNode>)
+    (remaining: DesiredKnowledge list)
+    (ids: Map<string, string>)
+    : Task<Map<string, string>> =
+    task {
+        match remaining with
+        | [] -> return ids
+        | desired :: rest ->
+            let existing = Map.tryFind desired.Form.Name existingByName
+            let! id = syncKnowledge client url existing desired
+
+            return!
+                syncKnowledgeFrom client url existingByName rest (Map.add desired.Form.Name id ids)
     }
 
 /// Modelのmeta.knowledgeへ、同期したコレクションのidを埋める。
@@ -603,13 +638,17 @@ let sync (options: Options) : Task<unit> =
                     BaseModelId = options.BaseModelId }
             | None -> form
 
-        let mutable reversedForms = []
+        let! loadedForms =
+            Directory.GetFiles(options.ModelsDirectory, "*.json")
+            |> Array.sort
+            |> Array.map (fun path ->
+                task {
+                    let! json = File.ReadAllTextAsync path
+                    return path, withBaseModelId (OpenWebui.ofJson path json)
+                })
+            |> Task.WhenAll
 
-        for path in Directory.GetFiles(options.ModelsDirectory, "*.json") |> Array.sort do
-            let! json = File.ReadAllTextAsync path
-            reversedForms <- (path, withBaseModelId (OpenWebui.ofJson path json)) :: reversedForms
-
-        let forms = List.rev reversedForms
+        let forms = List.ofArray loadedForms
 
         let knowledge =
             match options.KnowledgeDirectory with
@@ -672,12 +711,7 @@ let sync (options: Options) : Task<unit> =
             |> List.map (fun collection -> stringField collection [ "name" ], collection)
             |> Map.ofList
 
-        let mutable knowledgeIds = Map.empty
-
-        for desired in knowledge do
-            let existing = Map.tryFind desired.Form.Name existingByName
-            let! id = syncKnowledge client options.Url existing desired
-            knowledgeIds <- Map.add desired.Form.Name id knowledgeIds
+        let! knowledgeIds = syncKnowledgeFrom client options.Url existingByName knowledge Map.empty
 
         for _, desired in forms do
             do! syncModel client options (resolveKnowledge knowledgeIds desired)

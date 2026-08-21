@@ -28,6 +28,23 @@ let htmlResponse (html: string) : Response =
       Body = Encoding.UTF8.GetBytes html
       ExtraHeaders = [] }
 
+/// リクエスト行の終端(\r\n)が現れるまで読み足して、読めた分を返す。
+/// TCPはメッセージ境界を保証しないため1回の読み取りで揃うとは限らない。
+/// 再帰関数をtaskの中へ置くとステートマシンを静的にコンパイルできなくなるため、モジュールの直下に置く。
+let rec private readRequestLine (stream: NetworkStream) (received: string) : Task<string> =
+    task {
+        if received.Contains "\r\n" then
+            return received
+        else
+            let chunk: byte array = Array.zeroCreate 8192
+            let! read = stream.ReadAsync(chunk.AsMemory())
+
+            if read = 0 then
+                failwith "リクエスト行が完結する前に接続が閉じられました"
+
+            return! readRequestLine stream (received + Encoding.ASCII.GetString(chunk, 0, read))
+    }
+
 /// リクエストのパスに応じた応答を返すローカルHTTPサーバを立てて、そのURLをactionへ渡す。
 /// ポート0でOSに空きポートを割り当てさせて他のテストとの衝突を避ける。
 let withServer (respond: string -> Response) (action: Uri -> Task<'T>) : Task<'T> =
@@ -48,18 +65,7 @@ let withServer (respond: string -> Response) (action: Uri -> Task<'T>) : Task<'T
                     try
                         let stream = client.GetStream()
 
-                        // TCPはメッセージ境界を保証しないため、
-                        // リクエスト行の終端(\r\n)が現れるまで読み足す。
-                        let chunk: byte array = Array.zeroCreate 8192
-                        let mutable request = ""
-
-                        while not (request.Contains "\r\n") do
-                            let! read = stream.ReadAsync(chunk.AsMemory())
-
-                            if read = 0 then
-                                failwith "リクエスト行が完結する前に接続が閉じられました"
-
-                            request <- request + Encoding.ASCII.GetString(chunk, 0, read)
+                        let! request = readRequestLine stream ""
 
                         // リクエスト行「GET /path HTTP/1.1」からパスを取り出す。
                         let path =
