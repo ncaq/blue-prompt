@@ -56,18 +56,29 @@ let private splitDividerRows (document: IDocument) : unit =
 
                     segment
 
-                // 区切り行を段落として、その間に挟まる列を持つ行の連なりを表として並べる。
-                let rec toFragments (remaining: IHtmlTableRowElement list) : INode list =
-                    match remaining with
-                    | [] -> []
-                    | row :: rest when isDivider row -> toParagraph row :: toFragments rest
-                    | _ ->
-                        let segmentRows = List.takeWhile (isDivider >> not) remaining
+                /// 溜めた行があれば表にして断片へ加える。
+                /// 断片も溜めた行も逆順で持ち、末尾への追加をO(1)にする。
+                let flushRows
+                    (pendingRows: IHtmlTableRowElement list)
+                    (fragments: INode list)
+                    : INode list =
+                    match pendingRows with
+                    | [] -> fragments
+                    | _ -> toSegment (List.rev pendingRows) :: fragments
 
-                        toSegment segmentRows
-                        :: toFragments (List.skip segmentRows.Length remaining)
+                // 区切り行は段落にして、
+                // その間に挟まる区切りではない行の連なりを1つの表にまとめる。
+                let fragments, pendingRows =
+                    rows
+                    |> Array.fold
+                        (fun (fragments, pendingRows) row ->
+                            if isDivider row then
+                                toParagraph row :: flushRows pendingRows fragments, []
+                            else
+                                fragments, row :: pendingRows)
+                        ([], [])
 
-                table.Replace(rows |> Array.toList |> toFragments |> List.toArray)
+                table.Replace(flushRows pendingRows fragments |> List.rev |> List.toArray)
 
 /// 改行の境界をどう繋ぐか決める。
 /// 前が句読点や開き括弧などで終わるか、後が区切り記号や閉じ括弧などで始まるなら、
