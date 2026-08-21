@@ -1,6 +1,7 @@
 ---
 name: character-yuuka
 description: Lookup facts about ユウカ, a Blue Archive student, such as profile, stats, skills, unique weapon, gear, bond stories and voice lines. Use when answering questions about ユウカ, checking the in-game performance data, or role-playing scenes that involve ユウカ.
+user-invocable: false
 ---
 
 『ブルーアーカイブ』の生徒「ユウカ」のゲーム内の事実を調べるためのスキルです。
