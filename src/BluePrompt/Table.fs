@@ -33,36 +33,52 @@ let private splitDividerRows (document: IDocument) : unit =
                 row.Cells.Length = 1 && 1 < row.Cells[0].ColumnSpan
 
             if Array.exists isDivider rows && not (Array.forall isDivider rows) then
-                let fragments = ResizeArray<INode>()
-                let pendingRows = ResizeArray<INode>()
+                let toParagraph (row: IHtmlTableRowElement) : INode =
+                    let cell = row.Cells[0]
+                    let paragraph = document.CreateElement "p"
 
-                let flushRows () =
-                    if 0 < pendingRows.Count then
-                        let segment = document.CreateElement "table"
-                        segment.Append(pendingRows.ToArray())
-                        fragments.Add segment
-                        pendingRows.Clear()
-
-                for row in rows do
-                    if isDivider row then
-                        flushRows ()
-                        let cell = row.Cells[0]
-                        let paragraph = document.CreateElement "p"
-
-                        if cell.TagName = "TH" then
-                            // 見出しセルだった行は小見出しなので、強調で見出しらしさを残す。
-                            let emphasis = document.CreateElement "strong"
-                            emphasis.Append(Seq.toArray cell.ChildNodes)
-                            paragraph.Append [| emphasis :> INode |]
-                        else
-                            paragraph.Append(Seq.toArray cell.ChildNodes)
-
-                        fragments.Add paragraph
+                    if cell.TagName = "TH" then
+                        // 見出しセルだった行は小見出しなので、強調で見出しらしさを残す。
+                        let emphasis = document.CreateElement "strong"
+                        emphasis.Append(Seq.toArray cell.ChildNodes)
+                        paragraph.Append [| emphasis :> INode |]
                     else
-                        pendingRows.Add row
+                        paragraph.Append(Seq.toArray cell.ChildNodes)
 
-                flushRows ()
-                table.Replace(fragments.ToArray())
+                    paragraph
+
+                let toSegment (segmentRows: IHtmlTableRowElement list) : INode =
+                    let segment = document.CreateElement "table"
+
+                    segment.Append(
+                        segmentRows |> List.map (fun row -> row :> INode) |> List.toArray
+                    )
+
+                    segment
+
+                /// 溜めた行があれば表にして断片へ加える。
+                /// 断片も溜めた行も逆順で持ち、末尾への追加をO(1)にする。
+                let flushRows
+                    (pendingRows: IHtmlTableRowElement list)
+                    (fragments: INode list)
+                    : INode list =
+                    match pendingRows with
+                    | [] -> fragments
+                    | _ -> toSegment (List.rev pendingRows) :: fragments
+
+                // 区切り行は段落にして、
+                // その間に挟まる区切りではない行の連なりを1つの表にまとめる。
+                let fragments, pendingRows =
+                    rows
+                    |> Array.fold
+                        (fun (fragments, pendingRows) row ->
+                            if isDivider row then
+                                toParagraph row :: flushRows pendingRows fragments, []
+                            else
+                                fragments, row :: pendingRows)
+                        ([], [])
+
+                table.Replace(flushRows pendingRows fragments |> List.rev |> List.toArray)
 
 /// 改行の境界をどう繋ぐか決める。
 /// 前が句読点や開き括弧などで終わるか、後が区切り記号や閉じ括弧などで始まるなら、
@@ -426,19 +442,22 @@ let flattenWithBudget (budget: int64) (document: IDocument) : unit =
 
     // 上限を1テーブル単位で掛けると文書全体では上限×テーブル数まで膨らむため、
     // 残り予算を文書全体で持ち回り、使い切った以降のテーブルは展開しない。
-    let mutable remainingEntries = budget
+    // 残り予算は表から表へ引き継ぐ状態なので、畳み込みの状態として持つ。
+    Array.rev (Seq.toArray (document.QuerySelectorAll "table"))
+    |> Array.fold
+        (fun remainingEntries element ->
+            let table = element :?> IHtmlTableElement
 
-    for table in Array.rev (Seq.toArray (document.QuerySelectorAll "table")) do
-        let table = table :?> IHtmlTableElement
-
-        // 展開を諦めた過大な表は結合セルが残ったままで、
-        // 後段の列単位の処理も同じ規模で膨らむため丸ごと飛ばす。
-        match expandMergedCells document remainingEntries table with
-        | None -> ()
-        | Some consumedEntries ->
-            remainingEntries <- remainingEntries - consumedEntries
-            dropEmptyColumns table
-            normalizePairsRows document table
+            // 展開を諦めた過大な表は結合セルが残ったままで、
+            // 後段の列単位の処理も同じ規模で膨らむため丸ごと飛ばす。
+            match expandMergedCells document remainingEntries table with
+            | None -> remainingEntries
+            | Some consumedEntries ->
+                dropEmptyColumns table
+                normalizePairsRows document table
+                remainingEntries - consumedEntries)
+        budget
+    |> ignore
 
 /// 既定の予算で文書中の全テーブルを平坦化する。挙動はflattenWithBudgetと同じ。
 let flatten (document: IDocument) : unit =

@@ -72,27 +72,26 @@ let private maxFileNameBytes = 200
 /// 単独のサロゲートを含む壊れた名前になる。
 /// 文字の単位で先頭から積み上げて、上限を超える手前でやめる。
 let private truncate (name: string) : string =
-    let mutable index = 0
-    let mutable bytes = 0
-    let mutable finished = false
-
-    while not finished && index < name.Length do
-        // サロゲートペアは2つのコード単位で1文字なので、まとめて数える。
-        let length =
-            if Char.IsHighSurrogate name[index] && index + 1 < name.Length then
-                2
-            else
-                1
-
-        let next = bytes + Text.Encoding.UTF8.GetByteCount(name.AsSpan(index, length))
-
-        if maxFileNameBytes < next then
-            finished <- true
+    /// 上限に収まる範囲の終わりを、先頭からの積み上げで求める。
+    let rec fit (index: int) (bytes: int) : int =
+        if name.Length <= index then
+            index
         else
-            bytes <- next
-            index <- index + length
+            // サロゲートペアは2つのコード単位で1文字なので、まとめて数える。
+            let length =
+                if Char.IsHighSurrogate name[index] && index + 1 < name.Length then
+                    2
+                else
+                    1
 
-    name.Substring(0, index)
+            let next = bytes + Text.Encoding.UTF8.GetByteCount(name.AsSpan(index, length))
+
+            if maxFileNameBytes < next then
+                index
+            else
+                fit (index + length) next
+
+    name.Substring(0, fit 0 0)
 
 /// 断片へ重複しないファイル名を与える。
 /// 同じ見出しが別の場所に現れると名前が衝突するため、
@@ -102,29 +101,33 @@ let private assignFileNames
     (stem: string)
     (fragments: Markdown.Fragment list)
     : KnowledgeFile list =
-    let used = Collections.Generic.HashSet<string>()
-
+    // 使用済みの名前は断片から断片へ持ち回る状態なので、mapFoldの状態として畳み込む。
     fragments
-    |> List.map (fun fragment ->
-        let baseName = truncate (toFileNameBase stem fragment.Headings)
+    |> List.mapFold
+        (fun (used: Set<string>) fragment ->
+            let baseName = truncate (toFileNameBase stem fragment.Headings)
 
-        let rec uniqueName (candidate: string) (suffix: int) =
-            if used.Add candidate then
-                candidate
-            else
-                uniqueName $"%s{baseName}-%d{suffix + 1}" (suffix + 1)
+            let rec uniqueName (candidate: string) (suffix: int) =
+                if Set.contains candidate used then
+                    uniqueName $"%s{baseName}-%d{suffix + 1}" (suffix + 1)
+                else
+                    candidate
 
-        let fileName = $"%s{uniqueName baseName 1}.md"
+            let name = uniqueName baseName 1
+            let fileName = $"%s{name}.md"
 
-        // 名前はPath.Combineで書き出しに使われ、
-        // アップロードのmultipartのfilenameとしても送られる。
-        // サニタイズを抜けた区切り文字が残っていないことをここで確かめて、
-        // 生成物のディレクトリの外を指す名前を作らないようにする。
-        if String.IsNullOrEmpty baseName || fileName <> Path.GetFileName fileName then
-            raise (OpenWebui.SkillFormatError(skillPath, $"断片のファイル名を組み立てられません: %s{fileName}"))
+            // 名前はPath.Combineで書き出しに使われ、
+            // アップロードのmultipartのfilenameとしても送られる。
+            // サニタイズを抜けた区切り文字が残っていないことをここで確かめて、
+            // 生成物のディレクトリの外を指す名前を作らないようにする。
+            if String.IsNullOrEmpty baseName || fileName <> Path.GetFileName fileName then
+                raise (OpenWebui.SkillFormatError(skillPath, $"断片のファイル名を組み立てられません: %s{fileName}"))
 
-        { FileName = fileName
-          Content = fragment.Text })
+            { FileName = fileName
+              Content = fragment.Text },
+            Set.add name used)
+        Set.empty
+    |> fst
 
 /// wikiruから生成した文書が持つ出典の行。
 /// `sourceHeader`が組み立てる「出典: [記事名](URL)」の形をそのまま拾う。

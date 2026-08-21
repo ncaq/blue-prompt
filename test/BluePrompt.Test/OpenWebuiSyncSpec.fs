@@ -747,6 +747,40 @@ let ``Modelの紐付けには作成したコレクションのidが埋まる`` (
     )
 
 [<Fact>]
+let ``複数のコレクションを同期してもそれぞれのidが埋まる`` () =
+    use server = new MockServer()
+
+    // 採番されたidはコレクションからコレクションへ持ち回る状態のため、
+    // 1つしか同期しないと積み上げが壊れていても気付けない。
+    let models =
+        makeModelsDirectory
+            [ makeFormWithKnowledge "yuuka" [ "character-appellation"; "character-yuuka" ] ]
+
+    run
+        { makeOptions server models with
+            KnowledgeDirectory =
+                Some(
+                    makeKnowledgeDirectory
+                        [ "character-appellation", [ "a.md", "呼称A" ]
+                          "character-yuuka", [ "b.md", "ユウカB" ] ]
+                ) }
+
+    let knowledge = node server.Models["yuuka"] [ "meta"; "knowledge" ]
+
+    let idOf (name: string) =
+        knowledge.AsArray()
+        |> Seq.tryPick (fun (reference: JsonNode) ->
+            if reference["name"].GetValue<string>() = name then
+                Some(reference["id"].GetValue<string>())
+            else
+                None)
+
+    // 名前ごとに別のidが引き当てられ、取り違えも取りこぼしも起きない。
+    Assert.Equal(server.CollectionIdOf "character-appellation", idOf "character-appellation")
+    Assert.Equal(server.CollectionIdOf "character-yuuka", idOf "character-yuuka")
+    Assert.NotEqual(idOf "character-appellation", idOf "character-yuuka")
+
+[<Fact>]
 let ``紐付けのあるModelは再実行では書き込まれない`` () =
     use server = new MockServer()
 

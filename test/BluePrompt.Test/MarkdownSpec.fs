@@ -97,6 +97,29 @@ let ``コードブロックの中の見出しに見える行では分割され�
     Assert.Contains("# これはコメントであって見出しではない", fragments.Head.Text)
 
 [<Fact>]
+let ``閉じたコードフェンスの後ろの見出しでは分割される`` () =
+    // フェンスの中と外の見分けは行から行へ持ち回る状態なので、
+    // 閉じフェンスで状態が戻らないと以降の見出しが本文として埋もれる。
+    let markdown =
+        """## 節1
+
+```console
+# これはコメントであって見出しではない
+```
+
+## 節2
+
+節2の中身。
+"""
+
+    let fragments = splitBySize 10 markdown
+
+    Assert.Equal<string list>(
+        [ "## 節1\n\n```console\n# これはコメントであって見出しではない\n```\n"; "## 節2\n\n節2の中身。\n" ],
+        texts fragments
+    )
+
+[<Fact>]
 let ``分けられない大きな節は上限を超えたまま1つの断片になる`` () =
     let markdown = "## 節\n\n" + String.replicate 100 "長い本文。\n"
 

@@ -234,6 +234,37 @@ let ``表を横断する1セルだけの行は段落として表の外へ出る`
     Assert.Contains("<td>a</td>", extracted)
 
 [<Fact>]
+let ``表の途中の区切り行は前後の行を別々の表へ分ける`` () =
+    // 区切り行は表の先頭だけでなく途中にも現れる。
+    // その場合は段落を挟んで前後が別々の表として続く。
+    let html =
+        """<html><body><main id="content">
+<table>
+<tbody>
+<tr><td>a1</td><td>a2</td></tr>
+<tr><th colspan="2">途中の小見出し</th></tr>
+<tr><td>b1</td><td>b2</td></tr>
+</tbody>
+</table>
+</main></body></html>"""
+
+    let query =
+        { fixtureQuery with
+            ContentSelectors = [ "#content" ] }
+
+    let extracted = BluePrompt.Extract.contentHtml query html
+
+    // 前半の表、段落、後半の表の順序が保たれる。
+    let positionOf (text: string) =
+        extracted.IndexOf(text, StringComparison.Ordinal)
+
+    Assert.True(positionOf "a1" < positionOf "途中の小見出し")
+    Assert.True(positionOf "途中の小見出し" < positionOf "b1")
+    Assert.Contains("<strong>途中の小見出し</strong>", extracted)
+    // 前半の行と後半の行は同じ表に残らない。
+    Assert.Equal(2, Text.RegularExpressions.Regex.Matches(extracted, "<table>").Count)
+
+[<Fact>]
 let ``見出しの下が全て空の列は取り除かれる`` () =
     // 画像だけの列は画像の除去で見出しを残して空になり、ノイズの列として残ってしまう。
     let html =

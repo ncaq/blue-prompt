@@ -4,6 +4,7 @@ module BluePrompt.Pandoc
 open System
 open System.Diagnostics
 open System.IO
+open System.Runtime.ExceptionServices
 open System.Text
 open System.Threading
 open System.Threading.Tasks
@@ -66,30 +67,65 @@ let toMarkdownWith (pandocPath: string) (arguments: string list) (html: string) 
         let stdoutTask = pandoc.StandardOutput.ReadToEndAsync()
         let stderrTask = pandoc.StandardError.ReadToEndAsync()
 
-        // プロセスが入力を読み切る前に終了するとbroken pipeで書き込みが失敗する。
-        // その場で送出せず記録に留めて、終了状態を見てから報告方法を決める。
-        let mutable writeError: IOException option = None
-
-        try
-            try
+        // broken pipeを、終了を待った後の報告のために持ち帰る。
+        let! writeError =
+            task {
                 try
-                    do! pandoc.StandardInput.WriteAsync(html.AsMemory(), cancellation.Token)
-                with :? IOException as error ->
-                    writeError <- Some error
-            finally
-                // Closeを飛ばすとEOFが送られず、プロセスが生きている場合に終了待ちが打ち切りまでブロックする。
-                // Close自体の失敗(フラッシュのbroken pipe)も入力が完全に渡っていない兆候として記録する。
-                try
-                    pandoc.StandardInput.Close()
-                with :? IOException as error ->
-                    if writeError.IsNone then
-                        writeError <- Some error
+                    // プロセスが入力を読み切る前に終了するとbroken pipeで書き込みが失敗する。
+                    // その場で送出せず結果の値として受け取り、終了状態を見てから報告方法を決める。
+                    let! written =
+                        task {
+                            try
+                                do!
+                                    pandoc.StandardInput.WriteAsync(
+                                        html.AsMemory(),
+                                        cancellation.Token
+                                    )
 
-            do! pandoc.WaitForExitAsync cancellation.Token
-        with :? OperationCanceledException ->
-            // 打ち切り時はプロセスを回収しないとパイプごとリークする。
-            pandoc.Kill(entireProcessTree = true)
-            raise (TimeoutException $"pandocが%.0f{timeout.TotalSeconds}秒以内に終了しませんでした")
+                                return Ok()
+                            with error ->
+                                return Error error
+                        }
+
+                    // Closeを飛ばすとEOFが送られず、プロセスが生きている場合に終了待ちが打ち切りまでブロックする。
+                    // 書き込みが失敗した後でも必ず呼ぶ。
+                    // Close自体の失敗(フラッシュのbroken pipe)も入力が完全に渡っていない兆候として扱う。
+                    let closed =
+                        try
+                            pandoc.StandardInput.Close()
+                            Ok()
+                        with error ->
+                            Error error
+
+                    // 書き込みとCloseで最初に起きた失敗だけを見る。
+                    // broken pipeは終了状態を見てから報告するため持ち帰り、
+                    // 打ち切りのような他の失敗はここで送出して下の回収へ渡す。
+                    let firstError =
+                        [ written; closed ]
+                        |> List.tryPick (function
+                            | Ok() -> None
+                            | Error error -> Some error)
+
+                    let writeError =
+                        match firstError with
+                        | Some(:? IOException as error) -> Some error
+                        // `raise`はStackTraceを切り捨てるため、
+                        // 想定外の失敗が起きた元の位置を残したまま投げ直す。
+                        // `with`ブロックの外なので`reraise`は使えない。
+                        | Some error ->
+                            ExceptionDispatchInfo.Capture(error).Throw()
+                            None
+                        | None -> None
+
+                    do! pandoc.WaitForExitAsync cancellation.Token
+                    return writeError
+                with :? OperationCanceledException ->
+                    // 打ち切り時はプロセスを回収しないとパイプごとリークする。
+                    pandoc.Kill(entireProcessTree = true)
+
+                    return
+                        raise (TimeoutException $"pandocが%.0f{timeout.TotalSeconds}秒以内に終了しませんでした")
+            }
 
         let! markdown = stdoutTask
         let! stderr = stderrTask
