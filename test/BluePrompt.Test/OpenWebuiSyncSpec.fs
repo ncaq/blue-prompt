@@ -77,6 +77,7 @@ type private MockServer() =
     let mutable fileAddCount = 0
     let mutable fileRemoveCount = 0
     let mutable knowledgeCreateCount = 0
+    let mutable knowledgeUpdateCount = 0
     let mutable ragTemplateUpdateCount = 0
     let mutable ragTemplate = "既定のテンプレート"
     let mutable nextId = 0
@@ -253,6 +254,7 @@ type private MockServer() =
             path.EndsWith("/update", StringComparison.Ordinal)
             && path.StartsWith("/api/v1/knowledge/", StringComparison.Ordinal)
             ->
+            knowledgeUpdateCount <- knowledgeUpdateCount + 1
             let id = collectionIdOf path 1
             let form = readJson request
             form["id"] <- JsonValue.Create id
@@ -312,6 +314,7 @@ type private MockServer() =
     member _.FileAddCount = fileAddCount
     member _.FileRemoveCount = fileRemoveCount
     member _.KnowledgeCreateCount = knowledgeCreateCount
+    member _.KnowledgeUpdateCount = knowledgeUpdateCount
     member _.RagTemplateUpdateCount = ragTemplateUpdateCount
     member _.RagTemplate = ragTemplate
 
@@ -323,6 +326,16 @@ type private MockServer() =
                 Some(collectionFiles[entry.Key] |> List.map _.FileName)
             else
                 None)
+
+    /// 登録済みのファイルを同じ名前のまま複製する。
+    /// 以前の同期が中断して同名のファイルが残った、壊れた状態を模す。
+    member this.DuplicateFile(name: string) =
+        match this.CollectionIdOf name with
+        | None -> failwith $"%s{name}が登録されていません"
+        | Some id ->
+            collectionFiles[id] <-
+                collectionFiles[id]
+                @ (collectionFiles[id] |> List.map (fun file -> { file with Id = issueId () }))
 
     /// コレクションの名前からidを引く。
     member _.CollectionIdOf(name: string) =
@@ -714,6 +727,79 @@ let ``Modelの紐付けには作成したコレクションのidが埋まる`` (
         OpenWebui.legacyFunctionCalling,
         (node server.Models["yuuka"] [ "params"; "function_calling" ]).GetValue<string>()
     )
+
+[<Fact>]
+let ``紐付けのあるModelは再実行では書き込まれない`` () =
+    use server = new MockServer()
+
+    // 名前で引き当てて埋めたidが、
+    // 応答を読み戻した値と一致しないと毎回更新が飛び続ける。
+    // 紐付けの直列化がずれた時にここで気付けるようにする。
+    let options =
+        { makeOptions
+              server
+              (makeModelsDirectory [ makeFormWithKnowledge "yuuka" [ "character-appellation" ] ]) with
+            KnowledgeDirectory =
+                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
+
+    run options
+    Assert.Equal(1, server.CreateCount)
+    Assert.Equal(0, server.UpdateCount)
+
+    run options
+    Assert.Equal(1, server.CreateCount)
+    Assert.Equal(0, server.UpdateCount)
+
+[<Fact>]
+let ``コレクションの説明は変わった時だけ書き込まれる`` () =
+    use server = new MockServer()
+    let models = makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]
+
+    let directory =
+        makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]
+
+    let options =
+        { makeOptions server models with
+            KnowledgeDirectory = Some directory }
+
+    run options
+    run options
+    Assert.Equal(0, server.KnowledgeUpdateCount)
+
+    File.WriteAllText(
+        Path.Combine(directory, "character-appellation", OpenWebuiKnowledge.formFileName),
+        OpenWebuiKnowledge.toJson
+            { Name = "character-appellation"
+              Description = "書き換えた説明" }
+    )
+
+    run options
+    Assert.Equal(1, server.KnowledgeUpdateCount)
+
+    // 書き込んだ後は差分が無くなるので、再実行では触らない。
+    run options
+    Assert.Equal(1, server.KnowledgeUpdateCount)
+
+[<Fact>]
+let ``同じ名前で重複した登録済みファイルは1つだけ残る`` () =
+    use server = new MockServer()
+    let models = makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]
+
+    let options =
+        { makeOptions server models with
+            KnowledgeDirectory =
+                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
+
+    run options
+
+    // 以前の同期が中断して同名のファイルが残った、壊れた状態を模す。
+    server.DuplicateFile "character-appellation"
+
+    run options
+
+    // 名前で引いた時に選ばれなかった方は比較の対象にならないまま残り続けるので取り除く。
+    Assert.Equal(1, server.FileRemoveCount)
+    Assert.Equal<string list option>(Some [ "a.md" ], server.FileNamesOf "character-appellation")
 
 [<Fact>]
 let ``紐付け先のKnowledgeが同期の対象に無いとSyncErrorで止まる`` () =
