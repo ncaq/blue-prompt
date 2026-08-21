@@ -460,23 +460,23 @@ let private syncKnowledge
 
 /// Knowledgeコレクションを先頭から順に同期して、名前からidへの対応を組み立てる。
 /// 採番されたidは次のコレクションの同期へ持ち越す状態なので、畳み込みの状態として持ち回る。
-let rec private syncKnowledgeFrom
+/// 状態を`Task`にして各段が前の段を待つことで、畳み込みのまま逐次に同期する。
+let private syncKnowledgeCollections
     (client: HttpClient)
     (url: string)
     (existingByName: Map<string, JsonNode>)
-    (remaining: DesiredKnowledge list)
-    (ids: Map<string, string>)
+    (knowledge: DesiredKnowledge list)
     : Task<Map<string, string>> =
-    task {
-        match remaining with
-        | [] -> return ids
-        | desired :: rest ->
-            let existing = Map.tryFind desired.Form.Name existingByName
-            let! id = syncKnowledge client url existing desired
-
-            return!
-                syncKnowledgeFrom client url existingByName rest (Map.add desired.Form.Name id ids)
-    }
+    knowledge
+    |> List.fold
+        (fun (previous: Task<Map<string, string>>) desired ->
+            task {
+                let! ids = previous
+                let existing = Map.tryFind desired.Form.Name existingByName
+                let! id = syncKnowledge client url existing desired
+                return Map.add desired.Form.Name id ids
+            })
+        (Task.FromResult Map.empty)
 
 /// Modelのmeta.knowledgeへ、同期したコレクションのidを埋める。
 /// 生成の時点ではインスタンスが採番するidが分からないため、
@@ -711,7 +711,7 @@ let sync (options: Options) : Task<unit> =
             |> List.map (fun collection -> stringField collection [ "name" ], collection)
             |> Map.ofList
 
-        let! knowledgeIds = syncKnowledgeFrom client options.Url existingByName knowledge Map.empty
+        let! knowledgeIds = syncKnowledgeCollections client options.Url existingByName knowledge
 
         for _, desired in forms do
             do! syncModel client options (resolveKnowledge knowledgeIds desired)
