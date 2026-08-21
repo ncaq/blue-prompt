@@ -19,7 +19,7 @@
 
 ## 衣装ごとの参照ファイル
 
-`yuuka`スキルにはSKILL.mdの他に、
+`yuuka`スキルにはSKILL.mdとMODEL.mdの他に、
 衣装(実装)ごとのプロフィールとゲーム内ボイス一覧を収めた参照ファイルがあります。
 
 これらは
@@ -33,7 +33,7 @@ dotnet run --project src/BluePrompt -- wikiru-roleplay-reference 'ユウカ（�
 dotnet run --project src/BluePrompt -- wikiru-roleplay-reference 'ユウカ（パジャマ）' plugins/role-play/skills/yuuka/pajama.md
 ```
 
-## SKILL.mdの生成
+## 本文の生成
 
 `yuuka`スキルのSKILL.mdとMODEL.mdは自動生成ファイルです。
 本文の骨格はこのプラグインの直下のテンプレートが持っていて、
@@ -101,6 +101,22 @@ dotnet run --project src/BluePrompt -- roleplay-skill 'ユウカ' plugins/role-p
 
 `kotori`と`seia`はまだこの構成に移行しておらず、
 SKILL.mdに手で貼り付けたデータのままです。
+
+## 配布物から除かれるファイル
+
+生成の入力であるcharacter.mdとテンプレート、
+それにMODEL.mdは配布物から除かれます。
+Claude Codeのプラグインも、
+OpenCodeのスキルも、
+配布ZIPも、
+これらを除いた実体を指します。
+
+スキルとして読ませる意味が無いからで、
+特にMODEL.mdはSKILL.mdとほぼ同じ内容なので、
+配るとスキルのディレクトリへ人格の指示が二重に置かれた状態になります。
+
+除外する名前はリポジトリルートのflake.nixの`nonSkillFileNames`が持っています。
+スキルのディレクトリへ配布したくないファイルを増やす時はそちらへ足してください。
 
 ## 注意
 

@@ -204,13 +204,24 @@ wikiruへはアクセスせず、リポジトリへ併置した生成物だけ�
 プロフィールは衣装別の参照ファイルがどちらの経路でも届くため重複で、
 口調の要約は目を引かれた特徴だけを強めてボイスの持つ幅を潰すためです。
 
-全生徒に効く指示はSKILL.template.mdを、
+全生徒に効く指示は2つのテンプレートを、
 その生徒だけの指示はcharacter.mdを編集して生成し直します。
 
 ```console
 dotnet run --project src/BluePrompt -- roleplay-skill '<キャラクター名>' plugins/role-play/SKILL.template.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json <SKILL.mdの出力パス>
 dotnet run --project src/BluePrompt -- roleplay-skill '<キャラクター名>' plugins/role-play/MODEL.template.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json <MODEL.mdの出力パス>
 ```
+
+character.mdと2つのテンプレートとMODEL.mdは配布物から除かれます。
+Claude Codeのプラグインも、
+OpenCodeのスキルも、
+配布ZIPも、
+これらを除いた実体を指します。
+生成の入力と別の届け先向けの本文をスキルとして読ませる意味が無く、
+特にMODEL.mdはSKILL.mdとほぼ同じ内容なので、
+配るとスキルのディレクトリへ人格の指示が二重に置かれた状態になるためです。
+除外する名前はflake.nixの`nonSkillFileNames`が持っていて、
+漏れは統合チェックが検出します。
 
 抽出設定を調整する時は、
 以下でpandoc変換前の中間HTMLを確認できます。
