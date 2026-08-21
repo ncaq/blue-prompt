@@ -61,20 +61,38 @@ let private toFileNameBase (stem: string) (headings: string list) : string =
         | sanitized -> Some sanitized)
     |> String.concat "-"
 
-/// ファイル名の最大の長さ。
-/// 多くのファイルシステムの上限が255バイトで、
-/// 拡張子と重複回避の連番の分を残す。
+/// ファイル名の本体に許す最大のバイト数。
+/// 多くのファイルシステムの上限が255バイトなので、
+/// この後に足す拡張子と重複回避の連番の分を余裕を持って残した値にする。
 let private maxFileNameBytes = 200
 
-/// 上限を超える名前をUTF-8の文字の途中で切らずに詰める。
+/// 上限を超える名前を、UTF-8の文字の途中で切らずに詰める。
+///
+/// UTF-16のコード単位を1つずつ削るとサロゲートペアの途中で切れて、
+/// 単独のサロゲートを含む壊れた名前になる。
+/// 文字の単位で先頭から積み上げて、上限を超える手前でやめる。
 let private truncate (name: string) : string =
-    let rec shorten (text: string) =
-        if Text.Encoding.UTF8.GetByteCount text <= maxFileNameBytes then
-            text
-        else
-            shorten (text.Substring(0, text.Length - 1))
+    let mutable index = 0
+    let mutable bytes = 0
+    let mutable finished = false
 
-    shorten name
+    while not finished && index < name.Length do
+        // サロゲートペアは2つのコード単位で1文字なので、まとめて数える。
+        let length =
+            if Char.IsHighSurrogate name[index] && index + 1 < name.Length then
+                2
+            else
+                1
+
+        let next = bytes + Text.Encoding.UTF8.GetByteCount(name.AsSpan(index, length))
+
+        if maxFileNameBytes < next then
+            finished <- true
+        else
+            bytes <- next
+            index <- index + length
+
+    name.Substring(0, index)
 
 /// 断片へ重複しないファイル名を与える。
 /// 同じ見出しが別の場所に現れると名前が衝突するため、

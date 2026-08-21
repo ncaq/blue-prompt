@@ -160,6 +160,56 @@ description: 外へ出るスキル。
     // 書き出しはPath.Combineへ渡されるため、名前がそのままファイル名でなければならない。
     Assert.All(fileNames, fun fileName -> Assert.Equal(fileName, Path.GetFileName fileName))
 
+/// ファイルシステムが受け付ける名前の上限。
+let private maxFileSystemNameBytes = 255
+
+[<Fact>]
+let ``長い見出しのファイル名は文字を壊さずに詰められる`` () =
+    // 4バイトの文字を並べた見出しで、切り詰めの位置を1バイトずつずらす。
+    // コード単位を1つずつ削る実装では、
+    // 先頭に置くASCIIの長さによってはサロゲートペアの途中で切れて、
+    // 単独のサロゲートを含む名前ができてしまう。
+    let headings =
+        List.init 4 (fun padding -> String.replicate padding "a" + String.replicate 60 "🌸")
+
+    let directory =
+        makeSkillDirectory
+            [ "SKILL.md", skillMd
+              "reference.md", headings |> List.map section |> String.concat ""
+              "appellation.json", "{}" ]
+
+    let fileNames = (buildKnowledge directory).Files |> List.map _.FileName
+
+    Assert.All(
+        fileNames,
+        fun fileName ->
+            // 拡張子と連番を足してもファイルシステムの上限に収まる。
+            Assert.True(Encoding.UTF8.GetByteCount fileName <= maxFileSystemNameBytes)
+            // 文字の途中で切れていれば、UTF-8への往復で置換文字へ化けて一致しなくなる。
+            Assert.Equal(fileName, Encoding.UTF8.GetString(Encoding.UTF8.GetBytes fileName))
+    )
+
+[<Fact>]
+let ``切り詰めで同じ名前になる見出しには連番が付く`` () =
+    // 上限より長く、上限までは同じ見出しを2つ並べる。
+    let shared = String.replicate 300 "a"
+
+    let directory =
+        makeSkillDirectory
+            [ "SKILL.md", skillMd
+              "reference.md", section (shared + "前半") + section (shared + "後半")
+              "appellation.json", "{}" ]
+
+    let fileNames =
+        (buildKnowledge directory).Files
+        |> List.map _.FileName
+        |> List.filter (fun fileName -> fileName.Contains "reference")
+
+    // 切り詰めた時点で同じ名前になるため、先着以外へ連番が足される。
+    Assert.Equal(2, List.length fileNames)
+    Assert.Equal(2, fileNames |> List.distinct |> List.length)
+    Assert.EndsWith("-2.md", List.last fileNames)
+
 [<Fact>]
 let ``KnowledgeFormはJSONへ往復できる`` () =
     let form =
