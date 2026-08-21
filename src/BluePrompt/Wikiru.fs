@@ -20,7 +20,7 @@ let private collapsibleSelector = ".rgn-container"
 let private imageSelector = "img"
 
 /// どの抽出経路でも本文として扱わないノイズのセレクタ。
-/// contentQueryとappellationContentQueryの双方がこの値を参照することで、
+/// contentQueryとstructuredContentQueryの双方がこの値を参照することで、
 /// セレクタの追加が片方だけに伝わって取りこぼしへ戻ることを防ぐ。
 let private noiseSelectors =
     [
@@ -85,15 +85,17 @@ let studentContentQuery: Extract.ContentQuery =
                 contentQuery.RemoveSelectors
         ReplaceImagesWithAlt = true }
 
-/// キャラ呼称表ページ用の抽出設定。
-/// Appellation.parseが読む#bodyと#noteだけを残し、
+/// pandocを通さずDOMを直接読むページ用の抽出設定。
+/// キャラ呼称表と学校別キャラクター一覧のように、
+/// テーブルをレコードへ構造化してからMarkdownを組み立てる経路で使う。
+/// パースが読む#bodyと#noteだけを残し、
 /// contentQueryと同じ理由でスクリプト片・広告タグ・コメント欄と投稿フォーム由来の、
 /// 任意ユーザー入力がレコードへ紛れ込む余地を断つ。
 /// 一方でパースはDOMの構造をそのまま読むため、Markdown化前提の変形は掛けない。
 /// リンクは脚注アンカー(note_super)のhref/titleと編集リンクの判定に必要なので外さず、
 /// rowspanもparseTableが自前で扱うのでテーブルは平坦化しない。
 /// セル内のアイコン画像はTextContentが空で無害なので、altへの置き換えもしない。
-let appellationContentQuery: Extract.ContentQuery =
+let structuredContentQuery: Extract.ContentQuery =
     { ContentSelectors = [ "#body"; "#note" ]
       RemoveSelectors = noiseSelectors
       UnwrapLinks = false
@@ -406,7 +408,7 @@ let writeRolePlayReference (pageName: string) (outputPath: string) : Task<unit> 
 /// どちらも書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
 let writeAppellation (pageName: string) (markdownPath: string) (jsonPath: string) : Task<unit> =
     task {
-        let! html = Page.fetchContentHtml (pageUri pageName) appellationContentQuery
+        let! html = Page.fetchContentHtml (pageUri pageName) structuredContentQuery
         let entries = Appellation.parseHtml html
 
         do!
@@ -421,6 +423,17 @@ let writeAppellation (pageName: string) (markdownPath: string) (jsonPath: string
         do! writeFile jsonPath (Appellation.toJson document)
         // nix fmtの起動が所要時間の支配項なので、2ファイルを1回の起動でまとめて整形する。
         do! Fmt.formatFiles [ markdownPath; jsonPath ]
+    }
+
+/// wikiruの学校別キャラクター一覧ページを構造化データへパースし、
+/// LLM参照用のreference.mdを書き出す。
+/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
+let writeSchool (pageName: string) (outputPath: string) : Task<unit> =
+    task {
+        let! html = Page.fetchContentHtml (pageUri pageName) structuredContentQuery
+        let entries = School.parseHtml html
+        do! writeFile outputPath (knowledgeHeader pageName + School.toReferenceMarkdown entries)
+        do! Fmt.formatFile outputPath
     }
 
 /// role-playスキルのテンプレート内で呼称表を差し込む位置を示すプレースホルダ。

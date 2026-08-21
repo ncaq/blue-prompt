@@ -141,16 +141,6 @@ let private parseCell
 
     List.rev (finalize last segments)
 
-/// 見出しのテキストをページ内アンカー(†)を除いて取り出す。
-let private headingText (heading: IElement) : string =
-    heading.ChildNodes
-    |> Seq.choose (fun node ->
-        match node with
-        | :? IElement as element when element.ClassList.Contains "anchor_super" -> None
-        | node -> Some node.TextContent)
-    |> String.concat ""
-    |> _.Trim()
-
 /// 呼称表のテーブル1つをレコードの列へ変換する。
 /// キャラクター列は先頭行だけに置かれてrowspanで縦へ結合されているため、
 /// 3セルの行はキャラクター列を読み飛ばし、2セルの行は相手と呼称の継続行として扱う。
@@ -214,9 +204,9 @@ let parse (document: IDocument) : Entry list =
         |> Seq.fold
             (fun (tableEntries, (school, club, character)) element ->
                 match element.LocalName with
-                | "h2" -> tableEntries, (Some(headingText element), None, None)
-                | "h3" -> tableEntries, (school, Some(headingText element), None)
-                | "h4" -> tableEntries, (school, club, Some(headingText element))
+                | "h2" -> tableEntries, (Some(Extract.headingText element), None, None)
+                | "h3" -> tableEntries, (school, Some(Extract.headingText element), None)
+                | "h4" -> tableEntries, (school, club, Some(Extract.headingText element))
                 | _ when
                     (match element.ParentElement with
                      | null -> false
@@ -254,9 +244,6 @@ let private nameWithNote (name: string) (note: string option) : string =
     | Some note -> $"%s{name}(%s{note})"
     | None -> name
 
-/// Markdownのテーブルセルとして安全なように縦棒をエスケープする。
-let private escapeCell (text: string) : string = text.Replace("|", "\\|")
-
 /// 呼ぶ側1人分のレコードを「相手のセルと呼称のセル」の組の列へまとめる。
 /// 同じ相手への呼称は1行へまとめて読点で連結し、注釈は半角括弧で呼称の直後へ添える。
 let private rowCells (callerEntries: Entry list) : (string * string) list =
@@ -268,7 +255,7 @@ let private rowCells (callerEntries: Entry list) : (string * string) list =
             |> List.map (fun entry -> nameWithNote entry.Name entry.Note)
             |> String.concat "、"
 
-        escapeCell (nameWithNote callee calleeNote), escapeCell names)
+        Markdown.escapeTableCell (nameWithNote callee calleeNote), Markdown.escapeTableCell names)
 
 /// レコードの列からLLM参照用のMarkdown本文を組み立てる。
 /// ページと同じ学校(h2) > 部活(h3) > キャラクター(h4)の階層へ組み直し、
@@ -278,7 +265,7 @@ let toReferenceMarkdown (entries: Entry list) : string =
         let rows =
             rowCells callerEntries
             |> List.map (fun (calleeCell, namesCell) ->
-                $"| %s{escapeCell caller} | %s{calleeCell} | %s{namesCell} |")
+                $"| %s{Markdown.escapeTableCell caller} | %s{calleeCell} | %s{namesCell} |")
 
         [ $"#### %s{caller}"; ""; "| キャラクター | 相手 | 呼称 |"; "| --- | --- | --- |" ]
         @ rows

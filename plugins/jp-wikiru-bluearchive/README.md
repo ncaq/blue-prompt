@@ -40,6 +40,15 @@ LLMに記憶を頼らせるのではなく、
 [キャラ呼称表](https://bluearchive.wikiru.jp/?%E3%82%AD%E3%83%A3%E3%83%A9%E5%91%BC%E7%A7%B0%E8%A1%A8)
 を整形した一覧を同梱しています。
 
+### [character-index-by-group](./skills/character-index-by-group)
+
+キャラクターがどの学校のどの部活・組織に所属しているかを調べるスキルです。
+[学校別キャラクター一覧](https://bluearchive.wikiru.jp/?%E5%AD%A6%E6%A0%A1%E5%88%A5)
+を整形した一覧を同梱しています。
+
+生徒個別スキルが1人ずつの深さを担当するのに対して、
+こちらはキャラクター全体を見渡す索引を担当します。
+
 ### 生徒個別スキル(character-\*)
 
 生徒のプロフィール・ステータス・スキル・絆ストーリー・ボイスといった、
@@ -66,6 +75,14 @@ JSONをリポジトリへ置くことで、
 dotnet run --project src/BluePrompt -- wikiru-appellation 'キャラ呼称表' plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json
 ```
 
+学校別キャラクター一覧のスキルは、
+生徒1人を1つのテーブルにしたカードの敷き詰めから所属をレコードへ構造化して、
+学校ごとの1つのテーブルへまとめた`reference.md`を生成します。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-school '学校別' plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md
+```
+
 生徒個別のスキルは1人分の量が少ないため、
 スキル定義ごと1つの`SKILL.md`として生成します。
 スキル名は出力先のディレクトリ名から導出されます。
@@ -83,10 +100,14 @@ pandocでMarkdownへ変換しています。
 素材などを表す画像をaltの名前へ置き換え、
 wiki独自の解説・考察を除いた事実セクションだけへ選別しています。
 
-キャラ呼称表はpandocを通さず、
-テーブルをレコードへ直接パースしてからMarkdownとJSONを書き出しています。
-脚注は末尾の定義ではなく、
+キャラ呼称表と学校別キャラクター一覧はpandocを通さず、
+テーブルをレコードへ直接パースしてからMarkdownを書き出しています。
+どちらもページのレイアウトのままでは読めないためです。
+呼称表の脚注は末尾の定義ではなく、
 呼称の直後の半角括弧の注記としてその場に置いています。
+学校別キャラクター一覧は、
+1人1つのテーブルとして敷き詰められたカードを、
+学校ごとの1つのテーブルへ組み直しています。
 
 wikiの更新を取り込みたい時に同じコマンドを再実行してください。
 

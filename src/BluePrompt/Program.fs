@@ -13,6 +13,9 @@ let private usage =
   BluePrompt wikiru-appellation <ページ名> <reference.mdの出力> <JSONの出力>
     wikiruのキャラ呼称表を構造化し、
     LLM参照用のreference.mdと機械読み出し用のJSONを書き出す。
+  BluePrompt wikiru-school <ページ名> <出力ファイル>
+    wikiruの学校別キャラクター一覧を構造化し、
+    学校ごとの一覧のreference.mdを書き出す。
   BluePrompt roleplay-skill <キャラクター名> <appellation.jsonのパス> <SKILL.mdの出力パス>
     出力先と同じディレクトリの手書きテンプレートSKILL.template.mdのプレースホルダへ、
     生成済みのappellation.jsonから抜き出した指定キャラクターの呼称表を流し込み、
@@ -50,6 +53,9 @@ let main argv =
         0
     | [| "wikiru-appellation"; pageName; markdownPath; jsonPath |] ->
         (Wikiru.writeAppellation pageName markdownPath jsonPath).GetAwaiter().GetResult()
+        0
+    | [| "wikiru-school"; pageName; outputPath |] ->
+        (Wikiru.writeSchool pageName outputPath).GetAwaiter().GetResult()
         0
     | [| "roleplay-skill"; caller; jsonPath; outputPath |] ->
         (Wikiru.writeRolePlaySkill caller jsonPath outputPath).GetAwaiter().GetResult()

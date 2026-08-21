@@ -151,6 +151,14 @@ dotnet run --project src/BluePrompt -- wikiru-knowledge '<ページ名>' <出力
 dotnet run --project src/BluePrompt -- wikiru-appellation 'キャラ呼称表' plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json
 ```
 
+学校別キャラクター一覧のスキルは、
+生徒1人が1つのテーブルになっているカードを構造化して、
+学校ごとの1つのテーブルへまとめた`reference.md`を以下で生成します。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru-school '学校別' plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md
+```
+
 生徒個別のスキルはナレッジを埋め込んだ`SKILL.md`全体を以下で生成します。
 スキル名は出力先のディレクトリ名から導出されます。
 
