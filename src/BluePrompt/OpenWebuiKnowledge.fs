@@ -92,11 +92,46 @@ let private assignFileNames
         { FileName = $"%s{uniqueName baseName 1}.md"
           Content = fragment.Text })
 
+/// wikiruから生成した文書が持つ出典の行。
+/// `sourceHeader`が組み立てる「出典: [記事名](URL)」の形をそのまま拾う。
+let private sourcePattern =
+    Regex(@"^出典: \[[^\]]+\]\([^)]+\)$", RegexOptions.Multiline)
+
+/// 本文から出典の行を抜き出し、その行を落とした本文と組にして返す。
+/// 見つからない手書きの文書では本文をそのまま返す。
+let private takeSourceLine (content: string) : string option * string =
+    match sourcePattern.Match content with
+    | m when m.Success -> Some m.Value, content.Remove(m.Index, m.Length)
+    | _ -> None, content
+
 /// Markdownファイル1つを分割して、名前を与えたファイル群にする。
-let private splitFile (fileName: string) (content: string) : KnowledgeFile list =
-    assignFileNames
-        (Path.GetFileNameWithoutExtension fileName)
-        (Markdown.splitBySize maxFragmentBytes content)
+///
+/// ファイル名はコレクションの名前から始めます。
+/// 検索で当たった断片は、本文とファイル名だけがLLMへ渡り、
+/// どのコレクションから来たのかは伝わりません。
+/// 衣装違いの生徒のように似た構造のコレクションが並ぶと、
+/// 例えば体操服のEXスキルの表を通常衣装のものとして答えてしまいます。
+/// 同じ理由で、出典の行は分割の前に本文から抜いて全ての断片へ配ります。
+/// 記事名が本文に入ることで「体操服の」のような問い合わせが検索に効くようになり、
+/// 断片を単体で読んだ時にどの記事から来たのかも辿れます。
+/// 元の位置に残すと出典の行だけの短い断片ができて、
+/// 検索結果の枠を実データの断片から奪ってしまいます。
+let private splitFile
+    (collectionName: string)
+    (fileName: string)
+    (content: string)
+    : KnowledgeFile list =
+    let stem = Path.GetFileNameWithoutExtension fileName
+    let sourceLine, body = takeSourceLine content
+
+    Markdown.splitBySize maxFragmentBytes body
+    |> List.map (fun fragment ->
+        match sourceLine with
+        | None -> fragment
+        | Some line ->
+            { fragment with
+                Text = $"%s{line}\n\n%s{fragment.Text}" })
+    |> assignFileNames $"%s{collectionName}-%s{stem}"
 
 /// SKILL.mdの本文からフロントマターを落とす。
 /// フロントマターはClaude Codeがスキルを選ぶための情報で、
@@ -139,8 +174,10 @@ let buildKnowledge (skillDirectory: string) : Knowledge =
                 None)
 
     let files =
-        splitFile "SKILL.md" (stripFrontmatter skillContent)
-        @ List.collect (fun (fileName, content) -> splitFile fileName content) referenceFiles
+        splitFile frontmatter.Name "SKILL.md" (stripFrontmatter skillContent)
+        @ List.collect
+            (fun (fileName, content) -> splitFile frontmatter.Name fileName content)
+            referenceFiles
 
     { Form =
         { Name = frontmatter.Name

@@ -8,6 +8,7 @@ module BluePrompt.OpenWebui
 
 open System.IO
 open System.Text.Json
+open System.Text.Json.Nodes
 open System.Text.Json.Serialization
 open System.Text.Encodings.Web
 open System.Text.RegularExpressions
@@ -280,11 +281,45 @@ let private serializerOptions =
 let toJson (form: ModelForm) : string =
     JsonSerializer.Serialize(form, serializerOptions) + "\n"
 
+/// 管理対象のoption型のフィールドのうち、
+/// 応答に無ければnullで補う必要があるものの位置。
+/// 登録済みのModelには、
+/// このリポジトリが後から管理対象へ足したフィールドがまだ無いことがあり、
+/// 例えばfunction_callingを導入する前に登録したModelのparamsにはsystemしかありません。
+/// レコードのフィールドが1つでも欠けるとデシリアライズは失敗しますが、
+/// nullが入っていればNoneとして読めます。
+///
+/// option型のフィールドを足す時はここへも足してください。
+/// 忘れると登録済みのModelを読み戻せなくなります。
+/// 古い形の応答を読むテストが検出します。
+let private optionalFieldPaths =
+    [ [], "base_model_id"
+      [ "meta" ], "knowledge"
+      [ "params" ], "function_calling" ]
+
+/// 応答に無いoption型のフィールドをnullで補う。
+let private fillMissingOptionalFields (root: JsonNode) : JsonNode =
+    for parentKeys, key in optionalFieldPaths do
+        let parent =
+            List.fold (fun (node: JsonNode) (parentKey: string) -> node[parentKey]) root parentKeys
+
+        match parent with
+        | :? JsonObject as object when not (object.ContainsKey key) -> object[key] <- null
+        | _ -> ()
+
+    root
+
 /// toJsonの逆変換としてJSONをModelFormへ読み戻す。
 /// ModelFormに無いフィールドは無視されるため、
 /// APIの応答を管理対象のフィールドだけへ正規化する用途にも使える。
 let ofJson (json: string) : ModelForm =
-    JsonSerializer.Deserialize<ModelForm>(json, serializerOptions)
+    match JsonNode.Parse json with
+    | null -> raise (SkillFormatError(json, "Modelの定義として解釈できません"))
+    | root ->
+        JsonSerializer.Deserialize<ModelForm>(
+            (fillMissingOptionalFields root).ToJsonString(),
+            serializerOptions
+        )
 
 /// スキルディレクトリからModelFormのJSONを書き出す。
 /// 出力はNixのビルド成果物でリポジトリへはコミットしないため、nix fmtは掛けない。

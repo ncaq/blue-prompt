@@ -110,13 +110,26 @@ type private MockServer() =
         let parts = path.Split '/'
         parts[parts.Length - depthFromEnd - 1]
 
-    /// コレクションを登録済みファイルごとJSONへ組み立てる。
+    /// コレクション単体のJSON。
+    /// 実物と同じく、この応答のfilesは常にnullで一覧を含まない。
     let collectionJson (id: string) =
         let collection = collections[id].DeepClone()
+        collection["files"] <- null
+        collection.ToJsonString()
 
-        let files =
+    /// 一覧APIが1ページで返す件数。実物のKnowledgeのファイル一覧と同じ。
+    let pageSize = 30
+
+    /// 登録済みファイルの一覧のJSON。
+    /// 実物と同じくページングして、itemsと総件数のtotalを持つオブジェクトとして返す。
+    let collectionFilesJson (id: string) (page: int) =
+        let all = collectionFiles[id]
+
+        let items =
             JsonArray(
-                collectionFiles[id]
+                all
+                |> List.skip (min ((page - 1) * pageSize) (List.length all))
+                |> List.truncate pageSize
                 |> List.map (fun file ->
                     let meta = JsonObject()
                     meta["name"] <- JsonValue.Create file.FileName
@@ -128,16 +141,26 @@ type private MockServer() =
                 |> List.toArray
             )
 
-        collection["files"] <- files
-        collection.ToJsonString()
+        let root = JsonObject()
+        root["items"] <- items
+        root["total"] <- JsonValue.Create(List.length all)
+        root.ToJsonString()
 
-    let store (request: HttpListenerRequest) =
-        use reader = new StreamReader(request.InputStream)
-        let form = JsonNode.Parse(reader.ReadToEnd())
+    /// 実物と同じく、フォームに無いフィールドをDB側で補って保存する。
+    let storeNode (form: JsonNode) =
         let meta = form["meta"]
         form["user_id"] <- JsonValue.Create "mock-user"
         meta["profile_image_url"] <- JsonValue.Create "/static/favicon.png"
+
+        // 登録済みのModelには権限の設定が必ず入る。
+        if isNull form["access_grants"] then
+            form["access_grants"] <- JsonArray()
+
         models[form["id"].GetValue<string>()] <- form
+
+    let store (request: HttpListenerRequest) =
+        use reader = new StreamReader(request.InputStream)
+        storeNode (JsonNode.Parse(reader.ReadToEnd()))
 
     let handle (context: HttpListenerContext) =
         let request = context.Request
@@ -165,8 +188,14 @@ type private MockServer() =
             respond context.Response 200 "{}"
         | "POST", "/api/v1/models/model/update" ->
             updateCount <- updateCount + 1
-            store request
-            respond context.Response 200 "{}"
+            let form = readJson request
+
+            // 実物はaccess_grantsを省いたボディへ500を返す。
+            match form["access_grants"] with
+            | null -> respond context.Response 500 "Internal Server Error"
+            | _ ->
+                storeNode form
+                respond context.Response 200 "{}"
         | "GET", "/api/v1/knowledge/" ->
             // 実物と同じくitemsを持つオブジェクトとして返す。
             let items = JsonArray(collections.Values |> Seq.map _.DeepClone() |> Seq.toArray)
@@ -224,6 +253,16 @@ type private MockServer() =
             form["id"] <- JsonValue.Create id
             collections[id] <- form
             respond context.Response 200 (collectionJson id)
+        | "GET", path when
+            path.StartsWith("/api/v1/knowledge/", StringComparison.Ordinal)
+            && path.EndsWith("/files", StringComparison.Ordinal)
+            ->
+            let page =
+                match Int32.TryParse(request.QueryString["page"]) with
+                | true, value -> value
+                | _ -> 1
+
+            respond context.Response 200 (collectionFilesJson (collectionIdOf path 1) page)
         | "GET", path when path.StartsWith("/api/v1/knowledge/", StringComparison.Ordinal) ->
             let id = collectionIdOf path 0
 
@@ -262,6 +301,7 @@ type private MockServer() =
     member _.UpdateCount = updateCount
     member _.SignInCount = signInCount
     member _.LastAuthorization = lastAuthorization
+    member _.PageSize = pageSize
     member _.UploadCount = uploadCount
     member _.FileAddCount = fileAddCount
     member _.FileRemoveCount = fileRemoveCount
@@ -713,3 +753,46 @@ let ``同じ名前のKnowledgeコレクションが複数あるとSyncErrorで�
     | unexpected -> failwith unexpected.Message
 
     Assert.Equal(0, server.KnowledgeCreateCount)
+
+[<Fact>]
+let ``一覧の1ページに収まらない数のファイルでも再実行で書き込まれない`` () =
+    use server = new MockServer()
+
+    // 一覧APIは1ページ分しか返さないため、
+    // ページを辿らないと登録済みのファイルを未登録と取り違えて、
+    // 同じ内容を登録し直そうとしてDuplicate contentで弾かれる。
+    let pageSize = server.PageSize
+
+    let files =
+        List.init (pageSize + 5) (fun index -> $"file%02d{index}.md", $"呼称%d{index}")
+
+    let options =
+        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
+            KnowledgeDirectory = Some(makeKnowledgeDirectory [ "character-appellation", files ]) }
+
+    run options
+    Assert.Equal(pageSize + 5, server.UploadCount)
+    Assert.Equal(pageSize + 5, server.FileAddCount)
+
+    run options
+    Assert.Equal(pageSize + 5, server.UploadCount)
+    Assert.Equal(pageSize + 5, server.FileAddCount)
+    Assert.Equal(0, server.FileRemoveCount)
+
+[<Fact>]
+let ``更新でも登録済みの権限設定が保たれる`` () =
+    use server = new MockServer()
+    let models = makeModelsDirectory [ makeForm "yuuka" "古いプロンプト" ]
+    run (makeOptions server models)
+
+    // 登録後にUIで公開範囲を設定した状況を模す。
+    let grants = JsonArray()
+    grants.Add(JsonValue.Create "everyone")
+    server.Models["yuuka"]["access_grants"] <- grants
+
+    run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "改良したプロンプト" ]))
+
+    Assert.Equal(1, server.UpdateCount)
+    // 管理対象ではない権限の設定は読み取った値をそのまま送り返して保つ。
+    let stored = node server.Models["yuuka"] [ "access_grants" ]
+    Assert.Equal("everyone", stored[0].GetValue<string>())

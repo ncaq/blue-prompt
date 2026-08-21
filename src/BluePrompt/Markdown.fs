@@ -132,19 +132,17 @@ let rec private renderSection (section: Section) : string list =
     @ section.Body
     @ List.collect renderSection section.Children
 
-/// 祖先の文脈を前置して断片の本文を組み立てる。
-/// 見出しを持つ祖先については、本文は他の断片にも現れて重複するため見出しだけを持ち回る。
-/// 見出しを持たないルートの本文は出典のような文書全体の前書きで、
-/// どの断片を単体で読む時も文脈になるためそのまま前置する。
+/// 祖先の見出し行を前置して断片の本文を組み立てる。
+/// 祖先の本文は他の断片にも現れて重複するため、見出しだけを持ち回る。
+///
+/// 文書全体の前書きも前置したくなりますが、それはしません。
+/// ベクトル検索では、前書きが独立した短いチャンクとして切り出された上に、
+/// 全ての断片が同じ書き出しになって似たベクトルへ寄ってしまい、
+/// どんな問い合わせにも中途半端に一致して、
+/// 本当に読ませたい実データのチャンクを検索結果から押し出します。
 let private render (ancestors: Section list) (lines: string list) : string =
-    let ancestorLines =
-        ancestors
-        |> List.collect (fun section ->
-            match section.Heading with
-            | None -> section.Body
-            | Some _ -> headingLines section)
-
-    (ancestorLines @ lines |> String.concat "\n" |> _.Trim()) + "\n"
+    (List.collect headingLines ancestors @ lines |> String.concat "\n" |> _.Trim())
+    + "\n"
 
 /// UTF-8で符号化した時のバイト数。
 /// Open WebUIへ渡るのはこの形なので、文字数ではなくバイト数で大きさを測る。
@@ -168,13 +166,9 @@ let rec private collect
             Text = whole } ]
     else
         // 子へ降りる時、この節自身の本文はどの子にも属さないため独立した断片にする。
-        // ルートの本文は全ての断片へ前置されるので独立させると重複し、
-        // 空白だけの本文は断片にしても検索の役に立たないため、どちらも落とす。
+        // 空白だけの本文は断片にしても検索の役に立たないので落とす。
         let own =
-            if
-                section.Heading.IsNone
-                || List.forall System.String.IsNullOrWhiteSpace section.Body
-            then
+            if List.forall System.String.IsNullOrWhiteSpace section.Body then
                 []
             else
                 [ { Headings = headingsOf ancestors section

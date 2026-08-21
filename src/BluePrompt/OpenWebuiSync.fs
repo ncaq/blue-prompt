@@ -228,6 +228,45 @@ let private listItems (url: string) (root: JsonNode) : JsonNode list =
         | :? JsonArray as items -> List.ofSeq items
         | _ -> raise (SyncError $"%s{url}の応答を一覧として解釈できません: %s{root.ToJsonString()}")
 
+/// 一覧APIが応答へ載せる総件数。オブジェクトを返さない旧い形では無い。
+let private totalOf (root: JsonNode) : int option =
+    match root with
+    | :? JsonObject ->
+        match root["total"] with
+        | null -> None
+        | total -> Some(total.GetValue<int>())
+    | _ -> None
+
+/// 一覧APIを最後のページまで辿って全ての項目を集める。
+/// Knowledgeのファイル一覧は既定では30件しか返らないため、
+/// 1ページだけを見ると登録済みのファイルを未登録と取り違えて、
+/// 同じ内容を登録し直そうとしてDuplicate contentで弾かれる。
+let private getAllItems (client: HttpClient) (url: string) : Task<JsonNode list> =
+    task {
+        let mutable page = 1
+        let mutable collected = []
+        let mutable finished = false
+
+        while not finished do
+            let pageUrl = $"%s{url}?page=%d{page}"
+            let! response = getJson client pageUrl
+            let items = listItems pageUrl response
+            collected <- collected @ items
+
+            // 総件数を返さない形の応答では1ページで全件とみなす。
+            // 進まないページを延々と辿らないように、
+            // 空のページが返った時点でも打ち切る。
+            finished <-
+                List.isEmpty items
+                || (match totalOf response with
+                    | None -> true
+                    | Some total -> total <= List.length collected)
+
+            page <- page + 1
+
+        return collected
+    }
+
 /// JSONの文字列フィールドを読む。無ければ空文字として扱う。
 let private stringField (node: JsonNode) (keys: string list) : string =
     let rec dig (current: JsonNode) (keys: string list) =
@@ -277,10 +316,10 @@ let private syncKnowledge
     : Task<string> =
     task {
         let name = desired.Form.Name
-        let! collections = getJson client $"%s{url}/api/v1/knowledge/"
+        let! collections = getAllItems client $"%s{url}/api/v1/knowledge/"
 
         let existing =
-            listItems $"%s{url}/api/v1/knowledge/" collections
+            collections
             |> List.tryFind (fun collection -> stringField collection [ "name" ] = name)
 
         let! id =
@@ -310,15 +349,15 @@ let private syncKnowledge
                     return stringField created [ "id" ]
             }
 
-        let! collection = getJson client $"%s{url}/api/v1/knowledge/%s{id}"
+        // コレクション単体を取るAPIのfilesはnullで返るため、
+        // 登録済みのファイルは専用の一覧APIから取る。
+        let! files = getAllItems client $"%s{url}/api/v1/knowledge/%s{id}/files"
 
         // 登録済みのファイルを名前で引けるようにする。
         // 同じ名前が複数あるのは以前の同期が中断した場合などの壊れた状態なので、
         // 1つを残して他は登録し直しの対象にする。
         let registered =
-            match collection["files"] with
-            | :? JsonArray as files -> List.ofSeq files
-            | _ -> []
+            files
             |> List.map (fun file ->
                 stringField file [ "meta"; "name" ],
                 (stringField file [ "id" ], stringField file [ "meta"; "file_hash" ]))
@@ -436,6 +475,23 @@ let private syncRagTemplate (client: HttpClient) (url: string) (template: string
             printfn "RAGテンプレート: 更新"
     }
 
+/// 更新のボディへ、登録済みのModelのaccess_grantsをそのまま載せる。
+///
+/// 更新のAPIはこのフィールドを省くと500を返すため、送る必要があります。
+/// 中身は登録先の利用者やグループの構成に依存していてこのリポジトリからは決められないので、
+/// 管理対象のフィールドとしては持たず、
+/// 読み取った値をそのまま送り返して権限の設定を保ちます。
+let private withAccessGrants (current: JsonNode) (form: OpenWebui.ModelForm) : JsonNode =
+    match JsonNode.Parse(OpenWebui.toJson form) with
+    | null -> raise (SyncError $"%s{form.Id}の更新のボディを組み立てられません")
+    | body ->
+        body["access_grants"] <-
+            match current["access_grants"] with
+            | null -> JsonArray() :> JsonNode
+            | grants -> grants.DeepClone()
+
+        body
+
 /// ModelForm1件を同期する。
 let private syncModel
     (client: HttpClient)
@@ -465,13 +521,14 @@ let private syncModel
             if current = desired then
                 printfn $"%s{id}: 変更なし"
             else
-                do!
-                    postForm
-                        client
-                        $"%s{options.Url}/api/v1/models/model/update?id=%s{Uri.EscapeDataString id}"
-                        desired
+                let updateUrl =
+                    $"%s{options.Url}/api/v1/models/model/update?id=%s{Uri.EscapeDataString id}"
 
-                printfn $"%s{id}: 更新"
+                match JsonNode.Parse body with
+                | null -> raise (SyncError $"%s{id}の応答を解釈できません: %s{body}")
+                | currentNode ->
+                    let! _ = postJson client updateUrl (withAccessGrants currentNode desired)
+                    printfn $"%s{id}: 更新"
         elif
             // Open WebUIは未登録のidへ401を返す。404も未登録相当として扱う。
             response.StatusCode = HttpStatusCode.Unauthorized

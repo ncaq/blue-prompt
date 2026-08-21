@@ -50,7 +50,10 @@ let ``SKILL_mdとMarkdownの参照ファイルがファイルになる`` () =
 
     let fileNames = (buildKnowledge directory).Files |> List.map _.FileName
 
-    Assert.Equal<string list>([ "SKILL.md"; "reference.md" ], fileNames)
+    Assert.Equal<string list>(
+        [ "character-appellation-SKILL.md"; "character-appellation-reference.md" ],
+        fileNames
+    )
 
 [<Fact>]
 let ``Markdown以外の参照ファイルはKnowledgeへ含めない`` () =
@@ -75,7 +78,7 @@ let ``フロントマターはKnowledgeのファイルへ持ち込まない`` ()
 
     let skill =
         (buildKnowledge directory).Files
-        |> List.find (fun file -> file.FileName = "SKILL.md")
+        |> List.find (fun file -> file.FileName = "character-appellation-SKILL.md")
 
     Assert.DoesNotContain("description:", skill.Content)
     Assert.StartsWith("呼び方を調べるためのスキルです。", skill.Content)
@@ -99,7 +102,12 @@ let ``大きな参照ファイルは見出しの単位のファイルへ分か�
 
     let fileNames = (buildKnowledge directory).Files |> List.map _.FileName
 
-    Assert.Equal<string list>([ "SKILL.md"; "reference-学校A.md"; "reference-学校B.md" ], fileNames)
+    Assert.Equal<string list>(
+        [ "character-appellation-SKILL.md"
+          "character-appellation-reference-学校A.md"
+          "character-appellation-reference-学校B.md" ],
+        fileNames
+    )
 
 [<Fact>]
 let ``同じ見出しが繰り返されてもファイル名は衝突しない`` () =
@@ -111,7 +119,12 @@ let ``同じ見出しが繰り返されてもファイル名は衝突しない``
 
     let fileNames = (buildKnowledge directory).Files |> List.map _.FileName
 
-    Assert.Equal<string list>([ "SKILL.md"; "reference-同じ名前.md"; "reference-同じ名前-2.md" ], fileNames)
+    Assert.Equal<string list>(
+        [ "character-appellation-SKILL.md"
+          "character-appellation-reference-同じ名前.md"
+          "character-appellation-reference-同じ名前-2.md" ],
+        fileNames
+    )
 
 [<Fact>]
 let ``ファイル名に使えない文字は見出しから落とされる`` () =
@@ -123,7 +136,7 @@ let ``ファイル名に使えない文字は見出しから落とされる`` ()
 
     let fileNames = (buildKnowledge directory).Files |> List.map _.FileName
 
-    Assert.Contains("reference-対策委員会-補習.md", fileNames)
+    Assert.Contains("character-appellation-reference-対策委員会-補習.md", fileNames)
 
 [<Fact>]
 let ``KnowledgeFormはJSONへ往復できる`` () =
@@ -132,3 +145,26 @@ let ``KnowledgeFormはJSONへ往復できる`` () =
           Description = "呼称の一覧を引くスキル。" }
 
     Assert.Equal(form, ofJson (toJson form))
+
+[<Fact>]
+let ``出典の行は全ての断片へ配られる`` () =
+    let source = "出典: [ユウカ（体操服） - ブルーアーカイブ(ブルアカ)攻略有志Wiki](https://example.com/yuuka)"
+
+    let directory =
+        makeSkillDirectory
+            [ "SKILL.md", skillMd
+              "reference.md", $"%s{source}\n\n" + section "学校A" + section "学校B"
+              "appellation.json", "{}" ]
+
+    let fragments =
+        (buildKnowledge directory).Files
+        |> List.filter (fun file -> file.FileName.Contains "reference")
+
+    // 記事名が本文に入ることで、衣装違いのような似た文書を検索で区別できる。
+    Assert.All(fragments, fun file -> Assert.StartsWith(source, file.Content))
+    // 出典の行だけの短い断片は、検索結果の枠を実データから奪うので作らない。
+    Assert.Equal<string list>(
+        [ "character-appellation-reference-学校A.md"
+          "character-appellation-reference-学校B.md" ],
+        fragments |> List.map _.FileName
+    )

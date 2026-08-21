@@ -219,3 +219,23 @@ let ``knowledgeを書かないスキルでは紐付けも方式の指定もさ�
     Assert.Equal(None, form.Meta.Knowledge)
     // このリポジトリと関係のない理由で選ばれた設定を上書きしないようにする。
     Assert.Equal(None, form.Params.FunctionCalling)
+
+[<Fact>]
+let ``管理対象へ後から足したフィールドが無い応答も読み戻せる`` () =
+    // function_callingを導入する前に登録したModelの応答を模す。
+    // 実際にOpen WebUIへ登録済みのModelのparamsにはsystemしかない。
+    let json =
+        """{
+  "id": "yuuka",
+  "base_model_id": null,
+  "name": "yuuka",
+  "meta": { "description": "説明", "profile_image_url": "/static/favicon.png" },
+  "params": { "system": "プロンプト" },
+  "is_active": true
+}"""
+
+    let form = ofJson json
+
+    Assert.Equal("yuuka", form.Id)
+    Assert.Equal(None, form.Params.FunctionCalling)
+    Assert.Equal(None, form.Meta.Knowledge)
