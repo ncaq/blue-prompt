@@ -46,6 +46,30 @@
         )
       ) pluginNames;
 
+      # リポジトリにはあるが、スキルとしては配布しないファイルの名前。
+      # character.mdは本文を生成するための入力で、
+      # *.template.mdは全生徒で共通の骨格、
+      # MODEL.mdはOpen WebUIのModel向けの本文なので、
+      # Claude CodeやOpenCodeのスキルとして読ませる意味が無い。
+      # 特にMODEL.mdはSKILL.mdとほぼ同じ内容なので、
+      # 配るとスキルのディレクトリに人格の指示が二重に置かれた状態になる。
+      nonSkillFileNames = [
+        "character.md"
+        "MODEL.md"
+        "MODEL.template.md"
+        "SKILL.template.md"
+      ];
+
+      # 配布しないファイルを除いたディレクトリ。
+      # ビルドを挟まず評価時のコピーだけで済ませるため、
+      # プラグインをそのまま渡していた時と同じくsystemに依存せず扱える。
+      distributable =
+        name: path:
+        builtins.path {
+          inherit name path;
+          filter = entry: _type: !(lib.elem (baseNameOf entry) nonSkillFileNames);
+        };
+
       # プラグインごとの、Open WebUIでの登録先。
       #
       # Open WebUIのModelは会話の入口を選ぶだけで、
@@ -69,7 +93,9 @@
         lib.filter (skill: openWebuiKinds.${skill.pluginName} == kind) skills;
 
       # プラグイン名からプラグインディレクトリへの辞書。
-      pluginPaths = lib.genAttrs pluginNames pluginDirOf;
+      pluginPaths = lib.genAttrs pluginNames (
+        pluginName: distributable pluginName (pluginDirOf pluginName)
+      );
 
       # スキル名からスキルディレクトリへの辞書。
       # OpenCodeはプラグインの単位を持たないためスキルをフラットに展開する必要があるが、
@@ -88,7 +114,9 @@
         lib.listToAttrs (
           map (
             { pluginName, skillName }:
-            lib.nameValuePair skillName (pluginDirOf pluginName + "/skills/${skillName}")
+            lib.nameValuePair skillName (
+              distributable skillName (pluginDirOf pluginName + "/skills/${skillName}")
+            )
           ) skills
         );
     in
@@ -267,7 +295,7 @@
                   in
                   ''
                     mkdir -p ${workDir}
-                    cp -r ${./plugins + "/${pluginName}/skills/${skillName}"} ${workDir}/${skillName}
+                    cp -r ${skillPaths.${skillName}} ${workDir}/${skillName}
                     chmod -R u+w ${workDir}
                     # nix storeのタイムスタンプとファイル列挙順に依存しないアーカイブにする。
                     find ${workDir} -exec touch -d "@$SOURCE_DATE_EPOCH" {} +
@@ -397,6 +425,20 @@
                 '') pluginPathList}
                 # OpenCode側: 代表スキルの本体が接続されている。
                 test -f ${skills.kotori}/SKILL.md
+                # 生成の入力や別の届け先向けの本文が、どちらへも混ざっていない。
+                ${
+                  let
+                    assertClean = path: ''
+                      if [ -n "$(find ${path} \( ${
+                        lib.concatMapStringsSep " -o " (name: "-name ${name}") nonSkillFileNames
+                      } \) -print -quit)" ]; then
+                        echo "配布しないファイルが混ざっています: ${path}" >&2
+                        exit 1
+                      fi
+                    '';
+                  in
+                  lib.concatMapStrings assertClean (pluginPathList ++ lib.attrValues skills)
+                }
                 touch $out
               '';
 

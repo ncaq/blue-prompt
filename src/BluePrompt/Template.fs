@@ -4,9 +4,7 @@
 /// エスケープも整形もせず、渡された通りの文字列を置く。
 module BluePrompt.Template
 
-open System.IO
 open System.Text.RegularExpressions
-open System.Threading.Tasks
 
 /// 差し込む位置を示すプレースホルダ。
 /// `{{名前}}`の形で、テンプレートの中へ単独の段落として書く。
@@ -53,14 +51,11 @@ let render (values: Map<string, string>) (template: string) : Result<string, Mis
 /// テンプレートのプレースホルダと差し込む値が食い違った時の、テンプレートのパスと内訳。
 exception PlaceholderMismatch of path: string * mismatch: Mismatch
 
-/// ファイルから読んだテンプレートへ値を差し込む。
+/// テンプレートのプレースホルダへ値を差し込み、食い違いを送出する。
 /// 食い違いはどのファイルを直せばよいのかが分からないと対処できないため、
-/// パスを添えて送出する。
-let renderFile (values: Map<string, string>) (path: string) : Task<string> =
-    task {
-        let! template = File.ReadAllTextAsync path
-
-        match render values template with
-        | Ok rendered -> return rendered
-        | Error mismatch -> return raise (PlaceholderMismatch(path, mismatch))
-    }
+/// テンプレートの出どころのパスを添える。
+/// テンプレートの内容から決まる値もあるため、読み込みは呼び出し側が行う。
+let renderOrFail (path: string) (values: Map<string, string>) (template: string) : string =
+    match render values template with
+    | Ok rendered -> rendered
+    | Error mismatch -> raise (PlaceholderMismatch(path, mismatch))

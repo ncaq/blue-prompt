@@ -32,6 +32,16 @@ description: Role-play as 早瀬ユウカ.
 """
 
 [<Fact>]
+let ``MODEL.mdがあればSKILL.mdより優先される`` () =
+    // Claude CodeとOpen WebUIでは参照ファイルとナレッジの届き方が違うため、
+    // 本文はそれぞれの言い方で別に用意する。
+    let modelMd = skillMd.Replace("あなたは早瀬ユウカとして振る舞います。", "Model向けの本文です。")
+
+    let directory = makeSkillDirectory [ "SKILL.md", skillMd; "MODEL.md", modelMd ]
+
+    Assert.Equal("Model向けの本文です。\n", (buildModelForm directory).Params.System)
+
+[<Fact>]
 let ``フロントマターのnameとdescriptionがModelFormへ対応付く`` () =
     let directory = makeSkillDirectory [ "SKILL.md", skillMd ]
     let form = buildModelForm directory

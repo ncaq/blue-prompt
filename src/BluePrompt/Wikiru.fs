@@ -443,36 +443,3 @@ let writeSchool (pageName: string) (outputPath: string) : Task<unit> =
         do! writeFile outputPath (knowledgeHeader pageName + School.toReferenceMarkdown entries)
         do! Fmt.formatFile outputPath
     }
-
-/// role-playスキルのテンプレートで呼称表を差し込む位置を示すプレースホルダの名前。
-let appellationPlaceholder: string = "appellation"
-
-/// 手書きのテンプレートと生成済みのappellation.jsonから、
-/// role-playスキルのSKILL.md全体を生成する。
-/// 没入感を左右する呼称は別ファイルへ分けず、スキル本体へ直接埋め込む。
-/// テンプレートは出力先と同じディレクトリのSKILL.template.mdから読む。
-/// wikiruへはアクセスせず、リポジトリへ併置したJSONだけで完結する。
-/// 出典の表記はJSONに記録された出典URLからページ名を復元して組み立てる。
-/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
-let writeRolePlaySkill (caller: string) (jsonPath: string) (outputPath: string) : Task<unit> =
-    task {
-        let templatePath =
-            Path.Combine(
-                (match Path.GetDirectoryName outputPath with
-                 | null -> ""
-                 | directory -> directory),
-                "SKILL.template.md"
-            )
-
-        let! json = File.ReadAllTextAsync jsonPath
-        let document = Appellation.ofJson json
-
-        let appellation =
-            sourceHeader (Uri document.Source)
-            + Appellation.toCallerMarkdown caller document.Entries
-
-        let! skill = Template.renderFile (Map [ appellationPlaceholder, appellation ]) templatePath
-
-        do! writeFile outputPath skill
-        do! Fmt.formatFile outputPath
-    }

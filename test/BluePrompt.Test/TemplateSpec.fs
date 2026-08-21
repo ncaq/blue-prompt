@@ -1,6 +1,5 @@
 module BluePrompt.Test.TemplateSpec
 
-open System.IO
 open Xunit
 open BluePrompt.Template
 
@@ -77,27 +76,17 @@ let ``差し込んだ値の中のプレースホルダは展開されない`` ()
     Assert.Equal(Ok "{{voice}} 展開された", render values $"%s{appellation} %s{voice}")
 
 [<Fact>]
-let ``renderFileはファイルのテンプレートへ差し込む`` () =
-    let path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
-    File.WriteAllText(path, $"前書き\n%s{appellation}\n")
-
-    let rendered =
-        (renderFile (Map [ "appellation", "呼称" ]) path).GetAwaiter().GetResult()
-
-    Assert.Equal("前書き\n呼称\n", rendered)
+let ``renderOrFailはテンプレートへ差し込む`` () =
+    Assert.Equal("呼称", renderOrFail "SKILL.template.md" (Map [ "appellation", "呼称" ]) appellation)
 
 [<Fact>]
-let ``renderFileは食い違ったテンプレートのパスを添えて止まる`` () =
-    let path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
-    File.WriteAllText(path, "プレースホルダの無いテンプレート\n")
-
+let ``renderOrFailは食い違ったテンプレートのパスを添えて止まる`` () =
     let error =
         Assert.Throws<PlaceholderMismatch>(fun () ->
-            (renderFile (Map [ "appellation", "呼称" ]) path).GetAwaiter().GetResult()
-            |> ignore)
+            renderOrFail "SKILL.template.md" (Map [ "appellation", "呼称" ]) "本文だけ" |> ignore)
 
     match error :> exn with
-    | PlaceholderMismatch(errorPath, mismatch) ->
-        Assert.Equal(path, errorPath)
+    | PlaceholderMismatch(path, mismatch) ->
+        Assert.Equal("SKILL.template.md", path)
         Assert.Equal<string list>([ "appellation" ], mismatch.Unused)
     | unexpected -> failwith $"想定外の例外です: %O{unexpected}"

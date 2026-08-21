@@ -222,9 +222,8 @@ let private inlineSection (fileName: string) (content: string) : string =
     $"%s{heading}\n\n%s{body}"
 
 /// インライン化した参照ファイル群の前へ置く案内。
-/// 本文の「ファイルを読む」指示をインライン化後の読み替えへ接続する。
-let private inlineNotice =
-    "本文がリンクで参照しているファイルは、以下へインライン化済みです。\nファイルを読む指示は該当する節を読むことへ読み替えてください。"
+/// 本文が挙げている参照データとこの後ろの節を結び付ける。
+let private inlineNotice = "以下は本文が挙げている参照データの中身です。"
 
 /// スキルディレクトリのSKILL.mdと参照ファイルからシステムプロンプト全文を組み立てる。
 /// リンクされたファイルが実在しない場合は参照が壊れているのでSkillFormatErrorで止める。
@@ -244,7 +243,16 @@ let private buildSystemPrompt (skillDirectory: string) (skillPath: string) (body
 /// idとnameにはフロントマターのnameを使い、ここでは一意性を保証しない。
 /// 同じ一覧の中のidの重複は、open-webui-syncが同期の前に検出して止める。
 let buildModelForm (skillDirectory: string) : ModelForm =
+    // Model向けの本文があればそちらを使う。
+    // Claude Codeは参照ファイルを開いてナレッジのスキルを読み込むが、
+    // Open WebUIでは参照ファイルはインライン化され、
+    // ナレッジは紐付けから自動で渡されるため、本文の言い方が噛み合わない。
+    // 両方の言い方を1つの本文へ収めると、
+    // どちらの経路でも半分は当てはまらない説明を読ませることになる。
+    let modelPath = Path.Combine(skillDirectory, "MODEL.md")
     let skillPath = Path.Combine(skillDirectory, "SKILL.md")
+
+    let skillPath = if File.Exists modelPath then modelPath else skillPath
 
     if not (File.Exists skillPath) then
         raise (SkillFormatError(skillPath, "SKILL.mdが存在しません"))
