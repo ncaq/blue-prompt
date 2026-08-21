@@ -47,12 +47,18 @@ let private unsafeFileNamePattern = Regex @"[\\/:*?""<>|#\s]+"
 /// 見出しの並びからファイル名の本体を組み立てる。
 /// Open WebUIのUIにはファイル名がそのまま並ぶため、
 /// どの節なのかが読んで分かる名前にする。
+///
+/// 先頭のstemはフロントマターの名前と参照ファイル名に由来し、
+/// 見出しと同じく区切り文字を含み得るため、同じサニタイズを通す。
 let private toFileNameBase (stem: string) (headings: string list) : string =
     let sanitize (text: string) =
         unsafeFileNamePattern.Replace(text, "-").Trim '-'
 
-    stem :: List.map sanitize headings
-    |> List.filter (fun part -> part <> "")
+    stem :: headings
+    |> List.choose (fun part ->
+        match sanitize part with
+        | "" -> None
+        | sanitized -> Some sanitized)
     |> String.concat "-"
 
 /// ファイル名の最大の長さ。
@@ -74,6 +80,7 @@ let private truncate (name: string) : string =
 /// 同じ見出しが別の場所に現れると名前が衝突するため、
 /// 2つ目以降にだけ連番を足して先着の名前を安定させる。
 let private assignFileNames
+    (skillPath: string)
     (stem: string)
     (fragments: Markdown.Fragment list)
     : KnowledgeFile list =
@@ -89,7 +96,16 @@ let private assignFileNames
             else
                 uniqueName $"%s{baseName}-%d{suffix + 1}" (suffix + 1)
 
-        { FileName = $"%s{uniqueName baseName 1}.md"
+        let fileName = $"%s{uniqueName baseName 1}.md"
+
+        // 名前はPath.Combineで書き出しに使われ、
+        // アップロードのmultipartのfilenameとしても送られる。
+        // サニタイズを抜けた区切り文字が残っていないことをここで確かめて、
+        // 生成物のディレクトリの外を指す名前を作らないようにする。
+        if String.IsNullOrEmpty baseName || fileName <> Path.GetFileName fileName then
+            raise (OpenWebui.SkillFormatError(skillPath, $"断片のファイル名を組み立てられません: %s{fileName}"))
+
+        { FileName = fileName
           Content = fragment.Text })
 
 /// wikiruから生成した文書が持つ出典の行。
@@ -117,6 +133,7 @@ let private takeSourceLine (content: string) : string option * string =
 /// 元の位置に残すと出典の行だけの短い断片ができて、
 /// 検索結果の枠を実データの断片から奪ってしまいます。
 let private splitFile
+    (skillPath: string)
     (collectionName: string)
     (fileName: string)
     (content: string)
@@ -131,7 +148,7 @@ let private splitFile
         | Some line ->
             { fragment with
                 Text = $"%s{line}\n\n%s{fragment.Text}" })
-    |> assignFileNames $"%s{collectionName}-%s{stem}"
+    |> assignFileNames skillPath $"%s{collectionName}-%s{stem}"
 
 /// SKILL.mdの本文からフロントマターを落とす。
 /// フロントマターはClaude Codeがスキルを選ぶための情報で、
@@ -174,9 +191,9 @@ let buildKnowledge (skillDirectory: string) : Knowledge =
                 None)
 
     let files =
-        splitFile frontmatter.Name "SKILL.md" (stripFrontmatter skillContent)
+        splitFile skillPath frontmatter.Name "SKILL.md" (stripFrontmatter skillContent)
         @ List.collect
-            (fun (fileName, content) -> splitFile frontmatter.Name fileName content)
+            (fun (fileName, content) -> splitFile skillPath frontmatter.Name fileName content)
             referenceFiles
 
     { Form =
