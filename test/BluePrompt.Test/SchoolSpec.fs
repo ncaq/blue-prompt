@@ -76,6 +76,23 @@ let ``名前はアイコンのaltではなくカードの表示名から読む``
     Assert.Equal(Some "カイテンジャー", entry.Page)
 
 [<Fact>]
+let ``未作成ページの編集リンクは名前にもページ名にも入らない`` () =
+    // wikiruは個別ページがまだ無いキャラクターを、名前の後ろへ編集リンクの「?」を添えて表示する。
+    let page = Uri.EscapeDataString "ミリア"
+
+    let html =
+        body (
+            """<h2>学校</h2><h3>部活</h3><div class="ie5"><table><tbody><tr>"""
+            + """<td class="style_td">★3<br />"""
+            + $"""<span class="noexists">ミリア<a href="./?cmd=edit&amp;page=%s{page}">?</a></span>"""
+            + "</td></tr></tbody></table></div>"
+        )
+
+    let entry = List.exactlyOne (parseHtml html)
+    Assert.Equal("ミリア", entry.Name)
+    Assert.Equal(None, entry.Page)
+
+[<Fact>]
 let ``名前と同じページ名はPageに入らない`` () =
     let html = body ("<h2>連邦生徒会</h2>" + card "NPC" "スモモ" "スモモ")
     Assert.Equal(None, (List.exactlyOne (parseHtml html)).Page)

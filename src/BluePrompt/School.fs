@@ -42,11 +42,32 @@ exception EntryNotFound
 /// 生徒のセルからレアリティと名前の組を読めなかった時のセルのテキスト。
 exception CellShapeError of text: string
 
+/// 未作成ページへの編集リンクかどうか。
+/// wikiruは個別ページがまだ無いキャラクターを、
+/// 名前の後ろへ編集リンクの「?」を添えた形で表示する。
+/// 「?」は名前の一部ではなく、リンク先もページ名ではなく編集フォームなので、
+/// 名前からもページ名からも除く。
+/// 新しいキャラクターのページが未作成の間だけ現れる一過性の状態だが、
+/// 生成のたびに踏み得る。
+let private isEditLink (element: IElement) : bool =
+    match element.GetAttribute "href" with
+    | null -> false
+    | href -> href.Contains "cmd=edit"
+
+/// ノードのテキストを、未作成ページへの編集リンクを除いて集める。
+/// TextContentは子孫のテキストを全て繋いでしまうため、
+/// 編集リンクが名前を包む要素の中にあっても落とせるように、子を自分で辿る。
+let rec private nodeText (node: INode) : string =
+    match node with
+    | :? IElement as element when isEditLink element -> ""
+    | node when node.HasChildNodes -> node.ChildNodes |> Seq.map nodeText |> String.concat ""
+    | node -> node.TextContent
+
 /// ノードの列のテキストを繋いで前後の空白を落とす。
 /// カードの名前は末尾へ`&nbsp;`が付くが、
 /// .NETはノーブレークスペースも空白として扱うのでTrimで一緒に落ちる。
 let private nodesText (nodes: INode list) : string =
-    nodes |> List.map _.TextContent |> String.concat "" |> _.Trim()
+    nodes |> List.map nodeText |> String.concat "" |> _.Trim()
 
 /// 生徒1人分のセルを「レアリティと名前」の組へ分解する。
 /// セルはレアリティ・アイコン画像・名前をbrで縦へ並べたカードなので、
@@ -77,10 +98,12 @@ let private parseCell (cell: IElement) : string * string =
 /// カードのリンクは「./?<パーセントエンコードされたページ名>」の相対リンクで、
 /// 節へのリンクは末尾へ「#<節のid>」が付く。
 /// 他のページの記法で書かれたリンクはページ名を復元できないのでNoneにする。
+/// 未作成ページへの編集リンクはページ名ではなく編集フォームを指すので読まない。
 let private pageName (cell: IElement) : string option =
     cell.QuerySelectorAll "a"
     |> Seq.tryPick (fun anchor ->
         match anchor.GetAttribute "href" with
+        | _ when isEditLink anchor -> None
         | null -> None
         | href when href.StartsWith("./?", StringComparison.Ordinal) ->
             match Uri.UnescapeDataString(href.Substring 3).Split '#' with
