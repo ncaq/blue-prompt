@@ -204,7 +204,7 @@ let private stripFrontmatter (content: string) : string =
 /// Claude Code向けの説明とOpen WebUI向けの知識を1つのSKILL.mdで兼ねる以上、
 /// ここは割り切っている。
 let buildKnowledge (skillDirectory: string) : Knowledge =
-    let skillPath = Path.Combine(skillDirectory, "SKILL.md")
+    let skillPath = Path.Combine(skillDirectory, SkillFile.skill)
 
     if not (File.Exists skillPath) then
         raise (OpenWebui.SkillFormatError(skillPath, "SKILL.mdが存在しません"))
@@ -224,7 +224,7 @@ let buildKnowledge (skillDirectory: string) : Knowledge =
                 None)
 
     let files =
-        splitFile skillPath frontmatter.Name "SKILL.md" (stripFrontmatter skillContent)
+        splitFile skillPath frontmatter.Name SkillFile.skill (stripFrontmatter skillContent)
         @ List.collect
             (fun (fileName, content) -> splitFile skillPath frontmatter.Name fileName content)
             referenceFiles

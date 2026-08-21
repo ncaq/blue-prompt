@@ -46,6 +46,60 @@
         )
       ) pluginNames;
 
+      # 本文をテンプレートから生成しているrole-playスキルの、生成コマンドへ渡す呼び名。
+      # 呼び名はcharacter.mdからは決まらないためここで対応付ける。
+      # 手で貼り付けたデータのままのスキルはcharacter.mdを持たないので対象から外れる。
+      rolePlayCallers = {
+        yuuka = "ユウカ";
+      };
+
+      # character.mdを持つrole-playスキルは、本文をテンプレートから生成している。
+      templatedSkillNames = lib.sort lib.lessThan (
+        lib.filter (
+          skillName: builtins.pathExists (pluginDirOf "role-play" + "/skills/${skillName}/character.md")
+        ) (map (skill: skill.skillName) (lib.filter (skill: skill.pluginName == "role-play") skills))
+      );
+
+      # 呼び名の追記漏れで、生徒を移行しても生成物の検証から黙って外れるのを防ぐ。
+      templatedSkills =
+        assert lib.assertMsg (lib.sort lib.lessThan (lib.attrNames rolePlayCallers) == templatedSkillNames)
+          ''
+            rolePlayCallersの一覧がcharacter.mdを持つrole-playスキルと一致しません。
+            rolePlayCallers: ${toString (lib.attrNames rolePlayCallers)}
+            character.mdを持つスキル: ${toString templatedSkillNames}'';
+        map (skillName: {
+          inherit skillName;
+          caller = rolePlayCallers.${skillName};
+        }) templatedSkillNames;
+
+      # リポジトリにはあるが、スキルとしては配布しないファイルの名前。
+      # character.mdは本文を生成するための入力で、
+      # *.template.mdは全生徒で共通の骨格、
+      # MODEL.mdはOpen WebUIのModel向けの本文なので、
+      # Claude CodeやOpenCodeのスキルとして読ませる意味が無い。
+      # 特にMODEL.mdはSKILL.mdとほぼ同じ内容なので、
+      # 配るとスキルのディレクトリに人格の指示が二重に置かれた状態になる。
+      #
+      # F#側で同じ名前を持つのはsrc/BluePrompt/SkillFile.fsで、
+      # Nixへ定数を渡す手段が無いので重複は仕組み上残る。
+      # どちらかの名前を変える時はもう片方も直す。
+      nonSkillFileNames = [
+        "character.md"
+        "MODEL.md"
+        "MODEL.template.md"
+        "SKILL.template.md"
+      ];
+
+      # 配布しないファイルを除いたディレクトリ。
+      # ビルドを挟まず評価時のコピーだけで済ませるため、
+      # プラグインをそのまま渡していた時と同じくsystemに依存せず扱える。
+      distributable =
+        name: path:
+        builtins.path {
+          inherit name path;
+          filter = entry: _type: !(lib.elem (baseNameOf entry) nonSkillFileNames);
+        };
+
       # プラグインごとの、Open WebUIでの登録先。
       #
       # Open WebUIのModelは会話の入口を選ぶだけで、
@@ -69,7 +123,9 @@
         lib.filter (skill: openWebuiKinds.${skill.pluginName} == kind) skills;
 
       # プラグイン名からプラグインディレクトリへの辞書。
-      pluginPaths = lib.genAttrs pluginNames pluginDirOf;
+      pluginPaths = lib.genAttrs pluginNames (
+        pluginName: distributable pluginName (pluginDirOf pluginName)
+      );
 
       # スキル名からスキルディレクトリへの辞書。
       # OpenCodeはプラグインの単位を持たないためスキルをフラットに展開する必要があるが、
@@ -88,7 +144,9 @@
         lib.listToAttrs (
           map (
             { pluginName, skillName }:
-            lib.nameValuePair skillName (pluginDirOf pluginName + "/skills/${skillName}")
+            lib.nameValuePair skillName (
+              distributable skillName (pluginDirOf pluginName + "/skills/${skillName}")
+            )
           ) skills
         );
     in
@@ -117,6 +175,7 @@
 
       perSystem =
         {
+          config,
           lib,
           pkgs,
           ...
@@ -267,7 +326,7 @@
                   in
                   ''
                     mkdir -p ${workDir}
-                    cp -r ${./plugins + "/${pluginName}/skills/${skillName}"} ${workDir}/${skillName}
+                    cp -r ${skillPaths.${skillName}} ${workDir}/${skillName}
                     chmod -R u+w ${workDir}
                     # nix storeのタイムスタンプとファイル列挙順に依存しないアーカイブにする。
                     find ${workDir} -exec touch -d "@$SOURCE_DATE_EPOCH" {} +
@@ -277,7 +336,7 @@
                 ) skills}
               '';
           # Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
-          # SKILL.mdと参照ファイルをインライン化したシステムプロンプトを持つ、
+          # MODEL.md(無ければSKILL.md)と参照ファイルをインライン化したシステムプロンプトを持つ、
           # ワークスペースModelの作成フォームJSONを人格のスキルごとに生成する。
           # POST /api/v1/models/createへそのまま渡して登録できる。
           open-webui-model = pkgs.runCommand "open-webui-model-${marketplace.metadata.version}" { } ''
@@ -313,6 +372,75 @@
               ''
             ) (openWebuiSkillsOf "knowledge")}
           '';
+          # role-playスキルの本文はテンプレートとcharacter.mdからの生成物で、
+          # 生成し直すのを忘れたままコミットしても今まで誰も気付けなかった。
+          # 生成し直して差分が出ないことを確かめる。
+          # Template.renderOrFailのプレースホルダの検査も、
+          # 生成し直さない限り走らないのでここでまとめて掛かる。
+          roleplay-generated =
+            let
+              # 生成コマンドは書き出した直後にnix fmtを起動する。
+              # サンドボックスにはnixもflakeも無いが、
+              # 整形を挟まないと呼称表の桁揃えだけで差分が出るため、
+              # 同じ設定のtreefmtへ橋渡しするnixを置く。
+              #
+              # 引数はfmtと--とパスの並びで渡ってくる前提を置いている。
+              # Fmt側が--を落としたりオプションを足したりすると、
+              # 黙ってパスを1つ食い潰したまま別のものを整形して、
+              # このチェックが誤った理由で通ったり落ちたりするため、
+              # 前提が崩れたらその場で止める。
+              nixShim = pkgs.writeShellScriptBin "nix" ''
+                if [ "$1" != fmt ] || [ "$2" != -- ]; then
+                  echo "想定していないnixの呼び出しです: $*" >&2
+                  exit 1
+                fi
+                shift 2
+                exec ${lib.getExe config.treefmt.build.wrapper} "$@"
+              '';
+            in
+            pkgs.runCommand "roleplay-generated"
+              {
+                nativeBuildInputs = [
+                  nixShim
+                  pkgs.diffutils
+                ];
+              }
+              ''
+                export HOME="$TMPDIR"
+                mkdir -p work
+                # treefmtはflake.nixを目印に木の根を探し、
+                # そこからprettierとtyposの設定を読む。
+                touch work/flake.nix
+                cp ${./.editorconfig} work/.editorconfig
+                cp ${./.editorconfig-checker.json} work/.editorconfig-checker.json
+                cp ${./_typos.toml} work/_typos.toml
+                ${lib.concatMapStrings (
+                  { skillName, caller }:
+                  let
+                    skillDir = ./plugins + "/role-play/skills/${skillName}";
+                    templateDir = ./plugins + "/role-play";
+                    appellationDir = ./plugins + "/jp-wikiru-bluearchive/skills/character-appellation";
+                    compare = outputName: ''
+                      if ! diff -u ${skillDir}/${outputName} work/${skillName}/${outputName}; then
+                        echo "${skillName}の${outputName}が生成し直されていません" >&2
+                        exit 1
+                      fi
+                    '';
+                  in
+                  ''
+                    cp -r ${skillDir} work/${skillName}
+                    chmod -R u+w work/${skillName}
+                    ${lib.getExe blue-prompt} roleplay-skill \
+                      ${lib.escapeShellArg caller} \
+                      ${templateDir} \
+                      ${appellationDir}/appellation.json \
+                      work/${skillName}
+                    ${compare "SKILL.md"}
+                    ${compare "MODEL.md"}
+                  ''
+                ) templatedSkills}
+                touch $out
+              '';
         in
         {
           treefmt.config = {
@@ -349,6 +477,7 @@
             package-claude-ai-skill = claude-ai-skill;
             package-open-webui-model = open-webui-model;
             package-open-webui-knowledge = open-webui-knowledge;
+            inherit roleplay-generated;
 
             # home-managerモジュールを実際のhome-manager構成へ組み込んで、
             # プラグインとスキルが実際に接続されていることを検証する。
@@ -397,6 +526,20 @@
                 '') pluginPathList}
                 # OpenCode側: 代表スキルの本体が接続されている。
                 test -f ${skills.kotori}/SKILL.md
+                # 生成の入力や別の届け先向けの本文が、どちらへも混ざっていない。
+                ${
+                  let
+                    assertClean = path: ''
+                      if [ -n "$(find ${path} \( ${
+                        lib.concatMapStringsSep " -o " (name: "-name ${name}") nonSkillFileNames
+                      } \) -print -quit)" ]; then
+                        echo "配布しないファイルが混ざっています: ${path}" >&2
+                        exit 1
+                      fi
+                    '';
+                  in
+                  lib.concatMapStrings assertClean (pluginPathList ++ lib.attrValues skills)
+                }
                 touch $out
               '';
 

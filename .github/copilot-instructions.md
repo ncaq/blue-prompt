@@ -173,16 +173,59 @@ role-playスキルの衣装別参照ファイルは、
 dotnet run --project src/BluePrompt -- wikiru-roleplay-reference '<生徒のページ名>' <出力ファイル>
 ```
 
-role-playスキルのSKILL.mdは、
-同じディレクトリの手書きテンプレートSKILL.template.mdのプレースホルダへ、
-生成済みのappellation.jsonから抜き出した指定キャラクターの呼称表を流し込んで、
-以下で全体を生成します。
-wikiruへはアクセスしません。
-人格や口調の指示を変える時はSKILL.mdではなくテンプレートを編集して生成し直します。
+role-playスキルの本文は、
+全生徒で共通のテンプレートのプレースホルダへ、
+生徒ごとに決まる値を差し込んで以下で生成します。
+wikiruへはアクセスせず、リポジトリへ併置した生成物だけで完結します。
+
+テンプレートは届け先ごとに2つあります。
+
+- `plugins/role-play/SKILL.template.md`: Claude Code向け。SKILL.mdになります
+- `plugins/role-play/MODEL.template.md`: Open WebUIのModel向け。MODEL.mdになります
+
+参照ファイルの届き方とナレッジの引き方が経路で違うため、
+噛み合わない数文のために本文ごと分けています。
+`open-webui-model`はMODEL.mdがあればSKILL.mdより優先して使います。
+2つのテンプレートはほとんど同じなので、片方を直したらもう片方も見てください。
+
+- `{{caller}}`: 演じる生徒の呼び名
+- `{{character}}`: スキルのディレクトリのcharacter.mdの本文。生徒に固有の手書きの部分
+- `{{playing}}`: 全生徒に共通する演じ方の指示
+- `{{appellation}}`: 生成済みのappellation.jsonから抜き出した指定キャラクターの呼称表
+- `{{costumes}}`: 同じディレクトリにある衣装別の参照ファイルの一覧
+- `{{knowledgeSkills}}`: character.mdのフロントマターのknowledge:から
+  `character-appellation`を除いた、この生徒のナレッジのスキル名の一覧
+
+テンプレートはこの6つを全て使う必要があり、
+書き忘れると差し込むはずの内容が落ちないようにエラーで止まります。
+生成物のフロントマターはcharacter.mdのものをそのまま写します。
+
+プロフィールや口調をスキル本体へ書き下すことはしません。
+プロフィールは衣装別の参照ファイルがどちらの経路でも届くため重複で、
+口調の要約は目を引かれた特徴だけを強めてボイスの持つ幅を潰すためです。
+
+全生徒に効く指示は2つのテンプレートを、
+その生徒だけの指示はcharacter.mdを編集して生成し直します。
+
+2つの届け先はどちらもファイル名が決まっているため、
+渡すのはテンプレートのディレクトリと出力先のディレクトリです。
+1度の起動でSKILL.mdとMODEL.mdの両方が書き出され、
+`nix fmt`も1回にまとまります。
 
 ```console
-dotnet run --project src/BluePrompt -- roleplay-skill '<キャラクター名>' plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json <SKILL.mdの出力パス>
+dotnet run --project src/BluePrompt -- roleplay-skill '<キャラクター名>' plugins/role-play plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json <スキルのディレクトリ>
 ```
+
+character.mdと2つのテンプレートとMODEL.mdは配布物から除かれます。
+Claude Codeのプラグインも、
+OpenCodeのスキルも、
+配布ZIPも、
+これらを除いた実体を指します。
+生成の入力と別の届け先向けの本文をスキルとして読ませる意味が無く、
+特にMODEL.mdはSKILL.mdとほぼ同じ内容なので、
+配るとスキルのディレクトリへ人格の指示が二重に置かれた状態になるためです。
+除外する名前はflake.nixの`nonSkillFileNames`が持っていて、
+漏れは統合チェックが検出します。
 
 抽出設定を調整する時は、
 以下でpandoc変換前の中間HTMLを確認できます。
@@ -215,7 +258,7 @@ Modelは会話の入口を選ぶだけで、
 
 ## Model定義の生成
 
-SKILL.mdと本文から明示的にリンクされた参照ファイルをインライン化して、
+MODEL.md(無ければSKILL.md)と本文から明示的にリンクされた参照ファイルをインライン化して、
 システムプロンプトへ焼き込んだワークスペースModelの作成フォームJSONへ変換します。
 生成物は`POST /api/v1/models/create`へそのまま渡して登録できる形式です。
 
@@ -269,8 +312,8 @@ dotnet run --project src/BluePrompt -- open-webui-knowledge <スキルディレ�
 
 role-playスキルのフロントマターの`knowledge:`行に、
 参照するKnowledgeコレクションの名前をカンマ区切りで並べます。
-yuukaのようにSKILL.template.mdから生成するスキルでは、
-テンプレート側へ書いて生成し直します。
+yuukaのように生成するスキルでは、
+スキルのディレクトリのcharacter.md側へ書いて生成し直します。
 
 コレクションのidは登録先のインスタンスが採番するため生成時には決まりません。
 生成物では空にしておき、

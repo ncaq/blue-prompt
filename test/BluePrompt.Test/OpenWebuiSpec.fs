@@ -31,6 +31,48 @@ description: Role-play as 早瀬ユウカ.
 あなたは早瀬ユウカとして振る舞います。
 """
 
+/// Model向けの本文。フロントマターもSKILL.mdと違う値にして、どちらが読まれたか見分ける。
+let private modelMd =
+    """---
+name: yuuka-model
+description: Model向けの説明。
+knowledge: character-yuuka
+---
+
+Model向けの本文です。
+"""
+
+[<Fact>]
+let ``MODEL.mdがあればフロントマターごとSKILL.mdより優先される`` () =
+    // Claude CodeとOpen WebUIでは参照ファイルとナレッジの届き方が違うため、
+    // 本文はそれぞれの言い方で別に用意する。
+    // 本文だけでなくknowledgeの紐付けもMODEL.md側で決まる。
+    // 紐付けが外れるとopen-webui-syncが参照の外れたModelとして止まる。
+    let directory = makeSkillDirectory [ "SKILL.md", skillMd; "MODEL.md", modelMd ]
+    let form = buildModelForm directory
+
+    Assert.Equal("Model向けの本文です。\n", form.Params.System)
+    Assert.Equal("yuuka-model", form.Id)
+    Assert.Equal("Model向けの説明。", form.Meta.Description)
+
+    Assert.Equal<string list>(
+        [ "character-yuuka" ],
+        form.Meta.Knowledge |> Option.defaultValue [] |> List.map _.Name
+    )
+
+[<Fact>]
+let ``SKILL.mdが無くてもMODEL.mdだけで組み立てられる`` () =
+    let directory = makeSkillDirectory [ "MODEL.md", modelMd ]
+
+    Assert.Equal("Model向けの本文です。\n", (buildModelForm directory).Params.System)
+
+[<Fact>]
+let ``本文がどちらも無いとSkillFormatErrorになる`` () =
+    let directory = makeSkillDirectory [ "normal.md", "# 通常\n" ]
+
+    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
+    |> ignore
+
 [<Fact>]
 let ``フロントマターのnameとdescriptionがModelFormへ対応付く`` () =
     let directory = makeSkillDirectory [ "SKILL.md", skillMd ]
@@ -192,6 +234,40 @@ let ``フロントマターが無いとSkillFormatErrorになる`` () =
 
     Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
     |> ignore
+
+[<Fact>]
+let ``Rawはフロントマターを解釈せずそのまま返す`` () =
+    // role-playスキルの本文はこれを生成物へ写すため、
+    // このリポジトリが読まない項目を書き足しても落ちてはいけない。
+    let content =
+        "---\nname: yuuka\ndescription: Role-play as Yuuka\nunknown: 値\n---\n\n本文\n"
+
+    let frontmatter = parseFrontmatter "character.md" content
+
+    Assert.Equal(
+        "---\nname: yuuka\ndescription: Role-play as Yuuka\nunknown: 値\n---",
+        frontmatter.Raw
+    )
+
+    Assert.Equal("本文", frontmatter.Body)
+
+[<Fact>]
+let ``閉じの区切り行が無いとSkillFormatErrorになる`` () =
+    // 開始だけを見て通すと、フロントマターの全体が本文として流れ込む。
+    Assert.Throws<SkillFormatError>(fun () ->
+        parseFrontmatter "character.md" "---\nname: yuuka\n\n本文\n" |> ignore)
+    |> ignore
+
+[<Fact>]
+let ``CRLFのファイルでもフロントマターと本文が分かれる`` () =
+    let content =
+        "---\r\nname: yuuka\r\ndescription: Role-play as Yuuka\r\n---\r\n\r\n本文\r\n"
+
+    let frontmatter = parseFrontmatter "character.md" content
+
+    Assert.Equal("---\nname: yuuka\ndescription: Role-play as Yuuka\n---", frontmatter.Raw)
+    Assert.Equal("本文", frontmatter.Body)
+    Assert.Equal("yuuka", frontmatter.Name)
 
 [<Fact>]
 let ``ModelFormはsnake_caseのキーでJSONへ直列化される`` () =

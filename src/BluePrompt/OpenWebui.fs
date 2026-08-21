@@ -83,10 +83,17 @@ type ModelForm =
 /// Open WebUIのModelは会話の入口を選ぶだけで他のModelを読み込めないため、
 /// 参照させたいナレッジをModelへ紐付ける必要がある。
 type Frontmatter =
-    { Name: string
-      Description: string
-      Knowledge: string list
-      Body: string }
+    {
+        Name: string
+        Description: string
+        Knowledge: string list
+        Body: string
+        /// 区切り行を含むフロントマターの生テキスト。
+        /// 解釈した要素から組み直すと、
+        /// このリポジトリが読まない項目を書き足した時に黙って落ちるため、
+        /// 生成物へそのまま写したい呼び出し元のために持つ。
+        Raw: string
+    }
 
 /// フロントマターの区切り行。
 let private delimiter = "---"
@@ -139,7 +146,8 @@ let parseFrontmatter (path: string) (content: string) : Frontmatter =
             { Name = field "name"
               Description = field "description"
               Knowledge = knowledge
-              Body = rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim() }
+              Body = rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim()
+              Raw = String.concat "\n" (first :: List.take (closeIndex + 1) rest) }
     | _ -> fail "フロントマターの開始---がありません"
 
 /// Markdownのインラインリンクの参照先。
@@ -222,11 +230,11 @@ let private inlineSection (fileName: string) (content: string) : string =
     $"%s{heading}\n\n%s{body}"
 
 /// インライン化した参照ファイル群の前へ置く案内。
-/// 本文の「ファイルを読む」指示をインライン化後の読み替えへ接続する。
-let private inlineNotice =
-    "本文がリンクで参照しているファイルは、以下へインライン化済みです。\nファイルを読む指示は該当する節を読むことへ読み替えてください。"
+/// 本文が挙げている参照データとこの後ろの節を結び付ける。
+let private inlineNotice = "以下は本文が挙げている参照データの中身です。"
 
-/// スキルディレクトリのSKILL.mdと参照ファイルからシステムプロンプト全文を組み立てる。
+/// スキルディレクトリのMODEL.md(無ければSKILL.md)と参照ファイルから
+/// システムプロンプト全文を組み立てる。
 /// リンクされたファイルが実在しない場合は参照が壊れているのでSkillFormatErrorで止める。
 let private buildSystemPrompt (skillDirectory: string) (skillPath: string) (body: string) : string =
     let sections =
@@ -244,12 +252,23 @@ let private buildSystemPrompt (skillDirectory: string) (skillPath: string) (body
 /// idとnameにはフロントマターのnameを使い、ここでは一意性を保証しない。
 /// 同じ一覧の中のidの重複は、open-webui-syncが同期の前に検出して止める。
 let buildModelForm (skillDirectory: string) : ModelForm =
-    let skillPath = Path.Combine(skillDirectory, "SKILL.md")
+    // Model向けの本文があればそちらを使う。
+    // Claude Codeは参照ファイルを開いてナレッジのスキルを読み込むが、
+    // Open WebUIでは参照ファイルはインライン化され、
+    // ナレッジは紐付けから自動で渡されるため、本文の言い方が噛み合わない。
+    // 両方の言い方を1つの本文へ収めると、
+    // どちらの経路でも半分は当てはまらない説明を読ませることになる。
+    let modelPath = Path.Combine(skillDirectory, SkillFile.model)
+    let skillPath = Path.Combine(skillDirectory, SkillFile.skill)
 
-    if not (File.Exists skillPath) then
-        raise (SkillFormatError(skillPath, "SKILL.mdが存在しません"))
+    // 読む本文を選ぶのと、どちらも無いことを報せるのは同じ判断なので1つの式にする。
+    // 分けて書くと、存在検査がMODEL.mdの不在も報せ得るように見えてしまう。
+    let bodyPath =
+        if File.Exists modelPath then modelPath
+        elif File.Exists skillPath then skillPath
+        else raise (SkillFormatError(skillPath, "SKILL.mdが存在しません"))
 
-    let frontmatter = parseFrontmatter skillPath (File.ReadAllText skillPath)
+    let frontmatter = parseFrontmatter bodyPath (File.ReadAllText bodyPath)
 
     // idとnameはModelFormにも同じ名前のフィールドがあり、
     // レコードの型は後から定義された方が優先されるため、明示して取り違えを防ぐ。
@@ -269,7 +288,7 @@ let buildModelForm (skillDirectory: string) : ModelForm =
           // base_model_idと同じくOpen WebUIが未設定として受け取れるため。
           Knowledge = if List.isEmpty knowledge then None else Some knowledge }
       Params =
-        { System = buildSystemPrompt skillDirectory skillPath frontmatter.Body
+        { System = buildSystemPrompt skillDirectory bodyPath frontmatter.Body
           // 紐付けが無いのに方式を指定すると、
           // このリポジトリと関係のない理由で選ばれた設定を上書きしてしまうため、
           // 自動RAGが必要なModelだけへ設定する。

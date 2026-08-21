@@ -6,10 +6,12 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="SkillFile.fs" />
     <Compile Include="Fmt.fs" />
     <Compile Include="Pandoc.fs" />
     <Compile Include="Table.fs" />
     <Compile Include="Markdown.fs" />
+    <Compile Include="Template.fs" />
     <Compile Include="Extract.fs" />
     <Compile Include="Appellation.fs" />
     <Compile Include="School.fs" />
@@ -19,6 +21,7 @@
     <Compile Include="OpenWebui.fs" />
     <Compile Include="OpenWebuiKnowledge.fs" />
     <Compile Include="OpenWebuiSync.fs" />
+    <Compile Include="RolePlay.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

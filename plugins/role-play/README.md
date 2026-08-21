@@ -19,7 +19,7 @@
 
 ## 衣装ごとの参照ファイル
 
-`yuuka`スキルにはSKILL.mdの他に、
+`yuuka`スキルにはSKILL.mdとMODEL.mdの他に、
 衣装(実装)ごとのプロフィールとゲーム内ボイス一覧を収めた参照ファイルがあります。
 
 これらは
@@ -33,29 +33,96 @@ dotnet run --project src/BluePrompt -- wikiru-roleplay-reference 'ユウカ（�
 dotnet run --project src/BluePrompt -- wikiru-roleplay-reference 'ユウカ（パジャマ）' plugins/role-play/skills/yuuka/pajama.md
 ```
 
-## SKILL.mdの生成
+## 本文の生成
 
-`yuuka`スキルのSKILL.mdは、
-手書きのテンプレートSKILL.template.mdからの自動生成ファイルです。
+`yuuka`スキルのSKILL.mdとMODEL.mdは自動生成ファイルです。
+本文の骨格はこのプラグインの直下のテンプレートが持っていて、
+全ての生徒が同じものを使います。
+生徒ごとに違うのは差し込む値だけです。
 
-キャラクターが誰をどう呼ぶかの呼称表は没入感を大きく左右するため、
-別ファイルへ分けずスキル本体へ直接埋め込む方針で、
-テンプレートのプレースホルダ`{{appellation}}`へ、
-jp-wikiru-bluearchiveプラグインに同梱の生成済みappellation.jsonから抜き出した呼称表を流し込みます。
+テンプレートは届け先ごとに2つあります。
 
-人格や口調の指示を変えたい時はテンプレートを編集して、
-以下のコマンドでSKILL.mdを生成し直してください。
-SKILL.mdを直接編集してはいけません。
-テンプレートは出力先と同じディレクトリのSKILL.template.mdが使われます。
+- SKILL.template.md: Claude Code向け。SKILL.mdになります。
+  参照ファイルは自分で開き、ナレッジはスキルとして読み込む前提の書き方です
+- MODEL.template.md: Open WebUIのModel向け。MODEL.mdになります。
+  参照ファイルはシステムプロンプトへインライン化され、
+  ナレッジは紐付けから自動で渡される前提の書き方です
+
+`open-webui-model`はMODEL.mdがあればSKILL.mdより優先して使います。
+1つの本文へ両方の言い方を収めると、
+どちらの経路でも半分は当てはまらない説明を読ませることになるため、
+噛み合わない数文のために本文ごと分けています。
+2つのテンプレートはほとんど同じ内容なので、
+片方を直したらもう片方も見てください。
+
+- `{{caller}}`: 演じる生徒の呼び名。生成コマンドの引数がそのまま入ります
+- `{{character}}`: スキルのディレクトリのcharacter.mdの本文。
+  その生徒をどう位置付けるかを手で書く唯一の場所で、
+  演じ方の補正のような生徒固有の指示もここへ足します
+- `{{playing}}`: 全生徒に共通する演じ方の指示。
+  会話相手のプレイヤーが先生であることと、口調をボイスの書き起こしから読み取ることを伝えます
+- `{{appellation}}`: jp-wikiru-bluearchiveプラグインに同梱の生成済みappellation.jsonから抜き出した呼称表。
+  誰をどう呼ぶかは没入感を大きく左右するため、別ファイルへ分けずスキル本体へ直接埋め込みます
+- `{{costumes}}`: 同じディレクトリにある衣装別の参照ファイルの一覧。
+  どの衣装のファイルなのかは出典のwikiruのページ名がそのまま表します
+- `{{knowledgeSkills}}`: character.mdのフロントマターのknowledge:から`character-appellation`を除いた、
+  この生徒のナレッジのスキル名の一覧。
+  フロントマターと本文へ同じ一覧を二度書くと衣装が増えた時に食い違うため、
+  本文の側は書かれた一覧から組み立てます
+
+テンプレートはこの6つを全て使う必要があります。
+どれかを書き忘れると、
+差し込むはずの内容が黙って落ちないようにエラーで止まります。
+
+生成物のフロントマターはcharacter.mdのものをそのまま写します。
+解釈して組み直すと、
+このリポジトリが読まない項目を書き足した時に黙って落ちるためです。
+
+プロフィールや口調をスキル本体へ書き下すことはしません。
+プロフィールは衣装別の参照ファイルが持っていて、
+Claude Codeでは演じ始める前に全て読ませ、
+Open WebUIではシステムプロンプトへインライン化されるため、
+どちらの経路でも重複するだけだからです。
+口調の要約も置きません。
+要約は書き手が目を引かれた特徴だけを強めてしまい、
+ボイスの書き起こしが持っている語彙と言い回しの幅を潰すためです。
+
+全生徒に効く指示を変えたい時は2つのテンプレートを、
+その生徒だけの指示を変えたい時はcharacter.mdを編集して、
+以下のコマンドで生成し直してください。
+2つの届け先はどちらもファイル名が決まっているため、
+渡すのはテンプレートのディレクトリと出力先のディレクトリで、
+1度の起動で両方が書き出されます。
+SKILL.mdとMODEL.mdを直接編集してはいけません。
 wikiruへはアクセスしません。
 呼称表そのものを更新したい時は先に`wikiru-appellation`で再生成してください。
 
 ```console
-dotnet run --project src/BluePrompt -- roleplay-skill 'ユウカ' plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json plugins/role-play/skills/yuuka/SKILL.md
+dotnet run --project src/BluePrompt -- roleplay-skill 'ユウカ' plugins/role-play plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json plugins/role-play/skills/yuuka
 ```
 
 `kotori`と`seia`はまだこの構成に移行しておらず、
 SKILL.mdに手で貼り付けたデータのままです。
+移行する時はリポジトリルートのflake.nixの`rolePlayCallers`へ、
+スキル名と呼び名の対応を足してください。
+呼び名はcharacter.mdからは決まらないので自動では埋まらず、
+足さないと生成物の検証が評価時のassertで止まります。
+
+## 配布物から除かれるファイル
+
+生成の入力であるcharacter.mdとテンプレート、
+それにMODEL.mdは配布物から除かれます。
+Claude Codeのプラグインも、
+OpenCodeのスキルも、
+配布ZIPも、
+これらを除いた実体を指します。
+
+スキルとして読ませる意味が無いからで、
+特にMODEL.mdはSKILL.mdとほぼ同じ内容なので、
+配るとスキルのディレクトリへ人格の指示が二重に置かれた状態になります。
+
+除外する名前はリポジトリルートのflake.nixの`nonSkillFileNames`が持っています。
+スキルのディレクトリへ配布したくないファイルを増やす時はそちらへ足してください。
 
 ## 注意
 

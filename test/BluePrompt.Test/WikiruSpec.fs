@@ -222,18 +222,3 @@ let ``knowledgeHeaderは出典URLを含む`` () =
         "https://bluearchive.wikiru.jp/?%E3%82%AD%E3%83%A3%E3%83%A9%E5%91%BC%E7%A7%B0%E8%A1%A8",
         BluePrompt.Wikiru.knowledgeHeader "キャラ呼称表"
     )
-
-[<Fact>]
-let ``renderRolePlaySkillはテンプレートのプレースホルダへ呼称表を流し込む`` () =
-    let template =
-        "# 呼称\n\n前書き\n\n" + BluePrompt.Wikiru.appellationPlaceholder + "\n\n# 次のセクション\n"
-
-    Assert.Equal(
-        Some "# 呼称\n\n前書き\n\n| 相手 | 呼称 |\n\n# 次のセクション\n",
-        BluePrompt.Wikiru.renderRolePlaySkill "| 相手 | 呼称 |" template
-    )
-
-[<Fact>]
-let ``renderRolePlaySkillはプレースホルダが無いテンプレートにNoneを返す`` () =
-    // プレースホルダの書き間違いで呼称表が黙って落ちるのを防ぐ。
-    Assert.Equal(None, BluePrompt.Wikiru.renderRolePlaySkill "| 相手 | 呼称 |" "# 呼称\n\n本文\n")
