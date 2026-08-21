@@ -93,8 +93,13 @@ let private delimiter = "---"
 /// フロントマターのkey: value行。
 let private fieldPattern = Regex @"^([A-Za-z_-]+):\s*(.*)$"
 
-/// SKILL.mdの本文からフロントマターのnameとdescriptionを取り出す。
-/// 形式が想定と異なる場合は生成を黙って続けずSkillFormatErrorで止める。
+/// SKILL.mdの本文からフロントマターの要素と、その後ろの本文を取り出す。
+/// 必須の要素が欠けているなど形式が想定と異なる場合は、
+/// 生成を黙って続けずSkillFormatErrorで止める。
+/// 省略できる要素は、書かれていなければ空の値として扱う。
+///
+/// Modelを組み立てるOpenWebuiだけでなく、
+/// Knowledgeを組み立てるOpenWebuiKnowledgeも同じ解釈を必要とするため公開している。
 let parseFrontmatter (path: string) (content: string) : Frontmatter =
     let fail message = raise (SkillFormatError(path, message))
 
