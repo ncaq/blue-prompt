@@ -188,6 +188,18 @@ let private stripFrontmatter (content: string) : string =
 /// appellation.jsonのようにjqやスクリプトで引くためのもので、
 /// Open WebUIにはそれを実行する主体がいないため対象にしない。
 /// 同じ内容がMarkdown側にもあるため、埋め込みを作っても検索の役に立たない。
+///
+/// SKILL.mdの本文は、
+/// Grepで探すとかjqで抽出するとか、
+/// Open WebUIには存在しないツールの使い方を書いていることがある。
+/// それでも本文ごとKnowledgeへ載せているのは、
+/// スキルが何を扱う文書なのかという説明も同じ本文にあり、
+/// 引き方の記述だけを機械的に切り分ける基準が無いためである。
+/// 引き方の段落が検索で当たっても、
+/// LLMは持っていないツールの話として読み飛ばすだけで、
+/// 実データの断片を押し出すほどの量でもない。
+/// Claude Code向けの説明とOpen WebUI向けの知識を1つのSKILL.mdで兼ねる以上、
+/// ここは割り切っている。
 let buildKnowledge (skillDirectory: string) : Knowledge =
     let skillPath = Path.Combine(skillDirectory, "SKILL.md")
 
