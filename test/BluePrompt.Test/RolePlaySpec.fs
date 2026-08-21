@@ -71,9 +71,12 @@ let private makeDirectory (files: (string * string) list) : string =
 
 [<Fact>]
 let ``readReferencesは通常衣装を先頭にしてスキル本体を除く`` () =
+    // MODEL.mdは実際に同じディレクトリへ生成されるので、
+    // 除外が漏れると出典の行を持たない衣装としてReferenceShapeErrorになる。
     let directory =
         makeDirectory
             [ "SKILL.md", "生成物"
+              "MODEL.md", "Model向けの本文"
               "character.md", "固有の手書き"
               "track.md", reference "ユウカ（体操服）"
               "pajama.md", reference "ユウカ（パジャマ）"
