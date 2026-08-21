@@ -477,17 +477,30 @@ let private syncRagTemplate (client: HttpClient) (url: string) (template: string
 
 /// 更新のボディへ、登録済みのModelのaccess_grantsをそのまま載せる。
 ///
-/// 更新のAPIはこのフィールドを省くと500を返すため、送る必要があります。
-/// 中身は登録先の利用者やグループの構成に依存していてこのリポジトリからは決められないので、
+/// 中身は登録先の利用者やグループの構成に依存していてこのリポジトリからは決められないため、
 /// 管理対象のフィールドとしては持たず、
-/// 読み取った値をそのまま送り返して権限の設定を保ちます。
+/// 読み取った値をそのまま送り返して権限の設定を保つ。
+///
+/// 更新のAPIはこのフィールドを省いても null を入れても500を返す。
+/// backend/open_webui/routers/models.pyのupdate_model_by_idが、
+/// 最後に`ModelForm(**form_data.model_dump())`で組み直すためで、
+/// ModelFormのaccess_grantsは`list[dict | None] = None`とNoneを許さない型なので、
+/// 既定のNoneのまま検証へ入ると落ちる。
+/// つまり配列を送るしか選択肢が無い。
+///
+/// 応答のaccess_grantsが欠けている場合は、
+/// 空の配列を作って権限を消してしまわないように止める。
+/// ModelModelのaccess_grantsは`Field(default_factory=list)`で、
+/// _to_model_modelが必ずDBから埋めて返すため、
+/// 欠けているのは応答の形がこちらの想定と違うということであり、
+/// 推測で書き込んでよい状況ではない。
 let private withAccessGrants (current: JsonNode) (form: OpenWebui.ModelForm) : JsonNode =
     match JsonNode.Parse(OpenWebui.toJson form) with
     | null -> raise (SyncError $"%s{form.Id}の更新のボディを組み立てられません")
     | body ->
         body["access_grants"] <-
             match current["access_grants"] with
-            | null -> JsonArray() :> JsonNode
+            | null -> raise (SyncError $"%s{form.Id}の応答にaccess_grantsがありません")
             | grants -> grants.DeepClone()
 
         body
