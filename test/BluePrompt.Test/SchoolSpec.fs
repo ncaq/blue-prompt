@@ -107,6 +107,41 @@ let ``節へのリンクでなくても名前と食い違うページ名はPage�
     Assert.Equal(Some "カイテンジャー", entry.Page)
 
 [<Fact>]
+let ``ページ名の中のエンコードされた番号記号は節の区切りと混同されない`` () =
+    // 節へのリンクの`#`とページ名の中の`%23`は、デコードより前でなければ見分けられない。
+    let html = body ("<h2>学校</h2>" + card "NPC" "A#B" "表示名")
+
+    Assert.Equal(Some "A#B", (List.exactlyOne (parseHtml html)).Page)
+
+[<Fact>]
+let ``ページ名が空のリンクはPageに入らない`` () =
+    // 「名前(ページ名: )」という壊れた表記を出さない。
+    let html = body ("<h2>学校</h2>" + cardTo "./?" "★3" "ホシノ")
+
+    Assert.Equal(None, (List.exactlyOne (parseHtml html)).Page)
+
+[<Fact>]
+let ``相対リンク以外のhrefからはページ名を読まない`` () =
+    // 絶対URLやInterWikiの記法ではページ名を復元できない。
+    let href = "https://bluearchive.wikiru.jp/?" + Uri.EscapeDataString "ホシノ"
+    let html = body ("<h2>学校</h2>" + cardTo href "★3" "ホシノ")
+
+    Assert.Equal(None, (List.exactlyOne (parseHtml html)).Page)
+
+[<Fact>]
+let ``リンクを持たないカードのPageはNoneになる`` () =
+    let html =
+        body (
+            """<h2>学校</h2><div class="ie5"><table><tbody><tr>"""
+            + """<td class="style_td">★3<br />ホシノ</td>"""
+            + "</tr></tbody></table></div>"
+        )
+
+    let entry = List.exactlyOne (parseHtml html)
+    Assert.Equal("ホシノ", entry.Name)
+    Assert.Equal(None, entry.Page)
+
+[<Fact>]
 let ``学校の見出しより前のセルは読み飛ばされる`` () =
     // ページ上部には他の一覧ページへのナビゲーションが置かれている。
     let html =

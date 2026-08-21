@@ -106,9 +106,19 @@ let private pageName (cell: IElement) : string option =
         | _ when isEditLink anchor -> None
         | null -> None
         | href when href.StartsWith("./?", StringComparison.Ordinal) ->
-            match Uri.UnescapeDataString(href.Substring 3).Split '#' with
-            | [||] -> None
-            | parts -> Some parts[0]
+            let query = href.Substring 3
+
+            // ページ名の中の`%23`がデコードで`#`へ戻ってから切られると、
+            // ページ名がそこで欠けるため、節はデコードより先に落とす。
+            let encoded =
+                match query.IndexOf('#') with
+                | -1 -> query
+                | index -> query.Substring(0, index)
+
+            // ページ名が空のリンクは「名前(ページ名: )」という壊れた表記になるので読まない。
+            match Uri.UnescapeDataString encoded with
+            | "" -> None
+            | page -> Some page
         | _ -> None)
 
 /// パース済みDOMから一覧の全レコードを取り出す。
