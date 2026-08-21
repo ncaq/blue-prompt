@@ -519,6 +519,31 @@ let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり�
     Assert.Equal(0, server.CreateCount)
 
 [<Fact>]
+let ``応答に権限設定が無いと空の権限で上書きせずSyncErrorで止まる`` () =
+    use server = new MockServer()
+
+    // access_grantsを持たない応答を模す。
+    // 実物のModelModelはこのフィールドを必ず埋めて返すため、
+    // 欠けているのは応答の形が想定と違うということで、
+    // このリポジトリが管理しない権限の設定を推測で書き換えてはいけない。
+    server.OverrideModelGet(
+        200,
+        """{"id":"yuuka","name":"yuuka","meta":{"description":"yuukaの説明"},"params":{"system":"古いプロンプト"},"is_active":true}"""
+    )
+
+    let options =
+        makeOptions server (makeModelsDirectory [ makeForm "yuuka" "改良したプロンプト" ])
+
+    let error = Assert.Throws<SyncError>(fun () -> run options)
+
+    // 何が足りないのか分かるようにフィールドの名前が含まれる。
+    match error :> exn with
+    | SyncError message -> Assert.Contains("access_grants", message)
+    | unexpected -> failwith unexpected.Message
+
+    Assert.Equal(0, server.UpdateCount)
+
+[<Fact>]
 let ``同じidのModel定義が複数あるとSyncErrorで止まる`` () =
     use server = new MockServer()
     let directory = makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]
