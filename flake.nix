@@ -271,7 +271,8 @@
             meta.mainProgram = "BluePrompt";
           };
 
-          # NuGet依存のロックファイル更新を一回の実行で完結させる。
+          # NuGet依存のロックファイルの再生成と整形を一回の実行で済ませる。
+          # コミットは他の変更とコミット単位を揃えたいため行わない。
           # fetch-depsはネットワークを使うためNixサンドボックス外で実行する必要があり、
           # nix runで起動するスクリプトとして提供する。
           update-deps = pkgs.writeShellApplication {
@@ -285,12 +286,6 @@
               ${blue-prompt.passthru.fetch-deps} deps.json
               # 生成されたJSONをリポジトリのフォーマット規約(prettier)に揃える。
               nix fmt deps.json
-              git add deps.json
-              if git diff --cached --quiet -- deps.json; then
-                echo "deps.jsonに変更はありません"
-              else
-                git commit --message "build: NuGet依存のロックファイルdeps.jsonを更新" -- deps.json
-              fi
             '';
           };
 

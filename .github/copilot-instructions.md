@@ -107,7 +107,8 @@ dotnet msbuild src/BluePrompt /t:AnalyzeFSharpProject -warnaserror
 ## NuGet依存の更新
 
 fsprojのPackageReferenceを変更したら以下を一回実行するだけで、
-deps.jsonの再生成・整形・コミットまで自動で完了します。
+deps.jsonの再生成と整形が完了します。
+コミットは他の変更とまとめて手動で行います。
 
 ```console
 nix run .#update-deps
