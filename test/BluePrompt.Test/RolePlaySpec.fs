@@ -49,6 +49,21 @@ let ``ページ名を持たない出典はReferenceShapeErrorになる`` () =
     | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
 
 [<Fact>]
+let ``絶対URLではない出典はReferenceShapeErrorになる`` () =
+    // 壊れたリンクをUriのコンストラクタに任せると、
+    // どのファイルが壊れているのかがメッセージから消える。
+    let markdown = "出典: [ユウカ - Wiki](./?ユウカ)\n"
+
+    let error =
+        Assert.Throws<ReferenceShapeError>(fun () -> parseReference "normal.md" markdown |> ignore)
+
+    match error :> exn with
+    | ReferenceShapeError(path, missing) ->
+        Assert.Equal("normal.md", path)
+        Assert.Equal("出典のURL", missing)
+    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+
+[<Fact>]
 let ``toCostumeMarkdownはリンクと出典のページ名を並べる`` () =
     let costumes =
         [ parseReference "normal.md" (reference "ユウカ")
