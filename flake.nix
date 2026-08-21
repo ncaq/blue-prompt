@@ -46,6 +46,28 @@
         )
       ) pluginNames;
 
+      # プラグインごとの、Open WebUIでの登録先。
+      #
+      # Open WebUIのModelは会話の入口を選ぶだけで、
+      # Claude Codeのスキルのように会話の途中で他のModelを読み込むことはできない。
+      # そのため人格を与えるスキルはModelにする意味があるが、
+      # 参照して事実を引くだけのスキルはModelにしても選ばれず読まれない。
+      # 後者はKnowledgeコレクションとして登録して、
+      # 人格側のModelから紐付けたりチャットで`#`を打って引いたりできるようにする。
+      openWebuiKinds = {
+        role-play = "model";
+        jp-wikiru-bluearchive = "knowledge";
+      };
+
+      # 分類の追記漏れで、追加したプラグインが黙ってどちらにも登録されない状態を防ぐ。
+      openWebuiSkillsOf =
+        kind:
+        assert lib.assertMsg (lib.sort lib.lessThan (lib.attrNames openWebuiKinds) == pluginNames) ''
+          openWebuiKindsのプラグイン一覧がplugins/のディレクトリ一覧と一致しません。
+          openWebuiKinds: ${toString (lib.attrNames openWebuiKinds)}
+          plugins/: ${toString pluginNames}'';
+        lib.filter (skill: openWebuiKinds.${skill.pluginName} == kind) skills;
+
       # プラグイン名からプラグインディレクトリへの辞書。
       pluginPaths = lib.genAttrs pluginNames pluginDirOf;
 
@@ -84,9 +106,9 @@
           skills = skillPaths;
         };
 
-        # スキルから生成したOpen WebUIのワークスペースModelを、
+        # スキルから生成したOpen WebUIのワークスペースModelとKnowledgeを、
         # 対象インスタンスへ宣言的に同期するNixOSモジュール。
-        # 同期コマンドとモデル定義の生成物はsystemに依存するため、
+        # 同期コマンドと生成物はsystemに依存するため、
         # モジュール側でホストのsystemに応じて解決する。
         nixosModules.default = import ./modules/nixos.nix {
           packagesFor = system: inputs.self.packages.${system};
@@ -256,7 +278,7 @@
               '';
           # Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
           # SKILL.mdと参照ファイルをインライン化したシステムプロンプトを持つ、
-          # ワークスペースModelの作成フォームJSONをスキルごとに生成する。
+          # ワークスペースModelの作成フォームJSONを人格のスキルごとに生成する。
           # POST /api/v1/models/createへそのまま渡して登録できる。
           open-webui-model = pkgs.runCommand "open-webui-model-${marketplace.metadata.version}" { } ''
             # dotnetランタイムがユーザプロファイルへ書き込もうとするため、
@@ -273,7 +295,23 @@
                   ${./plugins + "/${pluginName}/skills/${skillName}"} \
                   $out/${pluginName}-${skillName}.json
               ''
-            ) skills}
+            ) (openWebuiSkillsOf "model")}
+          '';
+
+          # 参照して事実を引くスキルは、
+          # 検索でヒットする単位と読ませたい単位が揃うように見出しの単位へ分割して、
+          # Knowledgeコレクションの定義一式として生成する。
+          open-webui-knowledge = pkgs.runCommand "open-webui-knowledge-${marketplace.metadata.version}" { } ''
+            export HOME="$TMPDIR"
+            mkdir -p $out
+            ${lib.concatMapStrings (
+              { pluginName, skillName }:
+              ''
+                ${lib.getExe blue-prompt} open-webui-knowledge \
+                  ${./plugins + "/${pluginName}/skills/${skillName}"} \
+                  $out/${pluginName}-${skillName}
+              ''
+            ) (openWebuiSkillsOf "knowledge")}
           '';
         in
         {
@@ -310,6 +348,7 @@
             package-blue-prompt = blue-prompt;
             package-claude-ai-skill = claude-ai-skill;
             package-open-webui-model = open-webui-model;
+            package-open-webui-knowledge = open-webui-knowledge;
 
             # home-managerモジュールを実際のhome-manager構成へ組み込んで、
             # プラグインとスキルが実際に接続されていることを検証する。
@@ -382,17 +421,20 @@
                     }
                   ];
                 };
-                inherit (nixosConfiguration.config.systemd.services.blue-prompt-open-webui-model-sync.serviceConfig)
+                inherit (nixosConfiguration.config.systemd.services.blue-prompt-open-webui-sync.serviceConfig)
                   ExecStart
                   ;
               in
               # ブートローダなどを持たない最小構成のため、
               # システム全体(toplevel)ではなくExecStartのコマンドラインだけを検証する。
-              # ExecStartには同期コマンドとモデル定義のstoreパスが含まれるため、
-              # このファイル経由の参照で両方のビルドまで検証される。
+              # ExecStartには同期コマンドと生成物のstoreパスが含まれるため、
+              # このファイル経由の参照で全てのビルドまで検証される。
               pkgs.runCommand "nixos-module" { } ''
-                execStartFile=${pkgs.writeText "blue-prompt-open-webui-model-sync-exec-start" ExecStart}
+                execStartFile=${pkgs.writeText "blue-prompt-open-webui-sync-exec-start" ExecStart}
                 grep -- open-webui-sync "$execStartFile"
+                # ナレッジとRAGテンプレートも既定で同期の対象になっている。
+                grep -- --knowledge "$execStartFile"
+                grep -- --rag-template-file "$execStartFile"
                 # APIキーはsystemdが実行時に展開するcredentialのパスで渡される。
                 grep -- '$'{CREDENTIALS_DIRECTORY}/api-key "$execStartFile"
                 # コマンドラインの先頭は実行可能な同期コマンドの実体を指している。
@@ -412,6 +454,7 @@
             inherit
               blue-prompt
               claude-ai-skill
+              open-webui-knowledge
               open-webui-model
               update-deps
               ;

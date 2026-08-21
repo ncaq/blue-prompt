@@ -16,14 +16,48 @@ open System.Threading.Tasks
 /// SKILL.mdがOpen WebUIへ変換できる形式ではなかった時の対象パスと理由。
 exception SkillFormatError of path: string * message: string
 
+/// Open WebUIのModelのmeta.knowledgeへ入れるKnowledgeコレクションの参照。
+/// ModelMetaのknowledgeはlist[Any]で内容を検証しないが、
+/// 実質の形式はフロントエンドのtoModelKnowledgeReferenceが決めていて、
+/// id・name・typeなどのキーだけを持つオブジェクトの配列になる。
+/// typeが`collection`の項目はファイルのアクセス権検証の対象外なので、
+/// この3つだけを送れば紐付けとして成立する。
+///
+/// idはコレクションを作った先のインスタンスが採番するため生成時には決まらない。
+/// 生成物ではNoneのままにして、
+/// open-webui-syncが名前でコレクションを引き当てて埋める。
+type KnowledgeReference =
+    { Id: string option
+      Name: string
+      Type: string }
+
+/// KnowledgeReferenceのtypeへ入れる、コレクション全体を指す種別。
+/// 単体ファイルを指す`file`と区別される。
+let collectionType = "collection"
+
+/// meta.knowledgeを毎リクエスト自動でRAG検索させるツール呼び出しの方式。
+/// UIの表記では「Default」で、内部の値はこの`legacy`。
+let legacyFunctionCalling = "legacy"
+
 /// Open WebUIのModelFormのmetaフィールド。
 /// backend/open_webui/models/models.pyのModelMetaに対応する。
-/// UIの一覧でモデルの説明として表示される。
-type Meta = { Description: string }
+/// descriptionはUIの一覧でモデルの説明として表示される。
+/// knowledgeは参照させるKnowledgeコレクションで、紐付けが無いスキルではNone。
+type Meta =
+    { Description: string
+      Knowledge: KnowledgeReference list option }
 
 /// Open WebUIのModelFormのparamsフィールド。
 /// ModelParamsはextra=allowの自由形式で、systemがシステムプロンプトになる。
-type Params = { System: string }
+///
+/// functionCallingはツール呼び出しの方式で、UIの表記では`legacy`が「Default」。
+/// backend/open_webui/utils/middleware.pyは、
+/// この値が`legacy`の時だけmeta.knowledgeを自動でRAG検索してコンテキストへ入れる。
+/// v0.10.0以降の既定は`native`で、その場合はモデルがビルトインツールを呼ばない限り、
+/// 紐付けたKnowledgeが一切参照されないため、紐付けがあるModelでは明示的に指定する。
+type Params =
+    { System: string
+      FunctionCalling: string option }
 
 /// Open WebUIのワークスペースModelの作成フォーム。
 /// backend/open_webui/models/models.pyのModelFormに対応する。
@@ -38,11 +72,18 @@ type ModelForm =
       IsActive: bool }
 
 /// SKILL.mdのYAMLフロントマター。
-/// このリポジトリのスキルが使うのは1行のname:とdescription:だけなので、
-/// YAMLパーサーを持ち込まずkey: valueの行だけを解釈する。
-type private Frontmatter =
+/// このリポジトリのスキルが使うのは1行のkey: valueだけなので、
+/// YAMLパーサーを持ち込まずその形の行だけを解釈する。
+///
+/// Knowledgeは省略可能なknowledge:行で、
+/// そのスキルがOpen WebUIで参照するKnowledgeコレクションの名前を並べる。
+/// Claude Codeではスキルを会話の途中で読み込めるが、
+/// Open WebUIのModelは会話の入口を選ぶだけで他のModelを読み込めないため、
+/// 参照させたいナレッジをModelへ紐付ける必要がある。
+type Frontmatter =
     { Name: string
       Description: string
+      Knowledge: string list
       Body: string }
 
 /// フロントマターの区切り行。
@@ -53,7 +94,7 @@ let private fieldPattern = Regex @"^([A-Za-z_-]+):\s*(.*)$"
 
 /// SKILL.mdの本文からフロントマターのnameとdescriptionを取り出す。
 /// 形式が想定と異なる場合は生成を黙って続けずSkillFormatErrorで止める。
-let private parseFrontmatter (path: string) (content: string) : Frontmatter =
+let parseFrontmatter (path: string) (content: string) : Frontmatter =
     let fail message = raise (SkillFormatError(path, message))
 
     match content.Replace("\r\n", "\n").Split '\n' |> Array.toList with
@@ -75,8 +116,22 @@ let private parseFrontmatter (path: string) (content: string) : Frontmatter =
                 | Some value when value <> "" -> value
                 | _ -> fail $"フロントマターに%s{key}がありません"
 
+            // knowledge:は紐付けの無いスキルでは書かないため、
+            // 欠けていることを失敗とせず空の一覧として扱う。
+            let knowledge =
+                match Map.tryFind "knowledge" fields with
+                | None -> []
+                | Some value ->
+                    value.Split ','
+                    |> Array.toList
+                    |> List.choose (fun name ->
+                        match name.Trim() with
+                        | "" -> None
+                        | trimmed -> Some trimmed)
+
             { Name = field "name"
               Description = field "description"
+              Knowledge = knowledge
               Body = rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim() }
     | _ -> fail "フロントマターの開始---がありません"
 
@@ -102,6 +157,27 @@ let localLinkTargets (body: string) : string list =
             target)
     |> Seq.distinct
     |> Seq.toList
+
+/// 本文からリンクされた参照ファイルを、スキルディレクトリ内の実在するパスへ解決する。
+/// 参照が壊れている場合は生成を黙って続けずSkillFormatErrorで止める。
+/// 戻り値は本文に書かれた相対パスと実際のパスの組。
+let resolveReferences
+    (skillDirectory: string)
+    (skillPath: string)
+    (body: string)
+    : (string * string) list =
+    localLinkTargets body
+    |> List.map (fun fileName ->
+        // ディレクトリを遡る参照はスキルディレクトリの外に出るため受け付けない。
+        if fileName.Split '/' |> Array.contains ".." then
+            raise (SkillFormatError(skillPath, $"%s{fileName}はスキルディレクトリの外を参照しています"))
+
+        let filePath = Path.Combine(skillDirectory, fileName)
+
+        if not (File.Exists filePath) then
+            raise (SkillFormatError(skillPath, $"リンクされた%s{fileName}が存在しません"))
+
+        fileName, filePath)
 
 /// 内容のどこにあるバッククォート連続よりも長いコードフェンスを組み立てる。
 /// 参照ファイル自身がコードフェンスを含んでいてもインライン化が壊れないようにする。
@@ -134,18 +210,8 @@ let private inlineNotice =
 /// リンクされたファイルが実在しない場合は参照が壊れているのでSkillFormatErrorで止める。
 let private buildSystemPrompt (skillDirectory: string) (skillPath: string) (body: string) : string =
     let sections =
-        localLinkTargets body
-        |> List.map (fun fileName ->
-            // ディレクトリを遡る参照はスキルディレクトリの外に出るため受け付けない。
-            if fileName.Split '/' |> Array.contains ".." then
-                raise (SkillFormatError(skillPath, $"%s{fileName}はスキルディレクトリの外を参照しています"))
-
-            let filePath = Path.Combine(skillDirectory, fileName)
-
-            if not (File.Exists filePath) then
-                raise (SkillFormatError(skillPath, $"リンクされた%s{fileName}が存在しません"))
-
-            inlineSection fileName (File.ReadAllText filePath))
+        resolveReferences skillDirectory skillPath body
+        |> List.map (fun (fileName, filePath) -> inlineSection fileName (File.ReadAllText filePath))
 
     match sections with
     | [] -> body + "\n"
@@ -165,11 +231,33 @@ let buildModelForm (skillDirectory: string) : ModelForm =
 
     let frontmatter = parseFrontmatter skillPath (File.ReadAllText skillPath)
 
+    // idとnameはModelFormにも同じ名前のフィールドがあり、
+    // レコードの型は後から定義された方が優先されるため、明示して取り違えを防ぐ。
+    let knowledge: KnowledgeReference list =
+        frontmatter.Knowledge
+        |> List.map (fun name ->
+            { KnowledgeReference.Id = None
+              Name = name
+              Type = collectionType })
+
     { Id = frontmatter.Name
       BaseModelId = None
       Name = frontmatter.Name
-      Meta = { Description = frontmatter.Description }
-      Params = { System = buildSystemPrompt skillDirectory skillPath frontmatter.Body }
+      Meta =
+        { Description = frontmatter.Description
+          // 紐付けが無いスキルでキーごと省くのではなくnullを書くのは、
+          // base_model_idと同じくOpen WebUIが未設定として受け取れるため。
+          Knowledge = if List.isEmpty knowledge then None else Some knowledge }
+      Params =
+        { System = buildSystemPrompt skillDirectory skillPath frontmatter.Body
+          // 紐付けが無いのに方式を指定すると、
+          // このリポジトリと関係のない理由で選ばれた設定を上書きしてしまうため、
+          // 自動RAGが必要なModelだけへ設定する。
+          FunctionCalling =
+            if List.isEmpty knowledge then
+                None
+            else
+                Some legacyFunctionCalling }
       IsActive = true }
 
 /// JSON直列化の設定。

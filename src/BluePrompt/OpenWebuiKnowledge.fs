@@ -1,0 +1,193 @@
+/// スキルをOpen WebUIのKnowledgeコレクションの定義へ変換する。
+///
+/// 参照して事実を引くだけのスキルは、
+/// Modelのシステムプロンプトへ焼き込んでも、
+/// 会話の入口としてそのModelが選ばれない限り読まれないため意味がない。
+/// Open WebUIでこの種のスキルに対応するのはKnowledgeで、
+/// ロールプレイ用のModelから参照させたり、
+/// チャットで`#`を打って明示的に引いたりできる。
+///
+/// Knowledgeはファイル単位で登録してチャンクへ割られるため、
+/// SKILL.mdと参照ファイルを見出しの単位へ分割したファイル群として書き出す。
+module BluePrompt.OpenWebuiKnowledge
+
+open System
+open System.IO
+open System.Text.Json
+open System.Text.Json.Serialization
+open System.Text.Encodings.Web
+open System.Text.RegularExpressions
+open System.Threading.Tasks
+
+/// Open WebUIのKnowledgeコレクションの作成フォーム。
+/// backend/open_webui/models/knowledge.pyのKnowledgeFormに対応する。
+/// access_grantsは登録先の利用者構成に依存するため生成物では持たず、
+/// 作成したインスタンスの既定に任せる。
+type KnowledgeForm = { Name: string; Description: string }
+
+/// 1つの断片を書き出したファイル。
+type KnowledgeFile = { FileName: string; Content: string }
+
+/// コレクション1つ分の定義。
+type Knowledge =
+    { Form: KnowledgeForm
+      Files: KnowledgeFile list }
+
+/// 分割後の1ファイルの目安の大きさ。
+///
+/// Open WebUIの既定のチャンクは1000文字程度なので、
+/// この大きさなら1ファイルが数チャンクに収まり、
+/// 検索で当たったチャンクの周辺だけを読んでも節として意味を保てる。
+/// 呼称表であれば学校や部活の単位に落ち着く。
+let maxFragmentBytes = 8192
+
+/// ファイル名に使えない文字と、階層の区切りに使うため名前の中では避けたい文字。
+let private unsafeFileNamePattern = Regex @"[\\/:*?""<>|#\s]+"
+
+/// 見出しの並びからファイル名の本体を組み立てる。
+/// Open WebUIのUIにはファイル名がそのまま並ぶため、
+/// どの節なのかが読んで分かる名前にする。
+let private toFileNameBase (stem: string) (headings: string list) : string =
+    let sanitize (text: string) =
+        unsafeFileNamePattern.Replace(text, "-").Trim '-'
+
+    stem :: List.map sanitize headings
+    |> List.filter (fun part -> part <> "")
+    |> String.concat "-"
+
+/// ファイル名の最大の長さ。
+/// 多くのファイルシステムの上限が255バイトで、
+/// 拡張子と重複回避の連番の分を残す。
+let private maxFileNameBytes = 200
+
+/// 上限を超える名前をUTF-8の文字の途中で切らずに詰める。
+let private truncate (name: string) : string =
+    let rec shorten (text: string) =
+        if Text.Encoding.UTF8.GetByteCount text <= maxFileNameBytes then
+            text
+        else
+            shorten (text.Substring(0, text.Length - 1))
+
+    shorten name
+
+/// 断片へ重複しないファイル名を与える。
+/// 同じ見出しが別の場所に現れると名前が衝突するため、
+/// 2つ目以降にだけ連番を足して先着の名前を安定させる。
+let private assignFileNames
+    (stem: string)
+    (fragments: Markdown.Fragment list)
+    : KnowledgeFile list =
+    let used = Collections.Generic.HashSet<string>()
+
+    fragments
+    |> List.map (fun fragment ->
+        let baseName = truncate (toFileNameBase stem fragment.Headings)
+
+        let rec uniqueName (candidate: string) (suffix: int) =
+            if used.Add candidate then
+                candidate
+            else
+                uniqueName $"%s{baseName}-%d{suffix + 1}" (suffix + 1)
+
+        { FileName = $"%s{uniqueName baseName 1}.md"
+          Content = fragment.Text })
+
+/// Markdownファイル1つを分割して、名前を与えたファイル群にする。
+let private splitFile (fileName: string) (content: string) : KnowledgeFile list =
+    assignFileNames
+        (Path.GetFileNameWithoutExtension fileName)
+        (Markdown.splitBySize maxFragmentBytes content)
+
+/// SKILL.mdの本文からフロントマターを落とす。
+/// フロントマターはClaude Codeがスキルを選ぶための情報で、
+/// Knowledgeとしては本文だけが要る。
+let private stripFrontmatter (content: string) : string =
+    let normalized = content.Replace("\r\n", "\n")
+
+    match normalized.Split '\n' |> Array.toList with
+    | first :: rest when first = "---" ->
+        match List.tryFindIndex (fun line -> line = "---") rest with
+        | Some closeIndex -> rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim()
+        | None -> normalized
+    | _ -> normalized
+
+/// スキルディレクトリからKnowledgeコレクションの定義を組み立てる。
+///
+/// SKILL.mdの本文と、そこからリンクされたMarkdownの参照ファイルを対象にする。
+/// Markdown以外の参照ファイルは、
+/// appellation.jsonのようにjqやスクリプトで引くためのもので、
+/// Open WebUIにはそれを実行する主体がいないため対象にしない。
+/// 同じ内容がMarkdown側にもあるため、埋め込みを作っても検索の役に立たない。
+let buildKnowledge (skillDirectory: string) : Knowledge =
+    let skillPath = Path.Combine(skillDirectory, "SKILL.md")
+
+    if not (File.Exists skillPath) then
+        raise (OpenWebui.SkillFormatError(skillPath, "SKILL.mdが存在しません"))
+
+    let skillContent = File.ReadAllText skillPath
+    let frontmatter = OpenWebui.parseFrontmatter skillPath skillContent
+
+    let referenceFiles =
+        OpenWebui.resolveReferences skillDirectory skillPath frontmatter.Body
+        |> List.choose (fun (fileName, filePath) ->
+            match (Path.GetExtension fileName).TrimStart '.' with
+            | "md"
+            | "markdown" -> Some(fileName, File.ReadAllText filePath)
+            | _ ->
+                // 対象外にしたことが生成のログから分かるようにする。
+                printfn $"%s{skillPath}: %s{fileName}はMarkdownではないためKnowledgeへ含めません"
+                None)
+
+    let files =
+        splitFile "SKILL.md" (stripFrontmatter skillContent)
+        @ List.collect (fun (fileName, content) -> splitFile fileName content) referenceFiles
+
+    { Form =
+        { Name = frontmatter.Name
+          Description = frontmatter.Description }
+      Files = files }
+
+/// JSON直列化の設定。
+/// OpenWebui側と同じく、キーはsnake_caseへ揃えて日本語はそのまま書く。
+let private serializerOptions =
+    let options =
+        JsonSerializerOptions(
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        )
+
+    JsonFSharpOptions.Default().AddToJsonSerializerOptions options
+    options
+
+/// KnowledgeFormをOpen WebUIのAPIへ渡せるJSON文字列へ直列化する。
+let toJson (form: KnowledgeForm) : string =
+    JsonSerializer.Serialize(form, serializerOptions) + "\n"
+
+/// toJsonの逆変換。
+let ofJson (json: string) : KnowledgeForm =
+    JsonSerializer.Deserialize<KnowledgeForm>(json, serializerOptions)
+
+/// コレクションの定義を置くディレクトリの中で、フォームのJSONに使う名前。
+let formFileName = "knowledge.json"
+
+/// コレクションへ登録するファイルを置くディレクトリの名前。
+let filesDirectoryName = "files"
+
+/// スキルディレクトリからKnowledgeコレクションの定義一式を書き出す。
+/// 出力はNixのビルド成果物でリポジトリへはコミットしないため、nix fmtは掛けない。
+let writeKnowledge (skillDirectory: string) (outputDirectory: string) : Task<unit> =
+    task {
+        let knowledge = buildKnowledge skillDirectory
+        let filesDirectory = Path.Combine(outputDirectory, filesDirectoryName)
+        Directory.CreateDirectory filesDirectory |> ignore
+
+        do!
+            File.WriteAllTextAsync(
+                Path.Combine(outputDirectory, formFileName),
+                toJson knowledge.Form
+            )
+
+        for file in knowledge.Files do
+            do! File.WriteAllTextAsync(Path.Combine(filesDirectory, file.FileName), file.Content)
+    }

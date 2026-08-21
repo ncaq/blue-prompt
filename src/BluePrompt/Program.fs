@@ -20,9 +20,17 @@ let private usage =
   BluePrompt open-webui-model <スキルディレクトリ> <出力ファイル>
     スキルのSKILL.mdとリンクされた参照ファイルをインライン化して、
     システムプロンプトへ焼き込んだOpen WebUIのModelFormのJSONを書き出す。
-  BluePrompt open-webui-sync <モデル定義ディレクトリ> <ベースURL> [--base-model-id <id>] [--api-key-file <パス>]
+  BluePrompt open-webui-knowledge <スキルディレクトリ> <出力ディレクトリ>
+    スキルのSKILL.mdとリンクされたMarkdownの参照ファイルを見出しの単位へ分割して、
+    Open WebUIのKnowledgeコレクションの定義一式を書き出す。
+  BluePrompt open-webui-sync <モデル定義ディレクトリ> <ベースURL>
+      [--base-model-id <id>] [--api-key-file <パス>]
+      [--knowledge <ディレクトリ>] [--rag-template-file <パス>]
     open-webui-modelが生成したModelFormのJSON群をOpen WebUIのインスタンスへ同期する。
     無ければ作成し、差分があれば上書きし、差分が無ければ書き込まない。
+    --knowledgeを与えるとopen-webui-knowledgeの生成物も同じ方針で同期し、
+    Modelのmeta.knowledgeへコレクションのidを解決して紐付ける。
+    --rag-template-fileを与えるとインスタンスのRAGプロンプトテンプレートも同期する。
   BluePrompt wikiru-html <ページ名> <出力ファイル>
     wikiruの記事から抽出した本文をMarkdown化せずHTMLのまま書き出す。
   BluePrompt wikiru-student-html <ページ名> <出力ファイル>
@@ -48,6 +56,10 @@ let main argv =
         0
     | [| "open-webui-model"; skillDirectory; outputPath |] ->
         (OpenWebui.writeModel skillDirectory outputPath).GetAwaiter().GetResult()
+        0
+    | [| "open-webui-knowledge"; skillDirectory; outputDirectory |] ->
+        (OpenWebuiKnowledge.writeKnowledge skillDirectory outputDirectory).GetAwaiter().GetResult()
+
         0
     // 引数の個数の検証と説明はparseOptionsへ一本化する。
     | argv when 1 <= argv.Length && argv[0] = "open-webui-sync" ->

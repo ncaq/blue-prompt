@@ -1,15 +1,16 @@
-# blue-promptのスキルから生成したOpen WebUIのワークスペースModel定義を、
+# blue-promptのスキルから生成したOpen WebUIのワークスペースModel定義と、
+# Knowledgeコレクションの定義を、
 # 対象インスタンスへ宣言的に同期するNixOSモジュール。
 # `packagesFor`にはsystemからこのflakeのpackagesへの関数を渡す。
-# flake.nixが`blue-prompt`と`open-webui-model`をそのまま接続することで、
+# flake.nixが`blue-prompt`と生成物をそのまま接続することで、
 # スキルを追加してもこのモジュールへの追記は必要ない。
 #
 # 同期はoneshotのsystemdサービスがBluePromptのopen-webui-syncサブコマンドで行う。
 # Open WebUIのModelはDBに保存される状態なのでNixだけでは宣言できず、
 # APIで突き合わせて足りない分だけ書き込むことで冪等にする。
-# ユニットにはモデル定義のディレクトリが焼き込まれているため、
+# ユニットには生成物のディレクトリが焼き込まれているため、
 # スキルを改良して構成を切り替えるとユニットが変わって同期が再実行され、
-# 登録済みのModelが自動で上書きされる。
+# 登録済みのModelとKnowledgeが自動で上書きされる。
 #
 # エンドポイントのURLや推論へ使う上流モデルのような、
 # 登録先のインスタンスに依存してこのリポジトリからは知り得ない情報だけを、
@@ -29,7 +30,7 @@ let
 in
 {
   options.blue-prompt.open-webui = {
-    enable = lib.mkEnableOption "syncing blue-prompt skills to Open WebUI workspace models";
+    enable = lib.mkEnableOption "syncing blue-prompt skills to Open WebUI models and knowledge";
 
     url = lib.mkOption {
       type = lib.types.str;
@@ -73,15 +74,43 @@ in
       defaultText = lib.literalExpression "blue-prompt.packages.\${system}.open-webui-model";
       description = ''
         同期するModelFormのJSON群を含むディレクトリ。
-        既定では全スキル分を同期するので、
+        既定では人格を与えるスキル分を全て同期するので、
         一部だけ登録したい時は選別したディレクトリで上書きする。
+      '';
+    };
+
+    knowledge = lib.mkOption {
+      type = lib.types.nullOr lib.types.path;
+      default = packages.open-webui-knowledge;
+      defaultText = lib.literalExpression "blue-prompt.packages.\${system}.open-webui-knowledge";
+      description = ''
+        同期するKnowledgeコレクションの定義を含むディレクトリ。
+        nullにするとKnowledgeを同期しないが、
+        Modelがナレッジを参照していると紐付け先が見つからず同期が失敗する。
+      '';
+    };
+
+    ragTemplate = lib.mkOption {
+      type = lib.types.nullOr lib.types.lines;
+      default = builtins.readFile ./open-webui-rag-template.txt;
+      defaultText = lib.literalExpression "builtins.readFile ./open-webui-rag-template.txt";
+      description = ''
+        インスタンス全体で使うRAGのプロンプトテンプレート。
+
+        Modelへ紐付けたKnowledgeが自動で参照される時、
+        このテンプレートがシステムプロンプトの後ろへ連結される。
+        Open WebUIの既定値は引用番号の付け方やXMLタグの扱いを英語で指示する内容で、
+        ロールプレイ用のModelでは人格と話し方を壊すため、
+        既定では同梱の差し障りのないテンプレートへ差し替える。
+
+        nullにするとインスタンスの設定に手を触れない。
       '';
     };
   };
 
   config = lib.mkIf cfg.enable {
-    systemd.services.blue-prompt-open-webui-model-sync = {
-      description = "Sync blue-prompt skills to Open WebUI workspace models";
+    systemd.services.blue-prompt-open-webui-sync = {
+      description = "Sync blue-prompt skills to Open WebUI models and knowledge";
       wantedBy = [ "multi-user.target" ];
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
@@ -105,6 +134,14 @@ in
             ++ lib.optionals (cfg.baseModelId != null) [
               "--base-model-id"
               cfg.baseModelId
+            ]
+            ++ lib.optionals (cfg.knowledge != null) [
+              "--knowledge"
+              "${cfg.knowledge}"
+            ]
+            ++ lib.optionals (cfg.ragTemplate != null) [
+              "--rag-template-file"
+              "${pkgs.writeText "blue-prompt-open-webui-rag-template" cfg.ragTemplate}"
             ]
           )
           + lib.optionalString (cfg.apiKeyFile != null) " --api-key-file \${CREDENTIALS_DIRECTORY}/api-key";

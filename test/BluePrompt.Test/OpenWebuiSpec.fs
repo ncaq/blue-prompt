@@ -182,3 +182,40 @@ let ``ModelFormはsnake_caseのキーでJSONへ直列化される`` () =
     Assert.Contains("\"base_model_id\": null", json)
     Assert.Contains("\"is_active\": true", json)
     Assert.Contains("\"system\": \"あなたは早瀬ユウカとして振る舞います。\\n\"", json)
+
+[<Fact>]
+let ``フロントマターのknowledgeがModelの紐付けへ対応付く`` () =
+    let body =
+        """---
+name: yuuka
+description: desc
+knowledge: character-yuuka, character-appellation
+---
+
+あなたは早瀬ユウカとして振る舞います。
+"""
+
+    let form = buildModelForm (makeSkillDirectory [ "SKILL.md", body ])
+
+    // idとnameはModelFormにも同じ名前のフィールドがあるため、型を明示して取り違えを防ぐ。
+    let knowledge: KnowledgeReference list = Option.defaultValue [] form.Meta.Knowledge
+
+    Assert.Equal<string list>(
+        [ "character-yuuka"; "character-appellation" ],
+        knowledge |> List.map (fun reference -> reference.Name)
+    )
+
+    // typeがcollectionの項目はファイルのアクセス権検証を通らずに紐付く。
+    Assert.True(knowledge |> List.forall (fun reference -> reference.Type = collectionType))
+    // idは登録先のインスタンスが採番するため、生成の時点では空にしておく。
+    Assert.True(knowledge |> List.forall (fun reference -> reference.Id = None))
+    // 紐付けたKnowledgeを自動で参照させるにはツール呼び出しの方式の指定が要る。
+    Assert.Equal(Some legacyFunctionCalling, form.Params.FunctionCalling)
+
+[<Fact>]
+let ``knowledgeを書かないスキルでは紐付けも方式の指定もされない`` () =
+    let form = buildModelForm (makeSkillDirectory [ "SKILL.md", skillMd ])
+
+    Assert.Equal(None, form.Meta.Knowledge)
+    // このリポジトリと関係のない理由で選ばれた設定を上書きしないようにする。
+    Assert.Equal(None, form.Params.FunctionCalling)
