@@ -103,6 +103,32 @@ let ``readReferencesは通常衣装を先頭にしてスキル本体を除く`` 
     )
 
 [<Fact>]
+let ``通常衣装が無ければファイル名の順に並ぶ`` () =
+    let directory =
+        makeDirectory [ "track.md", reference "ユウカ（体操服）"; "pajama.md", reference "ユウカ（パジャマ）" ]
+
+    Assert.Equal<string list>(
+        [ "pajama.md"; "track.md" ],
+        (readReferences directory).GetAwaiter().GetResult() |> List.map _.FileName
+    )
+
+[<Fact>]
+let ``衣装以外のMarkdownを置くとReferenceShapeErrorになる`` () =
+    // 除外を並べる形なので、スキルのディレクトリへ別のMarkdownを置くと衣装と見なされる。
+    let directory =
+        makeDirectory [ "normal.md", reference "ユウカ"; "README.md", "# 説明\n" ]
+
+    let error =
+        Assert.Throws<ReferenceShapeError>(fun () ->
+            (readReferences directory).GetAwaiter().GetResult() |> ignore)
+
+    match error :> exn with
+    | ReferenceShapeError(path, missing) ->
+        Assert.Equal("README.md", Path.GetFileName path)
+        Assert.Equal("出典の行", missing)
+    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+
+[<Fact>]
 let ``参照ファイルの無いディレクトリはReferenceNotFoundになる`` () =
     // 衣装の一覧が空のまま書き出されないようにする。
     let directory = makeDirectory [ "character.md", "固有の手書き" ]
