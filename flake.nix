@@ -46,6 +46,40 @@
         )
       ) pluginNames;
 
+      # 本文をテンプレートから生成しているrole-playスキルの、生成コマンドへ渡す呼び名。
+      # 呼び名はcharacter.mdからは決まらないためここで対応付ける。
+      # 手で貼り付けたデータのままのスキルはcharacter.mdを持たないので対象から外れる。
+
+      # character.mdを持つrole-playスキルは、本文をテンプレートから生成している。
+
+      # 呼び名の追記漏れで、生徒を移行しても生成物の検証から黙って外れるのを防ぐ。
+
+      # 本文をテンプレートから生成しているrole-playスキルの、生成コマンドへ渡す呼び名。
+      # 呼び名はcharacter.mdからは決まらないためここで対応付ける。
+      # 手で貼り付けたデータのままのスキルはcharacter.mdを持たないので対象から外れる。
+      rolePlayCallers = {
+        yuuka = "ユウカ";
+      };
+
+      # character.mdを持つrole-playスキルは、本文をテンプレートから生成している。
+      templatedSkillNames = lib.sort lib.lessThan (
+        lib.filter (
+          skillName: builtins.pathExists (pluginDirOf "role-play" + "/skills/${skillName}/character.md")
+        ) (map (skill: skill.skillName) (lib.filter (skill: skill.pluginName == "role-play") skills))
+      );
+
+      # 呼び名の追記漏れで、生徒を移行しても生成物の検証から黙って外れるのを防ぐ。
+      templatedSkills =
+        assert lib.assertMsg (lib.sort lib.lessThan (lib.attrNames rolePlayCallers) == templatedSkillNames)
+          ''
+            rolePlayCallersの一覧がcharacter.mdを持つrole-playスキルと一致しません。
+            rolePlayCallers: ${toString (lib.attrNames rolePlayCallers)}
+            character.mdを持つスキル: ${toString templatedSkillNames}'';
+        map (skillName: {
+          inherit skillName;
+          caller = rolePlayCallers.${skillName};
+        }) templatedSkillNames;
+
       # リポジトリにはあるが、スキルとしては配布しないファイルの名前。
       # character.mdは本文を生成するための入力で、
       # *.template.mdは全生徒で共通の骨格、
@@ -149,6 +183,7 @@
 
       perSystem =
         {
+          config,
           lib,
           pkgs,
           ...
@@ -345,6 +380,63 @@
               ''
             ) (openWebuiSkillsOf "knowledge")}
           '';
+          # role-playスキルの本文はテンプレートとcharacter.mdからの生成物で、
+          # 生成し直すのを忘れたままコミットしても今まで誰も気付けなかった。
+          # 生成し直して差分が出ないことを確かめる。
+          # Template.renderOrFailのプレースホルダの検査も、
+          # 生成し直さない限り走らないのでここでまとめて掛かる。
+          roleplay-generated =
+            let
+              # 生成コマンドは書き出した直後にnix fmtを起動する。
+              # サンドボックスにはnixもflakeも無いが、
+              # 整形を挟まないと呼称表の桁揃えだけで差分が出るため、
+              # 同じ設定のtreefmtへ橋渡しするnixを置く。
+              # 引数はfmtと--とパスの並びで渡ってくる。
+              nixShim = pkgs.writeShellScriptBin "nix" ''
+                shift 2
+                exec ${lib.getExe config.treefmt.build.wrapper} "$@"
+              '';
+            in
+            pkgs.runCommand "roleplay-generated"
+              {
+                nativeBuildInputs = [
+                  nixShim
+                  pkgs.diffutils
+                ];
+              }
+              ''
+                export HOME="$TMPDIR"
+                mkdir -p work
+                # treefmtはflake.nixを目印に木の根を探し、
+                # そこからprettierとtyposの設定を読む。
+                touch work/flake.nix
+                cp ${./.editorconfig} work/.editorconfig
+                cp ${./.editorconfig-checker.json} work/.editorconfig-checker.json
+                cp ${./_typos.toml} work/_typos.toml
+                ${lib.concatMapStrings (
+                  { skillName, caller }:
+                  let
+                    skillDir = ./plugins + "/role-play/skills/${skillName}";
+                    appellation = ./plugins + "/jp-wikiru-bluearchive/skills/character-appellation/appellation.json";
+                    generate = template: outputName: ''
+                      ${lib.getExe blue-prompt} roleplay-skill ${lib.escapeShellArg caller}                         ${
+                        ./plugins + "/role-play/${template}"
+                      }                         ${appellation}                         work/${skillName}/${outputName}
+                      if ! diff -u ${skillDir}/${outputName} work/${skillName}/${outputName}; then
+                        echo "${skillName}の${outputName}が生成し直されていません" >&2
+                        exit 1
+                      fi
+                    '';
+                  in
+                  ''
+                    cp -r ${skillDir} work/${skillName}
+                    chmod -R u+w work/${skillName}
+                    ${generate "SKILL.template.md" "SKILL.md"}
+                    ${generate "MODEL.template.md" "MODEL.md"}
+                  ''
+                ) templatedSkills}
+                touch $out
+              '';
         in
         {
           treefmt.config = {
@@ -381,6 +473,7 @@
             package-claude-ai-skill = claude-ai-skill;
             package-open-webui-model = open-webui-model;
             package-open-webui-knowledge = open-webui-knowledge;
+            inherit roleplay-generated;
 
             # home-managerモジュールを実際のhome-manager構成へ組み込んで、
             # プラグインとスキルが実際に接続されていることを検証する。
