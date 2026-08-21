@@ -17,11 +17,13 @@ let private usage =
     wikiruの学校別キャラクター一覧を構造化し、
     学校ごとの一覧のreference.mdを書き出す。
   BluePrompt roleplay-skill <キャラクター名> <共通テンプレートのパス>
-      <appellation.jsonのパス> <SKILL.mdの出力パス>
+      <appellation.jsonのパス> <SKILL.mdまたはMODEL.mdの出力パス>
     全生徒で共通のテンプレートのプレースホルダへ、
     出力先と同じディレクトリのcharacter.mdの手書きの部分と衣装別の参照ファイルの一覧、
     生成済みのappellation.jsonから抜き出した指定キャラクターの呼称表を流し込み、
-    role-playスキルのSKILL.md全体を生成する。wikiruへはアクセスしない。
+    role-playスキルの本文全体を生成する。wikiruへはアクセスしない。
+    Claude Code向けのSKILL.mdとOpen WebUIのModel向けのMODEL.mdの2つの届け先があり、
+    どちらを書き出すかは渡すテンプレートと出力先が決める。
   BluePrompt open-webui-model <スキルディレクトリ> <出力ファイル>
     スキルのMODEL.md(無ければSKILL.md)とリンクされた参照ファイルをインライン化して、
     システムプロンプトへ焼き込んだOpen WebUIのModelFormのJSONを書き出す。
