@@ -2,12 +2,13 @@ module BluePrompt.Test.PandocSpec
 
 open System.IO
 open System.Threading.Tasks
+open Falco.Markup
 open Xunit
 
 [<Fact>]
 let ``h1タグはATX見出しに変換される`` () : Task =
     task {
-        let! markdown = BluePrompt.Pandoc.toMarkdown "<h1>Example Domain</h1>"
+        let! markdown = BluePrompt.Pandoc.toMarkdown (renderNode (Text.h1 "Example Domain"))
         Assert.Equal("# Example Domain", markdown.Trim())
     }
 
@@ -15,14 +16,14 @@ let ``h1タグはATX見出しに変換される`` () : Task =
 let ``長い段落は行折り返しされず1行になる`` () : Task =
     task {
         let sentence = String.replicate 30 "This paragraph is intentionally long. "
-        let! markdown = BluePrompt.Pandoc.toMarkdown $"<p>%s{sentence}</p>"
+        let! markdown = BluePrompt.Pandoc.toMarkdown (renderNode (Text.p sentence))
         Assert.DoesNotContain("\n", markdown.Trim())
     }
 
 [<Fact>]
 let ``日本語などの非ASCII文字が化けずにMarkdownへ現れる`` () : Task =
     task {
-        let! markdown = BluePrompt.Pandoc.toMarkdown "<p>日本語テキストと絵文字🎉</p>"
+        let! markdown = BluePrompt.Pandoc.toMarkdown (renderNode (Text.p "日本語テキストと絵文字🎉"))
         Assert.Contains("日本語テキストと絵文字🎉", markdown)
     }
 
@@ -36,7 +37,7 @@ let ``空のHTMLは空のMarkdownになる`` () : Task =
 [<Fact>]
 let ``数MB規模のHTMLもハングせず変換できる`` () : Task =
     task {
-        let html = String.replicate 100000 "<p>large input</p>"
+        let html = String.replicate 100000 (renderNode (Text.p "large input"))
         let! markdown = BluePrompt.Pandoc.toMarkdown html
         Assert.Contains("large input", markdown)
     }
@@ -44,8 +45,10 @@ let ``数MB規模のHTMLもハングせず変換できる`` () : Task =
 [<Fact>]
 let ``変換できないタグの生HTMLは残らない`` () : Task =
     task {
-        let! markdown =
-            BluePrompt.Pandoc.toMarkdown """<p><span style="color: red">text</span></p>"""
+        let html =
+            renderNode (Elem.p [] [ Elem.span [ Attr.style "color: red" ] [ Text.raw "text" ] ])
+
+        let! markdown = BluePrompt.Pandoc.toMarkdown html
 
         Assert.DoesNotContain("<span", markdown)
         Assert.Contains("text", markdown)
@@ -69,7 +72,7 @@ let ``pandocが異常終了するとPandocErrorにexit codeとstderrが入る`` 
                     BluePrompt.Pandoc.toMarkdownWith
                         script
                         BluePrompt.Pandoc.defaultMarkdownArguments
-                        "<h1>x</h1>"
+                        (renderNode (Text.h1 "x"))
                     :> Task)
 
             Assert.Equal(3, error.exitCode)
@@ -94,7 +97,7 @@ let ``入力を読まずに異常終了してもPandocErrorになる`` () : Task
         try
             // パイプバッファ(Linuxで既定64KiB)に収まらないサイズにして、
             // プロセス終了前に書き込みが完了してしまう取りこぼしを防ぐ。
-            let html = String.replicate 100000 "<p>x</p>"
+            let html = String.replicate 100000 (renderNode (Text.p "x"))
 
             let! error =
                 Assert.ThrowsAsync<BluePrompt.Pandoc.PandocError>(fun () ->
@@ -126,7 +129,7 @@ let ``入力を読み切らずに正常終了した場合は成功扱いにし�
         try
             // パイプバッファ(Linuxで既定64KiB)に収まらないサイズにして、
             // 書き込みが必ず途中で失敗する状況を作る。
-            let html = String.replicate 100000 "<p>x</p>"
+            let html = String.replicate 100000 (renderNode (Text.p "x"))
 
             do!
                 Assert.ThrowsAsync<IOException>(fun () ->
@@ -146,7 +149,7 @@ let ``引数を差し替えると変換先フォーマットを変えられる``
         let! rst =
             BluePrompt.Pandoc.toMarkdownWithArguments
                 [ "-f"; "html"; "-t"; "rst"; "--wrap=none"; "--sandbox" ]
-                "<h1>Example Domain</h1>"
+                (renderNode (Text.h1 "Example Domain"))
 
         // reStructuredTextの見出しはテキストの下線で表現される。
         Assert.Contains("Example Domain\n==============", rst)
@@ -156,7 +159,12 @@ let ``引数を差し替えると変換先フォーマットを変えられる``
 let ``tableはパイプテーブルに変換される`` () : Task =
     task {
         let html =
-            "<table><tr><th>name</th><th>value</th></tr><tr><td>foo</td><td>1</td></tr></table>"
+            renderNode (
+                Elem.table
+                    []
+                    [ Elem.tr [] [ Elem.th [] [ Text.raw "name" ]; Elem.th [] [ Text.raw "value" ] ]
+                      Elem.tr [] [ Elem.td [] [ Text.raw "foo" ]; Elem.td [] [ Text.raw "1" ] ] ]
+            )
 
         let! markdown = BluePrompt.Pandoc.toMarkdown html
         // pandocはセル幅を空白で揃えるため、パディングに依存しない形で検証する。

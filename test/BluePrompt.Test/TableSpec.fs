@@ -1,7 +1,9 @@
 module BluePrompt.Test.TableSpec
 
 open AngleSharp.Html.Parser
+open Falco.Markup
 open Xunit
+open BluePrompt.Test.HtmlFixture
 
 [<Fact>]
 let ``格子の予算は文書全体で共有され使い切った後のテーブルは展開されない`` () =
@@ -10,24 +12,21 @@ let ``格子の予算は文書全体で共有され使い切った後のテー�
     // 予算が文書全体で持ち回られることを、小さい予算を直接渡して固定する。
     // 各テーブルの見積りは6エントリ(rowspan=3のセルで3と通常セル3つ)で、
     // 予算10では1つ目に展開したテーブルで残り4になり、もう1つは展開できない。
-    let html =
-        """<html><body>
-<table><tbody>
-<tr><td rowspan="3">first</td><td>a</td></tr>
-<tr><td>b</td></tr>
-<tr><td>c</td></tr>
-</tbody></table>
-<table><tbody>
-<tr><td rowspan="3">second</td><td>a</td></tr>
-<tr><td>b</td></tr>
-<tr><td>c</td></tr>
-</tbody></table>
-</body></html>"""
+    let spanningTable (name: string) : XmlNode =
+        Elem.table
+            []
+            [ Elem.tr
+                  []
+                  [ Elem.td [ Attr.rowspan "3" ] [ Text.raw name ]; Elem.td [] [ Text.raw "a" ] ]
+              Elem.tr [] [ Elem.td [] [ Text.raw "b" ] ]
+              Elem.tr [] [ Elem.td [] [ Text.raw "c" ] ] ]
 
-    use document = HtmlParser().ParseDocument html
-    BluePrompt.Table.flattenWithBudget 10L document
+    let html = renderDocument [ spanningTable "first"; spanningTable "second" ]
+
+    use parsed = HtmlParser().ParseDocument html
+    BluePrompt.Table.flattenWithBudget 10L parsed
 
     // テーブルは内側優先の逆順で走査されるため、文書で後のテーブルが先に予算を使う。
-    let unexpanded = document.QuerySelectorAll "td[rowspan]"
+    let unexpanded = parsed.QuerySelectorAll "td[rowspan]"
     Assert.Equal(1, unexpanded.Length)
     Assert.Contains("first", unexpanded[0].TextContent)
