@@ -6,6 +6,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="SkillFile.fs" />
     <Compile Include="Fmt.fs" />
     <Compile Include="Pandoc.fs" />
     <Compile Include="Table.fs" />

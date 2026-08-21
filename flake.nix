@@ -53,6 +53,10 @@
       # Claude CodeやOpenCodeのスキルとして読ませる意味が無い。
       # 特にMODEL.mdはSKILL.mdとほぼ同じ内容なので、
       # 配るとスキルのディレクトリに人格の指示が二重に置かれた状態になる。
+      #
+      # F#側で同じ名前を持つのはsrc/BluePrompt/SkillFile.fsで、
+      # Nixへ定数を渡す手段が無いので重複は仕組み上残る。
+      # どちらかの名前を変える時はもう片方も直す。
       nonSkillFileNames = [
         "character.md"
         "MODEL.md"

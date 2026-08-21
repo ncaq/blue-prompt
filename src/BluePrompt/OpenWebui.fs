@@ -250,8 +250,8 @@ let buildModelForm (skillDirectory: string) : ModelForm =
     // ナレッジは紐付けから自動で渡されるため、本文の言い方が噛み合わない。
     // 両方の言い方を1つの本文へ収めると、
     // どちらの経路でも半分は当てはまらない説明を読ませることになる。
-    let modelPath = Path.Combine(skillDirectory, "MODEL.md")
-    let skillPath = Path.Combine(skillDirectory, "SKILL.md")
+    let modelPath = Path.Combine(skillDirectory, SkillFile.model)
+    let skillPath = Path.Combine(skillDirectory, SkillFile.skill)
 
     let skillPath = if File.Exists modelPath then modelPath else skillPath
 

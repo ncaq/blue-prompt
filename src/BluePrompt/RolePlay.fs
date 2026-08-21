@@ -20,18 +20,9 @@ open System.Threading.Tasks
 /// 衣装の一覧では基本になる姿から並べたいので、これを先頭へ置く。
 let baseFileName: string = "normal.md"
 
-/// 生徒に固有の手書きの部分を書くファイルの名前。
-/// スキルのディレクトリへ置き、フロントマターと本文を持つ。
-let characterFileName: string = "character.md"
-
-/// Open WebUIのModel向けの本文の名前。
-/// Claude Code向けのSKILL.mdと同じ内容を、
-/// 参照ファイルがインライン化され、ナレッジが自動で渡される前提の書き方で持つ。
-let modelFileName: string = "MODEL.md"
-
 /// スキルのディレクトリにあるMarkdownのうち、衣装別の参照ファイルではないもの。
 let private nonReferenceFileNames =
-    Set.ofList [ "SKILL.md"; modelFileName; characterFileName ]
+    Set.ofList [ SkillFile.skill; SkillFile.model; SkillFile.character ]
 
 /// 参照ファイル1つ分の、本文から参照するために要る情報。
 /// 中身はスキル本体へ写さず、ファイルとして読ませるので、ここには持たない。
@@ -201,7 +192,7 @@ let writeSkill
             | "" -> "."
             | directory -> directory
 
-        let characterPath = Path.Combine(directory, characterFileName)
+        let characterPath = Path.Combine(directory, SkillFile.character)
         let! character = File.ReadAllTextAsync characterPath
         let frontmatter, body = splitFrontmatter characterPath character
         let! template = File.ReadAllTextAsync templatePath
