@@ -331,15 +331,11 @@ let private uploadFile
 let private syncKnowledge
     (client: HttpClient)
     (url: string)
+    (existing: JsonNode option)
     (desired: DesiredKnowledge)
     : Task<string> =
     task {
         let name = desired.Form.Name
-        let! collections = getAllItems client $"%s{url}/api/v1/knowledge/"
-
-        let existing =
-            collections
-            |> List.tryFind (fun collection -> stringField collection [ "name" ] = name)
 
         let! id =
             task {
@@ -661,10 +657,26 @@ let sync (options: Options) : Task<unit> =
         | None -> ()
 
         // Modelの紐付けにはコレクションのidが要るため、Knowledgeを先に同期する。
+        // 一覧はコレクションごとに取り直さず1度だけ取る。
+        // 往復が減るだけでなく、
+        // 同期の途中で一覧が変わっても引き当ての基準がぶれない。
+        let! existingCollections =
+            task {
+                match knowledge with
+                | [] -> return []
+                | _ -> return! getAllItems client $"%s{options.Url}/api/v1/knowledge/"
+            }
+
+        let existingByName =
+            existingCollections
+            |> List.map (fun collection -> stringField collection [ "name" ], collection)
+            |> Map.ofList
+
         let mutable knowledgeIds = Map.empty
 
         for desired in knowledge do
-            let! id = syncKnowledge client options.Url desired
+            let existing = Map.tryFind desired.Form.Name existingByName
+            let! id = syncKnowledge client options.Url existing desired
             knowledgeIds <- Map.add desired.Form.Name id knowledgeIds
 
         for _, desired in forms do
