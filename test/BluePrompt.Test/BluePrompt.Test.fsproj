@@ -8,6 +8,7 @@
     <Compile Include="PandocSpec.fs" />
     <Compile Include="TableSpec.fs" />
     <Compile Include="MarkdownSpec.fs" />
+    <Compile Include="TemplateSpec.fs" />
     <Compile Include="ExtractSpec.fs" />
     <Compile Include="AppellationSpec.fs" />
     <Compile Include="SchoolSpec.fs" />

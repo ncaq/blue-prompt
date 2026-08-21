@@ -444,19 +444,8 @@ let writeSchool (pageName: string) (outputPath: string) : Task<unit> =
         do! Fmt.formatFile outputPath
     }
 
-/// role-playスキルのテンプレート内で呼称表を差し込む位置を示すプレースホルダ。
-let appellationPlaceholder: string = "{{appellation}}"
-
-/// テンプレートに呼称表のプレースホルダが見つからなかった時のファイルパス。
-exception AppellationPlaceholderNotFound of path: string
-
-/// role-playスキルのテンプレートのプレースホルダへ呼称表を流し込んでSKILL.mdの内容を組み立てる。
-/// プレースホルダが無いテンプレートは呼称表が黙って落ちるため、Noneを返して失敗にする。
-let renderRolePlaySkill (appellation: string) (template: string) : string option =
-    if template.Contains appellationPlaceholder then
-        Some(template.Replace(appellationPlaceholder, appellation))
-    else
-        None
+/// role-playスキルのテンプレートで呼称表を差し込む位置を示すプレースホルダの名前。
+let appellationPlaceholder: string = "appellation"
 
 /// 手書きのテンプレートと生成済みのappellation.jsonから、
 /// role-playスキルのSKILL.md全体を生成する。
@@ -475,7 +464,6 @@ let writeRolePlaySkill (caller: string) (jsonPath: string) (outputPath: string) 
                 "SKILL.template.md"
             )
 
-        let! template = File.ReadAllTextAsync templatePath
         let! json = File.ReadAllTextAsync jsonPath
         let document = Appellation.ofJson json
 
@@ -483,9 +471,8 @@ let writeRolePlaySkill (caller: string) (jsonPath: string) (outputPath: string) 
             sourceHeader (Uri document.Source)
             + Appellation.toCallerMarkdown caller document.Entries
 
-        match renderRolePlaySkill appellation template with
-        | None -> raise (AppellationPlaceholderNotFound templatePath)
-        | Some skill ->
-            do! writeFile outputPath skill
-            do! Fmt.formatFile outputPath
+        let! skill = Template.renderFile (Map [ appellationPlaceholder, appellation ]) templatePath
+
+        do! writeFile outputPath skill
+        do! Fmt.formatFile outputPath
     }

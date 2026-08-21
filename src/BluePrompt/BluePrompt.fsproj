@@ -10,6 +10,7 @@
     <Compile Include="Pandoc.fs" />
     <Compile Include="Table.fs" />
     <Compile Include="Markdown.fs" />
+    <Compile Include="Template.fs" />
     <Compile Include="Extract.fs" />
     <Compile Include="Appellation.fs" />
     <Compile Include="School.fs" />
