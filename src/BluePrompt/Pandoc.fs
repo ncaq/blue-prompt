@@ -67,7 +67,7 @@ let toMarkdownWith (pandocPath: string) (arguments: string list) (html: string) 
         let stdoutTask = pandoc.StandardOutput.ReadToEndAsync()
         let stderrTask = pandoc.StandardError.ReadToEndAsync()
 
-        // 入力の書き込みで起きたbroken pipeを、終了を待った後の報告のために持ち帰る。
+        // broken pipeを、終了を待った後の報告のために持ち帰る。
         let! writeError =
             task {
                 try
