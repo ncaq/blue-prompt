@@ -225,7 +225,8 @@ let private inlineSection (fileName: string) (content: string) : string =
 /// 本文が挙げている参照データとこの後ろの節を結び付ける。
 let private inlineNotice = "以下は本文が挙げている参照データの中身です。"
 
-/// スキルディレクトリのSKILL.mdと参照ファイルからシステムプロンプト全文を組み立てる。
+/// スキルディレクトリのMODEL.md(無ければSKILL.md)と参照ファイルから
+/// システムプロンプト全文を組み立てる。
 /// リンクされたファイルが実在しない場合は参照が壊れているのでSkillFormatErrorで止める。
 let private buildSystemPrompt (skillDirectory: string) (skillPath: string) (body: string) : string =
     let sections =

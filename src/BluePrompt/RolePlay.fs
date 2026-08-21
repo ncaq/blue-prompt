@@ -1,11 +1,13 @@
-/// role-playスキルのSKILL.mdの組み立て。
+/// role-playスキルの本文の組み立て。
+/// 届け先はClaude Code向けのSKILL.mdとOpen WebUIのModel向けのMODEL.mdの2つで、
+/// どちらを組み立てるかは渡されたテンプレートが決める。
 /// 本文の骨格は全生徒で共通のテンプレート1つが持ち、
 /// その決まった位置へ、
 /// 生徒に固有の手書きの部分と、
 /// 生徒個別ページから作った衣装別の参照ファイルと、
 /// キャラ呼称表のJSONから読んだ事実を差し込む。
 /// wikiruへはアクセスせず、リポジトリへ併置した生成物だけで完結する。
-/// テンプレートのフロントマターの読み取りはOpenWebuiのものを共有するため、
+/// character.mdのフロントマターの読み取りはOpenWebuiのものを共有するため、
 /// コンパイルの順序はそちらより後になる。
 module BluePrompt.RolePlay
 
@@ -78,7 +80,10 @@ let toCostumeMarkdown (references: Reference list) : string =
     |> String.concat "\n"
 
 /// スキルのディレクトリから衣装別の参照ファイルを読む。
-/// SKILL.mdとテンプレート以外のMarkdownを参照ファイルと見なす。
+/// SKILL.mdとMODEL.mdとcharacter.md以外のMarkdownを参照ファイルと見なす。
+/// 除外を並べる形なので、
+/// スキルのディレクトリへREADME.mdのような別のMarkdownを置くと、
+/// 出典の行を持たない衣装の参照ファイルと見なされてReferenceShapeErrorになる。
 /// 通常衣装を先頭に置き、残りはファイル名の順に並べる。
 /// 1つも無いディレクトリは、衣装の一覧が空のまま書き出されないように失敗にする。
 let readReferences (directory: string) : Task<Reference list> =
@@ -141,7 +146,7 @@ let knowledgeSkillsPlaceholder: string = "knowledgeSkills"
 /// 本文では役割が違うので別の文で扱っており、生徒のナレッジの一覧からは除く。
 let private sharedKnowledgeNames = Set.ofList [ "character-appellation" ]
 
-/// フロントマターに生徒のナレッジのスキルが1つも無かった時のテンプレートのパス。
+/// フロントマターに生徒のナレッジのスキルが1つも無かった時のcharacter.mdのパス。
 exception KnowledgeSkillNotFound of path: string
 
 /// 生徒に固有のファイルのフロントマターから、
@@ -175,7 +180,8 @@ let splitFrontmatter (path: string) (character: string) : string * string =
         | None -> raise (OpenWebui.SkillFormatError(path, "フロントマターの閉じ---がありません"))
     | _ -> raise (OpenWebui.SkillFormatError(path, "フロントマターの開始---がありません"))
 
-/// 全生徒で共通のテンプレートと、併置された生成物から、role-playスキルのSKILL.md全体を生成する。
+/// 全生徒で共通のテンプレートと、併置された生成物から、role-playスキルの本文全体を生成する。
+/// SKILL.mdとMODEL.mdのどちらを書き出すかは、渡されたテンプレートと出力先が決める。
 /// 没入感を左右する呼称は別ファイルへ分けず、スキル本体へ直接埋め込む。
 /// 生徒に固有の手書きの部分と衣装別の参照ファイルは、出力先と同じディレクトリから読む。
 /// テンプレートに差し込むのは全生徒に共通する指示か、生徒ごとに決まる事実か、
