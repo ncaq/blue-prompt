@@ -303,13 +303,18 @@ let private optionalFieldPaths =
       [ "params" ], "function_calling" ]
 
 /// 応答に無いoption型のフィールドをnullで補う。
+/// 途中の親が応答に無ければ補う先も無いため、そこで辿るのをやめる。
 let private fillMissingOptionalFields (root: JsonNode) : JsonNode =
     for parentKeys, key in optionalFieldPaths do
         let parent =
-            List.fold (fun (node: JsonNode) (parentKey: string) -> node[parentKey]) root parentKeys
+            List.fold
+                (fun (node: JsonNode option) (parentKey: string) ->
+                    node |> Option.bind (fun node -> Option.ofObj node[parentKey]))
+                (Some root)
+                parentKeys
 
         match parent with
-        | :? JsonObject as object when not (object.ContainsKey key) -> object[key] <- null
+        | Some(:? JsonObject as object) when not (object.ContainsKey key) -> object[key] <- null
         | _ -> ()
 
     root

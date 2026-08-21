@@ -224,10 +224,13 @@ let ``knowledgeを書かないスキルでは紐付けも方式の指定もさ�
 let ``管理対象へ後から足したフィールドが無い応答も読み戻せる`` () =
     // function_callingを導入する前に登録したModelの応答を模す。
     // 実際にOpen WebUIへ登録済みのModelのparamsにはsystemしかない。
+    //
+    // optionalFieldPathsの安全網として働くように、
+    // 管理対象のoption型のフィールドは1つも書かない。
+    // nullで明示すると、補う処理を落としてもこのテストが通ってしまう。
     let json =
         """{
   "id": "yuuka",
-  "base_model_id": null,
   "name": "yuuka",
   "meta": { "description": "説明", "profile_image_url": "/static/favicon.png" },
   "params": { "system": "プロンプト" },
@@ -237,5 +240,6 @@ let ``管理対象へ後から足したフィールドが無い応答も読み�
     let form = ofJson json
 
     Assert.Equal("yuuka", form.Id)
+    Assert.Equal(None, form.BaseModelId)
     Assert.Equal(None, form.Params.FunctionCalling)
     Assert.Equal(None, form.Meta.Knowledge)
