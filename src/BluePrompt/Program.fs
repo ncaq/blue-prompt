@@ -63,14 +63,12 @@ let main argv =
         0
     | [| "roleplay-skill"; caller; templatePath; jsonPath; outputPath |] ->
         (RolePlay.writeSkill caller templatePath jsonPath outputPath).GetAwaiter().GetResult()
-
         0
     | [| "open-webui-model"; skillDirectory; outputPath |] ->
         (OpenWebui.writeModel skillDirectory outputPath).GetAwaiter().GetResult()
         0
     | [| "open-webui-knowledge"; skillDirectory; outputDirectory |] ->
         (OpenWebuiKnowledge.writeKnowledge skillDirectory outputDirectory).GetAwaiter().GetResult()
-
         0
     // 引数の個数の検証と説明はparseOptionsへ一本化する。
     | argv when 1 <= argv.Length && argv[0] = "open-webui-sync" ->
