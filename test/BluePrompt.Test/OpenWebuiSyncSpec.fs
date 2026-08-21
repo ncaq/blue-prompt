@@ -513,13 +513,29 @@ let ``コマンドライン引数から接続情報を組み立てられる`` ()
               "--base-model-id"
               "qwen3:32b"
               "--api-key-file"
-              "/run/credentials/api-key" ]
+              "/run/credentials/api-key"
+              "--knowledge"
+              "/tmp/knowledge"
+              "--rag-template-file"
+              "/tmp/rag-template.txt" ]
 
     Assert.Equal("/tmp/models", options.ModelsDirectory)
     // 末尾スラッシュは落とされる。
     Assert.Equal("http://127.0.0.1:8080", options.Url)
     Assert.Equal(Some "qwen3:32b", options.BaseModelId)
     Assert.Equal(Some "/run/credentials/api-key", options.ApiKeyFile)
+    Assert.Equal(Some "/tmp/knowledge", options.KnowledgeDirectory)
+    Assert.Equal(Some "/tmp/rag-template.txt", options.RagTemplateFile)
+
+[<Fact>]
+let ``省略できるフラグを渡さなければNoneのままになる`` () =
+    let options = parseOptions [ "/tmp/models"; "http://127.0.0.1:8080" ]
+
+    // ModelだけをKnowledgeやRAGテンプレート抜きで同期する運用が成り立つ。
+    Assert.Equal(None, options.BaseModelId)
+    Assert.Equal(None, options.ApiKeyFile)
+    Assert.Equal(None, options.KnowledgeDirectory)
+    Assert.Equal(None, options.RagTemplateFile)
 
 [<Fact>]
 let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり作成へ進まない`` () =
