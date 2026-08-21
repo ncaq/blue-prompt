@@ -336,7 +336,7 @@
                 ) skills}
               '';
           # Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
-          # SKILL.mdと参照ファイルをインライン化したシステムプロンプトを持つ、
+          # MODEL.md(無ければSKILL.md)と参照ファイルをインライン化したシステムプロンプトを持つ、
           # ワークスペースModelの作成フォームJSONを人格のスキルごとに生成する。
           # POST /api/v1/models/createへそのまま渡して登録できる。
           open-webui-model = pkgs.runCommand "open-webui-model-${marketplace.metadata.version}" { } ''

@@ -103,6 +103,10 @@ dotnet run --project src/BluePrompt -- roleplay-skill 'ユウカ' plugins/role-p
 
 `kotori`と`seia`はまだこの構成に移行しておらず、
 SKILL.mdに手で貼り付けたデータのままです。
+移行する時はリポジトリルートのflake.nixの`rolePlayCallers`へ、
+スキル名と呼び名の対応を足してください。
+呼び名はcharacter.mdからは決まらないので自動では埋まらず、
+足さないと生成物の検証が評価時のassertで止まります。
 
 ## 配布物から除かれるファイル
 
