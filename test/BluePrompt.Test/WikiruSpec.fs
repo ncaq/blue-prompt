@@ -107,8 +107,9 @@ let ``studentContentQueryは画像を除去せずaltのテキストへ置き換�
 
 [<Fact>]
 let ``structuredContentQueryはDOM構造を保ったままスクリプトとコメント欄を除く`` () =
-    // Appellation.parseは脚注アンカーのhrefやrowspanをDOMのまま読むため、
-    // Markdown化前提の変形を掛けるとパースが壊れる。
+    // Appellation.parseは脚注アンカーのhrefやrowspanを、
+    // School.parseはカードのhrefやセル内のbrをDOMのまま読むため、
+    // Markdown化前提の変形を掛けるとどちらのパースも壊れる。
     // 一方でスクリプト片や投稿フォーム由来の任意ユーザー入力の除去は、
     // contentQueryと同じ理由でこの経路にも必要。
     let query = BluePrompt.Wikiru.structuredContentQuery
@@ -120,9 +121,9 @@ let ``structuredContentQueryはDOM構造を保ったままスクリプトとコ�
 
 [<Fact>]
 let ``structuredContentQueryの除去セレクタはcontentQueryの部分集合である`` () =
-    // 呼称表の経路はMarkdown化固有の除去を持たないだけで、
+    // DOMを直接読む経路はMarkdown化固有の除去を持たないだけで、
     // ノイズの除去はcontentQueryと同じ集合を共有する。
-    // ここが乖離すると呼称表の経路だけスクリプト片や投稿フォームの除去が漏れる。
+    // ここが乖離するとこの経路だけスクリプト片や投稿フォームの除去が漏れる。
     let noise = BluePrompt.Wikiru.structuredContentQuery.RemoveSelectors
     let markdown = BluePrompt.Wikiru.contentQuery.RemoveSelectors
     Assert.All(noise, (fun selector -> Assert.Contains(selector, markdown)))

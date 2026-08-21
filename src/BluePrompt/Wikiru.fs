@@ -92,9 +92,17 @@ let studentContentQuery: Extract.ContentQuery =
 /// contentQueryと同じ理由でスクリプト片・広告タグ・コメント欄と投稿フォーム由来の、
 /// 任意ユーザー入力がレコードへ紛れ込む余地を断つ。
 /// 一方でパースはDOMの構造をそのまま読むため、Markdown化前提の変形は掛けない。
-/// リンクは脚注アンカー(note_super)のhref/titleと編集リンクの判定に必要なので外さず、
-/// rowspanもparseTableが自前で扱うのでテーブルは平坦化しない。
-/// セル内のアイコン画像はTextContentが空で無害なので、altへの置き換えもしない。
+/// 以下の3つはどちらの経路も必要としているため、後から変えられない。
+///
+/// - リンクを外さない。
+///   Appellationは脚注アンカー(note_super)のhref/titleと編集リンクの判定に使い、
+///   Schoolはカードのaのhrefから生徒個別ページのページ名を復元するのに使う
+/// - 画像をaltのテキストへ置き換えない。
+///   Appellationではセル内のアイコンのTextContentが空で無害なだけだが、
+///   Schoolではアイコンのaltが生徒名そのものなので、
+///   置き換えるとカードの名前へ混ざってレアリティと名前の分解が壊れる
+/// - テーブルを平坦化しない。
+///   Appellationのrowspanも、Schoolのカードのセル内のbrも、それぞれのパースが自前で扱う
 let structuredContentQuery: Extract.ContentQuery =
     { ContentSelectors = [ "#body"; "#note" ]
       RemoveSelectors = noiseSelectors
