@@ -292,7 +292,7 @@ let ``存在しないページへの編集リンクは名前に混入しない``
                         []
                         [ Text.raw "ミリア"
                           Elem.a
-                              [ Attr.href "./?cmd=edit&page=%E3%83%9F%E3%83%AA%E3%82%A2" ]
+                              [ Attr.href "./?cmd=edit&amp;page=%E3%83%9F%E3%83%AA%E3%82%A2" ]
                               [ Text.raw "?" ] ]
                     Elem.td [] [ Text.raw "ミリアさん" ] ] ]
 

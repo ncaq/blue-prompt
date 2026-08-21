@@ -96,6 +96,8 @@ let ``名前はアイコンのaltではなくカードの表示名から読む``
 let ``未作成ページの編集リンクは名前にもページ名にも入らない`` () =
     // wikiruは個別ページがまだ無いキャラクターを、名前の後ろへ編集リンクの「?」を添えて表示する。
     let page = Uri.EscapeDataString "ミリア"
+    // wikiruのhrefは`&`を実体参照で書くため、入力も実物どおりにする。
+    let editHref = $"./?cmd=edit&amp;page=%s{page}"
 
     let html =
         renderBody
@@ -106,8 +108,7 @@ let ``未作成ページの編集リンクは名前にもページ名にも入�
                     Elem.br []
                     Elem.span
                         [ Attr.class' "noexists" ]
-                        [ Text.raw "ミリア"
-                          Elem.a [ Attr.href $"./?cmd=edit&page=%s{page}" ] [ Text.raw "?" ] ] ] ]
+                        [ Text.raw "ミリア"; Elem.a [ Attr.href editHref ] [ Text.raw "?" ] ] ] ]
 
     let entry = List.exactlyOne (parseHtml html)
     Assert.Equal("ミリア", entry.Name)
