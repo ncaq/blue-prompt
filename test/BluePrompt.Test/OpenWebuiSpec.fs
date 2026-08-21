@@ -237,7 +237,7 @@ let ``管理対象へ後から足したフィールドが無い応答も読み�
   "is_active": true
 }"""
 
-    let form = ofJson json
+    let form = ofJson "登録済みのModelの応答" json
 
     Assert.Equal("yuuka", form.Id)
     Assert.Equal(None, form.BaseModelId)

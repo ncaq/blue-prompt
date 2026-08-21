@@ -319,17 +319,25 @@ let private fillMissingOptionalFields (root: JsonNode) : JsonNode =
 
     root
 
-/// toJsonの逆変換としてJSONをModelFormへ読み戻す。
+/// 読み込んだJSONのノードをModelFormへ読み戻す。
 /// ModelFormに無いフィールドは無視されるため、
 /// APIの応答を管理対象のフィールドだけへ正規化する用途にも使える。
-let ofJson (json: string) : ModelForm =
+///
+/// originはこのJSONがどこから来たのかを示す、
+/// ファイルのパスやURLのような短い文字列で、失敗した時の手掛かりになる。
+/// 応答を読んだ後にそのノードを別の用途へ使い回せるように、
+/// 文字列ではなくノードを受け取る形にしている。
+let ofJsonNode (origin: string) (node: JsonNode) : ModelForm =
+    try
+        (fillMissingOptionalFields node).Deserialize<ModelForm>(serializerOptions)
+    with :? JsonException as error ->
+        raise (SkillFormatError(origin, $"Modelの定義として解釈できません: %s{error.Message}"))
+
+/// toJsonの逆変換としてJSONをModelFormへ読み戻す。
+let ofJson (origin: string) (json: string) : ModelForm =
     match JsonNode.Parse json with
-    | null -> raise (SkillFormatError(json, "Modelの定義として解釈できません"))
-    | root ->
-        JsonSerializer.Deserialize<ModelForm>(
-            (fillMissingOptionalFields root).ToJsonString(),
-            serializerOptions
-        )
+    | null -> raise (SkillFormatError(origin, $"Modelの定義として解釈できません: %s{json}"))
+    | root -> ofJsonNode origin root
 
 /// スキルディレクトリからModelFormのJSONを書き出す。
 /// 出力はNixのビルド成果物でリポジトリへはコミットしないため、nix fmtは掛けない。

@@ -506,27 +506,29 @@ let private syncModel
 
         if response.IsSuccessStatusCode then
             let! body = response.Content.ReadAsStringAsync()
-            // 応答を管理対象のフィールドだけへ正規化して比較する。
-            let current = OpenWebui.ofJson body
 
-            // base-model-idを指定しない運用では、
-            // 登録後にUIで選ばれた上流モデルを上書きせず保持する。
-            let desired =
-                match options.BaseModelId with
-                | Some _ -> desired
-                | None ->
-                    { desired with
-                        BaseModelId = current.BaseModelId }
+            // 更新のボディを組み立てる時にも応答を読むため、パースは1回で済ませる。
+            match JsonNode.Parse body with
+            | null -> raise (SyncError $"%s{id}の応答を解釈できません: %s{body}")
+            | currentNode ->
+                // 応答を管理対象のフィールドだけへ正規化して比較する。
+                let current = OpenWebui.ofJsonNode id currentNode
 
-            if current = desired then
-                printfn $"%s{id}: 変更なし"
-            else
-                let updateUrl =
-                    $"%s{options.Url}/api/v1/models/model/update?id=%s{Uri.EscapeDataString id}"
+                // base-model-idを指定しない運用では、
+                // 登録後にUIで選ばれた上流モデルを上書きせず保持する。
+                let desired =
+                    match options.BaseModelId with
+                    | Some _ -> desired
+                    | None ->
+                        { desired with
+                            BaseModelId = current.BaseModelId }
 
-                match JsonNode.Parse body with
-                | null -> raise (SyncError $"%s{id}の応答を解釈できません: %s{body}")
-                | currentNode ->
+                if current = desired then
+                    printfn $"%s{id}: 変更なし"
+                else
+                    let updateUrl =
+                        $"%s{options.Url}/api/v1/models/model/update?id=%s{Uri.EscapeDataString id}"
+
                     let! _ = postJson client updateUrl (withAccessGrants currentNode desired)
                     printfn $"%s{id}: 更新"
         elif
@@ -571,7 +573,7 @@ let sync (options: Options) : Task<unit> =
 
         for path in Directory.GetFiles(options.ModelsDirectory, "*.json") |> Array.sort do
             let! json = File.ReadAllTextAsync path
-            reversedForms <- (path, withBaseModelId (OpenWebui.ofJson json)) :: reversedForms
+            reversedForms <- (path, withBaseModelId (OpenWebui.ofJson path json)) :: reversedForms
 
         let forms = List.rev reversedForms
 
