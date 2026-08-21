@@ -85,6 +85,8 @@ type private MockServer() =
     let mutable modelGetOverride: (int * string) option = None
     // サインインへ固定の応答を返すための上書き。認証を有効にしたインスタンスを模す。
     let mutable signInOverride: (int * string) option = None
+    // アップロードへ固定の応答を返すための上書き。応答の形が変わった状況を模す。
+    let mutable uploadOverride: (int * string) option = None
 
     let issueId () =
         nextId <- nextId + 1
@@ -216,17 +218,20 @@ type private MockServer() =
             let fileName, content = parseMultipart request.ContentType (readBody request)
             let id = issueId ()
 
-            uploaded <-
-                Map.add
-                    id
-                    { Id = id
-                      FileName = fileName
-                      Hash = sha256Hex content }
-                    uploaded
+            match uploadOverride with
+            | Some(status, body) -> respond context.Response status body
+            | None ->
+                uploaded <-
+                    Map.add
+                        id
+                        { Id = id
+                          FileName = fileName
+                          Hash = sha256Hex content }
+                        uploaded
 
-            let created = JsonObject()
-            created["id"] <- JsonValue.Create id
-            respond context.Response 200 (created.ToJsonString())
+                let created = JsonObject()
+                created["id"] <- JsonValue.Create id
+                respond context.Response 200 (created.ToJsonString())
         | "POST", path when path.EndsWith("/file/add", StringComparison.Ordinal) ->
             fileAddCount <- fileAddCount + 1
             let id = collectionIdOf path 2
@@ -296,6 +301,7 @@ type private MockServer() =
 
     member _.OverrideModelGet(status: int, body: string) = modelGetOverride <- Some(status, body)
     member _.OverrideSignIn(status: int, body: string) = signInOverride <- Some(status, body)
+    member _.OverrideUpload(status: int, body: string) = uploadOverride <- Some(status, body)
     member _.Models = models
     member _.CreateCount = createCount
     member _.UpdateCount = updateCount
@@ -729,6 +735,28 @@ let ``紐付け先のKnowledgeが同期の対象に無いとSyncErrorで止ま�
 
     // 参照が外れたModelを黙って登録しない。
     Assert.Equal(0, server.CreateCount)
+
+[<Fact>]
+let ``アップロードの応答にidが無いとSyncErrorで止まる`` () =
+    use server = new MockServer()
+    // 応答の形が変わった状況を模す。
+    // 空のidのまま進むと、コレクションへの追加が空のfile_idで飛んで、
+    // 原因から遠い場所で失敗する。
+    server.OverrideUpload(200, """{"detail":"ok"}""")
+
+    let options =
+        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
+            KnowledgeDirectory =
+                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
+
+    let error = Assert.Throws<SyncError>(fun () -> run options)
+
+    // 何が足りないのか分かるようにフィールドの名前が含まれる。
+    match error :> exn with
+    | SyncError message -> Assert.Contains("id", message)
+    | unexpected -> failwith unexpected.Message
+
+    Assert.Equal(0, server.FileAddCount)
 
 [<Fact>]
 let ``RAGテンプレートは差分がある時だけ書き込まれる`` () =

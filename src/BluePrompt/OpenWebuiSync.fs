@@ -279,6 +279,16 @@ let private stringField (node: JsonNode) (keys: string list) : string =
     | None -> ""
     | Some value -> value.GetValue<string>()
 
+/// 後続の処理が成立しなくなるJSONの文字列フィールドを読む。
+/// 空のまま進むとURLの組み立てやPOSTのボディが壊れた形になり、
+/// 原因から遠い場所で失敗するため、応答の形が変わった時点で気付けるように止める。
+let private requiredStringField (url: string) (node: JsonNode) (keys: string list) : string =
+    match stringField node keys with
+    | "" ->
+        let path = String.concat "." keys
+        raise (SyncError $"%s{url}の応答に%s{path}がありません: %s{node.ToJsonString()}")
+    | value -> value
+
 /// ファイルをアップロードしてfile idを得る。
 /// 既定ではアップロードの後処理がバックグラウンドへ回されて、
 /// 続くコレクションへの追加が未処理のファイルとして弾かれるため、
@@ -303,7 +313,7 @@ let private uploadFile
         request.Content <- form
 
         let! response = send client request
-        return stringField response [ "id" ]
+        return requiredStringField $"%s{url}/api/v1/files/" response [ "id" ]
     }
 
 /// Knowledgeコレクション1つを同期して、そのidを返す。
@@ -335,7 +345,7 @@ let private syncKnowledge
             task {
                 match existing with
                 | Some collection ->
-                    let id = stringField collection [ "id" ]
+                    let id = requiredStringField $"%s{url}/api/v1/knowledge/" collection [ "id" ]
 
                     if stringField collection [ "description" ] <> desired.Form.Description then
                         let! _ =
@@ -355,7 +365,7 @@ let private syncKnowledge
                             (JsonNode.Parse(OpenWebuiKnowledge.toJson desired.Form))
 
                     printfn $"%s{name}: 作成"
-                    return stringField created [ "id" ]
+                    return requiredStringField $"%s{url}/api/v1/knowledge/create" created [ "id" ]
             }
 
         // コレクション単体を取るAPIのfilesはnullで返るため、
