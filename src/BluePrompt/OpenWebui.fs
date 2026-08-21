@@ -260,10 +260,13 @@ let buildModelForm (skillDirectory: string) : ModelForm =
     // どちらの経路でも半分は当てはまらない説明を読ませることになる。
     let modelPath = Path.Combine(skillDirectory, SkillFile.model)
     let skillPath = Path.Combine(skillDirectory, SkillFile.skill)
-    let bodyPath = if File.Exists modelPath then modelPath else skillPath
 
-    if not (File.Exists bodyPath) then
-        raise (SkillFormatError(bodyPath, "SKILL.mdが存在しません"))
+    // 読む本文を選ぶのと、どちらも無いことを報せるのは同じ判断なので1つの式にする。
+    // 分けて書くと、存在検査がMODEL.mdの不在も報せ得るように見えてしまう。
+    let bodyPath =
+        if File.Exists modelPath then modelPath
+        elif File.Exists skillPath then skillPath
+        else raise (SkillFormatError(skillPath, "SKILL.mdが存在しません"))
 
     let frontmatter = parseFrontmatter bodyPath (File.ReadAllText bodyPath)
 
