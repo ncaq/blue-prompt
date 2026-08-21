@@ -4,6 +4,7 @@ module BluePrompt.Pandoc
 open System
 open System.Diagnostics
 open System.IO
+open System.Runtime.ExceptionServices
 open System.Text
 open System.Threading
 open System.Threading.Tasks
@@ -108,7 +109,12 @@ let toMarkdownWith (pandocPath: string) (arguments: string list) (html: string) 
                     let writeError =
                         match firstError with
                         | Some(:? IOException as error) -> Some error
-                        | Some error -> raise error
+                        // `raise`はStackTraceを切り捨てるため、
+                        // 想定外の失敗が起きた元の位置を残したまま投げ直す。
+                        // `with`ブロックの外なので`reraise`は使えない。
+                        | Some error ->
+                            ExceptionDispatchInfo.Capture(error).Throw()
+                            None
                         | None -> None
 
                     do! pandoc.WaitForExitAsync cancellation.Token
