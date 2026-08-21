@@ -18,6 +18,12 @@ let private appellationTable (rows: XmlNode list) : XmlNode =
                       Elem.th [] [ Text.raw "呼称" ] ] ]
           Elem.tbody [] rows ]
 
+/// 呼称表の1行。キャラクターと相手と呼称の3つのセルが並ぶ。
+/// キャラクターのセルが結合されている行など、
+/// セルの並びそのものが主題の行は展開したまま書く。
+let private appellationRow (caller: string) (callee: XmlNode list) (name: XmlNode list) : XmlNode =
+    Elem.tr [] [ Elem.td [] [ Text.raw caller ]; Elem.td [] callee; Elem.td [] name ]
+
 /// 本文を包む#body。
 let private bodyDiv (content: XmlNode list) : XmlNode = Elem.div [ Attr.id "body" ] content
 
@@ -44,12 +50,7 @@ let ``見出しの階層が学校と部活とキャラクターへ対応付く``
                         Elem.a [ Attr.class' "anchor_super"; Attr.href "#a" ] [ Text.raw "†" ] ]
                   Text.h3 "対策委員会"
                   Text.h4 "ホシノ"
-                  appellationTable
-                      [ Elem.tr
-                            []
-                            [ Elem.td [] [ Text.raw "ホシノ" ]
-                              Elem.td [] [ Text.raw "自分" ]
-                              Elem.td [] [ Text.raw "私" ] ] ] ]
+                  appellationTable [ appellationRow "ホシノ" [ Text.raw "自分" ] [ Text.raw "私" ] ] ]
         )
 
     Assert.Equal<Entry list>(
@@ -71,12 +72,7 @@ let ``部活の見出しが無い学校ではClubはNoneになる`` () =
             bodyDiv
                 [ Text.h2 "連邦生徒会"
                   Text.h4 "リン"
-                  appellationTable
-                      [ Elem.tr
-                            []
-                            [ Elem.td [] [ Text.raw "リン" ]
-                              Elem.td [] [ Text.raw "自分" ]
-                              Elem.td [] [ Text.raw "私" ] ] ] ]
+                  appellationTable [ appellationRow "リン" [ Text.raw "自分" ] [ Text.raw "私" ] ] ]
         )
 
     let entry = List.exactlyOne (parseHtml html)
@@ -88,11 +84,10 @@ let ``呼称は読点とbr要素のどちらでも区切られる`` () =
     let html =
         renderCharacterPage
             "ホシノ"
-            [ Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "ホシノ" ]
-                    Elem.td [] [ Text.raw "自分" ]
-                    Elem.td [] [ Text.raw "私、おじさん"; spacerBreak; Text.raw "わし" ] ] ]
+            [ appellationRow
+                  "ホシノ"
+                  [ Text.raw "自分" ]
+                  [ Text.raw "私、おじさん"; spacerBreak; Text.raw "わし" ] ]
 
     Assert.Equal<string list>([ "私"; "おじさん"; "わし" ], parseHtml html |> List.map _.Name)
 
@@ -102,21 +97,18 @@ let ``脚注は#noteの定義から呼称の注釈として解決される`` () 
         renderSiblings
             [ characterBody
                   "ホシノ"
-                  [ Elem.tr
-                        []
-                        [ Elem.td [] [ Text.raw "ホシノ" ]
-                          Elem.td [] [ Elem.a [ Attr.href "#Nonomi" ] [ Text.raw "ノノミ" ] ]
-                          Elem.td
-                              []
-                              [ Text.raw "ノノミちゃん"
-                                spacerBreak
-                                Text.raw "十六夜ノノミさん"
-                                Elem.a
-                                    [ Attr.id "notetext_1"
-                                      Attr.href "#notefoot_1"
-                                      Attr.class' "note_super"
-                                      Attr.title "初対面時" ]
-                                    [ Text.raw "*1" ] ] ] ]
+                  [ appellationRow
+                        "ホシノ"
+                        [ Elem.a [ Attr.href "#Nonomi" ] [ Text.raw "ノノミ" ] ]
+                        [ Text.raw "ノノミちゃん"
+                          spacerBreak
+                          Text.raw "十六夜ノノミさん"
+                          Elem.a
+                              [ Attr.id "notetext_1"
+                                Attr.href "#notefoot_1"
+                                Attr.class' "note_super"
+                                Attr.title "初対面時" ]
+                              [ Text.raw "*1" ] ] ]
               noteDiv
                   [ Elem.a
                         [ Attr.id "notefoot_1"; Attr.href "#notetext_1"; Attr.class' "note_super" ]
@@ -135,18 +127,13 @@ let ``脚注の定義を辿れない場合はtitle属性で代替する`` () =
     let html =
         renderCharacterPage
             "ホシノ"
-            [ Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "ホシノ" ]
-                    Elem.td [] [ Text.raw "ヒフミ" ]
-                    Elem.td
-                        []
-                        [ Text.raw "ファウストさん"
-                          Elem.a
-                              [ Attr.href "#notefoot_9"
-                                Attr.class' "note_super"
-                                Attr.title "覆面時" ]
-                              [ Text.raw "*9" ] ] ] ]
+            [ appellationRow
+                  "ホシノ"
+                  [ Text.raw "ヒフミ" ]
+                  [ Text.raw "ファウストさん"
+                    Elem.a
+                        [ Attr.href "#notefoot_9"; Attr.class' "note_super"; Attr.title "覆面時" ]
+                        [ Text.raw "*9" ] ] ]
 
     let entry = List.exactlyOne (parseHtml html)
     Assert.Equal(Some "覆面時", entry.Note)
@@ -166,16 +153,13 @@ let ``脚注定義の本文は次の脚注アンカーを巻き込まない`` ()
         renderSiblings
             [ characterBody
                   "ホシノ"
-                  [ Elem.tr
-                        []
-                        [ Elem.td [] [ Text.raw "ホシノ" ]
-                          Elem.td [] [ Text.raw "ノノミ" ]
-                          Elem.td
-                              []
-                              [ Text.raw "十六夜ノノミさん"
-                                Elem.a
-                                    [ Attr.href "#notefoot_1"; Attr.class' "note_super" ]
-                                    [ Text.raw "*1" ] ] ] ]
+                  [ appellationRow
+                        "ホシノ"
+                        [ Text.raw "ノノミ" ]
+                        [ Text.raw "十六夜ノノミさん"
+                          Elem.a
+                              [ Attr.href "#notefoot_1"; Attr.class' "note_super" ]
+                              [ Text.raw "*1" ] ] ]
               noteDiv
                   [ noteAnchor 1
                     Elem.span [ Attr.class' "small" ] [ Text.raw "初対面のとき" ]
@@ -190,18 +174,13 @@ let ``相手の名前に付いた脚注はCalleeNoteとして解決される`` (
     let html =
         renderCharacterPage
             "ノノミ"
-            [ Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "ノノミ" ]
-                    Elem.td
-                        []
-                        [ Text.raw "Mr.ニコライ"
-                          Elem.a
-                              [ Attr.href "#notefoot_10"
-                                Attr.class' "note_super"
-                                Attr.title "モモフレンズ" ]
-                              [ Text.raw "*10" ] ]
-                    Elem.td [] [ Text.raw "ミスター・ニコライ" ] ] ]
+            [ appellationRow
+                  "ノノミ"
+                  [ Text.raw "Mr.ニコライ"
+                    Elem.a
+                        [ Attr.href "#notefoot_10"; Attr.class' "note_super"; Attr.title "モモフレンズ" ]
+                        [ Text.raw "*10" ] ]
+                  [ Text.raw "ミスター・ニコライ" ] ]
 
     let entry = List.exactlyOne (parseHtml html)
     Assert.Equal("Mr.ニコライ", entry.Callee)
@@ -217,12 +196,7 @@ let ``キャラクターの見出しより前にあるテーブルは読み飛�
                   Text.h2 "学校"
                   Text.h3 "部活"
                   Text.h4 "ホシノ"
-                  appellationTable
-                      [ Elem.tr
-                            []
-                            [ Elem.td [] [ Text.raw "ホシノ" ]
-                              Elem.td [] [ Text.raw "自分" ]
-                              Elem.td [] [ Text.raw "私" ] ] ] ]
+                  appellationTable [ appellationRow "ホシノ" [ Text.raw "自分" ] [ Text.raw "私" ] ] ]
         )
 
     Assert.Equal("私", (List.exactlyOne (parseHtml html)).Name)
@@ -254,13 +228,7 @@ let ``見出し行が無いテーブルも呼称表として読める`` () =
                 [ Text.h2 "学校"
                   Text.h3 "部活"
                   Text.h4 "カナエ"
-                  Elem.table
-                      []
-                      [ Elem.tr
-                            []
-                            [ Elem.td [] [ Text.raw "カナエ" ]
-                              Elem.td [] [ Text.raw "自分" ]
-                              Elem.td [] [ Text.raw "私" ] ] ] ]
+                  Elem.table [] [ appellationRow "カナエ" [ Text.raw "自分" ] [ Text.raw "私" ] ] ]
         )
 
     Assert.Equal("私", (List.exactlyOne (parseHtml html)).Name)
@@ -285,16 +253,13 @@ let ``存在しないページへの編集リンクは名前に混入しない``
     let html =
         renderCharacterPage
             "マナミ"
-            [ Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "マナミ" ]
-                    Elem.td
-                        []
-                        [ Text.raw "ミリア"
-                          Elem.a
-                              [ Attr.href "./?cmd=edit&amp;page=%E3%83%9F%E3%83%AA%E3%82%A2" ]
-                              [ Text.raw "?" ] ]
-                    Elem.td [] [ Text.raw "ミリアさん" ] ] ]
+            [ appellationRow
+                  "マナミ"
+                  [ Text.raw "ミリア"
+                    Elem.a
+                        [ Attr.href "./?cmd=edit&amp;page=%E3%83%9F%E3%83%AA%E3%82%A2" ]
+                        [ Text.raw "?" ] ]
+                  [ Text.raw "ミリアさん" ] ]
 
     Assert.Equal("ミリア", (List.exactlyOne (parseHtml html)).Callee)
 
@@ -304,14 +269,8 @@ let ``呼称が空の行は落ちる`` () =
     let html =
         renderCharacterPage
             "ミスズ"
-            [ Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "ミスズ" ]; Elem.td [] [ Text.raw "自分" ]; Elem.td [] [] ]
-              Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "ミスズ" ]
-                    Elem.td [] [ Text.raw "カンナ" ]
-                    Elem.td [] [ Text.raw "公安局長" ] ] ]
+            [ appellationRow "ミスズ" [ Text.raw "自分" ] []
+              appellationRow "ミスズ" [ Text.raw "カンナ" ] [ Text.raw "公安局長" ] ]
 
     Assert.Equal("カンナ", (List.exactlyOne (parseHtml html)).Callee)
 
@@ -326,11 +285,7 @@ let ``セル内に入れ子のテーブルがあっても外側の行だけが�
     let html =
         renderCharacterPage
             "ホシノ"
-            [ Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "ホシノ" ]
-                    Elem.td [] [ Text.raw "シロコ" ]
-                    Elem.td [] [ Text.raw "シロコちゃん"; nestedTable ] ] ]
+            [ appellationRow "ホシノ" [ Text.raw "シロコ" ] [ Text.raw "シロコちゃん"; nestedTable ] ]
 
     Assert.Equal("シロコちゃん", (List.exactlyOne (parseHtml html)).Name)
 
@@ -341,16 +296,8 @@ let ``完全に同じ内容の行はレコードとしては1件になる`` () =
     let html =
         renderCharacterPage
             "チナツ"
-            [ Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "チナツ" ]
-                    Elem.td [] [ Text.raw "セナ" ]
-                    Elem.td [] [ Text.raw "セナ部長、部長" ] ]
-              Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "チナツ" ]
-                    Elem.td [] [ Text.raw "セナ" ]
-                    Elem.td [] [ Text.raw "セナ部長、部長" ] ] ]
+            [ appellationRow "チナツ" [ Text.raw "セナ" ] [ Text.raw "セナ部長、部長" ]
+              appellationRow "チナツ" [ Text.raw "セナ" ] [ Text.raw "セナ部長、部長" ] ]
 
     Assert.Equal<string list>([ "セナ部長"; "部長" ], parseHtml html |> List.map _.Name)
 
@@ -360,16 +307,8 @@ let ``同じ呼称が複数行に現れても1件にまとまり差分のある�
     let html =
         renderCharacterPage
             "チナツ"
-            [ Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "チナツ" ]
-                    Elem.td [] [ Text.raw "セナ" ]
-                    Elem.td [] [ Text.raw "セナ部長、部長" ] ]
-              Elem.tr
-                  []
-                  [ Elem.td [] [ Text.raw "チナツ" ]
-                    Elem.td [] [ Text.raw "セナ" ]
-                    Elem.td [] [ Text.raw "セナ部長、部長、先輩" ] ] ]
+            [ appellationRow "チナツ" [ Text.raw "セナ" ] [ Text.raw "セナ部長、部長" ]
+              appellationRow "チナツ" [ Text.raw "セナ" ] [ Text.raw "セナ部長、部長、先輩" ] ]
 
     Assert.Equal<string list>([ "セナ部長"; "部長"; "先輩" ], parseHtml html |> List.map _.Name)
 
@@ -381,21 +320,14 @@ let ``注釈だけが異なる呼称は別レコードとして残る`` () =
         renderSiblings
             [ characterBody
                   "チナツ"
-                  [ Elem.tr
-                        []
-                        [ Elem.td [] [ Text.raw "チナツ" ]
-                          Elem.td [] [ Text.raw "セナ" ]
-                          Elem.td
-                              []
-                              [ Text.raw "部長"
-                                Elem.a
-                                    [ Attr.class' "note_super"; Attr.href "#notefoot_1" ]
-                                    [ Text.raw "*1" ] ] ]
-                    Elem.tr
-                        []
-                        [ Elem.td [] [ Text.raw "チナツ" ]
-                          Elem.td [] [ Text.raw "セナ" ]
-                          Elem.td [] [ Text.raw "部長" ] ] ]
+                  [ appellationRow
+                        "チナツ"
+                        [ Text.raw "セナ" ]
+                        [ Text.raw "部長"
+                          Elem.a
+                              [ Attr.class' "note_super"; Attr.href "#notefoot_1" ]
+                              [ Text.raw "*1" ] ]
+                    appellationRow "チナツ" [ Text.raw "セナ" ] [ Text.raw "部長" ] ]
               noteDiv
                   [ Elem.a
                         [ Attr.id "notefoot_1"; Attr.class' "note_super"; Attr.href "#notetext_1" ]
