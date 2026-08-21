@@ -255,8 +255,11 @@ let ``表の途中の区切り行は前後の行を別々の表へ分ける`` ()
     let extracted = BluePrompt.Extract.contentHtml query html
 
     // 前半の表、段落、後半の表の順序が保たれる。
-    Assert.True(extracted.IndexOf "a1" < extracted.IndexOf "途中の小見出し")
-    Assert.True(extracted.IndexOf "途中の小見出し" < extracted.IndexOf "b1")
+    let positionOf (text: string) =
+        extracted.IndexOf(text, StringComparison.Ordinal)
+
+    Assert.True(positionOf "a1" < positionOf "途中の小見出し")
+    Assert.True(positionOf "途中の小見出し" < positionOf "b1")
     Assert.Contains("<strong>途中の小見出し</strong>", extracted)
     // 前半の行と後半の行は同じ表に残らない。
     Assert.Equal(2, Text.RegularExpressions.Regex.Matches(extracted, "<table>").Count)
