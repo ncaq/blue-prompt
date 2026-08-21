@@ -260,6 +260,11 @@ let writeKnowledge (skillDirectory: string) (outputDirectory: string) : Task<uni
                 toJson knowledge.Form
             )
 
-        for file in knowledge.Files do
-            do! File.WriteAllTextAsync(Path.Combine(filesDirectory, file.FileName), file.Content)
+        // 断片はいずれも数KBで互いに独立しているため、
+        // 呼称表のように100近くへ分かれる場合でも待ちを積み上げずにまとめて待つ。
+        do!
+            knowledge.Files
+            |> List.map (fun file ->
+                File.WriteAllTextAsync(Path.Combine(filesDirectory, file.FileName), file.Content))
+            |> Task.WhenAll
     }
