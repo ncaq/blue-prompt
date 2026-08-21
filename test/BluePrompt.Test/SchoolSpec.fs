@@ -154,6 +154,36 @@ let ``学校の見出しより前のセルは読み飛ばされる`` () =
     Assert.Equal<string list>([ "ホシノ" ], parseHtml html |> List.map _.Name)
 
 [<Fact>]
+let ``カードを並べる外枠のセルは読まれない`` () =
+    // カードがレイアウト用のテーブルへ入ると、外枠のtdも同じ走査に掛かる。
+    let html =
+        body (
+            "<h2>アビドス高等学校</h2><h3>対策委員会</h3>"
+            + """<table><tbody><tr><td class="style_td">"""
+            + card "★3" "ホシノ" "ホシノ"
+            + card "★3" "シロコ" "シロコ"
+            + "</td></tr></tbody></table>"
+        )
+
+    Assert.Equal<string list>([ "ホシノ"; "シロコ" ], parseHtml html |> List.map _.Name)
+
+[<Fact>]
+let ``学校の見出しより後ろのカード以外のテーブルはCellShapeErrorになる`` () =
+    // 欠けた一覧で生成物を上書きしないため、読めないセルは黙って飛ばさず止まる。
+    let html =
+        body (
+            "<h2>アビドス高等学校</h2><h3>対策委員会</h3>"
+            + card "★3" "ホシノ" "ホシノ"
+            + """<table><tbody><tr><td class="style_td">注意書き</td></tr></tbody></table>"""
+        )
+
+    let error = Assert.Throws<CellShapeError>(fun () -> parseHtml html |> ignore)
+
+    match error :> exn with
+    | CellShapeError text -> Assert.Equal("注意書き", text)
+    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+
+[<Fact>]
 let ``レアリティか名前を読めないセルはCellShapeErrorになる`` () =
     let html =
         body ("""<h2>学校</h2><table><tbody><tr><td class="style_td">★3</td></tr></tbody></table>""")

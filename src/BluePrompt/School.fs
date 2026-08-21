@@ -126,6 +126,11 @@ let private pageName (cell: IElement) : string option =
 /// その配下に並ぶ生徒のカードをレコード化する。
 /// 学校の見出しより前にあるページ上部のナビゲーションのセルは、
 /// 学校が決まっていないので自然に読み飛ばされる。
+/// 一方で学校の見出しより後ろにカード以外のテーブルが現れると、
+/// そのセルもカードとして読もうとしてCellShapeErrorで止まる。
+/// カードの形を読めていない時に、
+/// 欠けた一覧で生成物を上書きしないための意図した挙動なので、
+/// その時はページの構造を見てこのパースを直す。
 /// 1件も得られなかった場合はEntryNotFoundを送出する。
 let parse (document: IDocument) : Entry list =
     // 累積へ後ろから連結するとセルごとに累積全体のコピーが走るため、
@@ -137,6 +142,11 @@ let parse (document: IDocument) : Entry list =
                 match element.LocalName with
                 | "h2" -> entries, (Some(Extract.headingText element), None)
                 | "h3" -> entries, (school, Some(Extract.headingText element))
+                | _ when not (isNull (element.QuerySelector "table")) ->
+                    // 中に別のテーブルを含むセルは、カード自体ではなくカードを並べる外枠なので読まない。
+                    // 外枠まで読むと同じカードが二重に入り、
+                    // 外枠に改行があればレアリティと名前が別のカードから来た行にもなる。
+                    entries, (school, club)
                 | _ ->
                     match school with
                     | Some school ->
