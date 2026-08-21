@@ -260,13 +260,12 @@ let buildModelForm (skillDirectory: string) : ModelForm =
     // どちらの経路でも半分は当てはまらない説明を読ませることになる。
     let modelPath = Path.Combine(skillDirectory, SkillFile.model)
     let skillPath = Path.Combine(skillDirectory, SkillFile.skill)
+    let bodyPath = if File.Exists modelPath then modelPath else skillPath
 
-    let skillPath = if File.Exists modelPath then modelPath else skillPath
+    if not (File.Exists bodyPath) then
+        raise (SkillFormatError(bodyPath, "SKILL.mdが存在しません"))
 
-    if not (File.Exists skillPath) then
-        raise (SkillFormatError(skillPath, "SKILL.mdが存在しません"))
-
-    let frontmatter = parseFrontmatter skillPath (File.ReadAllText skillPath)
+    let frontmatter = parseFrontmatter bodyPath (File.ReadAllText bodyPath)
 
     // idとnameはModelFormにも同じ名前のフィールドがあり、
     // レコードの型は後から定義された方が優先されるため、明示して取り違えを防ぐ。
@@ -286,7 +285,7 @@ let buildModelForm (skillDirectory: string) : ModelForm =
           // base_model_idと同じくOpen WebUIが未設定として受け取れるため。
           Knowledge = if List.isEmpty knowledge then None else Some knowledge }
       Params =
-        { System = buildSystemPrompt skillDirectory skillPath frontmatter.Body
+        { System = buildSystemPrompt skillDirectory bodyPath frontmatter.Body
           // 紐付けが無いのに方式を指定すると、
           // このリポジトリと関係のない理由で選ばれた設定を上書きしてしまうため、
           // 自動RAGが必要なModelだけへ設定する。
