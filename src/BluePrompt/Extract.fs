@@ -63,6 +63,19 @@ let private replaceImagesWithAlt (document: IDocument) : unit =
         else
             image.Replace [| document.CreateTextNode alt :> INode |]
 
+/// 見出しのテキストを、ページ内アンカー(†)と編集リンクを除いて取り出す。
+/// wikiruの見出しにはアンカーと編集リンクが同じ要素の中へ並んでいて、
+/// TextContentをそのまま読むと見出しの一部として混ざる。
+/// DOMを直接読むパースが見出しを状態として辿るために使う。
+let headingText (heading: IElement) : string =
+    heading.ChildNodes
+    |> Seq.choose (fun node ->
+        match node with
+        | :? IElement as element when element.ClassList.Contains "anchor_super" -> None
+        | node -> Some node.TextContent)
+    |> String.concat ""
+    |> _.Trim()
+
 /// パース済みDOMからqueryに従って本文だけをHTML文字列として抜き出す。
 /// RemoveSelectorsの除去とReplaceImagesWithAlt・FlattenTables・UnwrapLinksの変形を、
 /// この適用順で施した後に、
