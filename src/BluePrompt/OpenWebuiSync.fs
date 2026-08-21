@@ -422,33 +422,32 @@ let private syncKnowledge
         for fileId in staleIds do
             do! removeFile fileId
 
-        // 登録し直すファイルを、登録済みのidと組にして先に選び出す。
-        // idがあるものは中身が変わったファイルで、無いものは新しいファイル。
-        let pending =
+        // 中身が変わったファイルを、登録済みのidと組にして選び出す。
+        let updates =
             desired.Files
             |> List.choose (fun (fileName, content) ->
                 match Map.tryFind fileName registeredByName with
-                | Some(_, hash) when hash = sha256Hex content -> None
-                | Some(fileId, _) -> Some(Some fileId, fileName, content)
-                | None -> Some(None, fileName, content))
+                | Some(fileId, hash) when hash <> sha256Hex content ->
+                    Some(fileId, fileName, content)
+                | _ -> None)
 
-        for registeredId, fileName, content in pending do
+        // 登録済みに無いファイルを選び出す。
+        let additions =
+            desired.Files
+            |> List.filter (fun (fileName, _) -> not (Map.containsKey fileName registeredByName))
+
+        for fileId, fileName, content in updates do
             // 中身が変わったファイルは、
             // 登録し直すことで古い埋め込みが残らないようにする。
-            match registeredId with
-            | Some fileId -> do! removeFile fileId
-            | None -> ()
+            do! removeFile fileId
+            do! addFile fileName content
 
+        for fileName, content in additions do
             do! addFile fileName content
 
         let removed = List.length staleIds
-
-        let updated =
-            pending
-            |> List.filter (fun (registeredId, _, _) -> Option.isSome registeredId)
-            |> List.length
-
-        let added = List.length pending - updated
+        let updated = List.length updates
+        let added = List.length additions
 
         if added = 0 && updated = 0 && removed = 0 then
             printfn $"%s{name}: ファイルの変更なし"
