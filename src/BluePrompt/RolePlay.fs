@@ -164,13 +164,55 @@ let knowledgeSkillsMarkdown (path: string) (knowledge: string list) : string =
 
     names |> List.map (fun name -> $"- %s{name}") |> String.concat "\n"
 
-/// 全生徒で共通のテンプレートと、併置された生成物から、role-playスキルの本文全体を生成する。
-/// SKILL.mdとMODEL.mdのどちらを書き出すかは、渡されたテンプレートと出力先が決める。
-/// 没入感を左右する呼称は別ファイルへ分けず、スキル本体へ直接埋め込む。
-/// 生徒に固有の手書きの部分と衣装別の参照ファイルは、出力先と同じディレクトリから読む。
-/// テンプレートに差し込むのは全生徒に共通する指示か、生徒ごとに決まる事実か、
+/// 本文を組み立てるのに要る、ファイルから読み終えた入力一式。
+/// 組み立てをファイル入出力から切り離して、
+/// 値とプレースホルダの対応をテストで固定できるようにするために持つ。
+type SkillInput =
+    {
+        /// 演じる生徒の呼び名。呼称表の引き当てにも使う。
+        Caller: string
+        /// 全生徒で共通のテンプレートのパス。差し込みの食い違いの報告に使う。
+        TemplatePath: string
+        /// 全生徒で共通のテンプレートの中身。
+        Template: string
+        /// character.mdのパス。ナレッジが1つも無かった時の報告に使う。
+        CharacterPath: string
+        /// character.mdのフロントマターと、生徒に固有の手書きの本文。
+        Character: OpenWebui.Frontmatter
+        /// 衣装別の参照ファイル。
+        References: Reference list
+        /// キャラ呼称表。
+        Appellation: Appellation.Document
+    }
+
+/// 読み終えた入力からrole-playスキルの本文の文字列を組み立てる。
+/// フロントマターは解釈せず、テンプレートを差し込んだ本文の前へそのまま置く。
+/// 没入感を左右する呼称は別ファイルへ分けず、本文へ直接埋め込む。
+/// 差し込むのは全生徒に共通する指示か、生徒ごとに決まる事実か、
 /// その生徒をどう位置付けるかを書いた手書きの部分だけなので、
 /// 本文の骨格は生徒が増えても1つのテンプレートのまま保たれる。
+let renderSkill (input: SkillInput) : string =
+    let appellation =
+        Wikiru.sourceHeader (Uri input.Appellation.Source)
+        + Appellation.toCallerMarkdown input.Caller input.Appellation.Entries
+
+    let values =
+        Map
+            [ callerPlaceholder, input.Caller
+              characterPlaceholder, input.Character.Body
+              playingPlaceholder, playingRules
+              appellationPlaceholder, appellation
+              costumesPlaceholder, toCostumeMarkdown input.References
+              knowledgeSkillsPlaceholder,
+              knowledgeSkillsMarkdown input.CharacterPath input.Character.Knowledge ]
+
+    input.Character.Raw
+    + "\n\n"
+    + Template.renderOrFail input.TemplatePath values input.Template
+
+/// 全生徒で共通のテンプレートと、併置された生成物から、role-playスキルの本文を書き出す。
+/// SKILL.mdとMODEL.mdのどちらを書き出すかは、渡されたテンプレートと出力先が決める。
+/// 生徒に固有の手書きの部分と衣装別の参照ファイルは、出力先と同じディレクトリから読む。
 /// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
 let writeSkill
     (caller: string)
@@ -187,28 +229,19 @@ let writeSkill
 
         let characterPath = Path.Combine(directory, SkillFile.character)
         let! character = File.ReadAllTextAsync characterPath
-        let frontmatter = OpenWebui.parseFrontmatter characterPath character
         let! template = File.ReadAllTextAsync templatePath
         let! references = readReferences directory
         let! json = File.ReadAllTextAsync jsonPath
-        let document = Appellation.ofJson json
-
-        let appellation =
-            Wikiru.sourceHeader (Uri document.Source)
-            + Appellation.toCallerMarkdown caller document.Entries
-
-        let values =
-            Map
-                [ callerPlaceholder, caller
-                  characterPlaceholder, frontmatter.Body
-                  playingPlaceholder, playingRules
-                  appellationPlaceholder, appellation
-                  costumesPlaceholder, toCostumeMarkdown references
-                  knowledgeSkillsPlaceholder,
-                  knowledgeSkillsMarkdown characterPath frontmatter.Knowledge ]
 
         let skill =
-            frontmatter.Raw + "\n\n" + Template.renderOrFail templatePath values template
+            renderSkill
+                { Caller = caller
+                  TemplatePath = templatePath
+                  Template = template
+                  CharacterPath = characterPath
+                  Character = OpenWebui.parseFrontmatter characterPath character
+                  References = references
+                  Appellation = Appellation.ofJson json }
 
         do! File.WriteAllTextAsync(outputPath, skill)
         do! Fmt.formatFile outputPath

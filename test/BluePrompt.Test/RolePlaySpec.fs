@@ -131,3 +131,73 @@ let ``生徒のナレッジが無いとKnowledgeSkillNotFoundになる`` () =
     match error :> exn with
     | KnowledgeSkillNotFound path -> Assert.Equal("character.md", path)
     | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+
+/// テンプレートの全てのプレースホルダを、
+/// 差し込まれた値だけが並ぶ形で書き出すテンプレート。
+/// 配線の取り違えがそのまま出力の順序の違いとして現れる。
+let private template =
+    "{{caller}}\n{{character}}\n{{playing}}\n{{appellation}}\n{{costumes}}\n{{knowledgeSkills}}\n"
+
+/// キャラ呼称表のページのURL。
+let private appellationSource =
+    "https://bluearchive.wikiru.jp/?" + Uri.EscapeDataString "キャラ呼称表"
+
+/// 呼称表を1件だけ持つ文書を組み立てる。
+let private document (caller: string) : BluePrompt.Appellation.Document =
+    { Source = appellationSource
+      Entries =
+        [ { School = "ミレニアム"
+            Club = Some "セミナー"
+            Caller = caller
+            Callee = "先生"
+            CalleeNote = None
+            Name = "先生"
+            Note = None } ] }
+
+[<Fact>]
+let ``renderSkillはフロントマターと差し込んだ本文を並べる`` () =
+    let character =
+        BluePrompt.OpenWebui.parseFrontmatter
+            "character.md"
+            ("---\nname: yuuka\ndescription: Role-play as Yuuka\n"
+             + "knowledge: character-yuuka, character-appellation\n---\n\n早瀬ユウカの位置付け。\n")
+
+    let skill =
+        renderSkill
+            { Caller = "ユウカ"
+              TemplatePath = "SKILL.template.md"
+              Template = template
+              CharacterPath = "character.md"
+              Character = character
+              References = [ parseReference "normal.md" (reference "ユウカ") ]
+              Appellation = document "ユウカ" }
+
+    Assert.Equal(
+        "---\nname: yuuka\ndescription: Role-play as Yuuka\n"
+        + "knowledge: character-yuuka, character-appellation\n---\n"
+        + "\nユウカ\n早瀬ユウカの位置付け。\n"
+        + playingRules
+        + $"\n出典: [キャラ呼称表 - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{appellationSource})\n"
+        + "\n| 相手 | 呼称 |\n| --- | --- |\n| 先生 | 先生 |\n\n"
+        + "- [normal.md](./normal.md): ユウカ\n"
+        + "- character-yuuka\n",
+        skill
+    )
+
+[<Fact>]
+let ``renderSkillはテンプレートのプレースホルダが欠けると止まる`` () =
+    // 差し込むはずの内容が黙って落ちないようにする。
+    Assert.Throws<BluePrompt.Template.PlaceholderMismatch>(fun () ->
+        renderSkill
+            { Caller = "ユウカ"
+              TemplatePath = "SKILL.template.md"
+              Template = "{{caller}}\n"
+              CharacterPath = "character.md"
+              Character =
+                BluePrompt.OpenWebui.parseFrontmatter
+                    "character.md"
+                    "---\nname: yuuka\ndescription: d\nknowledge: character-yuuka\n---\n\n本文\n"
+              References = [ parseReference "normal.md" (reference "ユウカ") ]
+              Appellation = document "ユウカ" }
+        |> ignore)
+    |> ignore
