@@ -561,10 +561,12 @@ let ``応答に権限設定が無いと空の権限で上書きせずSyncError�
     // 実物のModelModelはこのフィールドを必ず埋めて返すため、
     // 欠けているのは応答の形が想定と違うということで、
     // このリポジトリが管理しない権限の設定を推測で書き換えてはいけない。
-    server.OverrideModelGet(
-        200,
-        """{"id":"yuuka","name":"yuuka","meta":{"description":"yuukaの説明"},"params":{"system":"古いプロンプト"},"is_active":true}"""
-    )
+    let body =
+        """{"id":"yuuka","name":"yuuka",
+"meta":{"description":"yuukaの説明"},
+"params":{"system":"古いプロンプト"},"is_active":true}"""
+
+    server.OverrideModelGet(200, body)
 
     let options =
         makeOptions server (makeModelsDirectory [ makeForm "yuuka" "改良したプロンプト" ])
@@ -751,10 +753,11 @@ let ``紐付けのあるModelは再実行では書き込まれない`` () =
     // 名前で引き当てて埋めたidが、
     // 応答を読み戻した値と一致しないと毎回更新が飛び続ける。
     // 紐付けの直列化がずれた時にここで気付けるようにする。
+    let models =
+        makeModelsDirectory [ makeFormWithKnowledge "yuuka" [ "character-appellation" ] ]
+
     let options =
-        { makeOptions
-              server
-              (makeModelsDirectory [ makeFormWithKnowledge "yuuka" [ "character-appellation" ] ]) with
+        { makeOptions server models with
             KnowledgeDirectory =
                 Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
 
