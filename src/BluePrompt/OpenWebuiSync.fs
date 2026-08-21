@@ -309,6 +309,15 @@ let private uploadFile
 /// Knowledgeコレクション1つを同期して、そのidを返す。
 /// 登録済みのファイルとは名前で対応付け、
 /// 中身が変わっていないファイルには触らない。
+///
+/// 説明の更新へ送るボディはKnowledgeFormのnameとdescriptionだけで、
+/// Modelの更新と違ってaccess_grantsを載せる必要はない。
+/// KnowledgeFormのaccess_grantsは`Optional[list[dict]] = None`で、
+/// backend/open_webui/models/knowledge.pyのupdate_knowledge_by_idが、
+/// `if form_data.access_grants is not None`の時だけ書き込むため、
+/// 省けば登録済みの権限の設定はそのまま残る。
+/// 更新のルータもフォームを組み直さないので、
+/// Modelの更新で踏んだ検証の失敗も起きない。
 let private syncKnowledge
     (client: HttpClient)
     (url: string)
@@ -459,6 +468,12 @@ let private resolveKnowledge
 /// Modelへ紐付けたKnowledgeが自動で注入される時、
 /// このテンプレートがシステムプロンプトの後ろへ連結されるため、
 /// 既定の引用指示のままではロールプレイの人格が壊れる。
+///
+/// 送るのはRAG_TEMPLATEのキー1つだけだが、
+/// これはインスタンス全体のRAG設定を扱う管理者APIなので部分更新かどうかを確かめてある。
+/// backend/open_webui/routers/retrieval.pyのupdate_rag_configは、
+/// 全てのフィールドを`form_data.X if form_data.X is not None else config.X`で当てていて、
+/// 送らなかった埋め込みモデルやWeb検索の設定は現在の値のまま残る。
 let private syncRagTemplate (client: HttpClient) (url: string) (template: string) : Task<unit> =
     task {
         let! config = getJson client $"%s{url}/api/v1/retrieval/config"
