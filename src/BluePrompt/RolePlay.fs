@@ -18,7 +18,7 @@ open System.Threading.Tasks
 
 /// 通常衣装の参照ファイルの名前。
 /// 衣装の一覧では基本になる姿から並べたいので、これを先頭へ置く。
-let baseFileName: string = "normal.md"
+let private baseFileName: string = "normal.md"
 
 /// スキルのディレクトリにあるMarkdownのうち、衣装別の参照ファイルではないもの。
 let private nonReferenceFileNames =
@@ -109,7 +109,7 @@ let readReferences (directory: string) : Task<Reference list> =
     }
 
 /// テンプレートで演じ方の共通の指示を差し込む位置を示すプレースホルダの名前。
-let playingPlaceholder: string = "playing"
+let private playingPlaceholder: string = "playing"
 
 /// 全生徒に共通する演じ方の指示。
 /// テンプレートへ手で書くと、生徒が増えるたびに同じ文が写されて少しずつずれるため、
@@ -127,19 +127,19 @@ let playingRules: string =
           "  目立つ言い回しだけを繰り返さず、場面ごとの語彙と言葉遣いの幅をそのまま真似てください" ]
 
 /// テンプレートで呼称表を差し込む位置を示すプレースホルダの名前。
-let appellationPlaceholder: string = "appellation"
+let private appellationPlaceholder: string = "appellation"
 
 /// テンプレートで衣装ごとの参照ファイルの一覧を差し込む位置を示すプレースホルダの名前。
-let costumesPlaceholder: string = "costumes"
+let private costumesPlaceholder: string = "costumes"
 
 /// テンプレートで演じる生徒の呼び名を差し込む位置を示すプレースホルダの名前。
-let callerPlaceholder: string = "caller"
+let private callerPlaceholder: string = "caller"
 
 /// テンプレートで生徒に固有の手書きの部分を差し込む位置を示すプレースホルダの名前。
-let characterPlaceholder: string = "character"
+let private characterPlaceholder: string = "character"
 
 /// テンプレートで生徒のナレッジのスキル名の並びを差し込む位置を示すプレースホルダの名前。
-let knowledgeSkillsPlaceholder: string = "knowledgeSkills"
+let private knowledgeSkillsPlaceholder: string = "knowledgeSkills"
 
 /// 全てのrole-playスキルが参照する、生徒個別ではないナレッジのスキル。
 /// 本文では役割が違うので別の文で扱っており、生徒のナレッジの一覧からは除く。
