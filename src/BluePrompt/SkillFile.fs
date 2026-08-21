@@ -20,3 +20,9 @@ let model: string = "MODEL.md"
 /// 生徒に固有の手書きの部分を書くファイル。
 /// 本文を生成するための入力で、フロントマターと本文を持つ。
 let character: string = "character.md"
+
+/// スキル本体の骨格になる、全生徒で共通のテンプレート。
+let skillTemplate: string = "SKILL.template.md"
+
+/// Open WebUIのModel向けの本文の骨格になる、全生徒で共通のテンプレート。
+let modelTemplate: string = "MODEL.template.md"

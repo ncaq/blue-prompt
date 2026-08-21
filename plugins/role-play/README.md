@@ -90,13 +90,15 @@ Open WebUIではシステムプロンプトへインライン化されるため�
 全生徒に効く指示を変えたい時は2つのテンプレートを、
 その生徒だけの指示を変えたい時はcharacter.mdを編集して、
 以下のコマンドで生成し直してください。
+2つの届け先はどちらもファイル名が決まっているため、
+渡すのはテンプレートのディレクトリと出力先のディレクトリで、
+1度の起動で両方が書き出されます。
 SKILL.mdとMODEL.mdを直接編集してはいけません。
 wikiruへはアクセスしません。
 呼称表そのものを更新したい時は先に`wikiru-appellation`で再生成してください。
 
 ```console
-dotnet run --project src/BluePrompt -- roleplay-skill 'ユウカ' plugins/role-play/SKILL.template.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json plugins/role-play/skills/yuuka/SKILL.md
-dotnet run --project src/BluePrompt -- roleplay-skill 'ユウカ' plugins/role-play/MODEL.template.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json plugins/role-play/skills/yuuka/MODEL.md
+dotnet run --project src/BluePrompt -- roleplay-skill 'ユウカ' plugins/role-play plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json plugins/role-play/skills/yuuka
 ```
 
 `kotori`と`seia`はまだこの構成に移行しておらず、

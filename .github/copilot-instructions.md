@@ -207,9 +207,13 @@ wikiruへはアクセスせず、リポジトリへ併置した生成物だけ�
 全生徒に効く指示は2つのテンプレートを、
 その生徒だけの指示はcharacter.mdを編集して生成し直します。
 
+2つの届け先はどちらもファイル名が決まっているため、
+渡すのはテンプレートのディレクトリと出力先のディレクトリです。
+1度の起動でSKILL.mdとMODEL.mdの両方が書き出され、
+`nix fmt`も1回にまとまります。
+
 ```console
-dotnet run --project src/BluePrompt -- roleplay-skill '<キャラクター名>' plugins/role-play/SKILL.template.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json <SKILL.mdの出力パス>
-dotnet run --project src/BluePrompt -- roleplay-skill '<キャラクター名>' plugins/role-play/MODEL.template.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json <MODEL.mdの出力パス>
+dotnet run --project src/BluePrompt -- roleplay-skill '<キャラクター名>' plugins/role-play plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json <スキルのディレクトリ>
 ```
 
 character.mdと2つのテンプレートとMODEL.mdは配布物から除かれます。

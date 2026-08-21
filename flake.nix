@@ -409,11 +409,9 @@
                   { skillName, caller }:
                   let
                     skillDir = ./plugins + "/role-play/skills/${skillName}";
-                    appellation = ./plugins + "/jp-wikiru-bluearchive/skills/character-appellation/appellation.json";
-                    generate = template: outputName: ''
-                      ${lib.getExe blue-prompt} roleplay-skill ${lib.escapeShellArg caller}                         ${
-                        ./plugins + "/role-play/${template}"
-                      }                         ${appellation}                         work/${skillName}/${outputName}
+                    templateDir = ./plugins + "/role-play";
+                    appellationDir = ./plugins + "/jp-wikiru-bluearchive/skills/character-appellation";
+                    compare = outputName: ''
                       if ! diff -u ${skillDir}/${outputName} work/${skillName}/${outputName}; then
                         echo "${skillName}の${outputName}が生成し直されていません" >&2
                         exit 1
@@ -423,8 +421,13 @@
                   ''
                     cp -r ${skillDir} work/${skillName}
                     chmod -R u+w work/${skillName}
-                    ${generate "SKILL.template.md" "SKILL.md"}
-                    ${generate "MODEL.template.md" "MODEL.md"}
+                    ${lib.getExe blue-prompt} roleplay-skill \
+                      ${lib.escapeShellArg caller} \
+                      ${templateDir} \
+                      ${appellationDir}/appellation.json \
+                      work/${skillName}
+                    ${compare "SKILL.md"}
+                    ${compare "MODEL.md"}
                   ''
                 ) templatedSkills}
                 touch $out

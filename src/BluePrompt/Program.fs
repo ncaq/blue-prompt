@@ -16,14 +16,14 @@ let private usage =
   BluePrompt wikiru-school <ページ名> <出力ファイル>
     wikiruの学校別キャラクター一覧を構造化し、
     学校ごとの一覧のreference.mdを書き出す。
-  BluePrompt roleplay-skill <キャラクター名> <共通テンプレートのパス>
-      <appellation.jsonのパス> <SKILL.mdまたはMODEL.mdの出力パス>
+  BluePrompt roleplay-skill <キャラクター名> <共通テンプレートのディレクトリ>
+      <appellation.jsonのパス> <出力ディレクトリ>
     全生徒で共通のテンプレートのプレースホルダへ、
-    出力先と同じディレクトリのcharacter.mdの手書きの部分と衣装別の参照ファイルの一覧、
+    出力先のcharacter.mdの手書きの部分と衣装別の参照ファイルの一覧、
     生成済みのappellation.jsonから抜き出した指定キャラクターの呼称表を流し込み、
     role-playスキルの本文全体を生成する。wikiruへはアクセスしない。
-    Claude Code向けのSKILL.mdとOpen WebUIのModel向けのMODEL.mdの2つの届け先があり、
-    どちらを書き出すかは渡すテンプレートと出力先が決める。
+    Claude Code向けのSKILL.mdとOpen WebUIのModel向けのMODEL.mdを、
+    それぞれSKILL.template.mdとMODEL.template.mdから1度の起動でまとめて書き出す。
   BluePrompt open-webui-model <スキルディレクトリ> <出力ファイル>
     スキルのMODEL.md(無ければSKILL.md)とリンクされた参照ファイルをインライン化して、
     システムプロンプトへ焼き込んだOpen WebUIのModelFormのJSONを書き出す。
@@ -61,8 +61,11 @@ let main argv =
     | [| "wikiru-school"; pageName; outputPath |] ->
         (Wikiru.writeSchool pageName outputPath).GetAwaiter().GetResult()
         0
-    | [| "roleplay-skill"; caller; templatePath; jsonPath; outputPath |] ->
-        (RolePlay.writeSkill caller templatePath jsonPath outputPath).GetAwaiter().GetResult()
+    | [| "roleplay-skill"; caller; templateDirectory; jsonPath; outputDirectory |] ->
+        (RolePlay.writeSkill caller templateDirectory jsonPath outputDirectory)
+            .GetAwaiter()
+            .GetResult()
+
         0
     | [| "open-webui-model"; skillDirectory; outputPath |] ->
         (OpenWebui.writeModel skillDirectory outputPath).GetAwaiter().GetResult()

@@ -210,39 +210,52 @@ let renderSkill (input: SkillInput) : string =
     + "\n\n"
     + Template.renderOrFail input.TemplatePath values input.Template
 
+/// 届け先の、骨格になるテンプレートと書き出す本文のファイル名の組。
+/// どちらの届け先も同じ入力から組み立てるので、生成は常に両方まとめて行う。
+let private destinations =
+    [ SkillFile.skillTemplate, SkillFile.skill
+      SkillFile.modelTemplate, SkillFile.model ]
+
 /// 全生徒で共通のテンプレートと、併置された生成物から、role-playスキルの本文を書き出す。
-/// SKILL.mdとMODEL.mdのどちらを書き出すかは、渡されたテンプレートと出力先が決める。
-/// 生徒に固有の手書きの部分と衣装別の参照ファイルは、出力先と同じディレクトリから読む。
+/// 届け先はClaude Code向けのSKILL.mdとOpen WebUIのModel向けのMODEL.mdの2つで、
+/// テンプレートも出力もファイル名が決まっているため、受け取るのはそれぞれのディレクトリになる。
+/// 生徒に固有の手書きの部分と衣装別の参照ファイルは、出力先のディレクトリから読む。
 /// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
+/// nixの起動とtreefmtの評価が所要時間の支配項なので、2つの届け先をまとめて1回で整形する。
 let writeSkill
     (caller: string)
-    (templatePath: string)
+    (templateDirectory: string)
     (jsonPath: string)
-    (outputPath: string)
+    (outputDirectory: string)
     : Task<unit> =
     task {
-        let directory =
-            match Path.GetDirectoryName outputPath with
-            | null
-            | "" -> "."
-            | directory -> directory
-
-        let characterPath = Path.Combine(directory, SkillFile.character)
+        let characterPath = Path.Combine(outputDirectory, SkillFile.character)
         let! character = File.ReadAllTextAsync characterPath
-        let! template = File.ReadAllTextAsync templatePath
-        let! references = readReferences directory
+        let! references = readReferences outputDirectory
         let! json = File.ReadAllTextAsync jsonPath
+        let frontmatter = OpenWebui.parseFrontmatter characterPath character
+        let document = Appellation.ofJson json
 
-        let skill =
-            renderSkill
-                { Caller = caller
-                  TemplatePath = templatePath
-                  Template = template
-                  CharacterPath = characterPath
-                  Character = OpenWebui.parseFrontmatter characterPath character
-                  References = references
-                  Appellation = Appellation.ofJson json }
+        let paths =
+            destinations
+            |> List.map (fun (templateName, outputName) ->
+                Path.Combine(templateDirectory, templateName),
+                Path.Combine(outputDirectory, outputName))
 
-        do! File.WriteAllTextAsync(outputPath, skill)
-        do! Fmt.formatFile outputPath
+        for templatePath, outputPath in paths do
+            let! template = File.ReadAllTextAsync templatePath
+
+            let skill =
+                renderSkill
+                    { Caller = caller
+                      TemplatePath = templatePath
+                      Template = template
+                      CharacterPath = characterPath
+                      Character = frontmatter
+                      References = references
+                      Appellation = document }
+
+            do! File.WriteAllTextAsync(outputPath, skill)
+
+        do! Fmt.formatFiles (List.map snd paths)
     }
