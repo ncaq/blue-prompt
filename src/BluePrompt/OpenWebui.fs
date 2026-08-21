@@ -6,6 +6,7 @@
 /// 生成したJSONはPOST /api/v1/models/createへそのまま渡して登録できる。
 module BluePrompt.OpenWebui
 
+open System
 open System.IO
 open System.Text.Json
 open System.Text.Json.Nodes
@@ -157,7 +158,7 @@ let localLinkTargets (body: string) : string list =
     |> Seq.map (fun m -> m.Groups[1].Value)
     |> Seq.filter (fun target -> not (target.StartsWith '#') && not (schemePattern.IsMatch target))
     |> Seq.map (fun target ->
-        if target.StartsWith("./", System.StringComparison.Ordinal) then
+        if target.StartsWith("./", StringComparison.Ordinal) then
             target.Substring 2
         else
             target)
@@ -172,13 +173,26 @@ let resolveReferences
     (skillPath: string)
     (body: string)
     : (string * string) list =
+    // 末尾の区切りの有無で前方一致の判定がぶれないように、区切りを1つ付けた形で持つ。
+    let root =
+        let fullPath = Path.GetFullPath skillDirectory
+
+        if fullPath.EndsWith(Path.DirectorySeparatorChar) then
+            fullPath
+        else
+            fullPath + string<char> Path.DirectorySeparatorChar
+
     localLinkTargets body
     |> List.map (fun fileName ->
-        // ディレクトリを遡る参照はスキルディレクトリの外に出るため受け付けない。
-        if fileName.Split '/' |> Array.contains ".." then
-            raise (SkillFormatError(skillPath, $"%s{fileName}はスキルディレクトリの外を参照しています"))
+        // 絶対パスやディレクトリを遡る参照はスキルディレクトリの外に出るため受け付けない。
+        // 書かれた文字列の形ではなく、
+        // 正規化した結果がスキルディレクトリの下にあるかどうかで判断する。
+        // Path.Combineは絶対パスを渡されると連結せずそれ自体を返すため、
+        // 文字列に`..`があるかどうかを見るだけでは絶対パスを弾けない。
+        let filePath = Path.GetFullPath(Path.Combine(skillDirectory, fileName))
 
-        let filePath = Path.Combine(skillDirectory, fileName)
+        if not (filePath.StartsWith(root, StringComparison.Ordinal)) then
+            raise (SkillFormatError(skillPath, $"%s{fileName}はスキルディレクトリの外を参照しています"))
 
         if not (File.Exists filePath) then
             raise (SkillFormatError(skillPath, $"リンクされた%s{fileName}が存在しません"))
