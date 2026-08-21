@@ -242,12 +242,14 @@ let private totalOf (root: JsonNode) : int option =
 /// 1ページだけを見ると登録済みのファイルを未登録と取り違えて、
 /// 同じ内容を登録し直そうとしてDuplicate contentで弾かれる。
 let private getAllItems (client: HttpClient) (url: string) : Task<JsonNode list> =
-    let rec fromPage (page: int) (collected: JsonNode list) : Task<JsonNode list> =
+    // ページごとの一覧をそのまま積んで、最後に一度だけ繋ぐ。
+    // 累積したリストへページを継ぎ足すとページ数の二乗のコピーになるため。
+    let rec fromPage (page: int) (pages: JsonNode list list) : Task<JsonNode list> =
         task {
             let pageUrl = $"%s{url}?page=%d{page}"
             let! response = getJson client pageUrl
             let items = listItems pageUrl response
-            let accumulated = collected @ items
+            let accumulated = items :: pages
 
             // 総件数を返さない形の応答では1ページで全件とみなす。
             // 進まないページを延々と辿らないように、
@@ -256,10 +258,10 @@ let private getAllItems (client: HttpClient) (url: string) : Task<JsonNode list>
                 List.isEmpty items
                 || (match totalOf response with
                     | None -> true
-                    | Some total -> total <= List.length accumulated)
+                    | Some total -> total <= List.sumBy List.length accumulated)
 
             if finished then
-                return accumulated
+                return List.concat (List.rev accumulated)
             else
                 return! fromPage (page + 1) accumulated
         }
