@@ -204,6 +204,40 @@ let ``フロントマターが無いとSkillFormatErrorになる`` () =
     |> ignore
 
 [<Fact>]
+let ``Rawはフロントマターを解釈せずそのまま返す`` () =
+    // role-playスキルの本文はこれを生成物へ写すため、
+    // このリポジトリが読まない項目を書き足しても落ちてはいけない。
+    let content =
+        "---\nname: yuuka\ndescription: Role-play as Yuuka\nunknown: 値\n---\n\n本文\n"
+
+    let frontmatter = parseFrontmatter "character.md" content
+
+    Assert.Equal(
+        "---\nname: yuuka\ndescription: Role-play as Yuuka\nunknown: 値\n---",
+        frontmatter.Raw
+    )
+
+    Assert.Equal("本文", frontmatter.Body)
+
+[<Fact>]
+let ``閉じの区切り行が無いとSkillFormatErrorになる`` () =
+    // 開始だけを見て通すと、フロントマターの全体が本文として流れ込む。
+    Assert.Throws<SkillFormatError>(fun () ->
+        parseFrontmatter "character.md" "---\nname: yuuka\n\n本文\n" |> ignore)
+    |> ignore
+
+[<Fact>]
+let ``CRLFのファイルでもフロントマターと本文が分かれる`` () =
+    let content =
+        "---\r\nname: yuuka\r\ndescription: Role-play as Yuuka\r\n---\r\n\r\n本文\r\n"
+
+    let frontmatter = parseFrontmatter "character.md" content
+
+    Assert.Equal("---\nname: yuuka\ndescription: Role-play as Yuuka\n---", frontmatter.Raw)
+    Assert.Equal("本文", frontmatter.Body)
+    Assert.Equal("yuuka", frontmatter.Name)
+
+[<Fact>]
 let ``ModelFormはsnake_caseのキーでJSONへ直列化される`` () =
     let directory = makeSkillDirectory [ "SKILL.md", skillMd ]
     let json = toJson (buildModelForm directory)

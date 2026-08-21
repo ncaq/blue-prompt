@@ -140,36 +140,21 @@ let private sharedKnowledgeNames = Set.ofList [ "character-appellation" ]
 /// フロントマターに生徒のナレッジのスキルが1つも無かった時のcharacter.mdのパス。
 exception KnowledgeSkillNotFound of path: string
 
-/// 生徒に固有のファイルのフロントマターから、
+/// character.mdのフロントマターが挙げるナレッジから、
 /// この生徒のナレッジのスキル名の一覧のMarkdownを組み立てる。
 /// Open WebUIのKnowledgeとの紐付けに要るフロントマターと、
 /// 事実の引き方を説明する本文へ同じ一覧を二度書くと、
 /// 衣装が増えた時に片方だけ直して食い違う。
 /// 1つも無ければ、参照先を挙げない壊れた文を書き出さずに失敗する。
-let knowledgeSkillsMarkdown (path: string) (character: string) : string =
+let knowledgeSkillsMarkdown (path: string) (knowledge: string list) : string =
     let names =
-        (OpenWebui.parseFrontmatter path character).Knowledge
+        knowledge
         |> List.filter (fun name -> not (Set.contains name sharedKnowledgeNames))
 
     if List.isEmpty names then
         raise (KnowledgeSkillNotFound path)
 
     names |> List.map (fun name -> $"- %s{name}") |> String.concat "\n"
-
-/// 生徒に固有のファイルを、フロントマターの終わりまでと、それより後ろの本文へ分ける。
-/// フロントマターは解釈せず生成物へそのまま写す。
-/// 組み直すと、このリポジトリが読まない項目を書き足した時に黙って落ちるため。
-let splitFrontmatter (path: string) (character: string) : string * string =
-    let lines = character.Replace("\r\n", "\n").Split '\n' |> Array.toList
-
-    match lines with
-    | first :: rest when first = "---" ->
-        match List.tryFindIndex (fun line -> line = "---") rest with
-        | Some closeIndex ->
-            String.concat "\n" (first :: List.take (closeIndex + 1) rest),
-            rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim()
-        | None -> raise (OpenWebui.SkillFormatError(path, "フロントマターの閉じ---がありません"))
-    | _ -> raise (OpenWebui.SkillFormatError(path, "フロントマターの開始---がありません"))
 
 /// 全生徒で共通のテンプレートと、併置された生成物から、role-playスキルの本文全体を生成する。
 /// SKILL.mdとMODEL.mdのどちらを書き出すかは、渡されたテンプレートと出力先が決める。
@@ -194,7 +179,7 @@ let writeSkill
 
         let characterPath = Path.Combine(directory, SkillFile.character)
         let! character = File.ReadAllTextAsync characterPath
-        let frontmatter, body = splitFrontmatter characterPath character
+        let frontmatter = OpenWebui.parseFrontmatter characterPath character
         let! template = File.ReadAllTextAsync templatePath
         let! references = readReferences directory
         let! json = File.ReadAllTextAsync jsonPath
@@ -207,14 +192,15 @@ let writeSkill
         let values =
             Map
                 [ callerPlaceholder, caller
-                  characterPlaceholder, body
+                  characterPlaceholder, frontmatter.Body
                   playingPlaceholder, playingRules
                   appellationPlaceholder, appellation
                   costumesPlaceholder, toCostumeMarkdown references
-                  knowledgeSkillsPlaceholder, knowledgeSkillsMarkdown characterPath character ]
+                  knowledgeSkillsPlaceholder,
+                  knowledgeSkillsMarkdown characterPath frontmatter.Knowledge ]
 
         let skill =
-            frontmatter + "\n\n" + Template.renderOrFail templatePath values template
+            frontmatter.Raw + "\n\n" + Template.renderOrFail templatePath values template
 
         do! File.WriteAllTextAsync(outputPath, skill)
         do! Fmt.formatFile outputPath

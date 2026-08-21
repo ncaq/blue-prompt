@@ -93,19 +93,14 @@ let ``参照ファイルの無いディレクトリはReferenceNotFoundになる
         (readReferences directory).GetAwaiter().GetResult() |> ignore)
     |> ignore
 
-/// 生徒に固有のファイルを、フロントマターだけの形で組み立てる。
-let private character (knowledge: string) : string =
-    "---\nname: yuuka\ndescription: Role-play as Yuuka\n"
-    + $"knowledge: %s{knowledge}\n---\n\n本文\n"
-
 [<Fact>]
 let ``knowledgeSkillsMarkdownは生徒のナレッジのスキル名を並べる`` () =
     // 全てのスキルが参照するcharacter-appellationは、本文では別の文が扱うので除く。
-    let names = "character-yuuka, character-yuuka-track, character-appellation"
+    let names = [ "character-yuuka"; "character-yuuka-track"; "character-appellation" ]
 
     Assert.Equal(
         "- character-yuuka\n- character-yuuka-track",
-        knowledgeSkillsMarkdown "character.md" (character names)
+        knowledgeSkillsMarkdown "character.md" names
     )
 
 [<Fact>]
@@ -113,26 +108,8 @@ let ``生徒のナレッジが無いとKnowledgeSkillNotFoundになる`` () =
     // 参照先を挙げない壊れた文を書き出さない。
     let error =
         Assert.Throws<KnowledgeSkillNotFound>(fun () ->
-            knowledgeSkillsMarkdown "character.md" (character "character-appellation")
-            |> ignore)
+            knowledgeSkillsMarkdown "character.md" [ "character-appellation" ] |> ignore)
 
     match error :> exn with
     | KnowledgeSkillNotFound path -> Assert.Equal("character.md", path)
     | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
-
-[<Fact>]
-let ``splitFrontmatterはフロントマターを解釈せずそのまま返す`` () =
-    // このリポジトリが読まない項目を書き足しても生成物から落ちないようにする。
-    let source =
-        "---\nname: yuuka\ndescription: Role-play as Yuuka\nunknown: 値\n---\n\n本文\n"
-
-    Assert.Equal(
-        ("---\nname: yuuka\ndescription: Role-play as Yuuka\nunknown: 値\n---", "本文"),
-        splitFrontmatter "character.md" source
-    )
-
-[<Fact>]
-let ``フロントマターの無い固有のファイルはSkillFormatErrorになる`` () =
-    Assert.Throws<BluePrompt.OpenWebui.SkillFormatError>(fun () ->
-        splitFrontmatter "character.md" "本文だけ\n" |> ignore)
-    |> ignore

@@ -83,10 +83,17 @@ type ModelForm =
 /// Open WebUIのModelは会話の入口を選ぶだけで他のModelを読み込めないため、
 /// 参照させたいナレッジをModelへ紐付ける必要がある。
 type Frontmatter =
-    { Name: string
-      Description: string
-      Knowledge: string list
-      Body: string }
+    {
+        Name: string
+        Description: string
+        Knowledge: string list
+        Body: string
+        /// 区切り行を含むフロントマターの生テキスト。
+        /// 解釈した要素から組み直すと、
+        /// このリポジトリが読まない項目を書き足した時に黙って落ちるため、
+        /// 生成物へそのまま写したい呼び出し元のために持つ。
+        Raw: string
+    }
 
 /// フロントマターの区切り行。
 let private delimiter = "---"
@@ -139,7 +146,8 @@ let parseFrontmatter (path: string) (content: string) : Frontmatter =
             { Name = field "name"
               Description = field "description"
               Knowledge = knowledge
-              Body = rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim() }
+              Body = rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim()
+              Raw = String.concat "\n" (first :: List.take (closeIndex + 1) rest) }
     | _ -> fail "フロントマターの開始---がありません"
 
 /// Markdownのインラインリンクの参照先。
