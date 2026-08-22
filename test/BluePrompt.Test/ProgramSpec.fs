@@ -58,8 +58,8 @@ let ``コマンドライン引数から接続情報を組み立てられる`` ()
         )
 
     Assert.Equal("/tmp/models", options.ModelsDirectory)
-    // 末尾スラッシュは落とされる。
-    Assert.Equal("http://127.0.0.1:8080", options.Url)
+    // 末尾スラッシュの正規化はOpenWebuiSync側の責務なので、ここでは素通しする。
+    Assert.Equal("http://127.0.0.1:8080/", options.Url)
     Assert.Equal(Some "qwen3:32b", options.BaseModelId)
     Assert.Equal(Some "/run/credentials/api-key", options.ApiKeyFile)
     Assert.Equal(Some "/tmp/knowledge", options.KnowledgeDirectory)

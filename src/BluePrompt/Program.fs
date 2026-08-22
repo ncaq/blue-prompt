@@ -200,8 +200,7 @@ let private runRolePlay (args: ParseResults<RolePlayCommand.Args>) : int =
 /// 同期先への接続情報を引数から組み立てる。
 let syncOptions (args: ParseResults<Sync.Args>) : OpenWebuiSync.Options =
     { ModelsDirectory = args.GetResult Sync.Model
-      // パスの連結を単純にするため末尾スラッシュは落とす。
-      Url = (args.GetResult Sync.Base_Url).TrimEnd '/'
+      Url = args.GetResult Sync.Base_Url
       BaseModelId = args.TryGetResult Sync.Base_Model_Id
       ApiKeyFile = args.TryGetResult Sync.Api_Key_File
       KnowledgeDirectory = args.TryGetResult Sync.Knowledge

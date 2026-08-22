@@ -580,6 +580,13 @@ let private syncModel
 /// ディレクトリ内の全ModelFormのJSONを同期する。
 let sync (options: Options) : Task<unit> =
     task {
+        // パスは文字列の連結で組み立てるため、末尾スラッシュが残ると`//health`になる。
+        // Optionsを組み立てる経路はCLIだけとは限らないので、
+        // この不変条件はOptionsを持つ側の入口で保つ。
+        let options =
+            { options with
+                Url = options.Url.TrimEnd '/' }
+
         use client = new HttpClient()
 
         // 読み取りは起動待ちより前に済ませて、
