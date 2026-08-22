@@ -25,7 +25,7 @@ type Options =
       KnowledgeDirectory: string option
       RagTemplateFile: string option }
 
-/// 引数の解釈や同期先との通信に失敗した時の理由。
+/// 同期先との通信や生成物の読み込みに失敗した時の理由。
 exception SyncError of message: string
 
 /// socket activationで初回アクセス時に起動する構成でも同期できるように、
