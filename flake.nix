@@ -345,9 +345,9 @@
               # プラグインを跨いだスキル名の重複で出力が衝突しないように、
               # 出力ファイル名はプラグイン名で名前空間に分ける。
               ''
-                ${lib.getExe blue-prompt} open-webui-model \
-                  ${./plugins + "/${pluginName}/skills/${skillName}"} \
-                  $out/${pluginName}-${skillName}.json
+                ${lib.getExe blue-prompt} open-webui model \
+                  --skill ${./plugins + "/${pluginName}/skills/${skillName}"} \
+                  --output $out/${pluginName}-${skillName}.json
               ''
             ) (openWebuiSkillsOf "model")}
           '';
@@ -361,9 +361,9 @@
             ${lib.concatMapStrings (
               { pluginName, skillName }:
               ''
-                ${lib.getExe blue-prompt} open-webui-knowledge \
-                  ${./plugins + "/${pluginName}/skills/${skillName}"} \
-                  $out/${pluginName}-${skillName}
+                ${lib.getExe blue-prompt} open-webui knowledge \
+                  --skill ${./plugins + "/${pluginName}/skills/${skillName}"} \
+                  --output $out/${pluginName}-${skillName}
               ''
             ) (openWebuiSkillsOf "knowledge")}
           '';
@@ -425,11 +425,11 @@
                   ''
                     cp -r ${skillDir} work/${skillName}
                     chmod -R u+w work/${skillName}
-                    ${lib.getExe blue-prompt} roleplay-skill \
-                      ${lib.escapeShellArg caller} \
-                      ${templateDir} \
-                      ${appellationDir}/appellation.json \
-                      work/${skillName}
+                    ${lib.getExe blue-prompt} roleplay skill \
+                      --character ${lib.escapeShellArg caller} \
+                      --template ${templateDir} \
+                      --appellation ${appellationDir}/appellation.json \
+                      --output work/${skillName}
                     ${compare "SKILL.md"}
                     ${compare "MODEL.md"}
                   ''
@@ -569,7 +569,7 @@
               # このファイル経由の参照で全てのビルドまで検証される。
               pkgs.runCommand "nixos-module" { } ''
                 execStartFile=${pkgs.writeText "blue-prompt-open-webui-sync-exec-start" ExecStart}
-                grep -- open-webui-sync "$execStartFile"
+                grep -- 'open-webui" "sync' "$execStartFile"
                 # ナレッジとRAGテンプレートも既定で同期の対象になっている。
                 grep -- --knowledge "$execStartFile"
                 grep -- --rag-template-file "$execStartFile"

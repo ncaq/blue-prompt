@@ -28,9 +28,9 @@
 手で編集せず、リポジトリルートで以下のコマンドで再生成してください。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru-roleplay-reference 'ユウカ' plugins/role-play/skills/yuuka/normal.md
-dotnet run --project src/BluePrompt -- wikiru-roleplay-reference 'ユウカ（体操服）' plugins/role-play/skills/yuuka/track.md
-dotnet run --project src/BluePrompt -- wikiru-roleplay-reference 'ユウカ（パジャマ）' plugins/role-play/skills/yuuka/pajama.md
+dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page 'ユウカ' --output plugins/role-play/skills/yuuka/normal.md
+dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page 'ユウカ（体操服）' --output plugins/role-play/skills/yuuka/track.md
+dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page 'ユウカ（パジャマ）' --output plugins/role-play/skills/yuuka/pajama.md
 ```
 
 ## 本文の生成
@@ -95,10 +95,13 @@ Open WebUIではシステムプロンプトへインライン化されるため�
 1度の起動で両方が書き出されます。
 SKILL.mdとMODEL.mdを直接編集してはいけません。
 wikiruへはアクセスしません。
-呼称表そのものを更新したい時は先に`wikiru-appellation`で再生成してください。
+呼称表そのものを更新したい時は先に`wikiru appellation`で再生成してください。
 
 ```console
-dotnet run --project src/BluePrompt -- roleplay-skill 'ユウカ' plugins/role-play plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json plugins/role-play/skills/yuuka
+dotnet run --project src/BluePrompt -- roleplay skill --character 'ユウカ' \
+  --template plugins/role-play \
+  --appellation plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json \
+  --output plugins/role-play/skills/yuuka
 ```
 
 `kotori`と`seia`はまだこの構成に移行しておらず、

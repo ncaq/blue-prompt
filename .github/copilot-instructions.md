@@ -71,17 +71,51 @@ dotnet test test/BluePrompt.Test
 `dotnet test`は外部サイト依存テスト(`Category=Network`)も含めて実行します。
 Nix経由の統合検証(外部サイト依存テストを除く)はnix-fast-buildのchecksに含まれています。
 
+## コマンドラインの構成
+
+サブコマンドと引数は[Argu](https://fsprojects.github.io/Argu/)の判別共用体で宣言しています。
+ヘルプは`Usage`から自動生成されるため、手書きの使い方の文字列はありません。
+サブコマンドを足す時は`src/BluePrompt/Program.fs`の判別共用体へケースを足すだけで、
+ヘルプにも反映されます。
+
+サブコマンドは外部システムとの接点で2階層に分かれています。
+
+- `wikiru`: wikiruへ取りに行くもの
+- `roleplay`: 外部と話さずリポジトリ内の生成物だけで完結するもの
+- `open-webui`: Open WebUI向けに生成するものと、インスタンスへ送るもの
+
+第1階層はこの取り込みから送り出しへの流れの順に並べ、
+各グループの中は辞書順にして、
+生成物を作らない確認用の`html`と`student-html`だけを末尾へ置いています。
+順序の定義は判別共用体のケースの並びだけにあり、
+ヘルプの並びもそこから決まるので、二重管理になりません。
+
+引数無しの起動とトップレベルの`--help`は、
+グループの一覧で止めずに末端のコマンドの引数まで全て展開して表示します。
+この規模なら階層を辿らせるより一度に見せるほうが早いためです。
+`blue-prompt wikiru --help`のように階層を指定した時はArgu既定のその階層だけの表示になります。
+
+引数は位置引数を使わず全て名前付きオプションです。
+必須のものは`ExactlyOnce`で縛っているため、
+渡し忘れも重複もArguが弾きます。
+
 ## リンター
 
 F#のリンターとして[fsharp-analyzers](https://github.com/ionide/FSharp.Analyzers.SDK)を使っています。
 ルール集はG-Research.FSharp.AnalyzersとIonide.Analyzersで、
 Directory.Build.propsで全F#プロジェクトへ導入しています。
 
-FSACがエディタで表示する診断(FSAC0001未使用open・FSAC0002冗長な修飾子・FSAC0003未使用宣言)も、
+FSACが持つ診断(FSAC0001未使用open・FSAC0002冗長な修飾子・FSAC0003未使用宣言)も、
 `src/BluePrompt.Analyzers`の自作アナライザーで同じ検出をリントとして再現しています。
 FSACにはバッチ実行の手段が無いため、
 FSACが内部で使うFSharp.Compiler.ServiceのEditorServices APIを直接呼んでいます。
 FSharp.Analyzers.SDKのバージョンはflake.nixのfsharp-analyzersと一致させる必要があります。
+これらをエディタにも出すかはLSPクライアント側の設定次第なので、
+エディタが黙っていてもリントが落ちることはあります。
+
+FSAC0002のもとになるFCSのSimplifyNamesは`RequireQualifiedAccess`を見ておらず、
+省略するとコンパイルが通らない修飾まで冗長として報告します。
+判別共用体のケース名の衝突は、この属性ではなくモジュールで名前空間を分けて避けてください。
 
 リンターはnix-fast-buildの統合チェックの一部として自動実行されます。
 警告もエラー扱いで、
@@ -134,14 +168,14 @@ nix run .#update-deps
 `plugins/role-play/`配下のスキルの参照ファイルは、
 wikiruの記事からの自動生成ファイルです。
 手で編集せず、以下のコマンドで再生成してください。
-中間HTMLを確認する`wikiru-html`と`wikiru-student-html`以外の生成コマンドは、
+中間HTMLを確認する`wikiru html`と`wikiru student-html`以外の生成コマンドは、
 書き出した直後に`nix fmt`まで実行するので、
 生成コマンドだけで内容が確定します。
 
 一般的なページを整形した`reference.md`は以下で生成します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru-knowledge '<ページ名>' <出力ファイル>
+dotnet run --project src/BluePrompt -- wikiru knowledge --page '<ページ名>' --output <出力ファイル>
 ```
 
 キャラ呼称表のスキルは、
@@ -149,7 +183,9 @@ dotnet run --project src/BluePrompt -- wikiru-knowledge '<ページ名>' <出力
 機械読み出し用の`appellation.json`を以下で同時に生成します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru-appellation 'キャラ呼称表' plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json
+dotnet run --project src/BluePrompt -- wikiru appellation --page 'キャラ呼称表' \
+  --markdown-output plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md \
+  --json-output plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json
 ```
 
 学校別キャラクター一覧のスキルは、
@@ -157,21 +193,22 @@ dotnet run --project src/BluePrompt -- wikiru-appellation 'キャラ呼称表' p
 学校ごとの1つのテーブルへまとめた`reference.md`を以下で生成します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru-school '学校別' plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md
+dotnet run --project src/BluePrompt -- wikiru school --page '学校別' \
+  --output plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md
 ```
 
 生徒個別のスキルはナレッジを埋め込んだ`SKILL.md`全体を以下で生成します。
 スキル名は出力先のディレクトリ名から導出されます。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru-student-skill '<生徒のページ名>' <SKILL.mdの出力パス>
+dotnet run --project src/BluePrompt -- wikiru student-skill --page '<生徒のページ名>' --output <SKILL.mdの出力パス>
 ```
 
 role-playスキルの衣装別参照ファイルは、
 生徒個別ページからプロフィールとボイスだけを抜き出して以下で生成します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru-roleplay-reference '<生徒のページ名>' <出力ファイル>
+dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page '<生徒のページ名>' --output <出力ファイル>
 ```
 
 role-playスキルの本文は、
@@ -186,7 +223,7 @@ wikiruへはアクセスせず、リポジトリへ併置した生成物だけ�
 
 参照ファイルの届き方とナレッジの引き方が経路で違うため、
 噛み合わない数文のために本文ごと分けています。
-`open-webui-model`はMODEL.mdがあればSKILL.mdより優先して使います。
+`open-webui model`はMODEL.mdがあればSKILL.mdより優先して使います。
 2つのテンプレートはほとんど同じなので、片方を直したらもう片方も見てください。
 
 - `{{caller}}`: 演じる生徒の呼び名
@@ -214,7 +251,10 @@ wikiruへはアクセスせず、リポジトリへ併置した生成物だけ�
 `nix fmt`も1回にまとまります。
 
 ```console
-dotnet run --project src/BluePrompt -- roleplay-skill '<キャラクター名>' plugins/role-play plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json <スキルのディレクトリ>
+dotnet run --project src/BluePrompt -- roleplay skill --character '<キャラクター名>' \
+  --template plugins/role-play \
+  --appellation plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json \
+  --output <スキルのディレクトリ>
 ```
 
 character.mdと2つのテンプレートとMODEL.mdは配布物から除かれます。
@@ -233,7 +273,7 @@ OpenCodeのスキルも、
 こちらは`nix fmt`を実行しません。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru-html '<ページ名>' <出力ファイル>
+dotnet run --project src/BluePrompt -- wikiru html --page '<ページ名>' --output <出力ファイル>
 ```
 
 生徒個別ページは折りたたみを残すなど抽出設定が異なるため、
@@ -241,7 +281,7 @@ dotnet run --project src/BluePrompt -- wikiru-html '<ページ名>' <出力フ�
 こちらも`nix fmt`を実行しません。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru-student-html '<生徒のページ名>' <出力ファイル>
+dotnet run --project src/BluePrompt -- wikiru student-html --page '<生徒のページ名>' --output <出力ファイル>
 ```
 
 # Open WebUI向けの生成と同期
@@ -274,7 +314,7 @@ nix build .#open-webui-model
 スキル1つ分を単体で変換したい時は以下を使います。
 
 ```console
-dotnet run --project src/BluePrompt -- open-webui-model <スキルディレクトリ> <出力ファイル>
+dotnet run --project src/BluePrompt -- open-webui model --skill <スキルディレクトリ> --output <出力ファイル>
 ```
 
 ## Knowledge定義の生成
@@ -306,7 +346,7 @@ nix build .#open-webui-knowledge
 スキル1つ分を単体で変換したい時は以下を使います。
 
 ```console
-dotnet run --project src/BluePrompt -- open-webui-knowledge <スキルディレクトリ> <出力ディレクトリ>
+dotnet run --project src/BluePrompt -- open-webui knowledge --skill <スキルディレクトリ> --output <出力ディレクトリ>
 ```
 
 ## ModelとKnowledgeの紐付け
@@ -318,7 +358,7 @@ yuukaのように生成するスキルでは、
 
 コレクションのidは登録先のインスタンスが採番するため生成時には決まりません。
 生成物では空にしておき、
-`open-webui-sync`が名前でコレクションを引き当てて埋めます。
+`open-webui sync`が名前でコレクションを引き当てて埋めます。
 紐付け先が同期の対象に無ければ、
 参照が外れたModelを黙って登録せずエラーで止まります。
 
@@ -330,14 +370,14 @@ Open WebUIはv0.10.0以降この既定値が`native`で、
 
 ## 同期
 
-生成したModelとKnowledgeは`open-webui-sync`サブコマンドで対象インスタンスへ同期できます。
+生成したModelとKnowledgeは`open-webui sync`サブコマンドで対象インスタンスへ同期できます。
 APIで登録済みのものと突き合わせて、
 無ければ作成し、差分があれば上書きし、差分が無ければ書き込みません。
 Knowledgeのファイルは`meta.file_hash`(生バイト列のSHA-256)で比較するので、
 中身が変わっていないファイルには触りません。
 
 ```console
-dotnet run --project src/BluePrompt -- open-webui-sync <モデル定義ディレクトリ> <ベースURL> \
+dotnet run --project src/BluePrompt -- open-webui sync --model <モデル定義ディレクトリ> --base-url <ベースURL> \
   [--base-model-id <id>] [--api-key-file <パス>] \
   [--knowledge <ディレクトリ>] [--rag-template-file <パス>]
 ```

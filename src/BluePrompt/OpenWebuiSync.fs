@@ -28,44 +28,6 @@ type Options =
 /// 引数の解釈や同期先との通信に失敗した時の理由。
 exception SyncError of message: string
 
-let rec private parseFlags (options: Options) (flags: string list) : Options =
-    match flags with
-    | [] -> options
-    | "--base-model-id" :: value :: rest ->
-        parseFlags
-            { options with
-                BaseModelId = Some value }
-            rest
-    | "--api-key-file" :: value :: rest -> parseFlags { options with ApiKeyFile = Some value } rest
-    | "--knowledge" :: value :: rest ->
-        parseFlags
-            { options with
-                KnowledgeDirectory = Some value }
-            rest
-    | "--rag-template-file" :: value :: rest ->
-        parseFlags
-            { options with
-                RagTemplateFile = Some value }
-            rest
-    | flag :: _ -> raise (SyncError $"解釈できない引数です: %s{flag}")
-
-/// コマンドライン引数からOptionsを組み立てる。
-/// 先頭2つはモデル定義のディレクトリとベースURLの位置引数で、
-/// 残りは省略可能なフラグとして解釈する。
-let parseOptions (args: string list) : Options =
-    match args with
-    | modelsDirectory :: url :: flags ->
-        parseFlags
-            { ModelsDirectory = modelsDirectory
-              // パスの連結を単純にするため末尾スラッシュは落とす。
-              Url = url.TrimEnd '/'
-              BaseModelId = None
-              ApiKeyFile = None
-              KnowledgeDirectory = None
-              RagTemplateFile = None }
-            flags
-    | _ -> raise (SyncError "モデル定義のディレクトリとベースURLを指定してください")
-
 /// socket activationで初回アクセス時に起動する構成でも同期できるように、
 /// 接続エラーも含めてリトライしながらインスタンスの起動を待つ。
 let private waitForHealth (client: HttpClient) (url: string) : Task<unit> =

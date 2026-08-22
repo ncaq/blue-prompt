@@ -47,7 +47,7 @@ let ``MODEL.mdがあればフロントマターごとSKILL.mdより優先され�
     // Claude CodeとOpen WebUIでは参照ファイルとナレッジの届き方が違うため、
     // 本文はそれぞれの言い方で別に用意する。
     // 本文だけでなくknowledgeの紐付けもMODEL.md側で決まる。
-    // 紐付けが外れるとopen-webui-syncが参照の外れたModelとして止まる。
+    // 紐付けが外れるとopen-webui syncが参照の外れたModelとして止まる。
     let directory = makeSkillDirectory [ "SKILL.md", skillMd; "MODEL.md", modelMd ]
     let form = buildModelForm directory
 

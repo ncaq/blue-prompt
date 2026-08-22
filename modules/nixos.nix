@@ -5,7 +5,7 @@
 # flake.nixが`blue-prompt`と生成物をそのまま接続することで、
 # スキルを追加してもこのモジュールへの追記は必要ない。
 #
-# 同期はoneshotのsystemdサービスがBluePromptのopen-webui-syncサブコマンドで行う。
+# 同期はoneshotのsystemdサービスがBluePromptのopen-webui syncサブコマンドで行う。
 # Open WebUIのModelはDBに保存される状態なのでNixだけでは宣言できず、
 # APIで突き合わせて足りない分だけ書き込むことで冪等にする。
 # ユニットには生成物のディレクトリが焼き込まれているため、
@@ -127,8 +127,11 @@ in
           utils.escapeSystemdExecArgs (
             [
               (lib.getExe packages.blue-prompt)
-              "open-webui-sync"
+              "open-webui"
+              "sync"
+              "--model"
               "${cfg.models}"
+              "--base-url"
               cfg.url
             ]
             ++ lib.optionals (cfg.baseModelId != null) [
