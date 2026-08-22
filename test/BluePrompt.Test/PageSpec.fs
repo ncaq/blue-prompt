@@ -6,14 +6,21 @@ open System.Net
 open System.Net.Sockets
 open System.Text
 open System.Threading.Tasks
+open Falco.Markup
 open Xunit
+open BluePrompt.Test.HtmlFixture
 open BluePrompt.Test.LocalServer
 
 [<Fact>]
 let ``ローカルサーバのHTMLを取得できる`` () : Task =
     task {
         let html =
-            "<html><head><title>Served Page</title></head><body>body text</body></html>"
+            renderNode (
+                Elem.html
+                    []
+                    [ Elem.head [] [ Elem.title [] [ Text.raw "Served Page" ] ]
+                      Elem.body [] [ Text.raw "body text" ] ]
+            )
 
         let! fetched = withServedHtml html (fun url -> BluePrompt.Page.fetchHtml url)
         Assert.Contains("<title>Served Page</title>", fetched)
@@ -35,7 +42,7 @@ let ``成功以外のHTTPステータスはFetchErrorになる`` () : Task =
         do!
             withServer
                 (fun _ ->
-                    { htmlResponse "<html><body>not found</body></html>" with
+                    { htmlResponse (renderDocument [ Text.raw "not found" ]) with
                         Status = "404 Not Found" })
                 (fun url ->
                     task {
@@ -118,7 +125,7 @@ let ``Content-Typeのcharsetに従って文字コードが判定される`` () :
         let response =
             { Status = "200 OK"
               ContentType = "text/html; charset=euc-jp"
-              Body = (Encoding.GetEncoding "euc-jp").GetBytes "<html><body>日本語本文</body></html>"
+              Body = (Encoding.GetEncoding "euc-jp").GetBytes(renderDocument [ Text.raw "日本語本文" ])
               ExtraHeaders = [] }
 
         let! fetched = withServer (fun _ -> response) (fun url -> BluePrompt.Page.fetchHtml url)
@@ -135,7 +142,10 @@ let ``ページ内のリソースは追加取得されない`` () : Task =
 
         let respond (path: string) : Response =
             requestedPaths.Enqueue path
-            htmlResponse """<html><body><img src="/image.png"><p>resource test</p></body></html>"""
+
+            htmlResponse (
+                renderDocument [ Elem.img [ Attr.src "/image.png" ]; Text.p "resource test" ]
+            )
 
         let! fetched = withServer respond (fun url -> BluePrompt.Page.fetchHtml url)
 
@@ -166,7 +176,7 @@ let ``リダイレクトを追跡して最終ページを取得する`` () : Tas
     task {
         let respond (path: string) : Response =
             if path = "/moved" then
-                htmlResponse "<html><body>redirected body</body></html>"
+                htmlResponse (renderDocument [ Text.raw "redirected body" ])
             else
                 { htmlResponse "" with
                     Status = "302 Found"
@@ -180,13 +190,12 @@ let ``リダイレクトを追跡して最終ページを取得する`` () : Tas
 /// 取得と抽出の結合の検証用HTML。
 /// 抽出処理そのものの網羅的な検証はExtractSpecで行う。
 let private fixtureHtml =
-    """<html><body>
-<header id="header">site header</header>
-<main id="content">
-<h1>Fixture</h1>
-<p><a href="#section">anchor text</a></p>
-</main>
-</body></html>"""
+    renderDocument
+        [ Elem.header [ Attr.id "header" ] [ Text.raw "site header" ]
+          Elem.main
+              [ Attr.id "content" ]
+              [ Text.h1 "Fixture"
+                Elem.p [] [ Elem.a [ Attr.href "#section" ] [ Text.raw "anchor text" ] ] ] ]
 
 let private fixtureQuery: BluePrompt.Extract.ContentQuery =
     { ContentSelectors = [ "#content" ]
