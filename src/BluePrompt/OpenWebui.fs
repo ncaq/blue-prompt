@@ -27,7 +27,7 @@ exception SkillFormatError of path: string * message: string
 ///
 /// idはコレクションを作った先のインスタンスが採番するため生成時には決まらない。
 /// 生成物ではNoneのままにして、
-/// open-webui-syncが名前でコレクションを引き当てて埋める。
+/// open-webui syncが名前でコレクションを引き当てて埋める。
 type KnowledgeReference =
     { Id: string option
       Name: string
@@ -250,7 +250,7 @@ let private buildSystemPrompt (skillDirectory: string) (skillPath: string) (body
 
 /// スキルディレクトリからModelFormを組み立てる。
 /// idとnameにはフロントマターのnameを使い、ここでは一意性を保証しない。
-/// 同じ一覧の中のidの重複は、open-webui-syncが同期の前に検出して止める。
+/// 同じ一覧の中のidの重複は、open-webui syncが同期の前に検出して止める。
 let buildModelForm (skillDirectory: string) : ModelForm =
     // Model向けの本文があればそちらを使う。
     // Claude Codeは参照ファイルを開いてナレッジのスキルを読み込むが、

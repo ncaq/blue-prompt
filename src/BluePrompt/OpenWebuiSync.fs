@@ -25,46 +25,8 @@ type Options =
       KnowledgeDirectory: string option
       RagTemplateFile: string option }
 
-/// 引数の解釈や同期先との通信に失敗した時の理由。
+/// 同期先との通信や生成物の読み込みに失敗した時の理由。
 exception SyncError of message: string
-
-let rec private parseFlags (options: Options) (flags: string list) : Options =
-    match flags with
-    | [] -> options
-    | "--base-model-id" :: value :: rest ->
-        parseFlags
-            { options with
-                BaseModelId = Some value }
-            rest
-    | "--api-key-file" :: value :: rest -> parseFlags { options with ApiKeyFile = Some value } rest
-    | "--knowledge" :: value :: rest ->
-        parseFlags
-            { options with
-                KnowledgeDirectory = Some value }
-            rest
-    | "--rag-template-file" :: value :: rest ->
-        parseFlags
-            { options with
-                RagTemplateFile = Some value }
-            rest
-    | flag :: _ -> raise (SyncError $"解釈できない引数です: %s{flag}")
-
-/// コマンドライン引数からOptionsを組み立てる。
-/// 先頭2つはモデル定義のディレクトリとベースURLの位置引数で、
-/// 残りは省略可能なフラグとして解釈する。
-let parseOptions (args: string list) : Options =
-    match args with
-    | modelsDirectory :: url :: flags ->
-        parseFlags
-            { ModelsDirectory = modelsDirectory
-              // パスの連結を単純にするため末尾スラッシュは落とす。
-              Url = url.TrimEnd '/'
-              BaseModelId = None
-              ApiKeyFile = None
-              KnowledgeDirectory = None
-              RagTemplateFile = None }
-            flags
-    | _ -> raise (SyncError "モデル定義のディレクトリとベースURLを指定してください")
 
 /// socket activationで初回アクセス時に起動する構成でも同期できるように、
 /// 接続エラーも含めてリトライしながらインスタンスの起動を待つ。
@@ -189,7 +151,7 @@ type private DesiredKnowledge =
         Files: (string * byte array) list
     }
 
-/// open-webui-knowledgeの生成物を読み込む。
+/// open-webui knowledgeの生成物を読み込む。
 /// 出力ディレクトリの直下にコレクションごとのディレクトリが並ぶ。
 let private readKnowledgeDirectory (directory: string) : DesiredKnowledge list =
     Directory.GetDirectories directory
@@ -618,6 +580,13 @@ let private syncModel
 /// ディレクトリ内の全ModelFormのJSONを同期する。
 let sync (options: Options) : Task<unit> =
     task {
+        // パスは文字列の連結で組み立てるため、末尾スラッシュが残ると`//health`になる。
+        // Optionsを組み立てる経路はCLIだけとは限らないので、
+        // この不変条件はOptionsを持つ側の入口で保つ。
+        let options =
+            { options with
+                Url = options.Url.TrimEnd '/' }
+
         use client = new HttpClient()
 
         // 読み取りは起動待ちより前に済ませて、

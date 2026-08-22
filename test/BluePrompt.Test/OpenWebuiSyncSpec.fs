@@ -404,6 +404,22 @@ let ``未登録のModelは作成され再実行では書き込まれない`` () 
     Assert.Equal(0, server.UpdateCount)
 
 [<Fact>]
+let ``ベースURLの末尾スラッシュはどの経路で組み立てても落とされる`` () =
+    use server = new MockServer()
+
+    // パスは文字列の連結で組み立てるため、
+    // 末尾スラッシュが残ると`//health`のような不正なURLになる。
+    // CLI以外の経路がOptionsを組み立てても壊れないように、
+    // この不変条件はOptionsを持つ側で保つ。
+    let options =
+        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
+            Url = $"%s{server.Url}/" }
+
+    run options
+
+    Assert.Equal(1, server.CreateCount)
+
+[<Fact>]
 let ``スキルを改良すると登録済みのModelが上書きされる`` () =
     use server = new MockServer()
     run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "古いプロンプト" ]))
@@ -505,39 +521,6 @@ let ``サインインの応答にtokenが無いとSyncErrorで止まる`` () =
     Assert.Equal(0, server.CreateCount)
 
 [<Fact>]
-let ``コマンドライン引数から接続情報を組み立てられる`` () =
-    let options =
-        parseOptions
-            [ "/tmp/models"
-              "http://127.0.0.1:8080/"
-              "--base-model-id"
-              "qwen3:32b"
-              "--api-key-file"
-              "/run/credentials/api-key"
-              "--knowledge"
-              "/tmp/knowledge"
-              "--rag-template-file"
-              "/tmp/rag-template.txt" ]
-
-    Assert.Equal("/tmp/models", options.ModelsDirectory)
-    // 末尾スラッシュは落とされる。
-    Assert.Equal("http://127.0.0.1:8080", options.Url)
-    Assert.Equal(Some "qwen3:32b", options.BaseModelId)
-    Assert.Equal(Some "/run/credentials/api-key", options.ApiKeyFile)
-    Assert.Equal(Some "/tmp/knowledge", options.KnowledgeDirectory)
-    Assert.Equal(Some "/tmp/rag-template.txt", options.RagTemplateFile)
-
-[<Fact>]
-let ``省略できるフラグを渡さなければNoneのままになる`` () =
-    let options = parseOptions [ "/tmp/models"; "http://127.0.0.1:8080" ]
-
-    // ModelだけをKnowledgeやRAGテンプレート抜きで同期する運用が成り立つ。
-    Assert.Equal(None, options.BaseModelId)
-    Assert.Equal(None, options.ApiKeyFile)
-    Assert.Equal(None, options.KnowledgeDirectory)
-    Assert.Equal(None, options.RagTemplateFile)
-
-[<Fact>]
 let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり作成へ進まない`` () =
     use server = new MockServer()
     server.OverrideModelGet(500, """{"detail":"internal error"}""")
@@ -599,12 +582,6 @@ let ``同じidのModel定義が複数あるとSyncErrorで止まる`` () =
 
     // 後勝ちの上書きが起きないように書き込みの前に止まる。
     Assert.Equal(0, server.CreateCount)
-
-[<Fact>]
-let ``解釈できない引数はSyncErrorになる`` () =
-    Assert.Throws<SyncError>(fun () ->
-        parseOptions [ "/tmp/models"; "http://127.0.0.1:8080"; "--unknown" ] |> ignore)
-    |> ignore
 
 /// Knowledgeコレクションの定義一式をテスト用の一時ディレクトリへ書き出す。
 let private makeKnowledgeDirectory (collections: (string * (string * string) list) list) : string =
