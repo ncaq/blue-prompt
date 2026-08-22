@@ -48,7 +48,7 @@ dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page 'ユウ�
   参照ファイルはシステムプロンプトへインライン化され、
   ナレッジは紐付けから自動で渡される前提の書き方です
 
-`open-webui-model`はMODEL.mdがあればSKILL.mdより優先して使います。
+`open-webui model`はMODEL.mdがあればSKILL.mdより優先して使います。
 1つの本文へ両方の言い方を収めると、
 どちらの経路でも半分は当てはまらない説明を読ませることになるため、
 噛み合わない数文のために本文ごと分けています。

@@ -151,7 +151,7 @@ type private DesiredKnowledge =
         Files: (string * byte array) list
     }
 
-/// open-webui-knowledgeの生成物を読み込む。
+/// open-webui knowledgeの生成物を読み込む。
 /// 出力ディレクトリの直下にコレクションごとのディレクトリが並ぶ。
 let private readKnowledgeDirectory (directory: string) : DesiredKnowledge list =
     Directory.GetDirectories directory
