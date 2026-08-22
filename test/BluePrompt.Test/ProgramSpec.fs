@@ -1,5 +1,6 @@
 module BluePrompt.Test.ProgramSpec
 
+open System.IO
 open Argu
 open Xunit
 open BluePrompt
@@ -35,6 +36,49 @@ let ``グループはあるが未知のサブコマンドでは非0を返す`` (
 [<Fact>]
 let ``必須の引数が足りないopen-webui syncは非0を返す`` () =
     Assert.Equal(1, Program.main [| "open-webui"; "sync" |])
+
+[<Fact>]
+let ``既知のサブコマンドへの未知のオプションでは非0を返す`` () =
+    // オプション名のタイポが黙って無視されて同期処理へ進んでしまわない。
+    Assert.Equal(
+        1,
+        Program.main
+            [| "open-webui"
+               "sync"
+               "--model"
+               "/tmp/models"
+               "--base-url"
+               "http://127.0.0.1:8080"
+               "--unknown" |]
+    )
+
+[<Fact>]
+let ``階層を指定したヘルプの要求も0を返す`` () =
+    // 引数が2つあるので手前の全展開では拾われず、ArguのHelpTextの分岐を通る。
+    Assert.Equal(0, Program.main [| "wikiru"; "--help" |])
+
+[<Fact>]
+let ``同期の失敗は理由だけを表示して非0を返す`` () =
+    let temporary = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+    let models = Path.Combine(temporary, "models")
+    let knowledge = Path.Combine(temporary, "knowledge")
+    Directory.CreateDirectory models |> ignore
+    // 定義のファイルを欠いたコレクションのディレクトリで、生成物の読み込みを失敗させる。
+    // 起動待ちより前に落ちるので、インスタンスが無くてもこの分岐を通せる。
+    Directory.CreateDirectory(Path.Combine(knowledge, "broken")) |> ignore
+
+    Assert.Equal(
+        1,
+        Program.main
+            [| "open-webui"
+               "sync"
+               "--model"
+               models
+               "--base-url"
+               "http://127.0.0.1:8080"
+               "--knowledge"
+               knowledge |]
+    )
 
 [<Fact>]
 let ``コマンドライン引数から接続情報を組み立てられる`` () =
