@@ -404,6 +404,22 @@ let ``未登録のModelは作成され再実行では書き込まれない`` () 
     Assert.Equal(0, server.UpdateCount)
 
 [<Fact>]
+let ``ベースURLの末尾スラッシュはどの経路で組み立てても落とされる`` () =
+    use server = new MockServer()
+
+    // パスは文字列の連結で組み立てるため、
+    // 末尾スラッシュが残ると`//health`のような不正なURLになる。
+    // CLI以外の経路がOptionsを組み立てても壊れないように、
+    // この不変条件はOptionsを持つ側で保つ。
+    let options =
+        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
+            Url = $"%s{server.Url}/" }
+
+    run options
+
+    Assert.Equal(1, server.CreateCount)
+
+[<Fact>]
 let ``スキルを改良すると登録済みのModelが上書きされる`` () =
     use server = new MockServer()
     run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "古いプロンプト" ]))
