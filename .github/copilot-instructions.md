@@ -161,7 +161,7 @@ GitHubがサーバ側で署名するためVerifiedになり、
 トークンはGITHUB_TOKENではなく専用のGitHub Appのものを使います。
 GITHUB_TOKENが作ったコミットはワークフローを起動しない仕様のため、
 必須チェックのnix-fast-buildが最新のコミットで走らないまま止まってしまうからです。
-App IDはActionsのvariableの`UPDATE_DEPS_APP_ID`に、
+Client IDはActionsのvariableの`UPDATE_DEPS_APP_CLIENT_ID`に、
 秘密鍵はsecretの`UPDATE_DEPS_APP_PRIVATE_KEY`にあります。
 
 Renovateは自分以外の作者のコミットがあるブランチを、
