@@ -36,6 +36,11 @@ let wikiruTargets: Target.WikiruTarget list =
           "ユウカ（パジャマ）",
           "plugins/jp-wikiru-bluearchive/skills/character-yuuka-pajama/SKILL.md"
       )
+      Target.StudentSkill("セイア", "plugins/jp-wikiru-bluearchive/skills/character-seia/SKILL.md")
+      Target.StudentSkill(
+          "セイア（水着）",
+          "plugins/jp-wikiru-bluearchive/skills/character-seia-swimsuit/SKILL.md"
+      )
       Target.RolePlayReference("ユウカ", "plugins/role-play/skills/yuuka/normal.md")
       Target.RolePlayReference("ユウカ（体操服）", "plugins/role-play/skills/yuuka/track.md")
       Target.RolePlayReference("ユウカ（パジャマ）", "plugins/role-play/skills/yuuka/pajama.md") ]
