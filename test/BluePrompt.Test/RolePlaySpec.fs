@@ -137,6 +137,80 @@ let ``参照ファイルの無いディレクトリはReferenceNotFoundになる
         (readReferences directory).GetAwaiter().GetResult() |> ignore)
     |> ignore
 
+/// 代表的な発言を並べたquoteディレクトリを持つスキルのディレクトリを作る。
+let private makeQuoteDirectory (files: (string * string) list) : string =
+    let directory = makeDirectory [ "normal.md", reference "ユウカ" ]
+    let quoteDirectory = Path.Combine(directory, "quote")
+    Directory.CreateDirectory quoteDirectory |> ignore
+
+    for name, content in files do
+        File.WriteAllText(Path.Combine(quoteDirectory, name), content)
+
+    directory
+
+[<Fact>]
+let ``readQuotesはファイル名の順に発言を読む`` () =
+    let directory =
+        makeQuoteDirectory [ "seminar.md", "## 会計の話\n\n本文\n"; "budget.md", "## 予算の話\n\n本文\n" ]
+
+    Assert.Equal<string list>(
+        [ "## 予算の話\n\n本文"; "## 会計の話\n\n本文" ],
+        (readQuotes directory).GetAwaiter().GetResult()
+    )
+
+[<Fact>]
+let ``quoteディレクトリは衣装として拾われない`` () =
+    // 発言を1つ下のディレクトリへ分けているのは、
+    // 同じ階層へ置くとreadReferencesが出典の行を持たない衣装として読むためである。
+    // readReferencesが再帰探索へ変わればこの前提は崩れる。
+    let directory = makeQuoteDirectory [ "budget.md", "## 予算の話\n\n本文\n" ]
+
+    Assert.Equal<string list>(
+        [ "normal.md" ],
+        (readReferences directory).GetAwaiter().GetResult() |> List.map _.FileName
+    )
+
+[<Fact>]
+let ``quoteディレクトリの無いスキルは発言を持たない`` () =
+    // 発言は手書きなので、用意していない生徒が居る。
+    let directory = makeDirectory [ "normal.md", reference "ユウカ" ]
+
+    Assert.Empty((readQuotes directory).GetAwaiter().GetResult())
+
+[<Fact>]
+let ``見出しから始まらない発言はQuoteShapeErrorになる`` () =
+    // 見出しが無いと、節へ並べた時に発言と発言の切れ目が消える。
+    let directory = makeQuoteDirectory [ "budget.md", "本文だけ\n" ]
+
+    let error =
+        Assert.Throws<QuoteShapeError>(fun () ->
+            (readQuotes directory).GetAwaiter().GetResult() |> ignore)
+
+    match error :> exn with
+    | QuoteShapeError path -> Assert.Equal("budget.md", Path.GetFileName path)
+    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+
+[<Fact>]
+let ``quotesMarkdownは見出しごと節を組み立てる`` () =
+    // 発言と発言の間に空行が入らないと、見出しが前の本文へ吸着してMarkdownが壊れる。
+    // 区切りは2件以上ある時にしか現れないので、2件を渡して全文を固定する。
+    let markdown = quotesMarkdown "ユウカ" [ "## 予算の話\n\n本文"; "## 会計の話\n\n本文" ]
+
+    Assert.Equal(
+        "# 代表的な発言\n\n"
+        + "作中でユウカが実際に話した発言です。\n"
+        + "ボイスの短いセリフだけでは掴めない、話の運び方と長い語りの組み立てが分かるものを選んでいます。\n"
+        + "そのまま繰り返さず、言葉選びと話の展開の手本として使ってください。\n\n"
+        + "## 予算の話\n\n本文\n\n"
+        + "## 会計の話\n\n本文",
+        markdown
+    )
+
+[<Fact>]
+let ``発言が無ければ節ごと消える`` () =
+    // 見出しだけが残ると、中身の無い節を読ませることになる。
+    Assert.Equal("", quotesMarkdown "ユウカ" [])
+
 [<Fact>]
 let ``knowledgeSkillsMarkdownは生徒のナレッジのスキル名を並べる`` () =
     // 全てのスキルが参照するcharacter-appellationは、本文では別の文が扱うので除く。
@@ -162,7 +236,8 @@ let ``生徒のナレッジが無いとKnowledgeSkillNotFoundになる`` () =
 /// 差し込まれた値だけが並ぶ形で書き出すテンプレート。
 /// 配線の取り違えがそのまま出力の順序の違いとして現れる。
 let private template =
-    "{{caller}}\n{{character}}\n{{playing}}\n{{appellation}}\n{{costumes}}\n{{knowledgeSkills}}\n"
+    "{{caller}}\n{{character}}\n{{playing}}\n{{appellation}}\n"
+    + "{{costumes}}\n{{quotes}}\n{{knowledgeSkills}}\n"
 
 /// キャラ呼称表のページのURL。
 let private appellationSource =
@@ -188,6 +263,8 @@ let ``renderSkillはフロントマターと差し込んだ本文を並べる`` 
             ("---\nname: yuuka\ndescription: Role-play as Yuuka\n"
              + "knowledge: character-yuuka, character-appellation\n---\n\n早瀬ユウカの位置付け。\n")
 
+    let quotes = [ "## 予算の話\n\n本文" ]
+
     let skill =
         renderSkill
             { Caller = "ユウカ"
@@ -196,6 +273,7 @@ let ``renderSkillはフロントマターと差し込んだ本文を並べる`` 
               CharacterPath = "character.md"
               Character = character
               References = [ parseReference "normal.md" (reference "ユウカ") ]
+              Quotes = quotes
               Appellation = document "ユウカ" }
 
     Assert.Equal(
@@ -206,7 +284,8 @@ let ``renderSkillはフロントマターと差し込んだ本文を並べる`` 
         + $"\n出典: [キャラ呼称表 - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{appellationSource})\n"
         + "\n| 相手 | 呼称 |\n| --- | --- |\n| 先生 | 先生 |\n\n"
         + "- [normal.md](./normal.md): ユウカ\n"
-        + "- character-yuuka\n",
+        + quotesMarkdown "ユウカ" quotes
+        + "\n- character-yuuka\n",
         skill
     )
 
@@ -226,6 +305,7 @@ let ``本文の無いcharacter.mdはCharacterBodyNotFoundになる`` () =
                         "character.md"
                         "---\nname: yuuka\ndescription: d\nknowledge: character-yuuka\n---\n"
                   References = [ parseReference "normal.md" (reference "ユウカ") ]
+                  Quotes = []
                   Appellation = document "ユウカ" }
             |> ignore)
 
@@ -247,6 +327,7 @@ let ``renderSkillはテンプレートのプレースホルダが欠けると止
                     "character.md"
                     "---\nname: yuuka\ndescription: d\nknowledge: character-yuuka\n---\n\n本文\n"
               References = [ parseReference "normal.md" (reference "ユウカ") ]
+              Quotes = []
               Appellation = document "ユウカ" }
         |> ignore)
     |> ignore

@@ -5,7 +5,8 @@
 /// その決まった位置へ、
 /// 生徒に固有の手書きの部分と、
 /// 生徒個別ページから作った衣装別の参照ファイルと、
-/// キャラ呼称表のJSONから読んだ事実を差し込む。
+/// キャラ呼称表のJSONから読んだ事実と、
+/// quote/へ手で置いた代表的な発言を差し込む。
 /// wikiruへはアクセスせず、リポジトリへ併置した生成物だけで完結する。
 /// character.mdのフロントマターの読み取りはOpenWebuiのものを共有するため、
 /// コンパイルの順序はそちらより後になる。
@@ -108,6 +109,59 @@ let readReferences (directory: string) : Task<Reference list> =
         return List.ofSeq references
     }
 
+/// 代表的な発言が見出しから始まっていなかった時のファイルのパス。
+exception QuoteShapeError of path: string
+
+/// 代表的な発言1つ分の見出し。
+/// 節へ並べて差し込むので、見出しが無いと発言と発言の切れ目が消える。
+let private quoteHeadingPrefix: string = "## "
+
+/// スキルのディレクトリから代表的な発言を読む。
+/// 発言はwikiruから作れないため手書きで、
+/// 用意していない生徒も居るので、ディレクトリが無ければ0件として扱う。
+/// 並びはファイル名の順で、書き手が名前で決められるようにする。
+let readQuotes (directory: string) : Task<string list> =
+    task {
+        let quoteDirectory = Path.Combine(directory, SkillFile.quote)
+
+        if not (Directory.Exists quoteDirectory) then
+            return []
+        else
+            let paths = Directory.GetFiles(quoteDirectory, "*.md") |> Array.sort
+            let quotes = ResizeArray()
+
+            for path in paths do
+                let! markdown = File.ReadAllTextAsync path
+                let quote = markdown.Trim()
+
+                if not (quote.StartsWith(quoteHeadingPrefix, StringComparison.Ordinal)) then
+                    raise (QuoteShapeError path)
+
+                quotes.Add quote
+
+            return List.ofSeq quotes
+    }
+
+/// テンプレートで代表的な発言を差し込む位置を示すプレースホルダの名前。
+let private quotesPlaceholder: string = "quotes"
+
+/// 代表的な発言の節を組み立てる。
+/// 他の穴と違いここだけは見出しごと差し込む。
+/// 発言を用意していない生徒では見出しだけが残るのを避けたいためで、
+/// 0件なら節ごと消える。
+let quotesMarkdown (caller: string) (quotes: string list) : string =
+    match quotes with
+    | [] -> ""
+    | quotes ->
+        let guide =
+            String.concat
+                "\n"
+                [ $"作中で%s{caller}が実際に話した発言です。"
+                  "ボイスの短いセリフだけでは掴めない、話の運び方と長い語りの組み立てが分かるものを選んでいます。"
+                  "そのまま繰り返さず、言葉選びと話の展開の手本として使ってください。" ]
+
+        String.concat "\n\n" ([ "# 代表的な発言"; guide ] @ quotes)
+
 /// テンプレートで演じ方の共通の指示を差し込む位置を示すプレースホルダの名前。
 let private playingPlaceholder: string = "playing"
 
@@ -181,6 +235,8 @@ type SkillInput =
         Character: OpenWebui.Frontmatter
         /// 衣装別の参照ファイル。
         References: Reference list
+        /// 代表的な発言。用意していない生徒では空になる。
+        Quotes: string list
         /// キャラ呼称表。
         Appellation: Appellation.Document
     }
@@ -213,6 +269,7 @@ let renderSkill (input: SkillInput) : string =
               playingPlaceholder, playingRules
               appellationPlaceholder, appellation
               costumesPlaceholder, toCostumeMarkdown input.References
+              quotesPlaceholder, quotesMarkdown input.Caller input.Quotes
               knowledgeSkillsPlaceholder,
               knowledgeSkillsMarkdown input.CharacterPath input.Character.Knowledge ]
 
@@ -242,6 +299,7 @@ let writeSkill
         let characterPath = Path.Combine(outputDirectory, SkillFile.character)
         let! character = File.ReadAllTextAsync characterPath
         let! references = readReferences outputDirectory
+        let! quotes = readQuotes outputDirectory
         let! json = File.ReadAllTextAsync jsonPath
         let frontmatter = OpenWebui.parseFrontmatter characterPath character
         let document = Appellation.ofJson json
@@ -263,6 +321,7 @@ let writeSkill
                       CharacterPath = characterPath
                       Character = frontmatter
                       References = references
+                      Quotes = quotes
                       Appellation = document }
 
             do! File.WriteAllTextAsync(outputPath, skill)

@@ -36,9 +36,16 @@ let wikiruTargets: Target.WikiruTarget list =
           "ユウカ（パジャマ）",
           "plugins/jp-wikiru-bluearchive/skills/character-yuuka-pajama/SKILL.md"
       )
+      Target.StudentSkill("セイア", "plugins/jp-wikiru-bluearchive/skills/character-seia/SKILL.md")
+      Target.StudentSkill(
+          "セイア（水着）",
+          "plugins/jp-wikiru-bluearchive/skills/character-seia-swimsuit/SKILL.md"
+      )
       Target.RolePlayReference("ユウカ", "plugins/role-play/skills/yuuka/normal.md")
       Target.RolePlayReference("ユウカ（体操服）", "plugins/role-play/skills/yuuka/track.md")
-      Target.RolePlayReference("ユウカ（パジャマ）", "plugins/role-play/skills/yuuka/pajama.md") ]
+      Target.RolePlayReference("ユウカ（パジャマ）", "plugins/role-play/skills/yuuka/pajama.md")
+      Target.RolePlayReference("セイア", "plugins/role-play/skills/seia/normal.md")
+      Target.RolePlayReference("セイア（水着）", "plugins/role-play/skills/seia/swimsuit.md") ]
 
 /// テンプレートから本文を生成するrole-playスキル。パスはリポジトリのルートからの相対。
 /// 手で貼り付けたデータのままのスキルはcharacter.mdを持たないので含めない。
@@ -46,7 +53,11 @@ let rolePlaySkills: Target.RolePlaySkill list =
     [ { Caller = "ユウカ"
         Template = "plugins/role-play"
         Appellation = appellationJson
-        Output = "plugins/role-play/skills/yuuka" } ]
+        Output = "plugins/role-play/skills/yuuka" }
+      { Caller = "セイア"
+        Template = "plugins/role-play"
+        Appellation = appellationJson
+        Output = "plugins/role-play/skills/seia" } ]
 
 /// 同時に進める対象の数。
 /// wikiru側の負荷は1台のPCから送る量では誤差だが、
