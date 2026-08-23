@@ -64,6 +64,71 @@ let ``runBoundedは1件の失敗で他を打ち切らず全件の結果を名前
         | other -> failwith $"想定外の結果: %A{other}"
     }
 
+/// 整形の呼び出しを記録するスタブ。呼ばれた回数とパスを後から検査する。
+let private recordingFormat (calls: ResizeArray<string list>) (paths: string list) : Task<unit> =
+    calls.Add paths
+    Task.FromResult()
+
+[<Fact>]
+let ``finishは全成功ならrole-playも書き出して1回でまとめて整形する`` () =
+    task {
+        let calls = ResizeArray()
+
+        do!
+            Manifest.finish
+                (recordingFormat calls)
+                (fun () -> Task.FromResult [ "SKILL.md"; "MODEL.md" ])
+                [ "a", Ok [ "a.md" ]; "b", Ok [ "b.md"; "b.json" ] ]
+
+        Assert.Equal<string list list>(
+            [ [ "a.md"; "b.md"; "b.json"; "SKILL.md"; "MODEL.md" ] ],
+            List.ofSeq calls
+        )
+    }
+
+[<Fact>]
+let ``finishは失敗があれば成功分だけ整形しrole-playは書き出さずGenerationFailedを送出する`` () =
+    task {
+        let calls = ResizeArray()
+        let rolePlayWritten = ref false
+        let error: exn = InvalidOperationException "取得に失敗"
+
+        let! raised =
+            Assert.ThrowsAsync<Manifest.GenerationFailed>(fun () ->
+                Manifest.finish
+                    (recordingFormat calls)
+                    (fun () ->
+                        rolePlayWritten.Value <- true
+                        Task.FromResult [])
+                    [ "a", Ok [ "a.md" ]; "b", Error error ])
+
+        Assert.Equal<(string * exn) list>([ "b", error ], raised.failures)
+        Assert.Equal<string list list>([ [ "a.md" ] ], List.ofSeq calls)
+        Assert.False rolePlayWritten.Value
+    }
+
+[<Fact>]
+let ``finishは失敗の報告で整形が落ちても取得の失敗の理由を失わない`` () =
+    task {
+        let fetchError = InvalidOperationException "取得に失敗"
+        let formatError = InvalidOperationException "整形に失敗"
+
+        let! raised =
+            Assert.ThrowsAsync<Manifest.GenerationFailed>(fun () ->
+                Manifest.finish
+                    (fun _ -> Task.FromException<unit> formatError)
+                    (fun () -> Task.FromResult [])
+                    [ "a", Ok [ "a.md" ]; "b", Error fetchError ])
+
+        // 取得の失敗が先頭に残り、整形の失敗もその後ろに並ぶ。
+        match raised.failures with
+        | [ "b", (:? InvalidOperationException as first)
+            _, (:? InvalidOperationException as second) ] ->
+            Assert.Equal("取得に失敗", first.Message)
+            Assert.Equal("整形に失敗", second.Message)
+        | other -> failwith $"想定外の失敗の一覧: %A{other}"
+    }
+
 /// マニフェストのwikiru対象が書き出すパスの一覧。
 let private wikiruOutputs =
     Manifest.wikiruTargets
