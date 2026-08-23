@@ -1,6 +1,6 @@
 name: update-deps
 
-# RenovateはfsprojのPackageReferenceだけを書き換えるため、
+# RenovateはfsprojとDirectory.Build.propsのPackageReferenceだけを書き換えるため、
 # Nixのビルドが読むdeps.jsonが古いまま残り必須チェックのnix-fast-buildが落ちます。
 # Mendのホスト版RenovateはpostUpgradeTasksを実行できないので、
 # 代わりにRenovateのブランチへdeps.jsonの再生成をコミットして追従させます。

@@ -148,7 +148,7 @@ deps.jsonの再生成と整形が完了します。
 nix run .#update-deps
 ```
 
-RenovateはfsprojのPackageReferenceしか書き換えないため、
+RenovateはfsprojとDirectory.Build.propsのPackageReferenceしか書き換えないため、
 そのままではdeps.jsonが古いまま残りnix-fast-buildが落ちます。
 Mendのホスト版RenovateはpostUpgradeTasksを実行できないので、
 代わりに`.github/workflows/update-deps.yml`が、
