@@ -55,7 +55,7 @@
       ) (map (skill: skill.skillName) (lib.filter (skill: skill.pluginName == "role-play") skills));
 
       # リポジトリにはあるが、スキルとしては配布しないファイルの名前。
-      # character.mdは本文を生成するための入力で、
+      # character.mdとquoteは本文を生成するための入力で、
       # *.template.mdは全生徒で共通の骨格、
       # MODEL.mdはOpen WebUIのModel向けの本文なので、
       # Claude CodeやOpenCodeのスキルとして読ませる意味が無い。
@@ -69,6 +69,7 @@
         "character.md"
         "MODEL.md"
         "MODEL.template.md"
+        "quote"
         "SKILL.template.md"
       ];
 
