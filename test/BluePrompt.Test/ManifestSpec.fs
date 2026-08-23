@@ -40,8 +40,13 @@ let ``runBoundedは同時に進める数をdegreeに収める`` () =
         let running =
             Manifest.runBounded degree (List.init 5 (fun index -> $"work%d{index}", work))
 
-        do! reachedDegree.Task
+        // 直列化する方向へ退行するとdegreeに到達せず永久に待つため、上限を付けてハングではなく失敗にする。
+        // xUnitはFactに既定のタイムアウトを持たない。
+        let! first = Task.WhenAny(reachedDegree.Task, Task.Delay(TimeSpan.FromMinutes 5.))
+        let reached = Object.ReferenceEquals(first, reachedDegree.Task)
+        // 到達していなくても止めていた処理を解放して、後続の待ちを残さない。
         release.SetResult()
+        Assert.True(reached, $"同時実行数が%d{degree}に到達しませんでした")
         let! results = running
 
         Assert.Equal(degree, maxInFlight.Value)
