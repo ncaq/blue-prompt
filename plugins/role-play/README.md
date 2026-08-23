@@ -109,10 +109,22 @@ dotnet run --project src/BluePrompt -- roleplay skill --character 'ユウカ' \
   --output plugins/role-play/skills/yuuka
 ```
 
+テンプレートを直した時のように全生徒分をまとめて生成し直す時は、
+`src/BluePrompt/Manifest.fs`に書いた生徒を全て書き出して`nix fmt`を1回で掛ける以下を使います。
+統合チェックの`roleplay-generated`もこれを実行して生成物の鮮度を確かめます。
+
+```console
+dotnet run --project src/BluePrompt -- roleplay all --root .
+```
+
 `kotori`と`seia`はまだこの構成に移行しておらず、
 SKILL.mdに手で貼り付けたデータのままです。
-移行する時は`src/BluePrompt/Manifest.fs`の`rolePlaySkills`へ、
-呼び名と出力先を足してください。
+移行する時は`src/BluePrompt/Manifest.fs`の2つの一覧へ足してください。
+
+- `wikiruTargets`: 衣装ごとの`RolePlayReference`(必要なら生徒個別スキルの`StudentSkill`も)。
+  これが無いと`{{costumes}}`へ差し込む参照ファイルが生成されません
+- `rolePlaySkills`: 呼び名と、テンプレートのディレクトリと、呼称表のJSONと、出力先のディレクトリの4つ
+
 呼び名はcharacter.mdからは決まらないので自動では埋まらず、
 足さないと統合チェックの`roleplay-generated`が、
 生成し直されない生成物の差分として止まります。
