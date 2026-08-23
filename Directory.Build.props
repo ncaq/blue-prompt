@@ -27,7 +27,7 @@
       <IncludeAssets>analyzers</IncludeAssets>
       <GeneratePathProperty>true</GeneratePathProperty>
     </PackageReference>
-    <PackageReference Include="Ionide.Analyzers" Version="0.16.0">
+    <PackageReference Include="Ionide.Analyzers" Version="0.17.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>analyzers</IncludeAssets>
       <GeneratePathProperty>true</GeneratePathProperty>
