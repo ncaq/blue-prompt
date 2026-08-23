@@ -149,17 +149,43 @@ let private wikiruOutputs =
 let ``マニフェストの出力先は重複しない`` () =
     Assert.Equal<string list>(List.distinct wikiruOutputs, wikiruOutputs)
 
+// 走査して該当があれば検査する形だと対象が0件でも通ってしまうため、
+// 先に絞り込んで空でないことを確かめてから検査する。
+
 [<Fact>]
 let ``生徒スキルの出力先はSKILL.md`` () =
-    for target in Manifest.wikiruTargets do
-        match target with
-        | Target.StudentSkill(_, output) -> Assert.Equal(SkillFile.skill, Path.GetFileName output)
-        | _ -> ()
+    let outputs =
+        Manifest.wikiruTargets
+        |> List.choose (function
+            | Target.StudentSkill(_, output) -> Some output
+            | _ -> None)
+
+    Assert.NotEmpty outputs
+
+    for output in outputs do
+        Assert.Equal(SkillFile.skill, Path.GetFileName output)
 
 [<Fact>]
 let ``role-playスキルが読む呼称表はwikiruの対象が書き出す`` () =
+    Assert.NotEmpty Manifest.rolePlaySkills
+
     for skill in Manifest.rolePlaySkills do
         Assert.Contains(skill.Appellation, wikiruOutputs)
+
+[<Fact>]
+let ``role-playスキルの出力先には衣装別の参照ファイルが書き出される`` () =
+    // role-playスキルは衣装別の参照ファイルを出力先のディレクトリから読むため、
+    // 参照の出力先が別のディレクトリだと衣装が1つも載らないスキルが黙って生成される。
+    let references =
+        Manifest.wikiruTargets
+        |> List.choose (function
+            | Target.RolePlayReference(_, output) -> Some output
+            | _ -> None)
+
+    Assert.NotEmpty Manifest.rolePlaySkills
+
+    for skill in Manifest.rolePlaySkills do
+        Assert.Contains(references, fun reference -> Path.GetDirectoryName reference = skill.Output)
 
 [<Fact>]
 let ``対象のパスはルートからの相対として解決される`` () =
