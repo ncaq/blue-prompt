@@ -128,12 +128,33 @@ let createRolePlaySkills (root: string) : Task<unit> =
         do! Fmt.formatFiles paths
     }
 
-/// wikiruの対象を全て並列に取得して書き出し、
-/// 続けてrole-playスキルを生成し直してから、まとめてnix fmtを1回だけ掛ける。
-/// wikiruの取得に失敗した対象があれば、
-/// 成功した分だけを整形して途中まで更新された状態を整えた上でGenerationFailedを送出する。
+/// wikiruの取得の結果を受けて、role-playスキルの生成と整形と失敗の報告を決める。
+/// 全て成功していればrole-playスキルを書き出し、
+/// wikiruとrole-playのパスをまとめてformatFilesの1回で整形する。
+/// 失敗があれば成功した分だけを整形して途中まで更新された状態を整えた上で、
+/// GenerationFailedを送出する。
 /// role-playスキルは呼称表と衣装別の参照ファイルを読むため、
 /// それらが古いままかもしれない失敗時には生成し直さない。
+/// 整形とrole-playの書き出しは引数で受け取り、
+/// wikiruへ取りに行かずにこの分岐を検証できるようにする。
+let finish
+    (formatFiles: string list -> Task<unit>)
+    (writeRolePlay: unit -> Task<string list>)
+    (results: (string * Result<string list, exn>) list)
+    : Task<unit> =
+    task {
+        match partition results with
+        | wikiruPaths, [] ->
+            let! rolePlayPaths = writeRolePlay ()
+            do! formatFiles (wikiruPaths @ rolePlayPaths)
+        | wikiruPaths, failures ->
+            do! formatFiles wikiruPaths
+            return raise (GenerationFailed failures)
+    }
+
+/// wikiruの対象を全て並列に取得して書き出し、
+/// 続けてrole-playスキルを生成し直してから、まとめてnix fmtを1回だけ掛ける。
+/// 失敗時の扱いはfinishのとおり。
 let createAll (root: string) : Task<unit> =
     task {
         let! results =
@@ -143,11 +164,5 @@ let createAll (root: string) : Task<unit> =
                 (fun () -> Target.writeWikiru (Target.resolveWikiru root target)))
             |> runBounded degreeOfParallelism
 
-        match partition results with
-        | wikiruPaths, [] ->
-            let! rolePlayPaths = writeRolePlaySkills root
-            do! Fmt.formatFiles (wikiruPaths @ rolePlayPaths)
-        | wikiruPaths, failures ->
-            do! Fmt.formatFiles wikiruPaths
-            return raise (GenerationFailed failures)
+        do! finish Fmt.formatFiles (fun () -> writeRolePlaySkills root) results
     }
