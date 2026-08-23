@@ -20,6 +20,7 @@
     <Compile Include="OpenWebuiSpec.fs" />
     <Compile Include="OpenWebuiKnowledgeSpec.fs" />
     <Compile Include="OpenWebuiSyncSpec.fs" />
+    <Compile Include="ManifestSpec.fs" />
     <Compile Include="ProgramSpec.fs" />
   </ItemGroup>
   <ItemGroup>

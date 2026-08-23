@@ -64,6 +64,18 @@ LLMに記憶を頼らせるのではなく、
 各スキルのナレッジは、
 このリポジトリのF#プログラムでwikiruの記事から自動生成しています。
 
+既存のナレッジをまとめて更新する時は、
+リポジトリルートで以下を実行します。
+`src/BluePrompt/Manifest.fs`に書いた対象を並列に取得して書き出し、
+最後に`nix fmt`を1回だけ掛けます。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru all --root .
+```
+
+新しいスキルを足す時は以下の個別コマンドで生成してから、
+以後の一括更新に含めるために`Manifest.fs`へも対象を足します。
+
 キャラ呼称表のスキルは、
 テーブルを「誰が誰をどう呼ぶか」のレコードへ構造化した上で、
 LLM参照用の`reference.md`と機械読み出し用の`appellation.json`を、

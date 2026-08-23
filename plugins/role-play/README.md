@@ -26,11 +26,16 @@
 [ブルーアーカイブ(ブルアカ)攻略有志Wiki](https://bluearchive.wikiru.jp/)
 の生徒個別ページからの自動生成ファイルです。
 手で編集せず、リポジトリルートで以下のコマンドで再生成してください。
+`src/BluePrompt/Manifest.fs`に書いた生成物を全てまとめて更新します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page 'ユウカ' --output plugins/role-play/skills/yuuka/normal.md
+dotnet run --project src/BluePrompt -- wikiru all --root .
+```
+
+衣装を1つだけ生成し直す時は個別コマンドを使います。
+
+```console
 dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page 'ユウカ（体操服）' --output plugins/role-play/skills/yuuka/track.md
-dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page 'ユウカ（パジャマ）' --output plugins/role-play/skills/yuuka/pajama.md
 ```
 
 ## 本文の生成
@@ -106,10 +111,11 @@ dotnet run --project src/BluePrompt -- roleplay skill --character 'ユウカ' \
 
 `kotori`と`seia`はまだこの構成に移行しておらず、
 SKILL.mdに手で貼り付けたデータのままです。
-移行する時はリポジトリルートのflake.nixの`rolePlayCallers`へ、
-スキル名と呼び名の対応を足してください。
+移行する時は`src/BluePrompt/Manifest.fs`の`rolePlaySkills`へ、
+呼び名と出力先を足してください。
 呼び名はcharacter.mdからは決まらないので自動では埋まらず、
-足さないと生成物の検証が評価時のassertで止まります。
+足さないと統合チェックの`roleplay-generated`が、
+生成し直されない生成物の差分として止まります。
 
 ## 配布物から除かれるファイル
 

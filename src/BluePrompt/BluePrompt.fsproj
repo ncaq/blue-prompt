@@ -22,6 +22,8 @@
     <Compile Include="OpenWebuiKnowledge.fs" />
     <Compile Include="OpenWebuiSync.fs" />
     <Compile Include="RolePlay.fs" />
+    <Compile Include="Target.fs" />
+    <Compile Include="Manifest.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>

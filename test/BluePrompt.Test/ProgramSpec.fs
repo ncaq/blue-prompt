@@ -10,7 +10,8 @@ open BluePrompt
 /// 判別共用体で宣言した順に並べる。
 /// ヘルプの並びもケースの並びから決まるため、並び順の期待もこの表が持つ。
 let private commands =
-    [ "wikiru appellation",
+    [ "wikiru all", [| "wikiru"; "all"; "--root"; "." |]
+      "wikiru appellation",
       [| "wikiru"
          "appellation"
          "--page"
@@ -27,6 +28,7 @@ let private commands =
       [| "wikiru"; "student-skill"; "--page"; "ページ"; "--output"; "SKILL.md" |]
       "wikiru html", [| "wikiru"; "html"; "--page"; "ページ"; "--output"; "out.html" |]
       "wikiru student-html", [| "wikiru"; "student-html"; "--page"; "ページ"; "--output"; "out.html" |]
+      "roleplay all", [| "roleplay"; "all"; "--root"; "." |]
       "roleplay skill",
       [| "roleplay"
          "skill"
@@ -60,6 +62,7 @@ let private parsedName (argv: string array) : string =
     match (parser.ParseCommandLine argv).GetSubCommand() with
     | Program.RootCommand.Wikiru sub ->
         match sub.GetSubCommand() with
+        | Program.WikiruCommand.All _ -> "wikiru all"
         | Program.WikiruCommand.Appellation _ -> "wikiru appellation"
         | Program.WikiruCommand.Knowledge _ -> "wikiru knowledge"
         | Program.WikiruCommand.Roleplay_Reference _ -> "wikiru roleplay-reference"
@@ -69,6 +72,7 @@ let private parsedName (argv: string array) : string =
         | Program.WikiruCommand.Student_Html _ -> "wikiru student-html"
     | Program.RootCommand.Roleplay sub ->
         match sub.GetSubCommand() with
+        | Program.RolePlayCommand.All _ -> "roleplay all"
         | Program.RolePlayCommand.Skill _ -> "roleplay skill"
     | Program.RootCommand.Open_Webui sub ->
         match sub.GetSubCommand() with

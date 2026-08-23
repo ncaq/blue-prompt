@@ -289,12 +289,14 @@ let private writeFile (outputPath: string) (content: string) : Task<unit> =
 
 /// wikiruの記事をMarkdown化し、出典ヘッダ付きのナレッジファイルとして書き出す。
 /// スキルが参照するリファレンスファイルの生成の入口。
-/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
-let writeKnowledge (pageName: string) (outputPath: string) : Task<unit> =
+/// 整形は掛けず、書き出したパスを返す。
+/// 一括生成では複数の書き出しを終えてからnix fmtを1回で掛けるため、
+/// 整形の呼び出しは書き出しと分けてTargetが持つ。
+let writeKnowledge (pageName: string) (outputPath: string) : Task<string list> =
     task {
         let! markdown = fetchMarkdown pageName
         do! writeFile outputPath (knowledgeHeader pageName + markdown)
-        do! Fmt.formatFile outputPath
+        return [ outputPath ]
     }
 
 /// wikiruの記事から抽出・変形した本文を、Markdown化せずHTMLのまま書き出す。
@@ -382,8 +384,8 @@ user-invocable: false
 
 /// wikiruの生徒個別ページをMarkdown化し、SKILL.mdとして書き出す。
 /// スキル名は出力先のディレクトリ名と一致する必要があるため、出力パスから導出する。
-/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
-let writeStudentSkill (pageName: string) (outputPath: string) : Task<unit> =
+/// 整形は掛けず、書き出したパスを返す。
+let writeStudentSkill (pageName: string) (outputPath: string) : Task<string list> =
     task {
         let skillName =
             match Path.GetDirectoryName outputPath with
@@ -396,25 +398,29 @@ let writeStudentSkill (pageName: string) (outputPath: string) : Task<unit> =
 
         let! markdown = fetchStudentMarkdown pageName
         do! writeFile outputPath (studentSkillMarkdown skillName pageName markdown)
-        do! Fmt.formatFile outputPath
+        return [ outputPath ]
     }
 
 /// wikiruの生徒個別ページをMarkdown化し、
 /// role-playスキルが参照する衣装別の参照ファイルとして書き出す。
-/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
-let writeRolePlayReference (pageName: string) (outputPath: string) : Task<unit> =
+/// 整形は掛けず、書き出したパスを返す。
+let writeRolePlayReference (pageName: string) (outputPath: string) : Task<string list> =
     task {
         let! markdown = fetchRolePlayMarkdown pageName
         do! writeFile outputPath (knowledgeHeader pageName + markdown)
-        do! Fmt.formatFile outputPath
+        return [ outputPath ]
     }
 
 /// wikiruのキャラ呼称表ページを構造化データへパースし、
 /// LLM参照用のreference.mdと機械読み出し用のJSONを一度の取得から書き出す。
 /// JSONをリポジトリへ併置することで、
 /// 後段の生成処理がwikiruへ再アクセスせずに呼称を読み出せるようにする。
-/// どちらも書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
-let writeAppellation (pageName: string) (markdownPath: string) (jsonPath: string) : Task<unit> =
+/// 整形は掛けず、書き出した2つのパスを返す。
+let writeAppellation
+    (pageName: string)
+    (markdownPath: string)
+    (jsonPath: string)
+    : Task<string list> =
     task {
         let! html = Page.fetchContentHtml (pageUri pageName) structuredContentQuery
         let entries = Appellation.parseHtml html
@@ -429,17 +435,16 @@ let writeAppellation (pageName: string) (markdownPath: string) (jsonPath: string
               Entries = entries }
 
         do! writeFile jsonPath (Appellation.toJson document)
-        // nix fmtの起動が所要時間の支配項なので、2ファイルを1回の起動でまとめて整形する。
-        do! Fmt.formatFiles [ markdownPath; jsonPath ]
+        return [ markdownPath; jsonPath ]
     }
 
 /// wikiruの学校別キャラクター一覧ページを構造化データへパースし、
 /// LLM参照用のreference.mdを書き出す。
-/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
-let writeSchool (pageName: string) (outputPath: string) : Task<unit> =
+/// 整形は掛けず、書き出したパスを返す。
+let writeSchool (pageName: string) (outputPath: string) : Task<string list> =
     task {
         let! html = Page.fetchContentHtml (pageUri pageName) structuredContentQuery
         let entries = School.parseHtml html
         do! writeFile outputPath (knowledgeHeader pageName + School.toReferenceMarkdown entries)
-        do! Fmt.formatFile outputPath
+        return [ outputPath ]
     }

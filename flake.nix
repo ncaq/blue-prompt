@@ -46,31 +46,13 @@
         )
       ) pluginNames;
 
-      # 本文をテンプレートから生成しているrole-playスキルの、生成コマンドへ渡す呼び名。
-      # 呼び名はcharacter.mdからは決まらないためここで対応付ける。
-      # 手で貼り付けたデータのままのスキルはcharacter.mdを持たないので対象から外れる。
-      rolePlayCallers = {
-        yuuka = "ユウカ";
-      };
-
       # character.mdを持つrole-playスキルは、本文をテンプレートから生成している。
-      templatedSkillNames = lib.sort lib.lessThan (
-        lib.filter (
-          skillName: builtins.pathExists (pluginDirOf "role-play" + "/skills/${skillName}/character.md")
-        ) (map (skill: skill.skillName) (lib.filter (skill: skill.pluginName == "role-play") skills))
-      );
-
-      # 呼び名の追記漏れで、生徒を移行しても生成物の検証から黙って外れるのを防ぐ。
-      templatedSkills =
-        assert lib.assertMsg (lib.sort lib.lessThan (lib.attrNames rolePlayCallers) == templatedSkillNames)
-          ''
-            rolePlayCallersの一覧がcharacter.mdを持つrole-playスキルと一致しません。
-            rolePlayCallers: ${toString (lib.attrNames rolePlayCallers)}
-            character.mdを持つスキル: ${toString templatedSkillNames}'';
-        map (skillName: {
-          inherit skillName;
-          caller = rolePlayCallers.${skillName};
-        }) templatedSkillNames;
+      # 手で貼り付けたデータのままのスキルはcharacter.mdを持たないので対象から外れる。
+      # 生成コマンドへ渡す呼び名や出力先はblue-promptのマニフェスト(src/BluePrompt/Manifest.fs)が持ち、
+      # ここでは生成し直す前に消す生成物の場所を知るためだけに使う。
+      templatedSkillNames = lib.filter (
+        skillName: builtins.pathExists (pluginDirOf "role-play" + "/skills/${skillName}/character.md")
+      ) (map (skill: skill.skillName) (lib.filter (skill: skill.pluginName == "role-play") skills));
 
       # リポジトリにはあるが、スキルとしては配布しないファイルの名前。
       # character.mdは本文を生成するための入力で、
@@ -409,31 +391,21 @@
                 cp ${./.editorconfig} work/.editorconfig
                 cp ${./.editorconfig-checker.json} work/.editorconfig-checker.json
                 cp ${./_typos.toml} work/_typos.toml
-                ${lib.concatMapStrings (
-                  { skillName, caller }:
-                  let
-                    skillDir = ./plugins + "/role-play/skills/${skillName}";
-                    templateDir = ./plugins + "/role-play";
-                    appellationDir = ./plugins + "/jp-wikiru-bluearchive/skills/character-appellation";
-                    compare = outputName: ''
-                      if ! diff -u ${skillDir}/${outputName} work/${skillName}/${outputName}; then
-                        echo "${skillName}の${outputName}が生成し直されていません" >&2
-                        exit 1
-                      fi
-                    '';
-                  in
-                  ''
-                    cp -r ${skillDir} work/${skillName}
-                    chmod -R u+w work/${skillName}
-                    ${lib.getExe blue-prompt} roleplay skill \
-                      --character ${lib.escapeShellArg caller} \
-                      --template ${templateDir} \
-                      --appellation ${appellationDir}/appellation.json \
-                      --output work/${skillName}
-                    ${compare "SKILL.md"}
-                    ${compare "MODEL.md"}
-                  ''
-                ) templatedSkills}
+                # どのスキルを生成するかはblue-promptのマニフェストだけが知っている。
+                # 生成物を消してから生成し直すことで、
+                # character.mdを持つのにマニフェストから漏れたスキルは、
+                # 生成物が無いままになって差分として現れる。
+                cp -r ${./plugins} work/plugins
+                chmod -R u+w work/plugins
+                ${lib.concatMapStrings (skillName: ''
+                  rm work/plugins/role-play/skills/${skillName}/SKILL.md
+                  rm work/plugins/role-play/skills/${skillName}/MODEL.md
+                '') templatedSkillNames}
+                ${lib.getExe blue-prompt} roleplay all --root work
+                if ! diff -ru ${./plugins}/role-play work/plugins/role-play; then
+                  echo "role-playスキルが生成し直されていません" >&2
+                  exit 1
+                fi
                 touch $out
               '';
         in
