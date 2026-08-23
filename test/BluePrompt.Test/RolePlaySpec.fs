@@ -159,6 +159,18 @@ let ``readQuotesはファイル名の順に発言を読む`` () =
     )
 
 [<Fact>]
+let ``quoteディレクトリは衣装として拾われない`` () =
+    // 発言を1つ下のディレクトリへ分けているのは、
+    // 同じ階層へ置くとreadReferencesが出典の行を持たない衣装として読むためである。
+    // readReferencesが再帰探索へ変わればこの前提は崩れる。
+    let directory = makeQuoteDirectory [ "budget.md", "## 予算の話\n\n本文\n" ]
+
+    Assert.Equal<string list>(
+        [ "normal.md" ],
+        (readReferences directory).GetAwaiter().GetResult() |> List.map _.FileName
+    )
+
+[<Fact>]
 let ``quoteディレクトリの無いスキルは発言を持たない`` () =
     // 発言は手書きなので、用意していない生徒が居る。
     let directory = makeDirectory [ "normal.md", reference "ユウカ" ]
