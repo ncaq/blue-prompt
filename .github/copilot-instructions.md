@@ -333,6 +333,22 @@ OpenCodeのスキルも、
 除外する名前はflake.nixの`nonSkillFileNames`が持っていて、
 漏れは統合チェックが検出します。
 
+抽出設定を調整する時は、
+以下でpandoc変換前の中間HTMLを確認できます。
+こちらは`nix fmt`を実行しません。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru html --page '<ページ名>' --output <出力ファイル>
+```
+
+生徒個別ページは折りたたみを残すなど抽出設定が異なるため、
+生徒個別ページの設定での中間HTMLは以下で確認します。
+こちらも`nix fmt`を実行しません。
+
+```console
+dotnet run --project src/BluePrompt -- wikiru student-html --page '<生徒のページ名>' --output <出力ファイル>
+```
+
 ## 代表的な発言
 
 作中で実際に話した長めの発言を、
@@ -353,22 +369,6 @@ OpenCodeのスキルも、
 発言を持たない生徒も居るため、
 quote/が無ければ0件として扱い、
 本文からは節ごと消えます。
-
-抽出設定を調整する時は、
-以下でpandoc変換前の中間HTMLを確認できます。
-こちらは`nix fmt`を実行しません。
-
-```console
-dotnet run --project src/BluePrompt -- wikiru html --page '<ページ名>' --output <出力ファイル>
-```
-
-生徒個別ページは折りたたみを残すなど抽出設定が異なるため、
-生徒個別ページの設定での中間HTMLは以下で確認します。
-こちらも`nix fmt`を実行しません。
-
-```console
-dotnet run --project src/BluePrompt -- wikiru student-html --page '<生徒のページ名>' --output <出力ファイル>
-```
 
 # Open WebUI向けの生成と同期
 
