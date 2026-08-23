@@ -180,10 +180,19 @@ let ``見出しから始まらない発言はQuoteShapeErrorになる`` () =
 
 [<Fact>]
 let ``quotesMarkdownは見出しごと節を組み立てる`` () =
-    let markdown = quotesMarkdown "ユウカ" [ "## 予算の話\n\n本文" ]
+    // 発言と発言の間に空行が入らないと、見出しが前の本文へ吸着してMarkdownが壊れる。
+    // 区切りは2件以上ある時にしか現れないので、2件を渡して全文を固定する。
+    let markdown = quotesMarkdown "ユウカ" [ "## 予算の話\n\n本文"; "## 会計の話\n\n本文" ]
 
-    Assert.StartsWith("# 代表的な発言\n\n作中でユウカが実際に話した発言です。\n", markdown)
-    Assert.EndsWith("\n\n## 予算の話\n\n本文", markdown)
+    Assert.Equal(
+        "# 代表的な発言\n\n"
+        + "作中でユウカが実際に話した発言です。\n"
+        + "ボイスの短いセリフだけでは掴めない、話の運び方と長い語りの組み立てが分かるものを選んでいます。\n"
+        + "そのまま繰り返さず、言葉選びと話の展開の手本として使ってください。\n\n"
+        + "## 予算の話\n\n本文\n\n"
+        + "## 会計の話\n\n本文",
+        markdown
+    )
 
 [<Fact>]
 let ``発言が無ければ節ごと消える`` () =
