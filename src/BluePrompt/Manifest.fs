@@ -133,6 +133,7 @@ let createRolePlaySkills (root: string) : Task<unit> =
 /// wikiruとrole-playのパスをまとめてformatFilesの1回で整形する。
 /// 失敗があれば成功した分だけを整形して途中まで更新された状態を整えた上で、
 /// GenerationFailedを送出する。
+/// その整形が落ちた場合も取得の失敗の理由は失わず、整形の失敗を一覧へ足して送出する。
 /// role-playスキルは呼称表と衣装別の参照ファイルを読むため、
 /// それらが古いままかもしれない失敗時には生成し直さない。
 /// 整形とrole-playの書き出しは引数で受け取り、
@@ -148,8 +149,18 @@ let finish
             let! rolePlayPaths = writeRolePlay ()
             do! formatFiles (wikiruPaths @ rolePlayPaths)
         | wikiruPaths, failures ->
-            do! formatFiles wikiruPaths
-            return raise (GenerationFailed failures)
+            // 整形が落ちても取得の失敗の理由は報告したいので、
+            // 整形の失敗は失敗の一覧の末尾へ加えてまとめて送出する。
+            let! formatFailure =
+                task {
+                    try
+                        do! formatFiles wikiruPaths
+                        return []
+                    with error ->
+                        return [ "nix fmt", error ]
+                }
+
+            return raise (GenerationFailed(failures @ formatFailure))
     }
 
 /// wikiruの対象を全て並列に取得して書き出し、
