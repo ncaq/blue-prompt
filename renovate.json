@@ -1,6 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "gitIgnoredAuthorsが指しているのは、update-depsワークフローがRenovateのブランチへ足すdeps.jsonの再生成コミットの作者であるblue-prompt-update-depsアプリです。Renovateは自分以外の作者のコミットがあるブランチを人手で編集されたとみなして以後の更新を止めるため、この作者だけは自分たちのものとして扱わせます。コミットする側のGitHub Appを作り直すとメールアドレスの数値部分が変わります。"
+  ],
   "extends": ["github>ncaq/renovate-config"],
+  "gitIgnoredAuthors": ["320042325+blue-prompt-update-deps[bot]@users.noreply.github.com"],
   "packageRules": [
     {
       "description": "FSharp.CoreはFSharp.Analyzers.SDKが完全一致で要求する版に従うため、単独で上げるとNU1608で復元が失敗する。SDKの更新に合わせて手動で揃える。",

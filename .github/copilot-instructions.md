@@ -148,6 +148,27 @@ deps.jsonの再生成と整形が完了します。
 nix run .#update-deps
 ```
 
+RenovateはfsprojとDirectory.Build.propsのPackageReferenceしか書き換えないため、
+そのままではdeps.jsonが古いまま残りnix-fast-buildが落ちます。
+Mendのホスト版RenovateはpostUpgradeTasksを実行できないので、
+代わりに`.github/workflows/update-deps.yml`が、
+Renovateのブランチへdeps.jsonの再生成をコミットして追従させます。
+
+コミットはGitのpushではなくcontents APIへの書き込みで作ります。
+GitHubがサーバ側で署名するためVerifiedになり、
+同じ経路で作られるRenovate自身のコミットと揃うからです。
+
+トークンはGITHUB_TOKENではなく専用のGitHub Appのものを使います。
+GITHUB_TOKENが作ったコミットはワークフローを起動しない仕様のため、
+必須チェックのnix-fast-buildが最新のコミットで走らないまま止まってしまうからです。
+Client IDはActionsのvariableの`UPDATE_DEPS_APP_CLIENT_ID`に、
+秘密鍵はsecretの`UPDATE_DEPS_APP_PRIVATE_KEY`にあります。
+
+Renovateは自分以外の作者のコミットがあるブランチを、
+人手で編集されたとみなして以後の更新を止めます。
+このワークフローのコミットで止まらないように、
+renovate.jsonの`gitIgnoredAuthors`が作者を無視の対象にしています。
+
 # スキルの呼び出し制御
 
 `plugins/jp-wikiru-bluearchive/`配下のナレッジのスキルは、
