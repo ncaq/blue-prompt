@@ -395,11 +395,13 @@
                 # 生成物を消してから生成し直すことで、
                 # character.mdを持つのにマニフェストから漏れたスキルは、
                 # 生成物が無いままになって差分として現れる。
+                # 生成物がまだコミットされていないスキルでもここでは止めず、
+                # 判定は後段のdiffに一本化する。
                 cp -r ${./plugins} work/plugins
                 chmod -R u+w work/plugins
                 ${lib.concatMapStrings (skillName: ''
-                  rm work/plugins/role-play/skills/${skillName}/SKILL.md
-                  rm work/plugins/role-play/skills/${skillName}/MODEL.md
+                  rm -f work/plugins/role-play/skills/${skillName}/SKILL.md
+                  rm -f work/plugins/role-play/skills/${skillName}/MODEL.md
                 '') templatedSkillNames}
                 ${lib.getExe blue-prompt} roleplay all --root work
                 if ! diff -ru ${./plugins}/role-play work/plugins/role-play; then
