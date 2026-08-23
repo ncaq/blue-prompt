@@ -4,15 +4,16 @@ name: update-deps
 # Nixのビルドが読むdeps.jsonが古いまま残り必須チェックのnix-fast-buildが落ちます。
 # Mendのホスト版RenovateはpostUpgradeTasksを実行できないので、
 # 代わりにRenovateのブランチへdeps.jsonの再生成をコミットして追従させます。
+#
+# NuGetと関係のない更新でも起動しますが、
+# deps.jsonに差分が無ければ何もせず終わるので対象を絞っていません。
+# Renovateがrebaseで強制pushすると、
+# GitHubが見る差分にはこのワークフローが足したコミットの巻き戻ししか現れないため、
+# PackageReferenceを持つファイルで絞ると、
+# deps.jsonが古いまま復旧しない経路ができてしまいます。
 on:
   push:
     branches: [renovate/**]
-    # deps.jsonが動くのはNuGetの依存が変わった時だけなので、
-    # PackageReferenceを持つファイルに絞ります。
-    # 取りこぼした場合もnix-fast-buildが落ちて気付けます。
-    paths:
-      - "**/*.fsproj"
-      - Directory.Build.props
 
 permissions: {}
 
