@@ -230,14 +230,14 @@ let private destinations =
 /// 届け先はClaude Code向けのSKILL.mdとOpen WebUIのModel向けのMODEL.mdの2つで、
 /// テンプレートも出力もファイル名が決まっているため、受け取るのはそれぞれのディレクトリになる。
 /// 生徒に固有の手書きの部分と衣装別の参照ファイルは、出力先のディレクトリから読む。
-/// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
-/// nixの起動とtreefmtの評価が所要時間の支配項なので、2つの届け先をまとめて1回で整形する。
+/// 整形は掛けず、書き出した2つのパスを返す。
+/// 整形の呼び出しは一括生成で1回にまとめられるように書き出しと分けてTargetが持つ。
 let writeSkill
     (caller: string)
     (templateDirectory: string)
     (jsonPath: string)
     (outputDirectory: string)
-    : Task<unit> =
+    : Task<string list> =
     task {
         let characterPath = Path.Combine(outputDirectory, SkillFile.character)
         let! character = File.ReadAllTextAsync characterPath
@@ -267,5 +267,5 @@ let writeSkill
 
             do! File.WriteAllTextAsync(outputPath, skill)
 
-        do! Fmt.formatFiles (List.map snd paths)
+        return List.map snd paths
     }

@@ -18,6 +18,17 @@ open Argu
 // FCSのSimplifyNamesがこの属性を見ておらず、
 // 省略するとコンパイルが通らない修飾まで冗長と報告するためリントが通らない。
 
+/// マニフェストの対象をまとめて扱うコマンドの引数。
+/// マニフェストの対象はリポジトリのルートからの相対パスなので、その基準だけを取る。
+module Root =
+    type Args =
+        | [<ExactlyOnce>] Root of directory: string
+
+        interface IArgParserTemplate with
+            member this.Usage =
+                match this with
+                | Root _ -> "マニフェストの相対パスの基準にするリポジトリのルート。"
+
 /// wikiruのページ名と単一の出力先だけを取るコマンドの引数。
 module PageOutput =
     type Args =
@@ -95,6 +106,7 @@ module Sync =
 module WikiruCommand =
     [<CliPrefix(CliPrefix.None); HelpFlags("--help", "-h", "help")>]
     type Args =
+        | All of ParseResults<Root.Args>
         | Appellation of ParseResults<AppellationOutput.Args>
         | Knowledge of ParseResults<PageOutput.Args>
         | Roleplay_Reference of ParseResults<PageOutput.Args>
@@ -106,6 +118,7 @@ module WikiruCommand =
         interface IArgParserTemplate with
             member this.Usage =
                 match this with
+                | All _ -> "マニフェストの対象を並列に取得して書き出し、role-playスキルも生成し直してから、まとめてnix fmtを掛ける。"
                 | Appellation _ -> "キャラ呼称表を構造化し、参照用のreference.mdと機械読み出し用のJSONを書き出す。"
                 | Knowledge _ -> "記事をMarkdown化してナレッジファイルとして書き出す。"
                 | Roleplay_Reference _ -> "生徒個別ページからプロフィールとボイスを抜き出し、衣装別の参照ファイルとして書き出す。"
@@ -117,11 +130,13 @@ module WikiruCommand =
 module RolePlayCommand =
     [<CliPrefix(CliPrefix.None); HelpFlags("--help", "-h", "help")>]
     type Args =
+        | All of ParseResults<Root.Args>
         | Skill of ParseResults<RolePlaySkill.Args>
 
         interface IArgParserTemplate with
             member this.Usage =
                 match this with
+                | All _ -> "マニフェストのrole-playスキルを全て生成し直してから、まとめてnix fmtを掛ける。"
                 | Skill _ -> "テンプレートへcharacter.mdと衣装別の参照ファイルの一覧と呼称表を流し込んで書き出す。"
 
 module OpenWebuiCommand =
@@ -170,31 +185,37 @@ let private runWikiru (args: ParseResults<WikiruCommand.Args>) : int =
     let pageOutput (sub: ParseResults<PageOutput.Args>) =
         sub.GetResult PageOutput.Page, sub.GetResult PageOutput.Output
 
+    /// 引数から組み立てた生成対象を書き出して整形する。
+    let create (target: Target.WikiruTarget) = run (Target.createWikiru target)
+
     match args.GetSubCommand() with
+    | WikiruCommand.All sub -> run (Manifest.createAll (sub.GetResult Root.Root))
     | WikiruCommand.Appellation sub ->
-        run (
-            Wikiru.writeAppellation
-                (sub.GetResult AppellationOutput.Page)
-                (sub.GetResult AppellationOutput.Markdown_Output)
-                (sub.GetResult AppellationOutput.Json_Output)
+        create (
+            Target.Appellation(
+                sub.GetResult AppellationOutput.Page,
+                sub.GetResult AppellationOutput.Markdown_Output,
+                sub.GetResult AppellationOutput.Json_Output
+            )
         )
-    | WikiruCommand.Knowledge sub -> run (pageOutput sub ||> Wikiru.writeKnowledge)
-    | WikiruCommand.Roleplay_Reference sub -> run (pageOutput sub ||> Wikiru.writeRolePlayReference)
-    | WikiruCommand.School sub -> run (pageOutput sub ||> Wikiru.writeSchool)
-    | WikiruCommand.Student_Skill sub -> run (pageOutput sub ||> Wikiru.writeStudentSkill)
+    | WikiruCommand.Knowledge sub -> create (Target.Knowledge(pageOutput sub))
+    | WikiruCommand.Roleplay_Reference sub -> create (Target.RolePlayReference(pageOutput sub))
+    | WikiruCommand.School sub -> create (Target.School(pageOutput sub))
+    | WikiruCommand.Student_Skill sub -> create (Target.StudentSkill(pageOutput sub))
     | WikiruCommand.Html sub -> run (pageOutput sub ||> Wikiru.writeContentHtml Wikiru.contentQuery)
     | WikiruCommand.Student_Html sub ->
         run (pageOutput sub ||> Wikiru.writeContentHtml Wikiru.studentContentQuery)
 
 let private runRolePlay (args: ParseResults<RolePlayCommand.Args>) : int =
     match args.GetSubCommand() with
+    | RolePlayCommand.All sub -> run (Manifest.createRolePlaySkills (sub.GetResult Root.Root))
     | RolePlayCommand.Skill sub ->
         run (
-            RolePlay.writeSkill
-                (sub.GetResult RolePlaySkill.Character)
-                (sub.GetResult RolePlaySkill.Template)
-                (sub.GetResult RolePlaySkill.Appellation)
-                (sub.GetResult RolePlaySkill.Output)
+            Target.createRolePlay
+                { Caller = sub.GetResult RolePlaySkill.Character
+                  Template = sub.GetResult RolePlaySkill.Template
+                  Appellation = sub.GetResult RolePlaySkill.Appellation
+                  Output = sub.GetResult RolePlaySkill.Output }
         )
 
 /// 同期先への接続情報を引数から組み立てる。
@@ -248,4 +269,10 @@ let main argv =
     // 同期の失敗はスタックトレースではなく理由だけを表示する。
     | OpenWebuiSync.SyncError message ->
         eprintfn $"%s{message}"
+        1
+    // 一括更新の失敗は対象ごとの理由を並べて表示する。
+    | Manifest.GenerationFailed failures ->
+        for name, error in failures do
+            eprintfn $"%s{name}: %s{error.Message}"
+
         1
