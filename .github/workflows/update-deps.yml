@@ -14,6 +14,11 @@ name: update-deps
 on:
   push:
     branches: [renovate/**]
+  # Renovateの更新を待たずに動作を確かめられるようにします。
+  # 選んだブランチへそのままコミットするので、
+  # 試す時は`renovate/`で始まる使い捨てのブランチを使ってください。
+  # masterを選んでもrulesetがpull requestを必須にしているため書き込みは弾かれます。
+  workflow_dispatch:
 
 permissions: {}
 
