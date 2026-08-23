@@ -3,7 +3,7 @@
 /// Knowledgeを組み立てるOpenWebuiKnowledgeと、
 /// 本文を生成するRolePlayが別々に必要とするため、ここを唯一の出どころにする。
 ///
-/// 配布物から除くファイルの一覧はflake.nixのnonSkillFileNamesが別に持っている。
+/// 配布物から除く名前の一覧はflake.nixのnonSkillNamesが別に持っている。
 /// Nixへ定数を渡す手段が無いので重複は仕組み上残る。
 /// どちらかの名前を変える時はもう片方も直す。
 module BluePrompt.SkillFile

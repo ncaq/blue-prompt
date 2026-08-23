@@ -54,7 +54,7 @@
         skillName: builtins.pathExists (pluginDirOf "role-play" + "/skills/${skillName}/character.md")
       ) (map (skill: skill.skillName) (lib.filter (skill: skill.pluginName == "role-play") skills));
 
-      # リポジトリにはあるが、スキルとしては配布しないファイルの名前。
+      # リポジトリにはあるが、スキルとしては配布しないファイルとディレクトリの名前。
       # character.mdとquoteは本文を生成するための入力で、
       # *.template.mdは全生徒で共通の骨格、
       # MODEL.mdはOpen WebUIのModel向けの本文なので、
@@ -65,7 +65,7 @@
       # F#側で同じ名前を持つのはsrc/BluePrompt/SkillFile.fsで、
       # Nixへ定数を渡す手段が無いので重複は仕組み上残る。
       # どちらかの名前を変える時はもう片方も直す。
-      nonSkillFileNames = [
+      nonSkillNames = [
         "character.md"
         "MODEL.md"
         "MODEL.template.md"
@@ -80,7 +80,7 @@
         name: path:
         builtins.path {
           inherit name path;
-          filter = entry: _type: !(lib.elem (baseNameOf entry) nonSkillFileNames);
+          filter = entry: _type: !(lib.elem (baseNameOf entry) nonSkillNames);
         };
 
       # プラグインごとの、Open WebUIでの登録先。
@@ -501,9 +501,9 @@
                   let
                     assertClean = path: ''
                       if [ -n "$(find ${path} \( ${
-                        lib.concatMapStringsSep " -o " (name: "-name ${name}") nonSkillFileNames
+                        lib.concatMapStringsSep " -o " (name: "-name ${name}") nonSkillNames
                       } \) -print -quit)" ]; then
-                        echo "配布しないファイルが混ざっています: ${path}" >&2
+                        echo "配布しないファイルかディレクトリが混ざっています: ${path}" >&2
                         exit 1
                       fi
                     '';
