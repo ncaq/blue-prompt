@@ -188,6 +188,9 @@ let private checkKnowledgeSkills (root: string) : Task<unit> =
 /// 失敗があればGenerationFailedを送出する。
 let writeRolePlaySkills (root: string) : Task<string list> =
     task {
+        // ナレッジの検査が効くのはこの一括更新の経路だけで、roleplay skillの単体の生成は素通りする。
+        // 掛ける場所を増やしても、Manifestへ足す前のスキルはrolePlaySkillsに載っておらず検査の対象にならない。
+        // どちらにせよManifestへ足した後の一括更新で落ちるので、ここ1箇所に留める。
         do! checkKnowledgeSkills root
 
         let! results =
