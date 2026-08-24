@@ -176,6 +176,56 @@ let ``同期の失敗は理由だけを表示して非0を返す`` () =
     )
 
 [<Fact>]
+let ``実在しないナレッジを挙げたcharacter.mdは名前を並べて非0を返す`` () =
+    // 例外の既定のメッセージには実在しない名前が乗らないため、
+    // ハンドラを外すとスタックトレースだけが出て止まった理由が消える。
+    let root = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+
+    for skill in Manifest.rolePlaySkills do
+        let directory = Path.Combine(root, skill.Output)
+        Directory.CreateDirectory directory |> ignore
+
+        File.WriteAllText(
+            Path.Combine(directory, SkillFile.character),
+            "---\nname: skill\ndescription: 説明\nknowledge: character-nobody\n---\n\n本文\n"
+        )
+
+    let captured = new StringWriter()
+    let original = Console.Error
+    Console.SetError captured
+
+    try
+        Assert.Equal(1, Program.main [| "roleplay"; "all"; "--root"; root |])
+    finally
+        Console.SetError original
+        Directory.Delete(root, true)
+
+    let message = captured.ToString()
+    Assert.Contains(SkillFile.character, message)
+    Assert.Contains("character-nobody", message)
+
+[<Fact>]
+let ``character.mdを読めない対象は全件が理由付きで並ぶ`` () =
+    // 1件目で打ち切ると残りの対象の理由が消えるので、全ての呼び名が出ることまで見る。
+    let root = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+    Directory.CreateDirectory root |> ignore
+
+    let captured = new StringWriter()
+    let original = Console.Error
+    Console.SetError captured
+
+    try
+        Assert.Equal(1, Program.main [| "roleplay"; "all"; "--root"; root |])
+    finally
+        Console.SetError original
+        Directory.Delete(root, true)
+
+    let message = captured.ToString()
+
+    for skill in Manifest.rolePlaySkills do
+        Assert.Contains(Target.rolePlayName skill, message)
+
+[<Fact>]
 let ``コマンドライン引数から接続情報を組み立てられる`` () =
     let parser = ArgumentParser.Create<Program.Sync.Args>()
 

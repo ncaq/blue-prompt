@@ -199,6 +199,41 @@ let ``studentSkillMarkdownはフロントマターと出典とナレッジを含
     Assert.Contains("## 基本情報", skill)
 
 [<Fact>]
+let ``sectionTitlesはh2の見出しだけを現れる順に拾う`` () =
+    let markdown = "前書き\n\n## 基本情報\n\n### 内訳\n\n本文\n\n## ボイス\n"
+
+    Assert.Equal<string list>([ "基本情報"; "ボイス" ], BluePrompt.Wikiru.sectionTitles markdown)
+
+[<Fact>]
+let ``sectionTitlesは同じ見出しを2度並べない`` () =
+    // ページ側の事情で見出しが重複しても、「ボイス・ボイス」のような説明文にしない。
+    let markdown = "## ボイス\n\n本文\n\n## 基本情報\n\n## ボイス\n"
+
+    Assert.Equal<string list>([ "ボイス"; "基本情報" ], BluePrompt.Wikiru.sectionTitles markdown)
+
+[<Fact>]
+let ``studentSkillMarkdownのデータの構造は実際にある節だけを並べる`` () =
+    // 愛用品の節を持たない衣装で、存在しない節を存在すると宣言しないことを確かめる。
+    let skill =
+        BluePrompt.Wikiru.studentSkillMarkdown
+            "character-kotori-cheer-squad"
+            "コトリ（応援団）"
+            "## 基本情報\n\n## スキル\n\n## ボイス\n"
+
+    Assert.Contains("- セクションは基本情報・スキル・ボイスです\n", skill)
+    Assert.DoesNotContain("愛用品", skill)
+
+[<Fact>]
+let ``studentSkillMarkdownは節が1つも無ければ止まる`` () =
+    // 何が載っているかを述べない壊れた説明のスキルを書き出さない。
+    let error =
+        Assert.Throws<BluePrompt.Wikiru.StudentSectionNotFound>(fun () ->
+            BluePrompt.Wikiru.studentSkillMarkdown "character-yuuka" "ユウカ" "本文だけ\n"
+            |> ignore)
+
+    Assert.Equal("ユウカ", error.pageName)
+
+[<Fact>]
 let ``sourceHeaderはURLをそのまま使いページ名をデコードで復元する`` () =
     let header =
         BluePrompt.Wikiru.sourceHeader (

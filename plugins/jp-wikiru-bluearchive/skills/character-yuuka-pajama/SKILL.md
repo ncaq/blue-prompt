@@ -1,6 +1,6 @@
 ---
 name: character-yuuka-pajama
-description: Lookup facts about ユウカ（パジャマ）, a Blue Archive student, such as profile, stats, skills, unique weapon, gear, bond stories and voice lines. Use when answering questions about ユウカ（パジャマ）, checking the in-game performance data, or role-playing scenes that involve ユウカ（パジャマ）.
+description: Lookup facts about ユウカ（パジャマ）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about ユウカ（パジャマ）, checking the in-game performance data, or role-playing scenes that involve ユウカ（パジャマ）.
 user-invocable: false
 ---
 
@@ -8,7 +8,7 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・愛用品・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 

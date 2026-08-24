@@ -202,6 +202,13 @@ let private sharedKnowledgeNames = Set.ofList [ "character-appellation" ]
 /// フロントマターに生徒のナレッジのスキルが1つも無かった時のcharacter.mdのパス。
 exception KnowledgeSkillNotFound of path: string
 
+/// フロントマターが挙げるナレッジから、この生徒のナレッジのスキル名だけを残す。
+/// 本文の組み立てと、その名前が実在するかの検査の両方が同じ絞り込みを要るため、
+/// 除くものの集合を2箇所へ書かずに済むようにここに置く。
+let studentKnowledgeNames (knowledge: string list) : string list =
+    knowledge
+    |> List.filter (fun name -> not (Set.contains name sharedKnowledgeNames))
+
 /// character.mdのフロントマターが挙げるナレッジから、
 /// この生徒のナレッジのスキル名の一覧のMarkdownを組み立てる。
 /// Open WebUIのKnowledgeとの紐付けに要るフロントマターと、
@@ -209,9 +216,7 @@ exception KnowledgeSkillNotFound of path: string
 /// 衣装が増えた時に片方だけ直して食い違う。
 /// 1つも無ければ、参照先を挙げない壊れた文を書き出さずに失敗する。
 let knowledgeSkillsMarkdown (path: string) (knowledge: string list) : string =
-    let names =
-        knowledge
-        |> List.filter (fun name -> not (Set.contains name sharedKnowledgeNames))
+    let names = studentKnowledgeNames knowledge
 
     if List.isEmpty names then
         raise (KnowledgeSkillNotFound path)

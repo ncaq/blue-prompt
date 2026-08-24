@@ -1,6 +1,6 @@
 ---
 name: character-yuuka-track
-description: Lookup facts about ユウカ（体操服）, a Blue Archive student, such as profile, stats, skills, unique weapon, gear, bond stories and voice lines. Use when answering questions about ユウカ（体操服）, checking the in-game performance data, or role-playing scenes that involve ユウカ（体操服）.
+description: Lookup facts about ユウカ（体操服）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about ユウカ（体操服）, checking the in-game performance data, or role-playing scenes that involve ユウカ（体操服）.
 user-invocable: false
 ---
 
@@ -8,7 +8,7 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・愛用品・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 

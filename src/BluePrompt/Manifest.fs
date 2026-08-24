@@ -5,6 +5,7 @@
 /// 新しい生徒は個別コマンドで生成してから、以後の一括更新に含めるためここへ足す。
 module BluePrompt.Manifest
 
+open System.IO
 open System.Threading
 open System.Threading.Tasks
 
@@ -41,14 +42,21 @@ let wikiruTargets: Target.WikiruTarget list =
           "セイア（水着）",
           "plugins/jp-wikiru-bluearchive/skills/character-seia-swimsuit/SKILL.md"
       )
+      Target.StudentSkill("コトリ", "plugins/jp-wikiru-bluearchive/skills/character-kotori/SKILL.md")
+      Target.StudentSkill(
+          "コトリ（応援団）",
+          "plugins/jp-wikiru-bluearchive/skills/character-kotori-cheer-squad/SKILL.md"
+      )
       Target.RolePlayReference("ユウカ", "plugins/role-play/skills/yuuka/normal.md")
       Target.RolePlayReference("ユウカ（体操服）", "plugins/role-play/skills/yuuka/track.md")
       Target.RolePlayReference("ユウカ（パジャマ）", "plugins/role-play/skills/yuuka/pajama.md")
       Target.RolePlayReference("セイア", "plugins/role-play/skills/seia/normal.md")
-      Target.RolePlayReference("セイア（水着）", "plugins/role-play/skills/seia/swimsuit.md") ]
+      Target.RolePlayReference("セイア（水着）", "plugins/role-play/skills/seia/swimsuit.md")
+      Target.RolePlayReference("コトリ", "plugins/role-play/skills/kotori/normal.md")
+      Target.RolePlayReference("コトリ（応援団）", "plugins/role-play/skills/kotori/cheer-squad.md") ]
 
 /// テンプレートから本文を生成するrole-playスキル。パスはリポジトリのルートからの相対。
-/// 手で貼り付けたデータのままのスキルはcharacter.mdを持たないので含めない。
+/// 生徒に固有の手書きの部分を書いたcharacter.mdを持つスキルだけを含める。
 let rolePlaySkills: Target.RolePlaySkill list =
     [ { Caller = "ユウカ"
         Template = "plugins/role-play"
@@ -57,7 +65,11 @@ let rolePlaySkills: Target.RolePlaySkill list =
       { Caller = "セイア"
         Template = "plugins/role-play"
         Appellation = appellationJson
-        Output = "plugins/role-play/skills/seia" } ]
+        Output = "plugins/role-play/skills/seia" }
+      { Caller = "コトリ"
+        Template = "plugins/role-play"
+        Appellation = appellationJson
+        Output = "plugins/role-play/skills/kotori" } ]
 
 /// 同時に進める対象の数。
 /// wikiru側の負荷は1台のPCから送る量では誤差だが、
@@ -115,10 +127,79 @@ let private partition
 
     paths, failures
 
+/// character.mdが挙げるナレッジのうち実在しなかった名前を、character.mdのパスごとに並べたもの。
+exception KnowledgeSkillMissing of failures: (string * string list) list
+
+/// 生徒個別スキルの名前。スキル名は出力先のディレクトリの名前と一致する。
+let studentSkillNames (targets: Target.WikiruTarget list) : Set<string> =
+    targets
+    |> List.choose (function
+        | Target.StudentSkill(_, output) -> Path.GetDirectoryName output |> Path.GetFileName |> Some
+        | _ -> None)
+    |> Set.ofList
+
+/// character.mdが挙げるナレッジのうち、生徒個別スキルとして実在しない名前を集める。
+/// この名前は生成物へ参照先としてそのまま書き出されるため、
+/// 綴りを間違えても生成対象を足し忘れても、生成物の差分だけでは気付けない。
+/// 実在するものだけになっていれば空を返す。
+let missingKnowledgeSkills
+    (known: Set<string>)
+    (declared: (string * string list) list)
+    : (string * string list) list =
+    declared
+    |> List.choose (fun (path, knowledge) ->
+        match
+            RolePlay.studentKnowledgeNames knowledge
+            |> List.filter (fun name -> not (Set.contains name known))
+        with
+        | [] -> None
+        | missing -> Some(path, missing))
+
+/// role-playスキルのcharacter.mdが挙げるナレッジが、全て実在する生徒個別スキルかを確かめる。
+/// 実在しない名前があればKnowledgeSkillMissingを送出する。
+/// wikiruTargetsとrolePlaySkillsの両方を知っているのはここだけなので、この検査もここが持つ。
+///
+/// character.mdが無い場合やフロントマターが壊れている場合は、
+/// 書き出しの中で起きた時と同じく対象ごとの理由として報告したいので、
+/// 1件の失敗で他の対象の読み込みを打ち切らずGenerationFailedへ束ねる。
+///
+/// ただし1件でも読めなければ書き出しは1つも行わない。
+/// 書き出しの失敗は対象ごとに独立しているが、
+/// 手書きの部分を読めない状態はマニフェストか作業の途中を疑うべき状況で、
+/// 半分だけ更新された生成物を残すより、全て止めて直してもらうほうが分かりやすいため。
+let private checkKnowledgeSkills (root: string) : Task<unit> =
+    task {
+        let declared = ResizeArray()
+        // 読み取れなかった失敗と、読み取れた上で実在しなかった名前は、
+        // 束ねる型も送出する例外も違うので名前で区別する。
+        let readFailures = ResizeArray()
+
+        for skill in rolePlaySkills do
+            let path = Path.Combine(root, skill.Output, SkillFile.character)
+
+            try
+                let! content = File.ReadAllTextAsync path
+                declared.Add(path, (OpenWebui.parseFrontmatter path content).Knowledge)
+            with error ->
+                readFailures.Add(Target.rolePlayName skill, error)
+
+        if 0 < readFailures.Count then
+            return raise (GenerationFailed(List.ofSeq readFailures))
+
+        match missingKnowledgeSkills (studentSkillNames wikiruTargets) (List.ofSeq declared) with
+        | [] -> ()
+        | failures -> return raise (KnowledgeSkillMissing failures)
+    }
+
 /// role-playスキルを全て並列に書き出し、書いたパスを返す。整形は掛けない。
 /// 失敗があればGenerationFailedを送出する。
 let writeRolePlaySkills (root: string) : Task<string list> =
     task {
+        // ナレッジの検査が効くのはこの一括更新の経路だけで、roleplay skillの単体の生成は素通りする。
+        // 掛ける場所を増やしても、Manifestへ足す前のスキルはrolePlaySkillsに載っておらず検査の対象にならない。
+        // どちらにせよManifestへ足した後の一括更新で落ちるので、ここ1箇所に留める。
+        do! checkKnowledgeSkills root
+
         let! results =
             rolePlaySkills
             |> List.map (fun skill ->
@@ -179,6 +260,12 @@ let finish
 /// 失敗時の扱いはfinishのとおり。
 let createAll (root: string) : Task<unit> =
     task {
+        // ナレッジの検査はwikiruへアクセスせず手元のファイルだけで結果が決まるので、
+        // 取得より先に掛ける。
+        // 後段のwriteRolePlaySkillsでも走るが、そこまで進むと綴りの間違い1つで全ページの取得を待たされる上に、
+        // finishの成功側は書き出しが落ちると整形へ到達せず、未整形の生成物がディスクへ残る。
+        do! checkKnowledgeSkills root
+
         let! results =
             wikiruTargets
             |> List.map (fun target ->
