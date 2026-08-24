@@ -158,15 +158,26 @@ let missingKnowledgeSkills
 /// role-playスキルのcharacter.mdが挙げるナレッジが、全て実在する生徒個別スキルかを確かめる。
 /// 実在しない名前があればKnowledgeSkillMissingを送出する。
 /// wikiruTargetsとrolePlaySkillsの両方を知っているのはここだけなので、この検査もここが持つ。
+///
+/// character.mdが無い場合やフロントマターが壊れている場合は、
+/// 書き出しの中で起きた時と同じく対象ごとの理由として報告したいので、
+/// 1件の失敗で他の対象の読み込みを打ち切らずGenerationFailedへ束ねる。
 let private checkKnowledgeSkills (root: string) : Task<unit> =
     task {
         let declared = ResizeArray()
+        let failures = ResizeArray()
 
         for skill in rolePlaySkills do
             let path = Path.Combine(root, skill.Output, SkillFile.character)
 
-            let! content = File.ReadAllTextAsync path
-            declared.Add(path, (OpenWebui.parseFrontmatter path content).Knowledge)
+            try
+                let! content = File.ReadAllTextAsync path
+                declared.Add(path, (OpenWebui.parseFrontmatter path content).Knowledge)
+            with error ->
+                failures.Add(Target.rolePlayName skill, error)
+
+        if 0 < failures.Count then
+            return raise (GenerationFailed(List.ofSeq failures))
 
         match missingKnowledgeSkills (studentSkillNames wikiruTargets) (List.ofSeq declared) with
         | [] -> ()
