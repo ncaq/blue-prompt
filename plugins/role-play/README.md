@@ -19,7 +19,7 @@
 
 ## 衣装ごとの参照ファイル
 
-`yuuka`と`seia`のスキルにはSKILL.mdとMODEL.mdの他に、
+どのスキルにもSKILL.mdとMODEL.mdの他に、
 衣装(実装)ごとのプロフィールとゲーム内ボイス一覧を収めた参照ファイルがあります。
 
 これらは
@@ -40,7 +40,7 @@ dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page 'ユウ�
 
 ## 本文の生成
 
-`yuuka`と`seia`のスキルのSKILL.mdとMODEL.mdは自動生成ファイルです。
+どのスキルのSKILL.mdとMODEL.mdも自動生成ファイルです。
 本文の骨格はこのプラグインの直下のテンプレートが持っていて、
 全ての生徒が同じものを使います。
 生徒ごとに違うのは差し込む値だけです。
@@ -120,9 +120,8 @@ dotnet run --project src/BluePrompt -- roleplay skill --character 'ユウカ' \
 dotnet run --project src/BluePrompt -- roleplay all --root .
 ```
 
-`kotori`はまだこの構成に移行しておらず、
-SKILL.mdに手で貼り付けたデータのままです。
-移行する時は`src/BluePrompt/Manifest.fs`の2つの一覧へ足してください。
+新しい生徒を足す時は、
+character.mdを書いた上で`src/BluePrompt/Manifest.fs`の2つの一覧へ足してください。
 
 - `wikiruTargets`: 衣装ごとの`RolePlayReference`(必要なら生徒個別スキルの`StudentSkill`も)。
   これが無いと`{{costumes}}`へ差し込む参照ファイルが生成されません
