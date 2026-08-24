@@ -343,12 +343,35 @@ let fetchRolePlayMarkdown (pageName: string) : Task<string> =
         return trimGameplayDetails markdown
     }
 
+/// ナレッジ本体に節が1つも無かった時のページ名。
+exception StudentSectionNotFound of pageName: string
+
+/// ナレッジ本体に実際に含まれる節の見出しを、現れる順に並べる。
+/// studentSectionTitlesのホワイトリストをそのまま書くと、
+/// 愛用品の節を持たないコトリ（応援団）のようなページで、
+/// 存在しない節を存在すると宣言してしまう。
+/// 読む側はその節を探し続けるか、抽出が壊れていると受け取ることになる。
+let sectionTitles (markdown: string) : string list =
+    markdown.Split '\n'
+    |> Array.choose (fun line ->
+        match sectionHeadingPattern.Match line with
+        | m when m.Success -> Some m.Groups[1].Value
+        | _ -> None)
+    |> List.ofArray
+
 /// 生徒スキルのSKILL.md全体を組み立てる。
 /// 生徒1人分のナレッジは別ファイルへ分けるほどの量にならないため、
 /// フロントマターと使い方の説明とナレッジ本体を1つのSKILL.mdに収める。
 /// 事実を引くための参照専用で、ユーザがスラッシュコマンドとして呼ぶ意味が無いため、
 /// user-invocable: falseでコマンドの一覧からは外す。
 let studentSkillMarkdown (skillName: string) (pageName: string) (markdown: string) : string =
+    // 節を1つも読み取れないまま組み立てると、
+    // 何が載っているかを述べない壊れた説明のスキルを書き出すことになる。
+    let sections =
+        match sectionTitles markdown with
+        | [] -> raise (StudentSectionNotFound pageName)
+        | titles -> String.concat "・" titles
+
     // フロントマターのdescriptionは1行である必要があるため、ソース上でだけ分割して結合する。
     let description =
         String.concat
@@ -369,7 +392,7 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・愛用品・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは%s{sections}です
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
