@@ -165,7 +165,9 @@ let missingKnowledgeSkills
 let private checkKnowledgeSkills (root: string) : Task<unit> =
     task {
         let declared = ResizeArray()
-        let failures = ResizeArray()
+        // 読み取れなかった失敗と、読み取れた上で実在しなかった名前は、
+        // 束ねる型も送出する例外も違うので名前で区別する。
+        let readFailures = ResizeArray()
 
         for skill in rolePlaySkills do
             let path = Path.Combine(root, skill.Output, SkillFile.character)
@@ -174,10 +176,10 @@ let private checkKnowledgeSkills (root: string) : Task<unit> =
                 let! content = File.ReadAllTextAsync path
                 declared.Add(path, (OpenWebui.parseFrontmatter path content).Knowledge)
             with error ->
-                failures.Add(Target.rolePlayName skill, error)
+                readFailures.Add(Target.rolePlayName skill, error)
 
-        if 0 < failures.Count then
-            return raise (GenerationFailed(List.ofSeq failures))
+        if 0 < readFailures.Count then
+            return raise (GenerationFailed(List.ofSeq readFailures))
 
         match missingKnowledgeSkills (studentSkillNames wikiruTargets) (List.ofSeq declared) with
         | [] -> ()
