@@ -376,11 +376,16 @@ let studentSkillMarkdown (skillName: string) (pageName: string) (markdown: strin
         | titles -> String.concat "・" titles
 
     // フロントマターのdescriptionは1行である必要があるため、ソース上でだけ分割して結合する。
+    //
+    // 節を列挙しないのは、どの節があるかがページごとに違うため。
+    // 愛用品を持たない衣装もあり、固定で並べると本文が挙げない節をここだけが挙げることになる。
+    // 日本語の節名をそのまま置ける文でもないので、
+    // 引くかどうかの判断に足りる事実の種類だけを述べる。
     let description =
         String.concat
             " "
             [ $"Lookup facts about %s{pageName}, a Blue Archive student,"
-              "such as profile, stats, skills, unique weapon, gear, bond stories and voice lines."
+              "such as profile, stats, skills, bond stories and voice lines."
               $"Use when answering questions about %s{pageName},"
               "checking the in-game performance data,"
               $"or role-playing scenes that involve %s{pageName}." ]

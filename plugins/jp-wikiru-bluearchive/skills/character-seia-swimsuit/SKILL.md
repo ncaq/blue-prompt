@@ -1,6 +1,6 @@
 ---
 name: character-seia-swimsuit
-description: Lookup facts about セイア（水着）, a Blue Archive student, such as profile, stats, skills, unique weapon, gear, bond stories and voice lines. Use when answering questions about セイア（水着）, checking the in-game performance data, or role-playing scenes that involve セイア（水着）.
+description: Lookup facts about セイア（水着）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about セイア（水着）, checking the in-game performance data, or role-playing scenes that involve セイア（水着）.
 user-invocable: false
 ---
 

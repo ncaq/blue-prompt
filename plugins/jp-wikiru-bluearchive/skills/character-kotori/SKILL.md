@@ -1,6 +1,6 @@
 ---
 name: character-kotori
-description: Lookup facts about コトリ, a Blue Archive student, such as profile, stats, skills, unique weapon, gear, bond stories and voice lines. Use when answering questions about コトリ, checking the in-game performance data, or role-playing scenes that involve コトリ.
+description: Lookup facts about コトリ, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about コトリ, checking the in-game performance data, or role-playing scenes that involve コトリ.
 user-invocable: false
 ---
 
