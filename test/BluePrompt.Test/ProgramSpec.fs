@@ -205,6 +205,27 @@ let ``実在しないナレッジを挙げたcharacter.mdは名前を並べて�
     Assert.Contains("character-nobody", message)
 
 [<Fact>]
+let ``character.mdを読めない対象は全件が理由付きで並ぶ`` () =
+    // 1件目で打ち切ると残りの対象の理由が消えるので、全ての呼び名が出ることまで見る。
+    let root = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+    Directory.CreateDirectory root |> ignore
+
+    let captured = new StringWriter()
+    let original = Console.Error
+    Console.SetError captured
+
+    try
+        Assert.Equal(1, Program.main [| "roleplay"; "all"; "--root"; root |])
+    finally
+        Console.SetError original
+        Directory.Delete(root, true)
+
+    let message = captured.ToString()
+
+    for skill in Manifest.rolePlaySkills do
+        Assert.Contains(Target.rolePlayName skill, message)
+
+[<Fact>]
 let ``コマンドライン引数から接続情報を組み立てられる`` () =
     let parser = ArgumentParser.Create<Program.Sync.Args>()
 

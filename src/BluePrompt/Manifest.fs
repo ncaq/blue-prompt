@@ -162,6 +162,11 @@ let missingKnowledgeSkills
 /// character.mdが無い場合やフロントマターが壊れている場合は、
 /// 書き出しの中で起きた時と同じく対象ごとの理由として報告したいので、
 /// 1件の失敗で他の対象の読み込みを打ち切らずGenerationFailedへ束ねる。
+///
+/// ただし1件でも読めなければ書き出しは1つも行わない。
+/// 書き出しの失敗は対象ごとに独立しているが、
+/// 手書きの部分を読めない状態はマニフェストか作業の途中を疑うべき状況で、
+/// 半分だけ更新された生成物を残すより、全て止めて直してもらうほうが分かりやすいため。
 let private checkKnowledgeSkills (root: string) : Task<unit> =
     task {
         let declared = ResizeArray()
