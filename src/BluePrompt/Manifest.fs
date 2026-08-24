@@ -260,6 +260,12 @@ let finish
 /// 失敗時の扱いはfinishのとおり。
 let createAll (root: string) : Task<unit> =
     task {
+        // ナレッジの検査はwikiruへアクセスせず手元のファイルだけで結果が決まるので、
+        // 取得より先に掛ける。
+        // 後段のwriteRolePlaySkillsでも走るが、そこまで進むと綴りの間違い1つで全ページの取得を待たされる上に、
+        // finishの成功側は書き出しが落ちると整形へ到達せず、未整形の生成物がディスクへ残る。
+        do! checkKnowledgeSkills root
+
         let! results =
             wikiruTargets
             |> List.map (fun target ->
