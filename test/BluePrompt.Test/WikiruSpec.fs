@@ -205,6 +205,13 @@ let ``sectionTitlesはh2の見出しだけを現れる順に拾う`` () =
     Assert.Equal<string list>([ "基本情報"; "ボイス" ], BluePrompt.Wikiru.sectionTitles markdown)
 
 [<Fact>]
+let ``sectionTitlesは同じ見出しを2度並べない`` () =
+    // ページ側の事情で見出しが重複しても、「ボイス・ボイス」のような説明文にしない。
+    let markdown = "## ボイス\n\n本文\n\n## 基本情報\n\n## ボイス\n"
+
+    Assert.Equal<string list>([ "ボイス"; "基本情報" ], BluePrompt.Wikiru.sectionTitles markdown)
+
+[<Fact>]
 let ``studentSkillMarkdownのデータの構造は実際にある節だけを並べる`` () =
     // 愛用品の節を持たない衣装で、存在しない節を存在すると宣言しないことを確かめる。
     let skill =

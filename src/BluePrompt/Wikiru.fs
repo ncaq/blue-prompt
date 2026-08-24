@@ -351,6 +351,8 @@ exception StudentSectionNotFound of pageName: string
 /// 愛用品の節を持たないコトリ（応援団）のようなページで、
 /// 存在しない節を存在すると宣言してしまう。
 /// 読む側はその節を探し続けるか、抽出が壊れていると受け取ることになる。
+/// filterSectionsは同じ見出しが2回現れてもどちらも残すが、
+/// これは何が載っているかを述べるための一覧なので、重複は現れる順を保ったまま潰す。
 let sectionTitles (markdown: string) : string list =
     markdown.Split '\n'
     |> Array.choose (fun line ->
@@ -358,6 +360,7 @@ let sectionTitles (markdown: string) : string list =
         | m when m.Success -> Some m.Groups[1].Value
         | _ -> None)
     |> List.ofArray
+    |> List.distinct
 
 /// 生徒スキルのSKILL.md全体を組み立てる。
 /// 生徒1人分のナレッジは別ファイルへ分けるほどの量にならないため、
