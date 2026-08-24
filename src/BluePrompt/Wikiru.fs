@@ -346,7 +346,8 @@ let fetchRolePlayMarkdown (pageName: string) : Task<string> =
 /// ナレッジ本体に節が1つも無かった時のページ名。
 exception StudentSectionNotFound of pageName: string
 
-/// ナレッジ本体に実際に含まれる節の見出しを、現れる順に並べる。
+/// ナレッジ本体に実際に含まれる節のh2の見出しを、現れる順に並べる。
+/// 節を分けているのはh2なので、h3以下の小見出しは含めない。
 /// studentSectionTitlesのホワイトリストをそのまま書くと、
 /// 愛用品の節を持たないコトリ（応援団）のようなページで、
 /// 存在しない節を存在すると宣言してしまう。
