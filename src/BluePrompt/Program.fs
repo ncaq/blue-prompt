@@ -276,6 +276,11 @@ let main argv =
             eprintfn $"%s{name}: %s{error.Message}"
 
         1
+    // 節を1つも読み取れなかった時も、どのページなのかを表示する。
+    // 単体の生成ではこの経路しか無く、一括更新でも既定のメッセージにはページ名が乗らない。
+    | Wikiru.StudentSectionNotFound pageName ->
+        eprintfn $"%s{pageName}: ナレッジとして残す節が1つもありません"
+        1
     // ナレッジの検査の失敗も、どのcharacter.mdのどの名前が実在しないのかを並べて表示する。
     // 例外の既定のメッセージにはこれが乗らないため、ここで出さないと止まった理由が消える。
     | Manifest.KnowledgeSkillMissing failures ->
