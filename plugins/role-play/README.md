@@ -123,8 +123,10 @@ dotnet run --project src/BluePrompt -- roleplay all --root .
 新しい生徒を足す時は、
 character.mdを書いた上で`src/BluePrompt/Manifest.fs`の2つの一覧へ足してください。
 
-- `wikiruTargets`: 衣装ごとの`RolePlayReference`(必要なら生徒個別スキルの`StudentSkill`も)。
-  これが無いと`{{costumes}}`へ差し込む参照ファイルが生成されません
+- `wikiruTargets`: 衣装ごとの`RolePlayReference`と、
+  character.mdの`knowledge:`へ挙げた生徒個別スキルの`StudentSkill`。
+  `RolePlayReference`が無いと`{{costumes}}`へ差し込む参照ファイルが生成されず、
+  `StudentSkill`が無いと`roleplay all`が実在しないナレッジとして止まります
 - `rolePlaySkills`: 呼び名と、テンプレートのディレクトリと、呼称表のJSONと、出力先のディレクトリの4つ
 
 呼び名はcharacter.mdからは決まらないので自動では埋まらず、
