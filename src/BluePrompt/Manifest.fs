@@ -5,6 +5,7 @@
 /// 新しい生徒は個別コマンドで生成してから、以後の一括更新に含めるためここへ足す。
 module BluePrompt.Manifest
 
+open System.IO
 open System.Threading
 open System.Threading.Tasks
 
@@ -126,10 +127,58 @@ let private partition
 
     paths, failures
 
+/// character.mdが挙げるナレッジのうち実在しなかった名前を、character.mdのパスごとに並べたもの。
+exception KnowledgeSkillMissing of failures: (string * string list) list
+
+/// 生徒個別スキルの名前。スキル名は出力先のディレクトリの名前と一致する。
+let studentSkillNames (targets: Target.WikiruTarget list) : Set<string> =
+    targets
+    |> List.choose (function
+        | Target.StudentSkill(_, output) -> Path.GetDirectoryName output |> Path.GetFileName |> Some
+        | _ -> None)
+    |> Set.ofList
+
+/// character.mdが挙げるナレッジのうち、生徒個別スキルとして実在しない名前を集める。
+/// この名前は生成物へ参照先としてそのまま書き出されるため、
+/// 綴りを間違えても生成対象を足し忘れても、生成物の差分だけでは気付けない。
+/// 実在するものだけになっていれば空を返す。
+let missingKnowledgeSkills
+    (known: Set<string>)
+    (declared: (string * string list) list)
+    : (string * string list) list =
+    declared
+    |> List.choose (fun (path, knowledge) ->
+        match
+            RolePlay.studentKnowledgeNames knowledge
+            |> List.filter (fun name -> not (Set.contains name known))
+        with
+        | [] -> None
+        | missing -> Some(path, missing))
+
+/// role-playスキルのcharacter.mdが挙げるナレッジが、全て実在する生徒個別スキルかを確かめる。
+/// 実在しない名前があればKnowledgeSkillMissingを送出する。
+/// wikiruTargetsとrolePlaySkillsの両方を知っているのはここだけなので、この検査もここが持つ。
+let private checkKnowledgeSkills (root: string) : Task<unit> =
+    task {
+        let declared = ResizeArray()
+
+        for skill in rolePlaySkills do
+            let path = Path.Combine(root, skill.Output, SkillFile.character)
+
+            let! content = File.ReadAllTextAsync path
+            declared.Add(path, (OpenWebui.parseFrontmatter path content).Knowledge)
+
+        match missingKnowledgeSkills (studentSkillNames wikiruTargets) (List.ofSeq declared) with
+        | [] -> ()
+        | failures -> return raise (KnowledgeSkillMissing failures)
+    }
+
 /// role-playスキルを全て並列に書き出し、書いたパスを返す。整形は掛けない。
 /// 失敗があればGenerationFailedを送出する。
 let writeRolePlaySkills (root: string) : Task<string list> =
     task {
+        do! checkKnowledgeSkills root
+
         let! results =
             rolePlaySkills
             |> List.map (fun skill ->

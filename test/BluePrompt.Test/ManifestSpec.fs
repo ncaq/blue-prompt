@@ -188,6 +188,41 @@ let ``role-playスキルの出力先には衣装別の参照ファイルが書�
         Assert.Contains(references, fun reference -> Path.GetDirectoryName reference = skill.Output)
 
 [<Fact>]
+let ``生徒個別スキルの名前は出力先のディレクトリの名前`` () =
+    let names =
+        Manifest.studentSkillNames
+            [ Target.StudentSkill("ユウカ", "plugins/skills/character-yuuka/SKILL.md")
+              Target.Knowledge("ページ", "plugins/skills/other/reference.md") ]
+
+    Assert.Equal<Set<string>>(Set.ofList [ "character-yuuka" ], names)
+
+[<Fact>]
+let ``ナレッジの名前が生徒個別スキルとして実在すれば空`` () =
+    // 呼称表は生徒個別ではないので、実在しない名前として数えない。
+    let missing =
+        Manifest.missingKnowledgeSkills
+            (Set.ofList [ "character-kotori"; "character-kotori-cheer-squad" ])
+            [ "kotori/character.md",
+              [ "character-kotori"; "character-kotori-cheer-squad"; "character-appellation" ] ]
+
+    Assert.Empty missing
+
+[<Fact>]
+let ``実在しないナレッジの名前はcharacter.mdごとに集まる`` () =
+    // 綴りの間違いも、生徒個別スキルの生成対象の足し忘れも、この形で現れる。
+    let missing =
+        Manifest.missingKnowledgeSkills
+            (Set.ofList [ "character-kotori" ])
+            [ "kotori/character.md", [ "character-kotori"; "character-kotori-cheer-squid" ]
+              "yuuka/character.md", [ "character-yuuka" ] ]
+
+    Assert.Equal<(string * string list) list>(
+        [ "kotori/character.md", [ "character-kotori-cheer-squid" ]
+          "yuuka/character.md", [ "character-yuuka" ] ],
+        missing
+    )
+
+[<Fact>]
 let ``対象のパスはルートからの相対として解決される`` () =
     let root = Path.Combine("repo", "root")
 
