@@ -276,3 +276,10 @@ let main argv =
             eprintfn $"%s{name}: %s{error.Message}"
 
         1
+    // ナレッジの検査の失敗も、どのcharacter.mdのどの名前が実在しないのかを並べて表示する。
+    // 例外の既定のメッセージにはこれが乗らないため、ここで出さないと止まった理由が消える。
+    | Manifest.KnowledgeSkillMissing failures ->
+        for path, names in failures do
+            eprintfn $"""%s{path}: 実在しないナレッジのスキル: %s{String.concat ", " names}"""
+
+        1
