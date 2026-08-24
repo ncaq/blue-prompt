@@ -7,6 +7,8 @@ HSA = "HSA"
 Hashi = "Hashi"
 # Immediately Invoked Function Expression (IIFE)の略語。camelCase分割で"IIF"をtypoと判定する。
 IIF = "IIF"
+# ブルーアーカイブのBGM名「U mak3 m3 smil3」のleetspeak表記。数字での分割で"mak"をtypoと判定する。
+mak = "mak"
 
 [default.extend-identifiers]
 # ブルーアーカイブのメモリアルロビー制作スタッフ名。camelCase分割で"Ist"をtypoと判定する。
