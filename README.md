@@ -103,7 +103,30 @@ home-managerの構成に組み込みます。
 
 ## Claude.aiのweb版
 
-Claude.aiにはZIPファイルでスキルをアップロードします。
+### マーケットプレイスから導入する
+
+Claude.aiのweb版もプラグインのマーケットプレイスに対応しているため、
+Claude Codeと同じくこのリポジトリをそのまま追加できます。
+生成物を作ってアップロードする手間が無いので、
+基本的にはこちらを使ってください。
+
+- 左のサイドバーの`Customize`を開く
+- `Plugins`タブを開く
+- `Personal plugins`の`+`から`Add marketplace`を選ぶ
+- `Add from a repository`を選んで`https://github.com/ncaq/blue-prompt`を入力する
+
+追加すると`role-play`と`jp-wikiru-bluearchive`が一覧に出るので、
+使いたいプラグインを個別に有効化してください。
+
+リポジトリ側の更新はマーケットプレイスから同期されるので、
+スキルを改良するたびにZIPを作り直してアップロードし直す必要はありません。
+
+[プラグインは有料プラン(Pro, Max, Team, Enterprise)の機能です](https://support.claude.com/en/articles/13837440-use-plugins-in-claude)。
+
+### ZIPファイルをアップロードする
+
+マーケットプレイスを使わず、
+スキル単体をZIPファイルでアップロードすることもできます。
 アップロードするファイルをNixで生成できます。
 cloneしていなくても以下のコマンドで生成できます。
 
