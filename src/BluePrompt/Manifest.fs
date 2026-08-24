@@ -50,7 +50,9 @@ let wikiruTargets: Target.WikiruTarget list =
       Target.RolePlayReference("ユウカ（体操服）", "plugins/role-play/skills/yuuka/track.md")
       Target.RolePlayReference("ユウカ（パジャマ）", "plugins/role-play/skills/yuuka/pajama.md")
       Target.RolePlayReference("セイア", "plugins/role-play/skills/seia/normal.md")
-      Target.RolePlayReference("セイア（水着）", "plugins/role-play/skills/seia/swimsuit.md") ]
+      Target.RolePlayReference("セイア（水着）", "plugins/role-play/skills/seia/swimsuit.md")
+      Target.RolePlayReference("コトリ", "plugins/role-play/skills/kotori/normal.md")
+      Target.RolePlayReference("コトリ（応援団）", "plugins/role-play/skills/kotori/cheer-squad.md") ]
 
 /// テンプレートから本文を生成するrole-playスキル。パスはリポジトリのルートからの相対。
 /// 手で貼り付けたデータのままのスキルはcharacter.mdを持たないので含めない。
@@ -62,7 +64,11 @@ let rolePlaySkills: Target.RolePlaySkill list =
       { Caller = "セイア"
         Template = "plugins/role-play"
         Appellation = appellationJson
-        Output = "plugins/role-play/skills/seia" } ]
+        Output = "plugins/role-play/skills/seia" }
+      { Caller = "コトリ"
+        Template = "plugins/role-play"
+        Appellation = appellationJson
+        Output = "plugins/role-play/skills/kotori" } ]
 
 /// 同時に進める対象の数。
 /// wikiru側の負荷は1台のPCから送る量では誤差だが、
