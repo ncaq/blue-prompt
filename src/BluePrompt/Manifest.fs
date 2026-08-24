@@ -55,7 +55,7 @@ let wikiruTargets: Target.WikiruTarget list =
       Target.RolePlayReference("コトリ（応援団）", "plugins/role-play/skills/kotori/cheer-squad.md") ]
 
 /// テンプレートから本文を生成するrole-playスキル。パスはリポジトリのルートからの相対。
-/// 手で貼り付けたデータのままのスキルはcharacter.mdを持たないので含めない。
+/// 生徒に固有の手書きの部分を書いたcharacter.mdを持つスキルだけを含める。
 let rolePlaySkills: Target.RolePlaySkill list =
     [ { Caller = "ユウカ"
         Template = "plugins/role-play"
