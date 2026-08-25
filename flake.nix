@@ -518,17 +518,22 @@
               assert lib.assertMsg (
                 skills ? role-play-kotori
               ) "blue-promptのスキルがprograms.opencode.skillsへ展開されていません";
+              assert lib.assertMsg (
+                skills ? character-kotori
+              ) "prefix無しのスキルが素の名前でprograms.opencode.skillsへ展開されていません";
               pkgs.runCommand "home-manager-module" { } ''
                 # Claude Code側: 接続されたプラグインがマニフェストを持つ実体である。
                 ${lib.concatMapStrings (pluginPath: ''
                   test -f ${pluginPath}/.claude-plugin/plugin.json
                 '') pluginPathList}
-                # OpenCode側: 代表スキルの本体が接続されていて、
-                # OpenCodeがスキルの登録名に使うフロントマターのnameが、
-                # prefix付きのプラグインではプラグイン名をprefixにした名前へ書き換えられていて、
-                # prefix無しのプラグインでは素のスキル名のまま残っている。
-                grep -x 'name: role-play-kotori' ${skills.role-play-kotori}/SKILL.md
-                grep -x 'name: character-kotori' ${skills.character-kotori}/SKILL.md
+                # OpenCode側: 全スキルでディレクトリ名とフロントマターのnameが一致している。
+                # OpenCodeはフロントマターのnameでスキルを登録するため、
+                # prefix付きのプラグインでは書き換えが効いたことを、
+                # prefix無しのプラグインでは素の名前のまま残ったことを、
+                # スキルが増えても検証が追随する形でまとめて確かめる。
+                ${lib.concatMapStrings (skillPath: ''
+                  sed -n '1,/^---$/p' ${skillPath}/SKILL.md | grep -qx "name: $(basename ${skillPath})"
+                '') (lib.attrValues skills)}
                 # 生成の入力や別の届け先向けの本文が、どちらへも混ざっていない。
                 ${
                   let

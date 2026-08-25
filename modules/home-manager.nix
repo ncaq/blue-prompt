@@ -36,6 +36,13 @@ let
   # 他のファイルはsymlinkでstoreの実体を指して複製を避ける。
   # runCommandLocalは代替を引かず全マシンでローカル実行されるため、
   # 実体コピーにするとplugins/全体をstoreへもう1組持つことになる。
+  #
+  # sedの対象は先頭のフロントマターの範囲に限定する。
+  # ファイル全体を対象にすると、
+  # フロントマターにnameが無いスキルの本文のnameに似た行を書き換えて、
+  # 素のスキル名のまま登録される失敗が黙って通るため。
+  # 書き換え後にフロントマターへ展開名が実際に入ったことを検査して、
+  # nameを持たないスキルもここで止まるようにする。
   opencodeSkills = pkgs.runCommandLocal "blue-prompt-opencode-skills" { } ''
     ${lib.concatStrings (
       lib.mapAttrsToList (flatName: skillDir: ''
@@ -43,8 +50,8 @@ let
         for entry in ${skillDir}/*; do
           [ "$(basename "$entry")" = SKILL.md ] || ln -s "$entry" $out/${flatName}/
         done
-        grep -q '^name: ' ${skillDir}/SKILL.md
-        sed '0,/^name: .*/s//name: ${flatName}/' ${skillDir}/SKILL.md > $out/${flatName}/SKILL.md
+        sed '1,/^---$/ s/^name: .*/name: ${flatName}/' ${skillDir}/SKILL.md > $out/${flatName}/SKILL.md
+        sed -n '1,/^---$/p' $out/${flatName}/SKILL.md | grep -qx 'name: ${flatName}'
       '') skills
     )}
   '';
