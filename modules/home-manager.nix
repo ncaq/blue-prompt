@@ -46,12 +46,12 @@ let
   opencodeSkills = pkgs.runCommandLocal "blue-prompt-opencode-skills" { } ''
     ${lib.concatStrings (
       lib.mapAttrsToList (flatName: skillDir: ''
-        mkdir -p $out/${flatName}
-        for entry in ${skillDir}/*; do
-          [ "$(basename "$entry")" = SKILL.md ] || ln -s "$entry" $out/${flatName}/
+        mkdir -p "$out/${flatName}"
+        for entry in "${skillDir}"/*; do
+          [ "$(basename "$entry")" = SKILL.md ] || ln -s "$entry" "$out/${flatName}/"
         done
-        sed '1,/^---$/ s/^name: .*/name: ${flatName}/' ${skillDir}/SKILL.md > $out/${flatName}/SKILL.md
-        sed -n '1,/^---$/p' $out/${flatName}/SKILL.md | grep -qx 'name: ${flatName}'
+        sed '1,/^---$/ s/^name: .*/name: ${flatName}/' "${skillDir}/SKILL.md" > "$out/${flatName}/SKILL.md"
+        sed -n '1,/^---$/p' "$out/${flatName}/SKILL.md" | grep -qx 'name: ${flatName}'
       '') skills
     )}
   '';

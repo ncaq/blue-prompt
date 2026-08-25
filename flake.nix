@@ -140,7 +140,16 @@
           opencodePrefixedのプラグイン一覧がplugins/のディレクトリ一覧と一致しません。
           opencodePrefixed: ${toString (lib.attrNames opencodePrefixed)}
           plugins/: ${toString pluginNames}'';
-        if opencodePrefixed.${pluginName} then "${pluginName}-${skillName}" else skillName;
+        let
+          flatName = if opencodePrefixed.${pluginName} then "${pluginName}-${skillName}" else skillName;
+        in
+        # OpenCodeのスキル名の制約(小文字英数をハイフンで繋ぐ)に収まることを表明する。
+        # home-managerモジュールが展開名をシェルとsedのスクリプトへそのまま埋め込むため、
+        # メタ文字が混ざらないことの前提もこのassertが担う。
+        assert lib.assertMsg (
+          builtins.match "[a-z0-9]+(-[a-z0-9]+)*" flatName != null
+        ) "OpenCodeのスキル名に使えない名前です: ${flatName}";
+        flatName;
       skillPaths =
         let
           skillOwners = lib.mapAttrs (_flatName: map (skill: skill.pluginName)) (
