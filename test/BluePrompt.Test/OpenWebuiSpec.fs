@@ -104,6 +104,27 @@ description: desc
     |> ignore
 
 [<Fact>]
+let ``MODEL.mdだけにリンクが残っていてもSkillFormatErrorになる`` () =
+    // role-playスキルを変換する時に読まれるのはMODEL.mdなので、
+    // 検査がSKILL.mdを見ていると、実際に焼かれる本文のリンクを見逃す。
+    // 本文を選ぶ判定と検査の対象が同じであることを、
+    // リンクを持たないSKILL.mdと並べて固定する。
+    let body =
+        """---
+name: yuuka
+description: desc
+---
+
+- [normal.md](./normal.md): 通常
+"""
+
+    let directory =
+        makeSkillDirectory [ "SKILL.md", skillMd; "MODEL.md", body; "normal.md", "# 通常\n\n制服姿。\n" ]
+
+    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
+    |> ignore
+
+[<Fact>]
 let ``URLとアンカーのリンクは参照ファイルとして扱われない`` () =
     Assert.Equal<string list>(
         [ "normal.md" ],
