@@ -25,14 +25,17 @@ let private baseFileName: string = "normal.md"
 let private nonReferenceFileNames =
     Set.ofList [ SkillFile.skill; SkillFile.model; SkillFile.character ]
 
-/// 参照ファイル1つ分の、本文から参照するために要る情報。
-/// 中身はスキル本体へ写さず、ファイルとして読ませるので、ここには持たない。
+/// 参照ファイル1つ分の、本文へ差し込むために要る情報。
+/// 中身は本文へそのまま写す。
+/// 演じ始める前に全ての衣装へ目を通させる前提なので、
+/// 別ファイルとして開かせても読ませる量は変わらず、
+/// 開くかどうかの判断とファイルを開く往復だけが増えるため。
 type Reference =
     {
-        /// スキルのディレクトリから見たファイル名。本文からのリンクに使う。
-        FileName: string
         /// 出典のwikiruのページ名。衣装の区別はこの名前が担う。
         PageName: string
+        /// 参照ファイルの中身。出典の行を含む全体を、前後の空白だけ落として持つ。
+        Body: string
     }
 
 /// 参照ファイルから読み取れなかった内容と、そのファイルのパス。
@@ -45,9 +48,9 @@ exception ReferenceNotFound of directory: string
 let private sourcePattern =
     Regex(@"^出典: \[[^\]]*\]\((?<url>[^)]+)\)", RegexOptions.Compiled)
 
-/// 参照ファイルの内容から、本文で参照するために要る情報を読み取る。
+/// 参照ファイルの内容から、本文へ差し込むために要る情報を読み取る。
 /// 読めなかった項目はReferenceShapeErrorで報せる。
-/// 欠けたまま組み立てると、一覧からその衣装が黙って消えるだけになるため。
+/// 欠けたまま組み立てると、どの衣装のものなのかを言わない節が本文へ並ぶため。
 let parseReference (path: string) (markdown: string) : Reference =
     let missing name =
         raise (ReferenceShapeError(path = path, missing = name))
@@ -68,16 +71,24 @@ let parseReference (path: string) (markdown: string) : Reference =
             | query -> Uri.UnescapeDataString query
         | _ -> missing "出典の行"
 
-    { FileName = Path.GetFileName path
-      PageName = pageName }
+    { PageName = pageName
+      Body = markdown.Trim() }
 
-/// 衣装ごとの参照ファイルの一覧のMarkdownを組み立てる。
-/// どの衣装のファイルなのかは出典のページ名がそのまま表す。
+/// 衣装の節の見出しの前置き。
+/// 参照ファイルの見出しは基本情報から始まる二段目なので、
+/// 一段目のこの見出しを立てて、その下へ中身をそのまま収めると階層が揃う。
+let private costumeHeadingPrefix: string = "# 衣装: "
+
+/// 衣装ごとの参照データを節として組み立てる。
+/// どの衣装なのかは出典のページ名がそのまま表す。
+/// 参照ファイルへのリンクは残さない。
+/// 中身が本文にある以上リンクは同じものを指す重複でしかなく、
+/// Open WebUIのModelにはそもそも開く手段が無いため。
 let toCostumeMarkdown (references: Reference list) : string =
     references
     |> List.map (fun reference ->
-        $"- [%s{reference.FileName}](./%s{reference.FileName}): %s{reference.PageName}")
-    |> String.concat "\n"
+        $"%s{costumeHeadingPrefix}%s{reference.PageName}\n\n%s{reference.Body}")
+    |> String.concat "\n\n"
 
 /// スキルのディレクトリから衣装別の参照ファイルを読む。
 /// SKILL.mdとMODEL.mdとcharacter.md以外のMarkdownを参照ファイルと見なす。
@@ -85,7 +96,7 @@ let toCostumeMarkdown (references: Reference list) : string =
 /// スキルのディレクトリへREADME.mdのような別のMarkdownを置くと、
 /// 出典の行を持たない衣装の参照ファイルと見なされてReferenceShapeErrorになる。
 /// 通常衣装を先頭に置き、残りはファイル名の順に並べる。
-/// 1つも無いディレクトリは、衣装の一覧が空のまま書き出されないように失敗にする。
+/// 1つも無いディレクトリは、衣装の節を1つも持たない本文を書き出さないように失敗にする。
 let readReferences (directory: string) : Task<Reference list> =
     task {
         let paths =
@@ -171,13 +182,13 @@ let private playingPlaceholder: string = "playing"
 ///
 /// 口調を要約して書き下すことはしない。
 /// 要約は書き手が目を引かれた特徴だけを強めてしまい、
-/// 参照ファイルのボイスが持っている語彙と言い回しの幅を潰すため。
+/// 参照データのボイスが持っている語彙と言い回しの幅を潰すため。
 /// 一人称と先生の呼び方は呼称の表が持っているので、ここでも繰り返さない。
 let playingRules: string =
     String.concat
         "\n"
         [ "- 会話相手のプレイヤーは先生です"
-          "- 口調は参照ファイルのボイスの書き起こしから読み取ってください。"
+          "- 口調は衣装ごとの参照データのボイスの書き起こしから読み取ってください。"
           "  目立つ言い回しだけを繰り返さず、場面ごとの語彙と言葉遣いの幅をそのまま真似てください" ]
 
 /// テンプレートで呼称表を差し込む位置を示すプレースホルダの名前。

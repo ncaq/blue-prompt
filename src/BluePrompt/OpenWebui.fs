@@ -1,8 +1,10 @@
 /// スキルをOpen WebUIのワークスペースModel定義へ変換する。
 /// Open WebUIにはClaude Codeのスキルのような、
-/// 指示書と参照ファイルの組をオンデマンドで読み込む仕組みが無いため、
-/// SKILL.mdと明示的にリンクされた参照ファイルをインライン化して、
-/// システムプロンプトへ焼き込んだカスタムモデル(ModelForm)のJSONを生成する。
+/// 指示書を会話の途中で読み込む仕組みが無いため、
+/// MODEL.md(無ければSKILL.md)の本文をシステムプロンプトへ焼き込んだ、
+/// カスタムモデル(ModelForm)のJSONを生成する。
+/// 読ませたい参照データは本文が節として持っている前提で、
+/// ここでは参照ファイルを解決しない。
 /// 生成したJSONはPOST /api/v1/models/createへそのまま渡して登録できる。
 module BluePrompt.OpenWebui
 
@@ -207,55 +209,26 @@ let resolveReferences
 
         fileName, filePath)
 
-/// 内容のどこにあるバッククォート連続よりも長いコードフェンスを組み立てる。
-/// 参照ファイル自身がコードフェンスを含んでいてもインライン化が壊れないようにする。
-let private fenceFor (content: string) : string =
-    let longestRun = Regex.Matches(content, "`+") |> Seq.map _.Length |> Seq.fold max 0
+/// 本文が参照ファイルへのリンクを持っていないことを確かめる。
+/// Modelのシステムプロンプトは1つの文字列で、
+/// 会話の途中でファイルを開く手段がOpen WebUIには無いため、
+/// リンクを書いても読み手には開けない参照が残るだけになる。
+/// 読ませたい参照データは本文そのものへ節として書く。
+let private checkNoLocalLinks (skillPath: string) (body: string) : unit =
+    match localLinkTargets body with
+    | [] -> ()
+    | targets ->
+        let joined = String.concat ", " targets
 
-    String.replicate (max 3 (longestRun + 1)) "`"
-
-/// 参照ファイル1つをインライン化した節へ組み立てる。
-/// Markdownはそのまま埋め込み、それ以外は拡張子を言語タグにしたコードブロックで包む。
-let private inlineSection (fileName: string) (content: string) : string =
-    let heading = $"# 参照ファイル: %s{fileName}"
-
-    let body =
-        match (Path.GetExtension fileName).TrimStart '.' with
-        | "md"
-        | "markdown" -> content.Trim()
-        | language ->
-            let fence = fenceFor content
-            $"%s{fence}%s{language}\n%s{content.Trim()}\n%s{fence}"
-
-    $"%s{heading}\n\n%s{body}"
-
-/// インライン化した参照ファイル群の前へ置く案内。
-/// 本文が挙げている参照データとこの後ろの節を結び付ける。
-let private inlineNotice = "以下は本文が挙げている参照データの中身です。"
-
-/// スキルディレクトリのMODEL.md(無ければSKILL.md)と参照ファイルから
-/// システムプロンプト全文を組み立てる。
-/// リンクされたファイルが実在しない場合は参照が壊れているのでSkillFormatErrorで止める。
-let private buildSystemPrompt (skillDirectory: string) (skillPath: string) (body: string) : string =
-    let sections =
-        resolveReferences skillDirectory skillPath body
-        |> List.map (fun (fileName, filePath) -> inlineSection fileName (File.ReadAllText filePath))
-
-    match sections with
-    | [] -> body + "\n"
-    | _ ->
-        [ body; delimiter; inlineNotice ] @ sections
-        |> String.concat "\n\n"
-        |> fun prompt -> prompt + "\n"
+        raise (SkillFormatError(skillPath, $"Open WebUIでは開けないリンクが本文にあります: %s{joined}"))
 
 /// スキルディレクトリからModelFormを組み立てる。
 /// idとnameにはフロントマターのnameを使い、ここでは一意性を保証しない。
 /// 同じ一覧の中のidの重複は、open-webui syncが同期の前に検出して止める。
 let buildModelForm (skillDirectory: string) : ModelForm =
     // Model向けの本文があればそちらを使う。
-    // Claude Codeは参照ファイルを開いてナレッジのスキルを読み込むが、
-    // Open WebUIでは参照ファイルはインライン化され、
-    // ナレッジは紐付けから自動で渡されるため、本文の言い方が噛み合わない。
+    // Claude Codeはナレッジをスキルとして読み込むが、
+    // Open WebUIでは紐付けから自動で渡されるため、本文の言い方が噛み合わない。
     // 両方の言い方を1つの本文へ収めると、
     // どちらの経路でも半分は当てはまらない説明を読ませることになる。
     let modelPath = Path.Combine(skillDirectory, SkillFile.model)
@@ -269,6 +242,9 @@ let buildModelForm (skillDirectory: string) : ModelForm =
         else raise (SkillFormatError(skillPath, "SKILL.mdが存在しません"))
 
     let frontmatter = parseFrontmatter bodyPath (File.ReadAllText bodyPath)
+
+    // 本文はそのままシステムプロンプトになるので、自足していることをここで確かめる。
+    checkNoLocalLinks bodyPath frontmatter.Body
 
     // idとnameはModelFormにも同じ名前のフィールドがあり、
     // レコードの型は後から定義された方が優先されるため、明示して取り違えを防ぐ。
@@ -288,7 +264,7 @@ let buildModelForm (skillDirectory: string) : ModelForm =
           // base_model_idと同じくOpen WebUIが未設定として受け取れるため。
           Knowledge = if List.isEmpty knowledge then None else Some knowledge }
       Params =
-        { System = buildSystemPrompt skillDirectory bodyPath frontmatter.Body
+        { System = frontmatter.Body + "\n"
           // 紐付けが無いのに方式を指定すると、
           // このリポジトリと関係のない理由で選ばれた設定を上書きしてしまうため、
           // 自動RAGが必要なModelだけへ設定する。

@@ -14,11 +14,11 @@ let private reference (pageName: string) : string =
     + "\n## 基本情報\n\n| 名前 | ユウカ |\n\n## ボイス\n"
 
 [<Fact>]
-let ``parseReferenceはファイル名と出典のページ名を読む`` () =
+let ``parseReferenceは出典のページ名と中身を読む`` () =
     let parsed = parseReference "/skills/yuuka/normal.md" (reference "ユウカ")
 
-    Assert.Equal("normal.md", parsed.FileName)
     Assert.Equal("ユウカ", parsed.PageName)
+    Assert.Equal((reference "ユウカ").Trim(), parsed.Body)
 
 [<Fact>]
 let ``parseReferenceはパーセントエンコードされたページ名を復元する`` () =
@@ -64,13 +64,19 @@ let ``絶対URLではない出典はReferenceShapeErrorになる`` () =
     | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
 
 [<Fact>]
-let ``toCostumeMarkdownはリンクと出典のページ名を並べる`` () =
+let ``toCostumeMarkdownは出典のページ名の見出しへ中身を収める`` () =
+    // 参照ファイルの見出しは基本情報から始まる二段目なので、
+    // 一段目の衣装の見出しを立てた下へそのまま入る。
+    // 節と節の間に空行が無いと、見出しが前の本文へ吸着してMarkdownが壊れる。
     let costumes =
         [ parseReference "normal.md" (reference "ユウカ")
           parseReference "track.md" (reference "ユウカ（体操服）") ]
 
     Assert.Equal(
-        "- [normal.md](./normal.md): ユウカ\n- [track.md](./track.md): ユウカ（体操服）",
+        "# 衣装: ユウカ\n\n"
+        + (reference "ユウカ").Trim()
+        + "\n\n# 衣装: ユウカ（体操服）\n\n"
+        + (reference "ユウカ（体操服）").Trim(),
         toCostumeMarkdown costumes
     )
 
@@ -97,9 +103,10 @@ let ``readReferencesは通常衣装を先頭にしてスキル本体を除く`` 
               "pajama.md", reference "ユウカ（パジャマ）"
               "normal.md", reference "ユウカ" ]
 
+    // 読み終えた値はファイル名を持たないため、並びは出典のページ名で確かめる。
     Assert.Equal<string list>(
-        [ "normal.md"; "pajama.md"; "track.md" ],
-        (readReferences directory).GetAwaiter().GetResult() |> List.map _.FileName
+        [ "ユウカ"; "ユウカ（パジャマ）"; "ユウカ（体操服）" ],
+        (readReferences directory).GetAwaiter().GetResult() |> List.map _.PageName
     )
 
 [<Fact>]
@@ -108,8 +115,8 @@ let ``通常衣装が無ければファイル名の順に並ぶ`` () =
         makeDirectory [ "track.md", reference "ユウカ（体操服）"; "pajama.md", reference "ユウカ（パジャマ）" ]
 
     Assert.Equal<string list>(
-        [ "pajama.md"; "track.md" ],
-        (readReferences directory).GetAwaiter().GetResult() |> List.map _.FileName
+        [ "ユウカ（パジャマ）"; "ユウカ（体操服）" ],
+        (readReferences directory).GetAwaiter().GetResult() |> List.map _.PageName
     )
 
 [<Fact>]
@@ -166,8 +173,8 @@ let ``quoteディレクトリは衣装として拾われない`` () =
     let directory = makeQuoteDirectory [ "budget.md", "## 予算の話\n\n本文\n" ]
 
     Assert.Equal<string list>(
-        [ "normal.md" ],
-        (readReferences directory).GetAwaiter().GetResult() |> List.map _.FileName
+        [ "ユウカ" ],
+        (readReferences directory).GetAwaiter().GetResult() |> List.map _.PageName
     )
 
 [<Fact>]
@@ -264,6 +271,7 @@ let ``renderSkillはフロントマターと差し込んだ本文を並べる`` 
              + "knowledge: character-yuuka, character-appellation\n---\n\n早瀬ユウカの位置付け。\n")
 
     let quotes = [ "## 予算の話\n\n本文" ]
+    let references = [ parseReference "normal.md" (reference "ユウカ") ]
 
     let skill =
         renderSkill
@@ -272,7 +280,7 @@ let ``renderSkillはフロントマターと差し込んだ本文を並べる`` 
               Template = template
               CharacterPath = "character.md"
               Character = character
-              References = [ parseReference "normal.md" (reference "ユウカ") ]
+              References = references
               Quotes = quotes
               Appellation = document "ユウカ" }
 
@@ -283,7 +291,8 @@ let ``renderSkillはフロントマターと差し込んだ本文を並べる`` 
         + playingRules
         + $"\n出典: [キャラ呼称表 - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{appellationSource})\n"
         + "\n| 相手 | 呼称 |\n| --- | --- |\n| 先生 | 先生 |\n\n"
-        + "- [normal.md](./normal.md): ユウカ\n"
+        + toCostumeMarkdown references
+        + "\n"
         + quotesMarkdown "ユウカ" quotes
         + "\n- character-yuuka\n",
         skill
