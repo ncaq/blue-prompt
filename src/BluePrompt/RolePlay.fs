@@ -41,6 +41,9 @@ type Reference =
 /// 参照ファイルから読み取れなかった内容と、そのファイルのパス。
 exception ReferenceShapeError of path: string * missing: string
 
+/// 参照ファイルが一段目の見出しを含んでいた時の、そのファイルのパス。
+exception ReferenceHeadingError of path: string
+
 /// 衣装別の参照ファイルが1つも無かった時のスキルのディレクトリ。
 exception ReferenceNotFound of directory: string
 
@@ -48,9 +51,20 @@ exception ReferenceNotFound of directory: string
 let private sourcePattern =
     Regex(@"^出典: \[[^\]]*\]\((?<url>[^)]+)\)", RegexOptions.Compiled)
 
+/// 参照ファイルに現れてはいけない、一段目の見出しの始まり。
+/// 二段目以降は`## `のように2文字目が`#`なので、これには一致しない。
+let private topHeadingPrefix: string = "# "
+
 /// 参照ファイルの内容から、本文へ差し込むために要る情報を読み取る。
 /// 読めなかった項目はReferenceShapeErrorで報せる。
 /// 欠けたまま組み立てると、どの衣装のものなのかを言わない節が本文へ並ぶため。
+///
+/// 中身が一段目の見出しを持っていないことも確かめる。
+/// 衣装の節は一段目の見出しを立てた下へ中身をそのまま収めるので、
+/// 中身に一段目の見出しが現れると節の切れ目が消えて、
+/// 以降の内容が別の衣装の兄弟として並ぶ。
+/// 抽出設定を変えた時にしか起きないが、生成物を目で追わない限り気付けない壊れ方なので、
+/// 見出しから始まらない発言をQuoteShapeErrorで弾くのと同じく、読んだ時点で止める。
 let parseReference (path: string) (markdown: string) : Reference =
     let missing name =
         raise (ReferenceShapeError(path = path, missing = name))
@@ -71,8 +85,15 @@ let parseReference (path: string) (markdown: string) : Reference =
             | query -> Uri.UnescapeDataString query
         | _ -> missing "出典の行"
 
-    { PageName = pageName
-      Body = markdown.Trim() }
+    let body = markdown.Trim()
+
+    if
+        body.Split '\n'
+        |> Array.exists (fun line -> line.StartsWith(topHeadingPrefix, StringComparison.Ordinal))
+    then
+        raise (ReferenceHeadingError path)
+
+    { PageName = pageName; Body = body }
 
 /// 衣装の節の見出しの前置き。
 /// 参照ファイルの見出しは基本情報から始まる二段目なので、

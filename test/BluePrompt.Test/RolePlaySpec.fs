@@ -64,6 +64,29 @@ let ``絶対URLではない出典はReferenceShapeErrorになる`` () =
     | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
 
 [<Fact>]
+let ``一段目の見出しを持つ参照ファイルはReferenceHeadingErrorになる`` () =
+    // 衣装の節は一段目の見出しを立てた下へ中身をそのまま収めるため、
+    // 中身が一段目の見出しを持つと節の切れ目が消えて、
+    // 以降の内容が別の衣装の兄弟として並ぶ。
+    let url = "https://bluearchive.wikiru.jp/?" + Uri.EscapeDataString "ユウカ"
+
+    let markdown = $"出典: [ユウカ - Wiki](%s{url})\n\n# 基本情報\n\n| 名前 | ユウカ |\n"
+
+    let error =
+        Assert.Throws<ReferenceHeadingError>(fun () ->
+            parseReference "normal.md" markdown |> ignore)
+
+    match error :> exn with
+    | ReferenceHeadingError path -> Assert.Equal("normal.md", path)
+    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+
+[<Fact>]
+let ``二段目以降の見出しは参照ファイルとして受け付ける`` () =
+    // `## `は2文字目が`#`なので一段目の見出しには一致しない。
+    // 現に全ての参照ファイルが基本情報とボイスの二段目の見出しを持つ。
+    Assert.Equal("ユウカ", (parseReference "normal.md" (reference "ユウカ")).PageName)
+
+[<Fact>]
 let ``toCostumeMarkdownは出典のページ名の見出しへ中身を収める`` () =
     // 参照ファイルの見出しは基本情報から始まる二段目なので、
     // 一段目の衣装の見出しを立てた下へそのまま入る。
