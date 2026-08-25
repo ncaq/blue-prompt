@@ -110,17 +110,37 @@
         pluginName: distributable pluginName (pluginDirOf pluginName)
       );
 
-      # プラグイン名をprefixにしたフラットな名前からスキルディレクトリへの辞書。
+      # プラグインごとの、OpenCodeのフラットな名前空間へ展開する時のprefixの有無。
+      #
       # OpenCodeはプラグインの単位を持たないためスキルをフラットに展開する必要があるが、
-      # 素のスキル名のままでは他のマーケットプレイスのスキル名とも衝突しうる。
+      # role-playのスキル名はキャラクターの呼び名そのままで一般名詞に近く、
       # 実際にkonokaのhaskell-tasuke:himariとrole-play:himariが衝突して、
       # home-managerの評価が失敗した。
       # ref https://github.com/ncaq/blue-prompt/issues/179
-      # プラグイン名で名前空間を分けることで、
-      # プラグイン間の衝突もマーケットプレイス間の衝突も避ける。
-      # prefixを付けても別のプラグイン名とスキル名の組が同じ名前を生む余地は残るため、
+      # role-playのスキルは他のスキルから名指しで参照されることも無いため、
+      # プラグイン名をprefixにして名前空間を分ける。
+      #
+      # jp-wikiru-bluearchiveのスキル名は`character-`のような接頭辞を既に持ち、
+      # 衝突の可能性が低い上に、
+      # role-playのスキルの本文から素の名前で参照されるため、
+      # prefixを付けずそのままにする。
+      opencodePrefixed = {
+        role-play = true;
+        jp-wikiru-bluearchive = false;
+      };
+
+      # プラグインごとに決めたフラットな名前からスキルディレクトリへの辞書。
+      # prefixを付けないプラグイン同士や、
+      # 別のプラグイン名とスキル名の組が同じ名前を生む余地は残るため、
       # 片方が黙って消えないように衝突を評価時に検出する。
-      flatSkillNameOf = { pluginName, skillName }: "${pluginName}-${skillName}";
+      # 分類の追記漏れは、追加したプラグインの名前の付け方が黙って決まらないように検出する。
+      flatSkillNameOf =
+        { pluginName, skillName }:
+        assert lib.assertMsg (lib.sort lib.lessThan (lib.attrNames opencodePrefixed) == pluginNames) ''
+          opencodePrefixedのプラグイン一覧がplugins/のディレクトリ一覧と一致しません。
+          opencodePrefixed: ${toString (lib.attrNames opencodePrefixed)}
+          plugins/: ${toString pluginNames}'';
+        if opencodePrefixed.${pluginName} then "${pluginName}-${skillName}" else skillName;
       skillPaths =
         let
           skillOwners = lib.mapAttrs (_flatName: map (skill: skill.pluginName)) (
@@ -505,8 +525,10 @@
                 '') pluginPathList}
                 # OpenCode側: 代表スキルの本体が接続されていて、
                 # OpenCodeがスキルの登録名に使うフロントマターのnameが、
-                # プラグイン名をprefixにした名前へ書き換えられている。
+                # prefix付きのプラグインではプラグイン名をprefixにした名前へ書き換えられていて、
+                # prefix無しのプラグインでは素のスキル名のまま残っている。
                 grep -x 'name: role-play-kotori' ${skills.role-play-kotori}/SKILL.md
+                grep -x 'name: character-kotori' ${skills.character-kotori}/SKILL.md
                 # 生成の入力や別の届け先向けの本文が、どちらへも混ざっていない。
                 ${
                   let

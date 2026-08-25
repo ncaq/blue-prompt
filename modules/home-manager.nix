@@ -1,6 +1,6 @@
 # blue-promptのプラグインとスキルをhome-manager経由でAIコーディングアシスタントへ接続するモジュール。
 # `plugins`にはプラグイン名からプラグインディレクトリへの辞書を、
-# `skills`にはプラグイン名をprefixにしたフラットな名前からスキルディレクトリへの辞書を渡す。
+# `skills`にはOpenCode向けに決めたフラットな展開名からスキルディレクトリへの辞書を渡す。
 # flake.nixが導出した一覧をそのまま受け取ることで、
 # プラグインやスキルを追加してもこのモジュールへの追記は必要なく、
 # 接続漏れも起きない。
@@ -23,9 +23,11 @@ let
   cfg = config.blue-prompt;
 
   # OpenCodeはディレクトリ名ではなくSKILL.mdのフロントマターのnameでスキルを登録するため、
-  # プラグイン名をprefixにした名前のディレクトリへ置くだけでは、
+  # prefix付きの展開名のディレクトリへ置くだけでは、
   # 素のスキル名のまま登録されて他のマーケットプレイスのスキルと衝突したままになる。
   # フロントマターのnameをディレクトリ名と同じ展開名へ書き換えたスキル一式を構築する。
+  # 展開名がスキル名のままのスキルでは書き換えは何も変えないが、
+  # 分岐を持ち込むほどのコストではないため一律に通す。
   # home-managerはスキルの値の種類をpathIsDirectoryで判別していて、
   # storeパスに対しては評価時ビルド(IFD)になるため、
   # スキルごとのderivationに分けず1つへまとめてビルドを1回で済ませる。
@@ -72,8 +74,8 @@ in
     })
     (lib.mkIf cfg.opencode.enable {
       # OpenCodeはプラグインの単位を持たないため、
-      # プラグイン名をprefixにした名前でフラットに展開したスキルを接続する。
-      # スキルは`~/.config/opencode/skills/<plugin>-<skill>/`へそれぞれsymlinkされる。
+      # プラグインを跨いでフラットに展開したスキルを接続する。
+      # スキルは`~/.config/opencode/skills/<展開名>/`へそれぞれsymlinkされる。
       programs.opencode.skills = lib.mapAttrs (
         flatName: _skillDir: "${opencodeSkills}/${flatName}"
       ) skills;
