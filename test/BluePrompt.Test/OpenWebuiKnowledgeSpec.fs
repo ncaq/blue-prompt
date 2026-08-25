@@ -65,7 +65,7 @@ let ``Markdown以外の参照ファイルはKnowledgeへ含めない`` () =
 
     let contents = (buildKnowledge directory).Files |> List.map _.Content
 
-    // jqで引くためのJSONはOpen WebUIでは実行する主体がおらず、埋め込んでも役に立たない。
+    // スクリプトで引くためのJSONはOpen WebUIでは実行する主体がおらず、埋め込んでも役に立たない。
     Assert.DoesNotContain(contents, fun content -> content.Contains "entries")
 
 [<Fact>]
