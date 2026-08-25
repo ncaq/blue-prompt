@@ -1,23 +1,45 @@
 # blue-promptのプラグインとスキルをhome-manager経由でAIコーディングアシスタントへ接続するモジュール。
 # `plugins`にはプラグイン名からプラグインディレクトリへの辞書を、
-# `skills`にはスキル名からスキルディレクトリへの辞書を渡す。
+# `skills`にはプラグイン名をprefixにしたフラットな名前からスキルディレクトリへの辞書を渡す。
 # flake.nixが導出した一覧をそのまま受け取ることで、
 # プラグインやスキルを追加してもこのモジュールへの追記は必要なく、
 # 接続漏れも起きない。
 #
 # プラグインはMarkdownのみで構成されておりビルドを必要としないため、
 # パッケージではなくソースのディレクトリをそのまま渡す。
-# home-managerのclaude-codeとopencodeのモジュールはどちらもパスを受け付けるので、
+# home-managerのclaude-codeモジュールはパスを受け付けるので、
 # systemに依存しない評価が出来て別アーキテクチャ向けの構成でも問題なく扱える。
+# OpenCode側だけはSKILL.mdの書き換えが必要なため、
+# 構成先のpkgsでスキル一式をビルドして接続する。
 { plugins, skills }:
 {
   lib,
+  pkgs,
   options,
   config,
   ...
 }:
 let
   cfg = config.blue-prompt;
+
+  # OpenCodeはディレクトリ名ではなくSKILL.mdのフロントマターのnameでスキルを登録するため、
+  # プラグイン名をprefixにした名前のディレクトリへ置くだけでは、
+  # 素のスキル名のまま登録されて他のマーケットプレイスのスキルと衝突したままになる。
+  # フロントマターのnameをディレクトリ名と同じ展開名へ書き換えたスキル一式を構築する。
+  # home-managerはスキルの値の種類をpathIsDirectoryで判別していて、
+  # storeパスに対しては評価時ビルド(IFD)になるため、
+  # スキルごとのderivationに分けず1つへまとめてビルドを1回で済ませる。
+  opencodeSkills = pkgs.runCommandLocal "blue-prompt-opencode-skills" { } ''
+    mkdir $out
+    ${lib.concatStrings (
+      lib.mapAttrsToList (flatName: skillDir: ''
+        cp -r ${skillDir} $out/${flatName}
+        chmod -R u+w $out/${flatName}
+        grep -q '^name: ' $out/${flatName}/SKILL.md
+        sed -i '0,/^name: .*/s//name: ${flatName}/' $out/${flatName}/SKILL.md
+      '') skills
+    )}
+  '';
 in
 {
   options.blue-prompt = {
@@ -50,9 +72,11 @@ in
     })
     (lib.mkIf cfg.opencode.enable {
       # OpenCodeはプラグインの単位を持たないため、
-      # プラグインを跨いでフラットに展開したスキルを接続する。
-      # スキルは`~/.config/opencode/skills/<skill>/`へそれぞれsymlinkされる。
-      programs.opencode.skills = skills;
+      # プラグイン名をprefixにした名前でフラットに展開したスキルを接続する。
+      # スキルは`~/.config/opencode/skills/<plugin>-<skill>/`へそれぞれsymlinkされる。
+      programs.opencode.skills = lib.mapAttrs (
+        flatName: _skillDir: "${opencodeSkills}/${flatName}"
+      ) skills;
     })
   ];
 }

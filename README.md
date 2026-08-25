@@ -94,7 +94,9 @@ home-managerの構成に組み込みます。
 ```
 
 - `blue-prompt.claude-code.enable`は全プラグインを`programs.claude-code.plugins`へ追加します
-- `blue-prompt.opencode.enable`は各プラグインのスキルをフラットに展開して`programs.opencode.skills`へ追加します
+- `blue-prompt.opencode.enable`は各プラグインのスキルをフラットに展開して`programs.opencode.skills`へ追加します。
+  OpenCodeはプラグインの単位を持たず素のスキル名のままでは他のマーケットプレイスのスキル名と衝突しうるため、
+  スキル名は`role-play-himari`のようにプラグイン名をprefixにした名前になります
 
 `programs.claude-code`や`programs.opencode`自体の有効化や設定は、
 通常通りhome-manager側で行ってください。

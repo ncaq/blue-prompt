@@ -110,25 +110,32 @@
         pluginName: distributable pluginName (pluginDirOf pluginName)
       );
 
-      # スキル名からスキルディレクトリへの辞書。
+      # プラグイン名をprefixにしたフラットな名前からスキルディレクトリへの辞書。
       # OpenCodeはプラグインの単位を持たないためスキルをフラットに展開する必要があるが、
-      # 複数プラグインが同名のスキルを持つと片方が黙って消えるため、
-      # 衝突を評価時に検出する。
+      # 素のスキル名のままでは他のマーケットプレイスのスキル名とも衝突しうる。
+      # 実際にkonokaのhaskell-tasuke:himariとrole-play:himariが衝突して、
+      # home-managerの評価が失敗した。
+      # ref https://github.com/ncaq/blue-prompt/issues/179
+      # プラグイン名で名前空間を分けることで、
+      # プラグイン間の衝突もマーケットプレイス間の衝突も避ける。
+      # prefixを付けても別のプラグイン名とスキル名の組が同じ名前を生む余地は残るため、
+      # 片方が黙って消えないように衝突を評価時に検出する。
+      flatSkillNameOf = { pluginName, skillName }: "${pluginName}-${skillName}";
       skillPaths =
         let
-          skillOwners = lib.mapAttrs (_skillName: map (skill: skill.pluginName)) (
-            lib.groupBy (skill: skill.skillName) skills
+          skillOwners = lib.mapAttrs (_flatName: map (skill: skill.pluginName)) (
+            lib.groupBy flatSkillNameOf skills
           );
-          skillNameConflicts = lib.filterAttrs (_skillName: owners: 1 < lib.length owners) skillOwners;
+          skillNameConflicts = lib.filterAttrs (_flatName: owners: 1 < lib.length owners) skillOwners;
         in
         assert lib.assertMsg (
           skillNameConflicts == { }
-        ) "blue-promptのプラグイン間でスキル名が衝突しています: ${builtins.toJSON skillNameConflicts}";
+        ) "blue-promptのプラグイン間でフラットなスキル名が衝突しています: ${builtins.toJSON skillNameConflicts}";
         lib.listToAttrs (
           map (
-            { pluginName, skillName }:
-            lib.nameValuePair skillName (
-              distributable skillName (pluginDirOf pluginName + "/skills/${skillName}")
+            skill:
+            lib.nameValuePair (flatSkillNameOf skill) (
+              distributable skill.skillName (pluginDirOf skill.pluginName + "/skills/${skill.skillName}")
             )
           ) skills
         );
@@ -292,7 +299,7 @@
               ''
                 mkdir -p $out
                 ${lib.concatMapStrings (
-                  { pluginName, skillName }:
+                  skill@{ skillName, ... }:
                   # プラグインを跨いでスキル名が重複しても衝突しないように、
                   # 作業ディレクトリと出力ファイルの名前をプラグイン名で名前空間に分ける。
                   # Claude Codeもプラグイン配下のスキルを`plugin:skill`の形で参照するため、
@@ -300,11 +307,11 @@
                   # ZIP内のルートディレクトリはスキルの`name`と一致させる必要があるため、
                   # そちらはスキル名のままにする。
                   let
-                    workDir = "${pluginName}-${skillName}";
+                    workDir = flatSkillNameOf skill;
                   in
                   ''
                     mkdir -p ${workDir}
-                    cp -r ${skillPaths.${skillName}} ${workDir}/${skillName}
+                    cp -r ${skillPaths.${workDir}} ${workDir}/${skillName}
                     chmod -R u+w ${workDir}
                     # nix storeのタイムスタンプとファイル列挙順に依存しないアーカイブにする。
                     find ${workDir} -exec touch -d "@$SOURCE_DATE_EPOCH" {} +
@@ -488,14 +495,18 @@
               assert lib.assertMsg (
                 pluginPathList != [ ]
               ) "blue-promptのプラグインがprograms.claude-code.pluginsへ接続されていません";
-              assert lib.assertMsg (skills ? kotori) "blue-promptのスキルがprograms.opencode.skillsへ展開されていません";
+              assert lib.assertMsg (
+                skills ? role-play-kotori
+              ) "blue-promptのスキルがprograms.opencode.skillsへ展開されていません";
               pkgs.runCommand "home-manager-module" { } ''
                 # Claude Code側: 接続されたプラグインがマニフェストを持つ実体である。
                 ${lib.concatMapStrings (pluginPath: ''
                   test -f ${pluginPath}/.claude-plugin/plugin.json
                 '') pluginPathList}
-                # OpenCode側: 代表スキルの本体が接続されている。
-                test -f ${skills.kotori}/SKILL.md
+                # OpenCode側: 代表スキルの本体が接続されていて、
+                # OpenCodeがスキルの登録名に使うフロントマターのnameが、
+                # プラグイン名をprefixにした名前へ書き換えられている。
+                grep -x 'name: role-play-kotori' ${skills.role-play-kotori}/SKILL.md
                 # 生成の入力や別の届け先向けの本文が、どちらへも混ざっていない。
                 ${
                   let
