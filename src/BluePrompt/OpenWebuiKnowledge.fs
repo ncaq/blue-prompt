@@ -188,12 +188,12 @@ let private stripFrontmatter (content: string) : string =
 ///
 /// SKILL.mdの本文と、そこからリンクされたMarkdownの参照ファイルを対象にする。
 /// Markdown以外の参照ファイルは、
-/// appellation.jsonのようにjqやスクリプトで引くためのもので、
+/// appellation.jsonのようにスクリプトで引くためのもので、
 /// Open WebUIにはそれを実行する主体がいないため対象にしない。
 /// 同じ内容がMarkdown側にもあるため、埋め込みを作っても検索の役に立たない。
 ///
 /// SKILL.mdの本文は、
-/// Grepで探すとかjqで抽出するとか、
+/// Grepで探すとかスクリプトで抽出するとか、
 /// Open WebUIには存在しないツールの使い方を書いていることがある。
 /// それでも本文ごとKnowledgeへ載せているのは、
 /// スキルが何を扱う文書なのかという説明も同じ本文にあり、
