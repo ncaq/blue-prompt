@@ -31,14 +31,20 @@ let
   # home-managerはスキルの値の種類をpathIsDirectoryで判別していて、
   # storeパスに対しては評価時ビルド(IFD)になるため、
   # スキルごとのderivationに分けず1つへまとめてビルドを1回で済ませる。
+  #
+  # 実際に書き換えるのは各スキルのSKILL.md 1ファイルだけなので、
+  # 他のファイルはsymlinkでstoreの実体を指して複製を避ける。
+  # runCommandLocalは代替を引かず全マシンでローカル実行されるため、
+  # 実体コピーにするとplugins/全体をstoreへもう1組持つことになる。
   opencodeSkills = pkgs.runCommandLocal "blue-prompt-opencode-skills" { } ''
-    mkdir $out
     ${lib.concatStrings (
       lib.mapAttrsToList (flatName: skillDir: ''
-        cp -r ${skillDir} $out/${flatName}
-        chmod -R u+w $out/${flatName}
-        grep -q '^name: ' $out/${flatName}/SKILL.md
-        sed -i '0,/^name: .*/s//name: ${flatName}/' $out/${flatName}/SKILL.md
+        mkdir -p $out/${flatName}
+        for entry in ${skillDir}/*; do
+          [ "$(basename "$entry")" = SKILL.md ] || ln -s "$entry" $out/${flatName}/
+        done
+        grep -q '^name: ' ${skillDir}/SKILL.md
+        sed '0,/^name: .*/s//name: ${flatName}/' ${skillDir}/SKILL.md > $out/${flatName}/SKILL.md
       '') skills
     )}
   '';
