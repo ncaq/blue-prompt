@@ -137,7 +137,7 @@ module RolePlayCommand =
             member this.Usage =
                 match this with
                 | All _ -> "マニフェストのrole-playスキルを全て生成し直してから、まとめてnix fmtを掛ける。"
-                | Skill _ -> "テンプレートへcharacter.mdと衣装別の参照ファイルの一覧と呼称表を流し込んで書き出す。"
+                | Skill _ -> "テンプレートへcharacter.mdと衣装別の参照データと呼称表を流し込んで書き出す。"
 
 module OpenWebuiCommand =
     [<CliPrefix(CliPrefix.None); HelpFlags("--help", "-h", "help")>]
@@ -150,7 +150,7 @@ module OpenWebuiCommand =
             member this.Usage =
                 match this with
                 | Knowledge _ -> "SKILL.mdとリンクされた参照ファイルを見出しの単位へ分割してKnowledgeの定義を書き出す。"
-                | Model _ -> "MODEL.mdとリンクされた参照ファイルをインライン化してModelFormのJSONを書き出す。"
+                | Model _ -> "MODEL.mdの本文をシステムプロンプトへ焼き込んだModelFormのJSONを書き出す。"
                 | Sync _ -> "生成したModelとKnowledgeをインスタンスへ同期する。差分が無ければ書き込まない。"
 
 module RootCommand =

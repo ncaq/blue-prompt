@@ -215,7 +215,7 @@ let playingRules: string =
 /// テンプレートで呼称表を差し込む位置を示すプレースホルダの名前。
 let private appellationPlaceholder: string = "appellation"
 
-/// テンプレートで衣装ごとの参照ファイルの一覧を差し込む位置を示すプレースホルダの名前。
+/// テンプレートで衣装ごとの参照データを差し込む位置を示すプレースホルダの名前。
 let private costumesPlaceholder: string = "costumes"
 
 /// テンプレートで演じる生徒の呼び名を差し込む位置を示すプレースホルダの名前。
