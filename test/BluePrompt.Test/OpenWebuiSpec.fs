@@ -1,7 +1,6 @@
 module BluePrompt.Test.OpenWebuiSpec
 
 open System.IO
-open System.Text.RegularExpressions
 open Xunit
 open BluePrompt.OpenWebui
 
@@ -86,7 +85,9 @@ let ``フロントマターのnameとdescriptionがModelFormへ対応付く`` ()
     Assert.Equal("あなたは早瀬ユウカとして振る舞います。\n", form.Params.System)
 
 [<Fact>]
-let ``リンクされた参照ファイルはシステムプロンプトへインライン化される`` () =
+let ``参照ファイルへのリンクが本文に残っているとSkillFormatErrorになる`` () =
+    // Open WebUIには会話の途中でファイルを開く手段が無いため、
+    // リンクを書いても読み手には開けない参照が残るだけになる。
     let body =
         """---
 name: yuuka
@@ -94,20 +95,37 @@ description: desc
 ---
 
 - [normal.md](./normal.md): 通常
-- [normal.md](./normal.md): 重複したリンクは1回だけ展開される
 """
 
     let directory =
         makeSkillDirectory [ "SKILL.md", body; "normal.md", "# 通常\n\n制服姿。\n" ]
 
-    let system = (buildModelForm directory).Params.System
-
-    Assert.Contains("# 参照ファイル: normal.md", system)
-    Assert.Contains("制服姿。", system)
-    Assert.Equal(1, Regex.Matches(system, "参照ファイル: normal.md").Count)
+    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
+    |> ignore
 
 [<Fact>]
-let ``URLとアンカーのリンクはインライン化の対象にならない`` () =
+let ``MODEL.mdだけにリンクが残っていてもSkillFormatErrorになる`` () =
+    // role-playスキルを変換する時に読まれるのはMODEL.mdなので、
+    // 検査がSKILL.mdを見ていると、実際に焼かれる本文のリンクを見逃す。
+    // 本文を選ぶ判定と検査の対象が同じであることを、
+    // リンクを持たないSKILL.mdと並べて固定する。
+    let body =
+        """---
+name: yuuka
+description: desc
+---
+
+- [normal.md](./normal.md): 通常
+"""
+
+    let directory =
+        makeSkillDirectory [ "SKILL.md", skillMd; "MODEL.md", body; "normal.md", "# 通常\n\n制服姿。\n" ]
+
+    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
+    |> ignore
+
+[<Fact>]
+let ``URLとアンカーのリンクは参照ファイルとして扱われない`` () =
     Assert.Equal<string list>(
         [ "normal.md" ],
         localLinkTargets "[wiki](https://example.com/?page) [節](#anchor) [normal.md](./normal.md)"
@@ -122,110 +140,36 @@ let ``ドットスラッシュ無しの相対リンクも参照ファイルと�
         localLinkTargets "[a](reference.md) [b](./reference.md)"
     )
 
+/// 参照ファイルの解決をスキルディレクトリの上で試す。
+/// 解決はKnowledgeの組み立てが使うもので、Modelの本文はリンクを持たない。
+let private resolve (files: (string * string) list) (body: string) : (string * string) list =
+    let directory = makeSkillDirectory files
+    resolveReferences directory (Path.Combine(directory, "SKILL.md")) body
+
 [<Fact>]
-let ``サブディレクトリの参照ファイルもインライン化される`` () =
-    let body =
-        """---
-name: nested
-description: desc
----
-
-[data.md](./sub/data.md)
-"""
-
-    let directory =
-        makeSkillDirectory [ "SKILL.md", body; "sub/data.md", "# 入れ子\n\n中身。\n" ]
-
-    let system = (buildModelForm directory).Params.System
-
-    Assert.Contains("# 参照ファイル: sub/data.md", system)
-    Assert.Contains("中身。", system)
+let ``サブディレクトリの参照ファイルも解決される`` () =
+    Assert.Equal<string list>(
+        [ "sub/data.md" ],
+        resolve [ "sub/data.md", "# 入れ子\n\n中身。\n" ] "[data.md](./sub/data.md)"
+        |> List.map fst
+    )
 
 [<Fact>]
 let ``ディレクトリを遡る参照はSkillFormatErrorになる`` () =
-    let body =
-        """---
-name: escape
-description: desc
----
-
-[outside.md](../outside.md)
-"""
-
-    let directory = makeSkillDirectory [ "SKILL.md", body ]
-
-    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
+    Assert.Throws<SkillFormatError>(fun () -> resolve [] "[outside.md](../outside.md)" |> ignore)
     |> ignore
 
 [<Fact>]
 let ``絶対パスの参照はSkillFormatErrorになる`` () =
     // Path.Combineは絶対パスを渡されると連結せずそれ自体を返すため、
     // `..`を含むかどうかだけを見る検査ではスキルディレクトリの外へ抜けられる。
-    // 内容はシステムプロンプトへ焼き込まれ、Knowledgeとして外部へも送られる。
-    let body =
-        """---
-name: absolute
-description: desc
----
-
-[passwd](/etc/passwd)
-"""
-
-    let directory = makeSkillDirectory [ "SKILL.md", body ]
-
-    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
+    // 内容はKnowledgeとして外部へ送られる。
+    Assert.Throws<SkillFormatError>(fun () -> resolve [] "[passwd](/etc/passwd)" |> ignore)
     |> ignore
 
 [<Fact>]
-let ``Markdown以外の参照ファイルは拡張子を言語タグにしたコードブロックで包まれる`` () =
-    let body =
-        """---
-name: appellation
-description: desc
----
-
-[appellation.json](./appellation.json)を使ってください。
-"""
-
-    let directory =
-        makeSkillDirectory [ "SKILL.md", body; "appellation.json", """{ "entries": [] }""" ]
-
-    let system = (buildModelForm directory).Params.System
-
-    Assert.Contains("```json\n{ \"entries\": [] }\n```", system)
-
-[<Fact>]
-let ``参照ファイルがコードフェンスを含んでいてもより長いフェンスで包まれる`` () =
-    let body =
-        """---
-name: fenced
-description: desc
----
-
-[data.txt](./data.txt)
-"""
-
-    let directory =
-        makeSkillDirectory [ "SKILL.md", body; "data.txt", "```console\njq .\n```" ]
-
-    let system = (buildModelForm directory).Params.System
-
-    Assert.Contains("````txt\n```console\njq .\n```\n````", system)
-
-[<Fact>]
 let ``リンク先のファイルが存在しないとSkillFormatErrorになる`` () =
-    let body =
-        """---
-name: broken
-description: desc
----
-
-[missing.md](./missing.md)
-"""
-
-    let directory = makeSkillDirectory [ "SKILL.md", body ]
-
-    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
+    Assert.Throws<SkillFormatError>(fun () -> resolve [] "[missing.md](./missing.md)" |> ignore)
     |> ignore
 
 [<Fact>]

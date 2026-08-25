@@ -13,7 +13,7 @@ let skill: string = "SKILL.md"
 
 /// Open WebUIのModel向けの本文。
 /// スキル本体と同じ内容を、
-/// 参照ファイルがインライン化され、ナレッジが自動で渡される前提の書き方で持つ。
+/// ナレッジが紐付けから自動で渡される前提の書き方で持つ。
 /// open-webui modelはこれがあればスキル本体より優先する。
 let model: string = "MODEL.md"
 
