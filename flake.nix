@@ -110,25 +110,67 @@
         pluginName: distributable pluginName (pluginDirOf pluginName)
       );
 
-      # スキル名からスキルディレクトリへの辞書。
+      # プラグインごとの、OpenCodeのフラットな名前空間へ展開する時のprefixの有無。
+      #
       # OpenCodeはプラグインの単位を持たないためスキルをフラットに展開する必要があるが、
-      # 複数プラグインが同名のスキルを持つと片方が黙って消えるため、
-      # 衝突を評価時に検出する。
+      # role-playのスキル名はキャラクターの呼び名そのままで一般名詞に近く、
+      # 実際にkonokaのhaskell-tasuke:himariとrole-play:himariが衝突して、
+      # home-managerの評価が失敗した。
+      # ref https://github.com/ncaq/blue-prompt/issues/179
+      # role-playのスキルは他のスキルから名指しで参照されることも無いため、
+      # プラグイン名をprefixにして名前空間を分ける。
+      #
+      # jp-wikiru-bluearchiveのスキル名は`character-`のような接頭辞を既に持ち、
+      # 衝突の可能性が低い上に、
+      # role-playのスキルの本文から素の名前で参照されるため、
+      # prefixを付けずそのままにする。
+      opencodePrefixed = {
+        role-play = true;
+        jp-wikiru-bluearchive = false;
+      };
+
+      # プラグインごとに決めたフラットな名前からスキルディレクトリへの辞書。
+      #
+      # この辞書が担うのは展開名のキーの供給までで、
+      # 値のスキルディレクトリのSKILL.mdは素のスキル名のまま。
+      # OpenCodeはディレクトリ名ではなくSKILL.mdのフロントマターのnameでスキルを登録するため、
+      # 登録名の書き換えはmodules/home-manager.nixが接続時に行う。
+      #
+      # prefixを付けないプラグイン同士や、
+      # 別のプラグイン名とスキル名の組が同じ名前を生む余地は残るため、
+      # 片方が黙って消えないように衝突を評価時に検出する。
+      # 分類の追記漏れは、追加したプラグインの名前の付け方が黙って決まらないように検出する。
+      flatSkillNameOf =
+        { pluginName, skillName }:
+        assert lib.assertMsg (lib.sort lib.lessThan (lib.attrNames opencodePrefixed) == pluginNames) ''
+          opencodePrefixedのプラグイン一覧がplugins/のディレクトリ一覧と一致しません。
+          opencodePrefixed: ${toString (lib.attrNames opencodePrefixed)}
+          plugins/: ${toString pluginNames}'';
+        let
+          flatName = if opencodePrefixed.${pluginName} then "${pluginName}-${skillName}" else skillName;
+        in
+        # OpenCodeのスキル名の制約(小文字英数をハイフンで繋ぐ)に収まることを表明する。
+        # home-managerモジュールが展開名をシェルとsedのスクリプトへそのまま埋め込むため、
+        # メタ文字が混ざらないことの前提もこのassertが担う。
+        assert lib.assertMsg (
+          builtins.match "[a-z0-9]+(-[a-z0-9]+)*" flatName != null
+        ) "OpenCodeのスキル名に使えない名前です: ${flatName}";
+        flatName;
       skillPaths =
         let
-          skillOwners = lib.mapAttrs (_skillName: map (skill: skill.pluginName)) (
-            lib.groupBy (skill: skill.skillName) skills
+          skillOwners = lib.mapAttrs (_flatName: map (skill: skill.pluginName)) (
+            lib.groupBy flatSkillNameOf skills
           );
-          skillNameConflicts = lib.filterAttrs (_skillName: owners: 1 < lib.length owners) skillOwners;
+          skillNameConflicts = lib.filterAttrs (_flatName: owners: 1 < lib.length owners) skillOwners;
         in
         assert lib.assertMsg (
           skillNameConflicts == { }
-        ) "blue-promptのプラグイン間でスキル名が衝突しています: ${builtins.toJSON skillNameConflicts}";
+        ) "blue-promptのプラグイン間でフラットなスキル名が衝突しています: ${builtins.toJSON skillNameConflicts}";
         lib.listToAttrs (
           map (
-            { pluginName, skillName }:
-            lib.nameValuePair skillName (
-              distributable skillName (pluginDirOf pluginName + "/skills/${skillName}")
+            skill:
+            lib.nameValuePair (flatSkillNameOf skill) (
+              distributable skill.skillName (pluginDirOf skill.pluginName + "/skills/${skill.skillName}")
             )
           ) skills
         );
@@ -287,16 +329,21 @@
               plugins/: ${toString pluginNames}'';
             pkgs.runCommand "claude-ai-skill-${marketplace.metadata.version}"
               {
-                nativeBuildInputs = [ pkgs.zip ];
+                nativeBuildInputs = [
+                  pkgs.unzip
+                  pkgs.zip
+                ];
               }
               ''
                 mkdir -p $out
                 ${lib.concatMapStrings (
-                  { pluginName, skillName }:
+                  skill@{ pluginName, skillName }:
                   # プラグインを跨いでスキル名が重複しても衝突しないように、
                   # 作業ディレクトリと出力ファイルの名前をプラグイン名で名前空間に分ける。
                   # Claude Codeもプラグイン配下のスキルを`plugin:skill`の形で参照するため、
                   # プラグイン名を冠する命名はその慣習にも沿う。
+                  # OpenCodeの展開名(flatSkillNameOf)はrole-playだけprefixが付く条件付きの規則なので、
+                  # この配布物の名前には使わず、無条件にプラグイン名を冠する。
                   # ZIP内のルートディレクトリはスキルの`name`と一致させる必要があるため、
                   # そちらはスキル名のままにする。
                   let
@@ -304,7 +351,7 @@
                   in
                   ''
                     mkdir -p ${workDir}
-                    cp -r ${skillPaths.${skillName}} ${workDir}/${skillName}
+                    cp -r ${skillPaths.${flatSkillNameOf skill}} ${workDir}/${skillName}
                     chmod -R u+w ${workDir}
                     # nix storeのタイムスタンプとファイル列挙順に依存しないアーカイブにする。
                     find ${workDir} -exec touch -d "@$SOURCE_DATE_EPOCH" {} +
@@ -312,6 +359,14 @@
                     (cd ${workDir} && find ${skillName} | sort | zip --quiet -X $out/${workDir}.zip -@)
                   ''
                 ) skills}
+                # ZIPのルートがスキルの`name`と一致するのはClaude.aiの取り込み条件だが、
+                # フラット名と素のスキル名を使い分けるコードの取り違えは、
+                # ビルドが通ることだけを見るチェックでは検出できない。
+                # 代表1つを開いて、全エントリがスキル名のルートに収まっていることを検証する。
+                if unzip -Z1 $out/role-play-kotori.zip | grep -qv -e '^kotori$' -e '^kotori/'; then
+                  echo "ZIPのルートディレクトリがスキル名になっていません" >&2
+                  exit 1
+                fi
               '';
           # Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
           # MODEL.md(無ければSKILL.md)と参照ファイルをインライン化したシステムプロンプトを持つ、
@@ -488,14 +543,25 @@
               assert lib.assertMsg (
                 pluginPathList != [ ]
               ) "blue-promptのプラグインがprograms.claude-code.pluginsへ接続されていません";
-              assert lib.assertMsg (skills ? kotori) "blue-promptのスキルがprograms.opencode.skillsへ展開されていません";
+              assert lib.assertMsg (
+                skills ? role-play-kotori
+              ) "blue-promptのスキルがprograms.opencode.skillsへ展開されていません";
+              assert lib.assertMsg (
+                skills ? character-kotori
+              ) "prefix無しのスキルが素の名前でprograms.opencode.skillsへ展開されていません";
               pkgs.runCommand "home-manager-module" { } ''
                 # Claude Code側: 接続されたプラグインがマニフェストを持つ実体である。
                 ${lib.concatMapStrings (pluginPath: ''
                   test -f ${pluginPath}/.claude-plugin/plugin.json
                 '') pluginPathList}
-                # OpenCode側: 代表スキルの本体が接続されている。
-                test -f ${skills.kotori}/SKILL.md
+                # OpenCode側: 全スキルでディレクトリ名とフロントマターのnameが一致している。
+                # OpenCodeはフロントマターのnameでスキルを登録するため、
+                # prefix付きのプラグインでは書き換えが効いたことを、
+                # prefix無しのプラグインでは素の名前のまま残ったことを、
+                # スキルが増えても検証が追随する形でまとめて確かめる。
+                ${lib.concatMapStrings (skillPath: ''
+                  sed -n '1,/^---$/p' ${skillPath}/SKILL.md | grep -qx "name: $(basename ${skillPath})"
+                '') (lib.attrValues skills)}
                 # 生成の入力や別の届け先向けの本文が、どちらへも混ざっていない。
                 ${
                   let

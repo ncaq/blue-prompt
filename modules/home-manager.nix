@@ -1,23 +1,64 @@
 # blue-promptのプラグインとスキルをhome-manager経由でAIコーディングアシスタントへ接続するモジュール。
 # `plugins`にはプラグイン名からプラグインディレクトリへの辞書を、
-# `skills`にはスキル名からスキルディレクトリへの辞書を渡す。
+# `skills`にはOpenCode向けに決めたフラットな展開名からスキルディレクトリへの辞書を渡す。
 # flake.nixが導出した一覧をそのまま受け取ることで、
 # プラグインやスキルを追加してもこのモジュールへの追記は必要なく、
 # 接続漏れも起きない。
 #
 # プラグインはMarkdownのみで構成されておりビルドを必要としないため、
 # パッケージではなくソースのディレクトリをそのまま渡す。
-# home-managerのclaude-codeとopencodeのモジュールはどちらもパスを受け付けるので、
+# home-managerのclaude-codeモジュールはパスを受け付けるので、
 # systemに依存しない評価が出来て別アーキテクチャ向けの構成でも問題なく扱える。
+# OpenCode側だけはSKILL.mdの書き換えが必要なため、
+# 構成先のpkgsでスキル一式をビルドして接続する。
+# その結果としてOpenCode側を有効にした評価はsystemに依存する。
+# 中身はテキスト処理だけでターゲット依存が無いので、
+# cross構成でもエミュレーションやリモートビルダーを要求しないように、
+# ビルドはbuildPackages側で実行する。
 { plugins, skills }:
 {
   lib,
+  pkgs,
   options,
   config,
   ...
 }:
 let
   cfg = config.blue-prompt;
+
+  # OpenCodeはディレクトリ名ではなくSKILL.mdのフロントマターのnameでスキルを登録するため、
+  # prefix付きの展開名のディレクトリへ置くだけでは、
+  # 素のスキル名のまま登録されて他のマーケットプレイスのスキルと衝突したままになる。
+  # フロントマターのnameをディレクトリ名と同じ展開名へ書き換えたスキル一式を構築する。
+  # 展開名がスキル名のままのスキルでは書き換えは何も変えないが、
+  # 分岐を持ち込むほどのコストではないため一律に通す。
+  # home-managerはスキルの値の種類をpathIsDirectoryで判別していて、
+  # storeパスに対しては評価時ビルド(IFD)になるため、
+  # スキルごとのderivationに分けず1つへまとめてビルドを1回で済ませる。
+  #
+  # 実際に書き換えるのは各スキルのSKILL.md 1ファイルだけなので、
+  # 他のファイルはsymlinkでstoreの実体を指して複製を避ける。
+  # runCommandLocalは代替を引かず全マシンでローカル実行されるため、
+  # 実体コピーにするとplugins/全体をstoreへもう1組持つことになる。
+  #
+  # sedの対象は先頭のフロントマターの範囲に限定する。
+  # ファイル全体を対象にすると、
+  # フロントマターにnameが無いスキルの本文のnameに似た行を書き換えて、
+  # 素のスキル名のまま登録される失敗が黙って通るため。
+  # 書き換え後にフロントマターへ展開名が実際に入ったことを検査して、
+  # nameを持たないスキルもここで止まるようにする。
+  opencodeSkills = pkgs.buildPackages.runCommandLocal "blue-prompt-opencode-skills" { } ''
+    ${lib.concatStrings (
+      lib.mapAttrsToList (flatName: skillDir: ''
+        mkdir -p "$out/${flatName}"
+        for entry in "${skillDir}"/*; do
+          [ "$(basename "$entry")" = SKILL.md ] || ln -s "$entry" "$out/${flatName}/"
+        done
+        sed '1,/^---$/ s/^name: .*/name: ${flatName}/' "${skillDir}/SKILL.md" > "$out/${flatName}/SKILL.md"
+        sed -n '1,/^---$/p' "$out/${flatName}/SKILL.md" | grep -qx 'name: ${flatName}'
+      '') skills
+    )}
+  '';
 in
 {
   options.blue-prompt = {
@@ -51,8 +92,10 @@ in
     (lib.mkIf cfg.opencode.enable {
       # OpenCodeはプラグインの単位を持たないため、
       # プラグインを跨いでフラットに展開したスキルを接続する。
-      # スキルは`~/.config/opencode/skills/<skill>/`へそれぞれsymlinkされる。
-      programs.opencode.skills = skills;
+      # スキルは`~/.config/opencode/skills/<展開名>/`へそれぞれsymlinkされる。
+      programs.opencode.skills = lib.mapAttrs (
+        flatName: _skillDir: "${opencodeSkills}/${flatName}"
+      ) skills;
     })
   ];
 }
