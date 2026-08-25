@@ -329,24 +329,29 @@
               plugins/: ${toString pluginNames}'';
             pkgs.runCommand "claude-ai-skill-${marketplace.metadata.version}"
               {
-                nativeBuildInputs = [ pkgs.zip ];
+                nativeBuildInputs = [
+                  pkgs.unzip
+                  pkgs.zip
+                ];
               }
               ''
                 mkdir -p $out
                 ${lib.concatMapStrings (
-                  skill@{ skillName, ... }:
+                  skill@{ pluginName, skillName }:
                   # プラグインを跨いでスキル名が重複しても衝突しないように、
                   # 作業ディレクトリと出力ファイルの名前をプラグイン名で名前空間に分ける。
                   # Claude Codeもプラグイン配下のスキルを`plugin:skill`の形で参照するため、
                   # プラグイン名を冠する命名はその慣習にも沿う。
+                  # OpenCodeの展開名(flatSkillNameOf)はrole-playだけprefixが付く条件付きの規則なので、
+                  # この配布物の名前には使わず、無条件にプラグイン名を冠する。
                   # ZIP内のルートディレクトリはスキルの`name`と一致させる必要があるため、
                   # そちらはスキル名のままにする。
                   let
-                    workDir = flatSkillNameOf skill;
+                    workDir = "${pluginName}-${skillName}";
                   in
                   ''
                     mkdir -p ${workDir}
-                    cp -r ${skillPaths.${workDir}} ${workDir}/${skillName}
+                    cp -r ${skillPaths.${flatSkillNameOf skill}} ${workDir}/${skillName}
                     chmod -R u+w ${workDir}
                     # nix storeのタイムスタンプとファイル列挙順に依存しないアーカイブにする。
                     find ${workDir} -exec touch -d "@$SOURCE_DATE_EPOCH" {} +
@@ -354,6 +359,14 @@
                     (cd ${workDir} && find ${skillName} | sort | zip --quiet -X $out/${workDir}.zip -@)
                   ''
                 ) skills}
+                # ZIPのルートがスキルの`name`と一致するのはClaude.aiの取り込み条件だが、
+                # フラット名と素のスキル名を使い分けるコードの取り違えは、
+                # ビルドが通ることだけを見るチェックでは検出できない。
+                # 代表1つを開いて、全エントリがスキル名のルートに収まっていることを検証する。
+                if unzip -Z1 $out/role-play-kotori.zip | grep -qv -e '^kotori$' -e '^kotori/'; then
+                  echo "ZIPのルートディレクトリがスキル名になっていません" >&2
+                  exit 1
+                fi
               '';
           # Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
           # MODEL.md(無ければSKILL.md)と参照ファイルをインライン化したシステムプロンプトを持つ、
