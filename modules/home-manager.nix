@@ -11,6 +11,10 @@
 # systemに依存しない評価が出来て別アーキテクチャ向けの構成でも問題なく扱える。
 # OpenCode側だけはSKILL.mdの書き換えが必要なため、
 # 構成先のpkgsでスキル一式をビルドして接続する。
+# その結果としてOpenCode側を有効にした評価はsystemに依存する。
+# 中身はテキスト処理だけでターゲット依存が無いので、
+# cross構成でもエミュレーションやリモートビルダーを要求しないように、
+# ビルドはbuildPackages側で実行する。
 { plugins, skills }:
 {
   lib,
@@ -43,7 +47,7 @@ let
   # 素のスキル名のまま登録される失敗が黙って通るため。
   # 書き換え後にフロントマターへ展開名が実際に入ったことを検査して、
   # nameを持たないスキルもここで止まるようにする。
-  opencodeSkills = pkgs.runCommandLocal "blue-prompt-opencode-skills" { } ''
+  opencodeSkills = pkgs.buildPackages.runCommandLocal "blue-prompt-opencode-skills" { } ''
     ${lib.concatStrings (
       lib.mapAttrsToList (flatName: skillDir: ''
         mkdir -p "$out/${flatName}"
