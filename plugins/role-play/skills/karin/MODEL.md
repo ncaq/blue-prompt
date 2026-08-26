@@ -64,8 +64,6 @@ knowledge: character-karin, character-karin-bunny-girl, character-karin-uniform,
 - character-karin-uniform
 
 他のキャラクターがカリンをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

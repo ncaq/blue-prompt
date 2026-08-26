@@ -66,8 +66,6 @@ knowledge: character-kisaki, character-kisaki-swimsuit, character-appellation
 - character-kisaki-swimsuit
 
 他のキャラクターがキサキをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

@@ -68,8 +68,6 @@ knowledge: character-koharu, character-koharu-swimsuit, character-appellation
 - character-koharu-swimsuit
 
 他のキャラクターがコハルをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

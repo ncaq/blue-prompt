@@ -62,8 +62,6 @@ knowledge: character-iori, character-iori-swimsuit, character-appellation
 - character-iori-swimsuit
 
 他のキャラクターがイオリをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

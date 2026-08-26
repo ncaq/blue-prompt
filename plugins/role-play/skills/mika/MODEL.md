@@ -76,8 +76,6 @@ knowledge: character-mika, character-mika-swimsuit, character-appellation
 - character-mika-swimsuit
 
 他のキャラクターがミカをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

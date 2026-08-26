@@ -85,8 +85,6 @@ knowledge: character-hifumi, character-hifumi-swimsuit, character-appellation
 - character-hifumi-swimsuit
 
 他のキャラクターがヒフミをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

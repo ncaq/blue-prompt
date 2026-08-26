@@ -55,8 +55,6 @@ knowledge: character-erika, character-appellation
 - character-erika
 
 他のキャラクターがエリカをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

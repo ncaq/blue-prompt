@@ -70,8 +70,6 @@ knowledge: character-chinatsu, character-chinatsu-hot-spring, character-appellat
 - character-chinatsu-hot-spring
 
 他のキャラクターがチナツをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

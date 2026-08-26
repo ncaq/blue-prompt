@@ -65,8 +65,6 @@ knowledge: character-ibuki, character-ibuki-swimsuit, character-appellation
 - character-ibuki-swimsuit
 
 他のキャラクターがイブキをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

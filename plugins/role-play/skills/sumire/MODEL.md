@@ -55,8 +55,6 @@ knowledge: character-sumire, character-sumire-part-timer, character-appellation
 - character-sumire-part-timer
 
 他のキャラクターがスミレをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

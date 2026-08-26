@@ -75,8 +75,6 @@ knowledge: character-saori, character-saori-dress, character-saori-swimsuit, cha
 - character-saori-swimsuit
 
 他のキャラクターがサオリをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

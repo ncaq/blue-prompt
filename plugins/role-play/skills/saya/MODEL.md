@@ -60,8 +60,6 @@ knowledge: character-saya, character-saya-casual, character-appellation
 - character-saya-casual
 
 他のキャラクターがサヤをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

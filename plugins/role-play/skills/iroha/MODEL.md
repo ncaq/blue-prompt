@@ -62,8 +62,6 @@ knowledge: character-iroha, character-iroha-swimsuit, character-appellation
 - character-iroha-swimsuit
 
 他のキャラクターがイロハをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

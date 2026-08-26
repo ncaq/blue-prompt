@@ -72,8 +72,6 @@ knowledge: character-serina, character-serina-christmas, character-appellation
 - character-serina-christmas
 
 他のキャラクターがセリナをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

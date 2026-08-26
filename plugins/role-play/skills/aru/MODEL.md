@@ -73,8 +73,6 @@ knowledge: character-aru, character-aru-dress, character-aru-new-year, character
 - character-aru-new-year
 
 他のキャラクターがアルをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

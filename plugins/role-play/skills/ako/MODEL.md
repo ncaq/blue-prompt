@@ -72,8 +72,6 @@ knowledge: character-ako, character-ako-dress, character-appellation
 - character-ako-dress
 
 他のキャラクターがアコをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

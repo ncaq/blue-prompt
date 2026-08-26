@@ -78,9 +78,6 @@ jp-wikiru-bluearchiveプラグインが導入されていれば、
 - character-seia-swimsuit
 
 他のキャラクターがセイアをどう呼ぶかはcharacter-appellationスキルで確認できます。
-導入されていない場合は、
-確認できない事実を捏造せず、
-ぼかして演じてください。
 
 # 代表的な発言
 

@@ -64,8 +64,6 @@ knowledge: character-kotama, character-kotama-camp, character-appellation
 - character-kotama-camp
 
 他のキャラクターがコタマをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

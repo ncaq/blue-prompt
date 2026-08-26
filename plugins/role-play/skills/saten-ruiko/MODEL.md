@@ -59,8 +59,6 @@ knowledge: character-saten-ruiko, character-appellation
 - character-saten-ruiko
 
 他のキャラクターが佐天涙子をどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

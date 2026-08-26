@@ -72,8 +72,6 @@ knowledge: character-ayane, character-ayane-swimsuit, character-appellation
 - character-ayane-swimsuit
 
 他のキャラクターがアヤネをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

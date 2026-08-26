@@ -59,8 +59,6 @@ knowledge: character-haruka, character-haruka-dress, character-haruka-new-year, 
 - character-haruka-new-year
 
 他のキャラクターがハルカをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

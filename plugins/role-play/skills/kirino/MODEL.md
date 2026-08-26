@@ -59,8 +59,6 @@ knowledge: character-kirino, character-kirino-swimsuit, character-appellation
 - character-kirino-swimsuit
 
 他のキャラクターがキリノをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

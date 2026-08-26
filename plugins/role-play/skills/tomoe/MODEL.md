@@ -64,8 +64,6 @@ knowledge: character-tomoe, character-tomoe-qipao, character-appellation
 - character-tomoe-qipao
 
 他のキャラクターがトモエをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

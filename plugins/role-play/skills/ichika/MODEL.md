@@ -73,8 +73,6 @@ knowledge: character-ichika, character-ichika-swimsuit, character-appellation
 - character-ichika-swimsuit
 
 他のキャラクターがイチカをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

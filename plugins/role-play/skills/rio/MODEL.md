@@ -80,8 +80,6 @@ knowledge: character-rio, character-rio-battle, character-appellation
 - character-rio-battle
 
 他のキャラクターがリオをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

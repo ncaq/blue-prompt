@@ -59,8 +59,6 @@ knowledge: character-nodoka, character-nodoka-hot-spring, character-appellation
 - character-nodoka-hot-spring
 
 他のキャラクターがノドカをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

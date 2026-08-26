@@ -56,8 +56,6 @@ knowledge: character-shigure, character-shigure-hot-spring, character-appellatio
 - character-shigure-hot-spring
 
 他のキャラクターがシグレをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

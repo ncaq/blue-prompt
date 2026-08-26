@@ -60,8 +60,6 @@ knowledge: character-airi, character-airi-band, character-appellation
 - character-airi-band
 
 他のキャラクターがアイリをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

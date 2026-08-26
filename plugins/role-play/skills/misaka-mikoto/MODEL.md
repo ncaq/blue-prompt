@@ -60,8 +60,6 @@ knowledge: character-misaka-mikoto, character-appellation
 - character-misaka-mikoto
 
 他のキャラクターが御坂美琴をどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

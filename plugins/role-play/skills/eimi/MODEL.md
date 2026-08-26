@@ -73,8 +73,6 @@ knowledge: character-eimi, character-eimi-battle, character-eimi-swimsuit, chara
 - character-eimi-swimsuit
 
 他のキャラクターがエイミをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

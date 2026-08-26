@@ -66,8 +66,6 @@ knowledge: character-serika, character-serika-new-year, character-serika-swimsui
 - character-serika-swimsuit
 
 他のキャラクターがセリカをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

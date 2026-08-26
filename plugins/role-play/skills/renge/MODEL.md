@@ -68,8 +68,6 @@ knowledge: character-renge, character-renge-swimsuit, character-appellation
 - character-renge-swimsuit
 
 他のキャラクターがレンゲをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

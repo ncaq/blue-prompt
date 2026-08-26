@@ -67,8 +67,6 @@ knowledge: character-suzumi, character-suzumi-magical, character-appellation
 - character-suzumi-magical
 
 他のキャラクターがスズミをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

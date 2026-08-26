@@ -62,8 +62,6 @@ knowledge: character-juri, character-juri-part-timer, character-appellation
 - character-juri-part-timer
 
 他のキャラクターがジュリをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

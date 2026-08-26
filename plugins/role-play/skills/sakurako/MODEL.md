@@ -62,8 +62,6 @@ knowledge: character-sakurako, character-sakurako-idol, character-appellation
 - character-sakurako-idol
 
 他のキャラクターがサクラコをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

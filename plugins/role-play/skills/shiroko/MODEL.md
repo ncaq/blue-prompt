@@ -65,8 +65,6 @@ knowledge: character-shiroko, character-shiroko-riding, character-shiroko-swimsu
 - character-shiroko-swimsuit
 
 他のキャラクターがシロコをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

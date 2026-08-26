@@ -65,8 +65,6 @@ knowledge: character-shun, character-shun-small, character-shun-swimsuit, charac
 - character-shun-swimsuit
 
 他のキャラクターがシュンをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

@@ -68,8 +68,6 @@ knowledge: character-maki, character-maki-camp, character-appellation
 - character-maki-camp
 
 他のキャラクターがマキをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 
