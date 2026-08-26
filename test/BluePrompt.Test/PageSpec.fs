@@ -95,14 +95,94 @@ let ``接続できない場合はFetchErrorになる`` () : Task =
         let port = (listener.LocalEndpoint :?> IPEndPoint).Port
         listener.Stop()
 
+        // status=0はリトライの対象なので、既定の間隔で待たされないように空のリトライ間隔で呼ぶ。
         let! error =
             Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
-                BluePrompt.Page.fetchHtml (Uri $"http://127.0.0.1:%d{port}/") :> Task)
+                BluePrompt.Page.fetchHtmlWith [] (Uri $"http://127.0.0.1:%d{port}/") :> Task)
 
         // レスポンス自体を得られなかった取得失敗はstatus=0として現れる。
         match error :> exn with
         | BluePrompt.Page.FetchError(_, status) -> Assert.Equal(0, status)
         | unexpected -> raise unexpected
+    }
+
+[<Fact>]
+let ``一時的な失敗はリトライして回復する`` () : Task =
+    task {
+        // サーバの一時的な不調を模して、最初の2回だけ500を返し3回目で成功させる。
+        // LocalServerの接続処理は直列なので、単純な参照セルで数えて競合しない。
+        let requestCount = ref 0
+
+        let respond (_: string) : Response =
+            requestCount.Value <- requestCount.Value + 1
+
+            if requestCount.Value <= 2 then
+                { htmlResponse (renderDocument [ Text.raw "server error" ]) with
+                    Status = "500 Internal Server Error" }
+            else
+                htmlResponse (renderDocument [ Text.raw "recovered body" ])
+
+        // テストを待たせないため間隔は0にして、回数の消化だけを検証する。
+        let! fetched =
+            withServer respond (fun url ->
+                BluePrompt.Page.fetchHtmlWith [ TimeSpan.Zero; TimeSpan.Zero ] url)
+
+        Assert.Contains("recovered body", fetched)
+        Assert.Equal(3, requestCount.Value)
+    }
+
+[<Fact>]
+let ``リトライが尽きたら失敗がそのまま届く`` () : Task =
+    task {
+        let requestCount = ref 0
+
+        let respond (_: string) : Response =
+            requestCount.Value <- requestCount.Value + 1
+
+            { htmlResponse (renderDocument [ Text.raw "unavailable" ]) with
+                Status = "503 Service Unavailable" }
+
+        do!
+            withServer respond (fun url ->
+                task {
+                    let! error =
+                        Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                            BluePrompt.Page.fetchHtmlWith [ TimeSpan.Zero ] url :> Task)
+
+                    match error :> exn with
+                    | BluePrompt.Page.FetchError(_, status) -> Assert.Equal(503, status)
+                    | unexpected -> raise unexpected
+
+                    // 最初の1回とリトライの1回で、リクエストは2回になる。
+                    Assert.Equal(2, requestCount.Value)
+                })
+    }
+
+[<Fact>]
+let ``一時的でない失敗はリトライしない`` () : Task =
+    task {
+        // 404はやり直しても結果が変わらないため、リトライ間隔が残っていても1回で諦める。
+        let requestCount = ref 0
+
+        let respond (_: string) : Response =
+            requestCount.Value <- requestCount.Value + 1
+
+            { htmlResponse (renderDocument [ Text.raw "not found" ]) with
+                Status = "404 Not Found" }
+
+        do!
+            withServer respond (fun url ->
+                task {
+                    let! error =
+                        Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                            BluePrompt.Page.fetchHtmlWith [ TimeSpan.Zero ] url :> Task)
+
+                    match error :> exn with
+                    | BluePrompt.Page.FetchError(_, status) -> Assert.Equal(404, status)
+                    | unexpected -> raise unexpected
+
+                    Assert.Equal(1, requestCount.Value)
+                })
     }
 
 [<Fact>]
@@ -159,6 +239,7 @@ let ``別スキームへのリダイレクトは追跡されずFetchErrorにな�
         // file:等へのリダイレクトを実際に弾いているのはLoaderOptionsのフィルタではなく、
         // DefaultHttpRequesterがhttpとhttpsしか扱わないこと。
         // requester構成の変更でこの担保が崩れた時に検知できるように固定する。
+        // この失敗はstatus=0でリトライの対象になるため、空のリトライ間隔で待たずに検証する。
         let respond (_: string) : Response =
             { htmlResponse "" with
                 Status = "302 Found"
@@ -167,7 +248,7 @@ let ``別スキームへのリダイレクトは追跡されずFetchErrorにな�
         do!
             withServer respond (fun url ->
                 Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
-                    BluePrompt.Page.fetchHtml url :> Task))
+                    BluePrompt.Page.fetchHtmlWith [] url :> Task))
             :> Task
     }
 
