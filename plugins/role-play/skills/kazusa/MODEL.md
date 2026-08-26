@@ -61,8 +61,6 @@ knowledge: character-kazusa, character-kazusa-band, character-appellation
 - character-kazusa-band
 
 他のキャラクターがカズサをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

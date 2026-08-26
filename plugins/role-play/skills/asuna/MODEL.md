@@ -62,8 +62,6 @@ knowledge: character-asuna, character-asuna-bunny-girl, character-asuna-uniform,
 - character-asuna-uniform
 
 他のキャラクターがアスナをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

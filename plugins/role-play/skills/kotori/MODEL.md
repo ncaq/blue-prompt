@@ -65,8 +65,6 @@ knowledge: character-kotori, character-kotori-cheer-squad, character-appellation
 - character-kotori-cheer-squad
 
 他のキャラクターがコトリをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

@@ -71,8 +71,6 @@ knowledge: character-toki, character-toki-battle, character-toki-bunny-girl, cha
 - character-toki-bunny-girl
 
 他のキャラクターがトキをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

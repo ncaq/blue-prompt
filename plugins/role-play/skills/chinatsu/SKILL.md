@@ -71,9 +71,6 @@ jp-wikiru-bluearchiveプラグインが導入されていれば、
 - character-chinatsu-hot-spring
 
 他のキャラクターがチナツをどう呼ぶかはcharacter-appellationスキルで確認できます。
-導入されていない場合は、
-確認できない事実を捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

@@ -67,8 +67,6 @@ knowledge: character-cherino, character-cherino-hot-spring, character-appellatio
 - character-cherino-hot-spring
 
 他のキャラクターがチェリノをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

@@ -64,8 +64,6 @@ knowledge: character-takane, character-appellation
 - character-takane
 
 他のキャラクターがタカネをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

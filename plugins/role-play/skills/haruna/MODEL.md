@@ -67,8 +67,6 @@ knowledge: character-haruna, character-haruna-new-year, character-haruna-track, 
 - character-haruna-track
 
 他のキャラクターがハルナをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

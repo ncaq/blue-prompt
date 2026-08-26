@@ -60,8 +60,6 @@ knowledge: character-fuuka, character-fuuka-new-year, character-appellation
 - character-fuuka-new-year
 
 他のキャラクターがフウカをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

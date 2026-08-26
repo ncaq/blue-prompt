@@ -71,8 +71,6 @@ knowledge: character-sena, character-sena-casual, character-appellation
 - character-sena-casual
 
 他のキャラクターがセナをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

@@ -63,8 +63,6 @@ knowledge: character-rena, character-appellation
 - character-rena
 
 他のキャラクターがレナをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

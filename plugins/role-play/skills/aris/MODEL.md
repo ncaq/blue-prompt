@@ -87,8 +87,6 @@ knowledge: character-aris, character-aris-battle, character-aris-maid, character
 - character-aris-maid
 
 他のキャラクターがアリスをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

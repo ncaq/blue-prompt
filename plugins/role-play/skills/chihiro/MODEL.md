@@ -62,8 +62,6 @@ knowledge: character-chihiro, character-appellation
 - character-chihiro
 
 他のキャラクターがチヒロをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

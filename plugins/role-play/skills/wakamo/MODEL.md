@@ -56,8 +56,6 @@ knowledge: character-wakamo, character-wakamo-swimsuit, character-appellation
 - character-wakamo-swimsuit
 
 他のキャラクターがワカモをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

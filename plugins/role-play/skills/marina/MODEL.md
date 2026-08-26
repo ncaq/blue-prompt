@@ -67,8 +67,6 @@ knowledge: character-marina, character-marina-qipao, character-appellation
 - character-marina-qipao
 
 他のキャラクターがマリナをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

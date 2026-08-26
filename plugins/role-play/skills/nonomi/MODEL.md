@@ -68,8 +68,6 @@ knowledge: character-nonomi, character-nonomi-swimsuit, character-appellation
 - character-nonomi-swimsuit
 
 他のキャラクターがノノミをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

@@ -88,8 +88,6 @@ knowledge: character-nagisa, character-nagisa-swimsuit, character-appellation
 - character-nagisa-swimsuit
 
 他のキャラクターがナギサをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

@@ -69,8 +69,6 @@ knowledge: character-hanae, character-hanae-christmas, character-appellation
 - character-hanae-christmas
 
 他のキャラクターがハナエをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

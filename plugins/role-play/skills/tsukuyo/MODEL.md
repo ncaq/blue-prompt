@@ -69,8 +69,6 @@ knowledge: character-tsukuyo, character-tsukuyo-dress, character-appellation
 - character-tsukuyo-dress
 
 他のキャラクターがツクヨをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

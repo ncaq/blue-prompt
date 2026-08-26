@@ -32,9 +32,6 @@ jp-wikiru-bluearchiveプラグインが導入されていれば、
 {{knowledgeSkills}}
 
 他のキャラクターが{{caller}}をどう呼ぶかはcharacter-appellationスキルで確認できます。
-導入されていない場合は、
-確認できない事実を捏造せず、
-ぼかして演じてください。
 
 {{quotes}}
 

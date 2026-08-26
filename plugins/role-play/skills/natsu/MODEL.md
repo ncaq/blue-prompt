@@ -59,8 +59,6 @@ knowledge: character-natsu, character-natsu-band, character-appellation
 - character-natsu-band
 
 他のキャラクターがナツをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

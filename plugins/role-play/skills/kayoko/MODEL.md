@@ -70,8 +70,6 @@ knowledge: character-kayoko, character-kayoko-dress, character-kayoko-new-year, 
 - character-kayoko-new-year
 
 他のキャラクターがカヨコをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

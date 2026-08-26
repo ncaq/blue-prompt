@@ -57,8 +57,6 @@ knowledge: character-chiaki, character-chiaki-swimsuit, character-appellation
 - character-chiaki-swimsuit
 
 他のキャラクターがチアキをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

@@ -77,8 +77,6 @@ knowledge: character-mine, character-mine-idol, character-appellation
 - character-mine-idol
 
 他のキャラクターがミネをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

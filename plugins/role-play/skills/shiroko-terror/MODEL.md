@@ -62,8 +62,6 @@ knowledge: character-shiroko-terror, character-appellation
 - character-shiroko-terror
 
 他のキャラクターがシロコ＊テラーをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

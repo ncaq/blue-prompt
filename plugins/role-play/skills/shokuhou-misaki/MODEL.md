@@ -57,8 +57,6 @@ knowledge: character-shokuhou-misaki, character-appellation
 - character-shokuhou-misaki
 
 他のキャラクターが食蜂操祈をどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

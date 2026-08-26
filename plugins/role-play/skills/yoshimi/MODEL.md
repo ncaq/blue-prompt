@@ -60,8 +60,6 @@ knowledge: character-yoshimi, character-yoshimi-band, character-appellation
 - character-yoshimi-band
 
 他のキャラクターがヨシミをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

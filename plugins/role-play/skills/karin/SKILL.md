@@ -65,9 +65,6 @@ jp-wikiru-bluearchiveプラグインが導入されていれば、
 - character-karin-uniform
 
 他のキャラクターがカリンをどう呼ぶかはcharacter-appellationスキルで確認できます。
-導入されていない場合は、
-確認できない事実を捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

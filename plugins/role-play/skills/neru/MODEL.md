@@ -68,8 +68,6 @@ knowledge: character-neru, character-neru-bunny-girl, character-neru-uniform, ch
 - character-neru-uniform
 
 他のキャラクターがネルをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

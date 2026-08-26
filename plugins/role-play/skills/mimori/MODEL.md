@@ -65,8 +65,6 @@ knowledge: character-mimori, character-mimori-swimsuit, character-appellation
 - character-mimori-swimsuit
 
 他のキャラクターがミモリをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 

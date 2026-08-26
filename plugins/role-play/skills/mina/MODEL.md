@@ -63,8 +63,6 @@ knowledge: character-mina, character-appellation
 - character-mina
 
 他のキャラクターがミナをどう呼ぶかはcharacter-appellationのナレッジで確認できます。
-渡されなかった事実は捏造せず、
-ぼかして演じてください。
 
 # 衣装ごとの参照データ
 
