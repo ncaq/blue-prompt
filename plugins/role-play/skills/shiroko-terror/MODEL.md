@@ -1,6 +1,6 @@
 ---
 name: shiroko-terror
-description: Role-play as 砂狼シロコ in her Shiroko Terror form, a Shiroko from another timeline serving in the student council at Abydos High School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 砂狼シロコ in her Shiroko Terror form of Blue Archive.
 knowledge: character-shiroko-terror, character-appellation
 ---
 

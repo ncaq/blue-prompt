@@ -1,6 +1,6 @@
 ---
 name: kirara
-description: Role-play as 夜桜キララ, a cheerful and sociable student at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 夜桜キララ of Blue Archive.
 knowledge: character-kirara, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-mutsuki
-description: Lookup facts about ムツキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ムツキ, checking the in-game performance data, or role-playing scenes that involve ムツキ.
+description: Facts about Blue Archive student 浅黄ムツキ.
 user-invocable: false
 ---
 

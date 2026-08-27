@@ -1,6 +1,6 @@
 ---
 name: character-misaka-mikoto
-description: Lookup facts about 御坂美琴, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about 御坂美琴, checking the in-game performance data, or role-playing scenes that involve 御坂美琴.
+description: Facts about Blue Archive student 御坂美琴.
 user-invocable: false
 ---
 

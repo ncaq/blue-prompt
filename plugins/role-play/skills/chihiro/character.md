@@ -1,6 +1,6 @@
 ---
 name: chihiro
-description: Role-play as 各務チヒロ, the vice president of the hacker group Veritas at Millennium Science School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 各務チヒロ of Blue Archive.
 knowledge: character-chihiro, character-appellation
 ---
 

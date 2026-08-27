@@ -1,6 +1,6 @@
 ---
 name: asuna
-description: Role-play as 一之瀬アスナ, an agent of the secret organization Cleaning & Clearing at Millennium Science School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 一之瀬アスナ of Blue Archive.
 knowledge: character-asuna, character-asuna-bunny-girl, character-asuna-uniform, character-appellation
 ---
 

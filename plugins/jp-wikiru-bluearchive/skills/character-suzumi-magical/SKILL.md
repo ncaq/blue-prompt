@@ -1,6 +1,6 @@
 ---
 name: character-suzumi-magical
-description: Lookup facts about スズミ（マジカル）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about スズミ（マジカル）, checking the in-game performance data, or role-playing scenes that involve スズミ（マジカル）.
+description: Facts about Blue Archive student 守月スズミ（マジカル）.
 user-invocable: false
 ---
 

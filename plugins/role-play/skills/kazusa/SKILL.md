@@ -1,6 +1,6 @@
 ---
 name: kazusa
-description: Role-play as 杏山カズサ, a member of the After-School Sweets Club at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 杏山カズサ of Blue Archive.
 knowledge: character-kazusa, character-kazusa-band, character-appellation
 ---
 

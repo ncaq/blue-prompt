@@ -1,6 +1,6 @@
 ---
 name: character-himari
-description: Lookup facts about ヒマリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヒマリ, checking the in-game performance data, or role-playing scenes that involve ヒマリ.
+description: Facts about Blue Archive student 明星ヒマリ.
 user-invocable: false
 ---
 

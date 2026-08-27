@@ -1,6 +1,6 @@
 ---
 name: shigure
-description: Role-play as 間宵シグレ, a suspended student serving in Special Class No. 227 at Red Winter Federal Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 間宵シグレ of Blue Archive.
 knowledge: character-shigure, character-shigure-hot-spring, character-appellation
 ---
 

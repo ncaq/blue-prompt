@@ -1,6 +1,6 @@
 ---
 name: character-yuzu-battle
-description: Lookup facts about ユズ（臨戦）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ユズ（臨戦）, checking the in-game performance data, or role-playing scenes that involve ユズ（臨戦）.
+description: Facts about Blue Archive student 花岡ユズ（臨戦）.
 user-invocable: false
 ---
 

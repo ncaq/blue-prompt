@@ -1,6 +1,6 @@
 ---
 name: character-sumire-part-timer
-description: Lookup facts about スミレ（アルバイト）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about スミレ（アルバイト）, checking the in-game performance data, or role-playing scenes that involve スミレ（アルバイト）.
+description: Facts about Blue Archive student 乙花スミレ（アルバイト）.
 user-invocable: false
 ---
 

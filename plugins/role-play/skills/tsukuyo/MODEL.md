@@ -1,6 +1,6 @@
 ---
 name: tsukuyo
-description: Role-play as 大野ツクヨ, a member of the Ninjutsu Research Club at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 大野ツクヨ of Blue Archive.
 knowledge: character-tsukuyo, character-tsukuyo-dress, character-appellation
 ---
 

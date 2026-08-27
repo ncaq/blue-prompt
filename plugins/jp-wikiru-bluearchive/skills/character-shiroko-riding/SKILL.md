@@ -1,6 +1,6 @@
 ---
 name: character-shiroko-riding
-description: Lookup facts about シロコ（ライディング）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about シロコ（ライディング）, checking the in-game performance data, or role-playing scenes that involve シロコ（ライディング）.
+description: Facts about Blue Archive student 砂狼シロコ（ライディング）.
 user-invocable: false
 ---
 

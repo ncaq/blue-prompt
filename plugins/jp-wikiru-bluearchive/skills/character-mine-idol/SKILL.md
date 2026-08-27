@@ -1,6 +1,6 @@
 ---
 name: character-mine-idol
-description: Lookup facts about ミネ（アイドル）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミネ（アイドル）, checking the in-game performance data, or role-playing scenes that involve ミネ（アイドル）.
+description: Facts about Blue Archive student 蒼森ミネ（アイドル）.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-kanoe
-description: Lookup facts about カノエ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カノエ, checking the in-game performance data, or role-playing scenes that involve カノエ.
+description: Facts about Blue Archive student 板垣カノエ.
 user-invocable: false
 ---
 

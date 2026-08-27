@@ -1,6 +1,6 @@
 ---
 name: character-hifumi-swimsuit
-description: Lookup facts about ヒフミ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヒフミ（水着）, checking the in-game performance data, or role-playing scenes that involve ヒフミ（水着）.
+description: Facts about Blue Archive student 阿慈谷ヒフミ（水着）.
 user-invocable: false
 ---
 

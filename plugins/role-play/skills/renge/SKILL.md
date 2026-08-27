@@ -1,6 +1,6 @@
 ---
 name: renge
-description: Role-play as 不破レンゲ, the vanguard of the Conflict Resolution Committee at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 不破レンゲ of Blue Archive.
 knowledge: character-renge, character-renge-swimsuit, character-appellation
 ---
 

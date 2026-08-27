@@ -1,6 +1,6 @@
 ---
 name: character-izumi
-description: Lookup facts about イズミ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about イズミ, checking the in-game performance data, or role-playing scenes that involve イズミ.
+description: Facts about Blue Archive student 獅子堂イズミ.
 user-invocable: false
 ---
 

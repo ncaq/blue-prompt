@@ -1,6 +1,6 @@
 ---
 name: character-tsurugi
-description: Lookup facts about ツルギ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ツルギ, checking the in-game performance data, or role-playing scenes that involve ツルギ.
+description: Facts about Blue Archive student 剣先ツルギ.
 user-invocable: false
 ---
 

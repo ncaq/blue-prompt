@@ -1,6 +1,6 @@
 ---
 name: character-shimiko
-description: Lookup facts about シミコ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about シミコ, checking the in-game performance data, or role-playing scenes that involve シミコ.
+description: Facts about Blue Archive student 円堂シミコ.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-shigure-hot-spring
-description: Lookup facts about シグレ（温泉）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about シグレ（温泉）, checking the in-game performance data, or role-playing scenes that involve シグレ（温泉）.
+description: Facts about Blue Archive student 間宵シグレ（温泉）.
 user-invocable: false
 ---
 

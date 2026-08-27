@@ -1,6 +1,6 @@
 ---
 name: character-yuzu
-description: Lookup facts about ユズ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ユズ, checking the in-game performance data, or role-playing scenes that involve ユズ.
+description: Facts about Blue Archive student 花岡ユズ.
 user-invocable: false
 ---
 

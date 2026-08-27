@@ -1,6 +1,6 @@
 ---
 name: character-shigure
-description: Lookup facts about シグレ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about シグレ, checking the in-game performance data, or role-playing scenes that involve シグレ.
+description: Facts about Blue Archive student 間宵シグレ.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: hare
-description: Role-play as 小鈎ハレ, an engineer of the hacker group Veritas at Millennium Science School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 小鈎ハレ of Blue Archive.
 knowledge: character-hare, character-hare-camp, character-appellation
 ---
 

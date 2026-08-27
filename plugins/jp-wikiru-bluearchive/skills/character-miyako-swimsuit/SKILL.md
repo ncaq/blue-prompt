@@ -1,6 +1,6 @@
 ---
 name: character-miyako-swimsuit
-description: Lookup facts about ミヤコ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミヤコ（水着）, checking the in-game performance data, or role-playing scenes that involve ミヤコ（水着）.
+description: Facts about Blue Archive student 月雪ミヤコ（水着）.
 user-invocable: false
 ---
 

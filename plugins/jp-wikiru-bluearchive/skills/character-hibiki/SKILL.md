@@ -1,6 +1,6 @@
 ---
 name: character-hibiki
-description: Lookup facts about ヒビキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヒビキ, checking the in-game performance data, or role-playing scenes that involve ヒビキ.
+description: Facts about Blue Archive student 猫塚ヒビキ.
 user-invocable: false
 ---
 

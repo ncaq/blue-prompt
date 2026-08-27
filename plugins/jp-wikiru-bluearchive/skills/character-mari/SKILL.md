@@ -1,6 +1,6 @@
 ---
 name: character-mari
-description: Lookup facts about マリー, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about マリー, checking the in-game performance data, or role-playing scenes that involve マリー.
+description: Facts about Blue Archive student 伊落マリー.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-yukari
-description: Lookup facts about ユカリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ユカリ, checking the in-game performance data, or role-playing scenes that involve ユカリ.
+description: Facts about Blue Archive student 勘解由小路ユカリ.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: kaho
-description: Role-play as 桑上カホ, the vice president of the Yin-Yang Club at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 桑上カホ of Blue Archive.
 knowledge: character-kaho, character-appellation
 ---
 

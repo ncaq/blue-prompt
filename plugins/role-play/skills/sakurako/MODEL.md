@@ -1,6 +1,6 @@
 ---
 name: sakurako
-description: Role-play as 歌住サクラコ, a devout member of the Sisterhood at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 歌住サクラコ of Blue Archive.
 knowledge: character-sakurako, character-sakurako-idol, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-karin-uniform
-description: Lookup facts about カリン（制服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カリン（制服）, checking the in-game performance data, or role-playing scenes that involve カリン（制服）.
+description: Facts about Blue Archive student 角楯カリン（制服）.
 user-invocable: false
 ---
 

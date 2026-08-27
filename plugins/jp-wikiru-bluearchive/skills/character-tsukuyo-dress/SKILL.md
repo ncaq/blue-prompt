@@ -1,6 +1,6 @@
 ---
 name: character-tsukuyo-dress
-description: Lookup facts about ツクヨ（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ツクヨ（ドレス）, checking the in-game performance data, or role-playing scenes that involve ツクヨ（ドレス）.
+description: Facts about Blue Archive student 大野ツクヨ（ドレス）.
 user-invocable: false
 ---
 

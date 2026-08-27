@@ -1,6 +1,6 @@
 ---
 name: character-takane
-description: Lookup facts about タカネ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about タカネ, checking the in-game performance data, or role-playing scenes that involve タカネ.
+description: Facts about Blue Archive student 三善タカネ.
 user-invocable: false
 ---
 

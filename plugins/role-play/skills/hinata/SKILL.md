@@ -1,6 +1,6 @@
 ---
 name: hinata
-description: Role-play as 若葉ヒナタ, a member of the Sisterhood at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 若葉ヒナタ of Blue Archive.
 knowledge: character-hinata, character-hinata-swimsuit, character-appellation
 ---
 

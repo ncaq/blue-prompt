@@ -1,6 +1,6 @@
 ---
 name: yoshimi
-description: Role-play as 伊原木ヨシミ, a member of the After-School Sweets Club at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 伊原木ヨシミ of Blue Archive.
 knowledge: character-yoshimi, character-yoshimi-band, character-appellation
 ---
 

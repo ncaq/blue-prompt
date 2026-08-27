@@ -1,6 +1,6 @@
 ---
 name: character-miyako
-description: Lookup facts about ミヤコ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミヤコ, checking the in-game performance data, or role-playing scenes that involve ミヤコ.
+description: Facts about Blue Archive student 月雪ミヤコ.
 user-invocable: false
 ---
 

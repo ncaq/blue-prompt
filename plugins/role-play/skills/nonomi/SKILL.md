@@ -1,6 +1,6 @@
 ---
 name: nonomi
-description: Role-play as 十六夜ノノミ, a member of the Foreclosure Task Force at Abydos High School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 十六夜ノノミ of Blue Archive.
 knowledge: character-nonomi, character-nonomi-swimsuit, character-appellation
 ---
 

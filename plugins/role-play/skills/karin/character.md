@@ -1,6 +1,6 @@
 ---
 name: karin
-description: Role-play as 角楯カリン, an agent of Cleaning & Clearing (C&C) at Millennium Science School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 角楯カリン of Blue Archive.
 knowledge: character-karin, character-karin-bunny-girl, character-karin-uniform, character-appellation
 ---
 

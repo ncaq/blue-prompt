@@ -1,6 +1,6 @@
 ---
 name: mimori
-description: Role-play as 水羽ミモリ, the vice president of the Training Club at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 水羽ミモリ of Blue Archive.
 knowledge: character-mimori, character-mimori-swimsuit, character-appellation
 ---
 

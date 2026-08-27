@@ -1,6 +1,6 @@
 ---
 name: megu
-description: Role-play as 下倉メグ, the work crew chief of the Hot Springs Development Department at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 下倉メグ of Blue Archive.
 knowledge: character-megu, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-kotama
-description: Lookup facts about コタマ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about コタマ, checking the in-game performance data, or role-playing scenes that involve コタマ.
+description: Facts about Blue Archive student 音瀬コタマ.
 user-invocable: false
 ---
 

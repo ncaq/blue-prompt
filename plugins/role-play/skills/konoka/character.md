@@ -1,6 +1,6 @@
 ---
 name: konoka
-description: Role-play as 志真コノカ, the vice chief of the Public Safety Bureau at Valkyrie Police School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 志真コノカ of Blue Archive.
 knowledge: character-konoka, character-appellation
 ---
 

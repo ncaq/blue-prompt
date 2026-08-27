@@ -1,6 +1,6 @@
 ---
 name: character-hina-dress
-description: Lookup facts about ヒナ（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヒナ（ドレス）, checking the in-game performance data, or role-playing scenes that involve ヒナ（ドレス）.
+description: Facts about Blue Archive student 空崎ヒナ（ドレス）.
 user-invocable: false
 ---
 

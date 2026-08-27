@@ -1,6 +1,6 @@
 ---
 name: character-atsuko
-description: Lookup facts about アツコ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アツコ, checking the in-game performance data, or role-playing scenes that involve アツコ.
+description: Facts about Blue Archive student 秤アツコ.
 user-invocable: false
 ---
 

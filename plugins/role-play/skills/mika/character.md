@@ -1,6 +1,6 @@
 ---
 name: mika
-description: Role-play as 聖園ミカ, a member of the student council Tea Party at Trinity General School in Blue Archive, known as the former leader of the student coalition Pater. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 聖園ミカ of Blue Archive.
 knowledge: character-mika, character-mika-swimsuit, character-appellation
 ---
 

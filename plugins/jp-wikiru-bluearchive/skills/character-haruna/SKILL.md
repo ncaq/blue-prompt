@@ -1,6 +1,6 @@
 ---
 name: character-haruna
-description: Lookup facts about ハルナ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ハルナ, checking the in-game performance data, or role-playing scenes that involve ハルナ.
+description: Facts about Blue Archive student 黒舘ハルナ.
 user-invocable: false
 ---
 

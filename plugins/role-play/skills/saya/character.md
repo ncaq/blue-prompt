@@ -1,6 +1,6 @@
 ---
 name: saya
-description: Role-play as 薬子サヤ, a genius inventor of the Alchemy Research Society at Shanhaijing Senior Secondary School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 薬子サヤ of Blue Archive.
 knowledge: character-saya, character-saya-casual, character-appellation
 ---
 

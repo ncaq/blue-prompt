@@ -1,6 +1,6 @@
 ---
 name: character-karin
-description: Lookup facts about カリン, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カリン, checking the in-game performance data, or role-playing scenes that involve カリン.
+description: Facts about Blue Archive student 角楯カリン.
 user-invocable: false
 ---
 

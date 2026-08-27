@@ -1,6 +1,6 @@
 ---
 name: character-nonomi
-description: Lookup facts about ノノミ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ノノミ, checking the in-game performance data, or role-playing scenes that involve ノノミ.
+description: Facts about Blue Archive student 十六夜ノノミ.
 user-invocable: false
 ---
 

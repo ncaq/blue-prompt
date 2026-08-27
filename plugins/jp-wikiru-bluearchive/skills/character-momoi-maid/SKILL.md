@@ -1,6 +1,6 @@
 ---
 name: character-momoi-maid
-description: Lookup facts about モモイ（メイド）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about モモイ（メイド）, checking the in-game performance data, or role-playing scenes that involve モモイ（メイド）.
+description: Facts about Blue Archive student 才羽モモイ（メイド）.
 user-invocable: false
 ---
 

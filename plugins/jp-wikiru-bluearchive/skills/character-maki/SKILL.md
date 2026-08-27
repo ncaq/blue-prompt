@@ -1,6 +1,6 @@
 ---
 name: character-maki
-description: Lookup facts about マキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about マキ, checking the in-game performance data, or role-playing scenes that involve マキ.
+description: Facts about Blue Archive student 小塗マキ.
 user-invocable: false
 ---
 

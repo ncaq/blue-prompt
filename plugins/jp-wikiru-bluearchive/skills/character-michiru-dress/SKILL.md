@@ -1,6 +1,6 @@
 ---
 name: character-michiru-dress
-description: Lookup facts about ミチル（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミチル（ドレス）, checking the in-game performance data, or role-playing scenes that involve ミチル（ドレス）.
+description: Facts about Blue Archive student 千鳥ミチル（ドレス）.
 user-invocable: false
 ---
 

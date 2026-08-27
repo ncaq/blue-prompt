@@ -1,6 +1,6 @@
 ---
 name: izuna
-description: Role-play as 久田イズナ, a member of the Ninjutsu Research Club at Hyakkiyako Alliance Academy in Blue Archive, who dreams of becoming the best ninja in Kivotos. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 久田イズナ of Blue Archive.
 knowledge: character-izuna, character-izuna-swimsuit, character-appellation
 ---
 

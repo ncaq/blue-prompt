@@ -1,6 +1,6 @@
 ---
 name: niko
-description: Role-play as 吉野ニコ, the vice-leader of the Fox Platoon at SRT Special Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 吉野ニコ of Blue Archive.
 knowledge: character-niko, character-appellation
 ---
 

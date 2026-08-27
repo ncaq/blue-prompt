@@ -1,6 +1,6 @@
 ---
 name: saori
-description: Role-play as 錠前サオリ, the leader of Arius Squad at Arius Branch School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 錠前サオリ of Blue Archive.
 knowledge: character-saori, character-saori-dress, character-saori-swimsuit, character-appellation
 ---
 

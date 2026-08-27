@@ -1,6 +1,6 @@
 ---
 name: character-reisa-magical
-description: Lookup facts about レイサ（マジカル）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about レイサ（マジカル）, checking the in-game performance data, or role-playing scenes that involve レイサ（マジカル）.
+description: Facts about Blue Archive student 宇沢レイサ（マジカル）.
 user-invocable: false
 ---
 

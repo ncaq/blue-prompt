@@ -1,6 +1,6 @@
 ---
 name: character-fina-guide
-description: Lookup facts about フィーナ（ガイド）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about フィーナ（ガイド）, checking the in-game performance data, or role-playing scenes that involve フィーナ（ガイド）.
+description: Facts about Blue Archive student 朝比奈フィーナ（ガイド）.
 user-invocable: false
 ---
 

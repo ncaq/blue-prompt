@@ -1,6 +1,6 @@
 ---
 name: character-kirino
-description: Lookup facts about キリノ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about キリノ, checking the in-game performance data, or role-playing scenes that involve キリノ.
+description: Facts about Blue Archive student 中務キリノ.
 user-invocable: false
 ---
 

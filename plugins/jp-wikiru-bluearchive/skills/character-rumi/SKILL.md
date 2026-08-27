@@ -1,6 +1,6 @@
 ---
 name: character-rumi
-description: Lookup facts about ルミ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ルミ, checking the in-game performance data, or role-playing scenes that involve ルミ.
+description: Facts about Blue Archive student 朱城ルミ.
 user-invocable: false
 ---
 

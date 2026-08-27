@@ -1,6 +1,6 @@
 ---
 name: character-toki-battle
-description: Lookup facts about トキ（臨戦）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about トキ（臨戦）, checking the in-game performance data, or role-playing scenes that involve トキ（臨戦）.
+description: Facts about Blue Archive student 飛鳥馬トキ（臨戦）.
 user-invocable: false
 ---
 

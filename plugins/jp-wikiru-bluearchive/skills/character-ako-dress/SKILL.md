@@ -1,6 +1,6 @@
 ---
 name: character-ako-dress
-description: Lookup facts about アコ（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アコ（ドレス）, checking the in-game performance data, or role-playing scenes that involve アコ（ドレス）.
+description: Facts about Blue Archive student 天雨アコ（ドレス）.
 user-invocable: false
 ---
 

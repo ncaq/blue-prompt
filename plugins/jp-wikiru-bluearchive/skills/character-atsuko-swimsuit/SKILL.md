@@ -1,6 +1,6 @@
 ---
 name: character-atsuko-swimsuit
-description: Lookup facts about アツコ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アツコ（水着）, checking the in-game performance data, or role-playing scenes that involve アツコ（水着）.
+description: Facts about Blue Archive student 秤アツコ（水着）.
 user-invocable: false
 ---
 

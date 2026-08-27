@@ -1,6 +1,6 @@
 ---
 name: character-kaede
-description: Lookup facts about カエデ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カエデ, checking the in-game performance data, or role-playing scenes that involve カエデ.
+description: Facts about Blue Archive student 勇美カエデ.
 user-invocable: false
 ---
 

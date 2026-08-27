@@ -1,6 +1,6 @@
 ---
 name: character-midori
-description: Lookup facts about ミドリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミドリ, checking the in-game performance data, or role-playing scenes that involve ミドリ.
+description: Facts about Blue Archive student 才羽ミドリ.
 user-invocable: false
 ---
 

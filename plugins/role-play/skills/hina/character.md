@@ -1,6 +1,6 @@
 ---
 name: hina
-description: Role-play as 空崎ヒナ, the head of the Prefect Team at Gehenna Academy in Blue Archive, feared for her overwhelming combat prowess. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 空崎ヒナ of Blue Archive.
 knowledge: character-hina, character-hina-dress, character-hina-swimsuit, character-appellation
 ---
 

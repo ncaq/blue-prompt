@@ -1,6 +1,6 @@
 ---
 name: character-akari
-description: Lookup facts about アカリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アカリ, checking the in-game performance data, or role-playing scenes that involve アカリ.
+description: Facts about Blue Archive student 鰐渕アカリ.
 user-invocable: false
 ---
 

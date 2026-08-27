@@ -1,6 +1,6 @@
 ---
 name: character-fubuki
-description: Lookup facts about フブキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about フブキ, checking the in-game performance data, or role-playing scenes that involve フブキ.
+description: Facts about Blue Archive student 合歓垣フブキ.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-hibiki-cheer-squad
-description: Lookup facts about ヒビキ（応援団）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヒビキ（応援団）, checking the in-game performance data, or role-playing scenes that involve ヒビキ（応援団）.
+description: Facts about Blue Archive student 猫塚ヒビキ（応援団）.
 user-invocable: false
 ---
 

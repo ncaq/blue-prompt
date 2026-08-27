@@ -1,6 +1,6 @@
 ---
 name: mutsuki
-description: Role-play as 浅黄ムツキ, a member of the odd-jobs team Problem Solver 68 at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 浅黄ムツキ of Blue Archive.
 knowledge: character-mutsuki, character-mutsuki-dress, character-mutsuki-new-year, character-appellation
 ---
 

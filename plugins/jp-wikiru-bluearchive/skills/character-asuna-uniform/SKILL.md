@@ -1,6 +1,6 @@
 ---
 name: character-asuna-uniform
-description: Lookup facts about アスナ（制服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アスナ（制服）, checking the in-game performance data, or role-playing scenes that involve アスナ（制服）.
+description: Facts about Blue Archive student 一之瀬アスナ（制服）.
 user-invocable: false
 ---
 

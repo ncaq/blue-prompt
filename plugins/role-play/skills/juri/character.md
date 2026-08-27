@@ -1,6 +1,6 @@
 ---
 name: juri
-description: Role-play as 牛牧ジュリ, a member of the School Lunch Club at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 牛牧ジュリ of Blue Archive.
 knowledge: character-juri, character-juri-part-timer, character-appellation
 ---
 

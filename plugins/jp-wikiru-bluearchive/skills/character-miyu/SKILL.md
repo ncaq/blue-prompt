@@ -1,6 +1,6 @@
 ---
 name: character-miyu
-description: Lookup facts about ミユ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミユ, checking the in-game performance data, or role-playing scenes that involve ミユ.
+description: Facts about Blue Archive student 霞沢ミユ.
 user-invocable: false
 ---
 

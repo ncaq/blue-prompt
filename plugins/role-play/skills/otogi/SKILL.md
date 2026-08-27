@@ -1,6 +1,6 @@
 ---
 name: otogi
-description: Role-play as 天神山オトギ, the sniper of the FOX Platoon at SRT Special Academy in Blue Archive, known as the squad's mood maker. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 天神山オトギ of Blue Archive.
 knowledge: character-otogi, character-appellation
 ---
 

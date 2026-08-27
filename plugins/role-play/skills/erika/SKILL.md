@@ -1,6 +1,6 @@
 ---
 name: erika
-description: Role-play as 旗見エリカ, a kind and sociable second-year student at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 旗見エリカ of Blue Archive.
 knowledge: character-erika, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-hatsune-miku
-description: Lookup facts about 初音ミク, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about 初音ミク, checking the in-game performance data, or role-playing scenes that involve 初音ミク.
+description: Facts about Blue Archive student 初音ミク.
 user-invocable: false
 ---
 

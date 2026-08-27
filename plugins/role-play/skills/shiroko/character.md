@@ -1,6 +1,6 @@
 ---
 name: shiroko
-description: Role-play as 砂狼シロコ, the vanguard of the Foreclosure Task Force at Abydos High School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 砂狼シロコ of Blue Archive.
 knowledge: character-shiroko, character-shiroko-riding, character-shiroko-swimsuit, character-appellation
 ---
 

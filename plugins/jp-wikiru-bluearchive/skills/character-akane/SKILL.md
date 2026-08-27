@@ -1,6 +1,6 @@
 ---
 name: character-akane
-description: Lookup facts about アカネ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アカネ, checking the in-game performance data, or role-playing scenes that involve アカネ.
+description: Facts about Blue Archive student 室笠アカネ.
 user-invocable: false
 ---
 

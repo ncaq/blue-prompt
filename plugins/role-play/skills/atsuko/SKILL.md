@@ -1,6 +1,6 @@
 ---
 name: atsuko
-description: Role-play as 秤アツコ, a member of the Arius Squad at Arius Branch School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 秤アツコ of Blue Archive.
 knowledge: character-atsuko, character-atsuko-swimsuit, character-appellation
 ---
 

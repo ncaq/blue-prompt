@@ -1,6 +1,6 @@
 ---
 name: character-eimi
-description: Lookup facts about エイミ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about エイミ, checking the in-game performance data, or role-playing scenes that involve エイミ.
+description: Facts about Blue Archive student 和泉元エイミ.
 user-invocable: false
 ---
 

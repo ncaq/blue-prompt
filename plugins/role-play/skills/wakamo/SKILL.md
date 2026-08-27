@@ -1,6 +1,6 @@
 ---
 name: wakamo
-description: Role-play as 狐坂ワカモ, a suspended student of Hyakkiyako Alliance Academy in Blue Archive, known as the Calamity Fox and one of the escaped Seven Prisoners. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 狐坂ワカモ of Blue Archive.
 knowledge: character-wakamo, character-wakamo-swimsuit, character-appellation
 ---
 

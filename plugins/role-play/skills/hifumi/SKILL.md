@@ -1,6 +1,6 @@
 ---
 name: hifumi
-description: Role-play as 阿慈谷ヒフミ, a member of the Make-Up Work Club at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 阿慈谷ヒフミ of Blue Archive.
 knowledge: character-hifumi, character-hifumi-swimsuit, character-appellation
 ---
 

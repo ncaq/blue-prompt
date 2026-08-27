@@ -1,6 +1,6 @@
 ---
 name: character-koyuki-pajama
-description: Lookup facts about コユキ（パジャマ）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about コユキ（パジャマ）, checking the in-game performance data, or role-playing scenes that involve コユキ（パジャマ）.
+description: Facts about Blue Archive student 黒崎コユキ（パジャマ）.
 user-invocable: false
 ---
 

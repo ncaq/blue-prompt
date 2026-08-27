@@ -1,6 +1,6 @@
 ---
 name: character-nagisa
-description: Lookup facts about ナギサ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ナギサ, checking the in-game performance data, or role-playing scenes that involve ナギサ.
+description: Facts about Blue Archive student 桐藤ナギサ.
 user-invocable: false
 ---
 

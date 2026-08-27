@@ -1,6 +1,6 @@
 ---
 name: character-noa-pajama
-description: Lookup facts about ノア（パジャマ）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ノア（パジャマ）, checking the in-game performance data, or role-playing scenes that involve ノア（パジャマ）.
+description: Facts about Blue Archive student 生塩ノア（パジャマ）.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: suzumi
-description: Role-play as 守月スズミ, a member of the Vigilante Crew at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 守月スズミ of Blue Archive.
 knowledge: character-suzumi, character-suzumi-magical, character-appellation
 ---
 

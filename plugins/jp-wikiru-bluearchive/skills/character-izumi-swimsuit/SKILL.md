@@ -1,6 +1,6 @@
 ---
 name: character-izumi-swimsuit
-description: Lookup facts about イズミ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about イズミ（水着）, checking the in-game performance data, or role-playing scenes that involve イズミ（水着）.
+description: Facts about Blue Archive student 獅子堂イズミ（水着）.
 user-invocable: false
 ---
 

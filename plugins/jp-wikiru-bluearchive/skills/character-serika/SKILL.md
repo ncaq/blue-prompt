@@ -1,6 +1,6 @@
 ---
 name: character-serika
-description: Lookup facts about セリカ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about セリカ, checking the in-game performance data, or role-playing scenes that involve セリカ.
+description: Facts about Blue Archive student 黒見セリカ.
 user-invocable: false
 ---
 

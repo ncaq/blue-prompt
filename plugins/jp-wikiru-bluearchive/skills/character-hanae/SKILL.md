@@ -1,6 +1,6 @@
 ---
 name: character-hanae
-description: Lookup facts about ハナエ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ハナエ, checking the in-game performance data, or role-playing scenes that involve ハナエ.
+description: Facts about Blue Archive student 朝顔ハナエ.
 user-invocable: false
 ---
 

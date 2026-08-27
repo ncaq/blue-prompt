@@ -1,6 +1,6 @@
 ---
 name: momiji
-description: Role-play as 秋泉モミジ, a member of the Knowledge Liberation Front at Red Winter Federal Academy in Blue Archive, known as a book-loving otaku. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 秋泉モミジ of Blue Archive.
 knowledge: character-momiji, character-appellation
 ---
 

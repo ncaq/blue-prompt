@@ -1,6 +1,6 @@
 ---
 name: character-miyo
-description: Lookup facts about ミヨ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミヨ, checking the in-game performance data, or role-playing scenes that involve ミヨ.
+description: Facts about Blue Archive student 桜井ミヨ.
 user-invocable: false
 ---
 

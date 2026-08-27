@@ -1,6 +1,6 @@
 ---
 name: hatsune-miku
-description: Role-play as 初音ミク (Hatsune Miku), the virtual singer appearing in Blue Archive through the crossover with VOCALOID. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 初音ミク (Hatsune Miku) of Blue Archive.
 knowledge: character-hatsune-miku, character-appellation
 ---
 

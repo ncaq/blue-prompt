@@ -1,6 +1,6 @@
 ---
 name: character-kotori-cheer-squad
-description: Lookup facts about コトリ（応援団）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about コトリ（応援団）, checking the in-game performance data, or role-playing scenes that involve コトリ（応援団）.
+description: Facts about Blue Archive student 豊見コトリ（応援団）.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-junko-new-year
-description: Lookup facts about ジュンコ（正月）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ジュンコ（正月）, checking the in-game performance data, or role-playing scenes that involve ジュンコ（正月）.
+description: Facts about Blue Archive student 赤司ジュンコ（正月）.
 user-invocable: false
 ---
 

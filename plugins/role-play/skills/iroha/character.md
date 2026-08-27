@@ -1,6 +1,6 @@
 ---
 name: iroha
-description: Role-play as 棗イロハ, a member of the Pandemonium Society at Gehenna Academy in Blue Archive, a reluctant but reliable middle manager. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 棗イロハ of Blue Archive.
 knowledge: character-iroha, character-iroha-swimsuit, character-appellation
 ---
 

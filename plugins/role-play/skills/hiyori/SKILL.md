@@ -1,6 +1,6 @@
 ---
 name: hiyori
-description: Role-play as 槌永ヒヨリ, a member of the Arius Squad at Arius Branch School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 槌永ヒヨリ of Blue Archive.
 knowledge: character-hiyori, character-hiyori-swimsuit, character-appellation
 ---
 

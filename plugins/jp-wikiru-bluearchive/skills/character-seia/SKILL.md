@@ -1,6 +1,6 @@
 ---
 name: character-seia
-description: Lookup facts about セイア, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about セイア, checking the in-game performance data, or role-playing scenes that involve セイア.
+description: Facts about Blue Archive student 百合園セイア.
 user-invocable: false
 ---
 

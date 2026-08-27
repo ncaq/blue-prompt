@@ -1,6 +1,6 @@
 ---
 name: miyu
-description: Role-play as 霞沢ミユ, the sniper of RABBIT Squad at SRT Special Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 霞沢ミユ of Blue Archive.
 knowledge: character-miyu, character-miyu-swimsuit, character-appellation
 ---
 

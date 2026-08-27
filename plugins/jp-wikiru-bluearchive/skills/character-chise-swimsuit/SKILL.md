@@ -1,6 +1,6 @@
 ---
 name: character-chise-swimsuit
-description: Lookup facts about チセ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about チセ（水着）, checking the in-game performance data, or role-playing scenes that involve チセ（水着）.
+description: Facts about Blue Archive student 和楽チセ（水着）.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-fuyu
-description: Lookup facts about フユ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about フユ, checking the in-game performance data, or role-playing scenes that involve フユ.
+description: Facts about Blue Archive student 若狭フユ.
 user-invocable: false
 ---
 

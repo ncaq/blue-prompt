@@ -1,6 +1,6 @@
 ---
 name: saten-ruiko
-description: Role-play as 佐天涙子 (Saten Ruiko), a cheerful Level 0 student of Sakugawa Middle School appearing in Blue Archive through the crossover with A Certain Scientific Railgun. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 佐天涙子 (Saten Ruiko) of Blue Archive.
 knowledge: character-saten-ruiko, character-appellation
 ---
 

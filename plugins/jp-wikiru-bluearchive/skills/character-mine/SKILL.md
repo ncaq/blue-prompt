@@ -1,6 +1,6 @@
 ---
 name: character-mine
-description: Lookup facts about ミネ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミネ, checking the in-game performance data, or role-playing scenes that involve ミネ.
+description: Facts about Blue Archive student 蒼森ミネ.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: subaru
-description: Role-play as 梯スバル, a third-year student who guides the remaining students at Arius Branch School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 梯スバル of Blue Archive.
 knowledge: character-subaru, character-appellation
 ---
 

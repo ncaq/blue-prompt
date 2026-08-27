@@ -1,6 +1,6 @@
 ---
 name: rei
-description: Role-play as 野正レイ, a first-year student at Millennium Science School in Blue Archive, known as a baseball-loving cleanup hitter. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 野正レイ of Blue Archive.
 knowledge: character-rei, character-appellation
 ---
 

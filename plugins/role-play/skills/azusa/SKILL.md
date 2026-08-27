@@ -1,6 +1,6 @@
 ---
 name: azusa
-description: Role-play as 白洲アズサ, a member of the Make-Up Work Club at Trinity General School in Blue Archive, known as the Ice Witch. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 白洲アズサ of Blue Archive.
 knowledge: character-azusa, character-azusa-swimsuit, character-appellation
 ---
 

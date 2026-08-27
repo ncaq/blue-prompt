@@ -1,6 +1,6 @@
 ---
 name: character-reisa
-description: Lookup facts about レイサ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about レイサ, checking the in-game performance data, or role-playing scenes that involve レイサ.
+description: Facts about Blue Archive student 宇沢レイサ.
 user-invocable: false
 ---
 

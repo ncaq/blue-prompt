@@ -1,6 +1,6 @@
 ---
 name: character-iroha
-description: Lookup facts about イロハ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about イロハ, checking the in-game performance data, or role-playing scenes that involve イロハ.
+description: Facts about Blue Archive student 棗イロハ.
 user-invocable: false
 ---
 

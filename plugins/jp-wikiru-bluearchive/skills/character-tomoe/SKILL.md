@@ -1,6 +1,6 @@
 ---
 name: character-tomoe
-description: Lookup facts about トモエ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about トモエ, checking the in-game performance data, or role-playing scenes that involve トモエ.
+description: Facts about Blue Archive student 佐城トモエ.
 user-invocable: false
 ---
 

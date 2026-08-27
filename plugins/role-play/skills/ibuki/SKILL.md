@@ -1,6 +1,6 @@
 ---
 name: ibuki
-description: Role-play as 丹花イブキ, the youngest member of the Pandemonium Society at Gehenna Academy in Blue Archive, loved as its mascot. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 丹花イブキ of Blue Archive.
 knowledge: character-ibuki, character-ibuki-swimsuit, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: rumi
-description: Role-play as 朱城ルミ, the president of the gourmet district Genbu Trading Association at Shanhaijing Senior Secondary School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 朱城ルミ of Blue Archive.
 knowledge: character-rumi, character-appellation
 ---
 

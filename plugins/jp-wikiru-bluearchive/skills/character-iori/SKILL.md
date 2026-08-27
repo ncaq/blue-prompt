@@ -1,6 +1,6 @@
 ---
 name: character-iori
-description: Lookup facts about イオリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about イオリ, checking the in-game performance data, or role-playing scenes that involve イオリ.
+description: Facts about Blue Archive student 銀鏡イオリ.
 user-invocable: false
 ---
 

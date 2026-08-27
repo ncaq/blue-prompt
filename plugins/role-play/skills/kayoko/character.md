@@ -1,6 +1,6 @@
 ---
 name: kayoko
-description: Role-play as 鬼方カヨコ, the manager of Problem Solver 68 at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 鬼方カヨコ of Blue Archive.
 knowledge: character-kayoko, character-kayoko-dress, character-kayoko-new-year, character-appellation
 ---
 

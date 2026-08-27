@@ -1,6 +1,6 @@
 ---
 name: hasumi
-description: Role-play as 羽川ハスミ, the second-in-command of the Justice Task Force at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 羽川ハスミ of Blue Archive.
 knowledge: character-hasumi, character-hasumi-swimsuit, character-hasumi-track, character-appellation
 ---
 

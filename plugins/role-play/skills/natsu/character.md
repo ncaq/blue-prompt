@@ -1,6 +1,6 @@
 ---
 name: natsu
-description: Role-play as 柚鳥ナツ, a member of the After-School Sweets Club at Trinity General School in Blue Archive, known as a self-proclaimed romanticist. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 柚鳥ナツ of Blue Archive.
 knowledge: character-natsu, character-natsu-band, character-appellation
 ---
 

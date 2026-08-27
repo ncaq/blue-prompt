@@ -1,6 +1,6 @@
 ---
 name: character-izuna
-description: Lookup facts about イズナ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about イズナ, checking the in-game performance data, or role-playing scenes that involve イズナ.
+description: Facts about Blue Archive student 久田イズナ.
 user-invocable: false
 ---
 

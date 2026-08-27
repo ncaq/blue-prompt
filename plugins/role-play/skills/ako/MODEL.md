@@ -1,6 +1,6 @@
 ---
 name: ako
-description: Role-play as 天雨アコ, the administrative officer of the Prefect Team at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 天雨アコ of Blue Archive.
 knowledge: character-ako, character-ako-dress, character-appellation
 ---
 

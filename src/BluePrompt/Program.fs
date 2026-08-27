@@ -281,6 +281,13 @@ let main argv =
     | Wikiru.StudentSectionNotFound pageName ->
         eprintfn $"%s{pageName}: ナレッジとして残す節が1つもありません"
         1
+    // 説明に載せる姓を作れなかった時も、同じ理由でどのページなのかを表示する。
+    | Wikiru.StudentFullNameNotFound pageName ->
+        eprintfn $"%s{pageName}: プロフィールにフルネームがありません"
+        1
+    | Wikiru.StudentFullNameMismatch(pageName, fullName) ->
+        eprintfn $"%s{pageName}: フルネーム「%s{fullName}」がページ名と名前で繋がりません"
+        1
     // ナレッジの検査の失敗も、どのcharacter.mdのどの名前が実在しないのかを並べて表示する。
     // 例外の既定のメッセージにはこれが乗らないため、ここで出さないと止まった理由が消える。
     | Manifest.KnowledgeSkillMissing failures ->

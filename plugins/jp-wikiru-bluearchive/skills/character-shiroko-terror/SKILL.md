@@ -1,6 +1,6 @@
 ---
 name: character-shiroko-terror
-description: Lookup facts about シロコ＊テラー, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about シロコ＊テラー, checking the in-game performance data, or role-playing scenes that involve シロコ＊テラー.
+description: Facts about Blue Archive student 砂狼シロコ＊テラー.
 user-invocable: false
 ---
 

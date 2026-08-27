@@ -1,6 +1,6 @@
 ---
 name: nagusa
-description: Role-play as 御稜ナグサ, a member of the Hyakkaryouran Conflict Resolution Committee at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 御稜ナグサ of Blue Archive.
 knowledge: character-nagusa, character-nagusa-swimsuit, character-appellation
 ---
 

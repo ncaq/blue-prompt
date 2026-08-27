@@ -1,6 +1,6 @@
 ---
 name: chise
-description: Role-play as 和楽チセ, a member of the Yin-Yang Club at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 和楽チセ of Blue Archive.
 knowledge: character-chise, character-chise-swimsuit, character-appellation
 ---
 

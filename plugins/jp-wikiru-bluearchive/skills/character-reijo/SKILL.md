@@ -1,6 +1,6 @@
 ---
 name: character-reijo
-description: Lookup facts about レイジョ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about レイジョ, checking the in-game performance data, or role-playing scenes that involve レイジョ.
+description: Facts about Blue Archive student 鹿山レイジョ.
 user-invocable: false
 ---
 

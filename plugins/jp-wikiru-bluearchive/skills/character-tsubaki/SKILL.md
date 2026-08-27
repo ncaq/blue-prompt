@@ -1,6 +1,6 @@
 ---
 name: character-tsubaki
-description: Lookup facts about ツバキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ツバキ, checking the in-game performance data, or role-playing scenes that involve ツバキ.
+description: Facts about Blue Archive student 春日ツバキ.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-hoshino
-description: Lookup facts about ホシノ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ホシノ, checking the in-game performance data, or role-playing scenes that involve ホシノ.
+description: Facts about Blue Archive student 小鳥遊ホシノ.
 user-invocable: false
 ---
 

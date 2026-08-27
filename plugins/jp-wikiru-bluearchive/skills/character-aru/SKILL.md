@@ -1,6 +1,6 @@
 ---
 name: character-aru
-description: Lookup facts about アル, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アル, checking the in-game performance data, or role-playing scenes that involve アル.
+description: Facts about Blue Archive student 陸八魔アル.
 user-invocable: false
 ---
 

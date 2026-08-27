@@ -1,6 +1,6 @@
 ---
 name: cherino
-description: Role-play as 連河チェリノ, the student council president at Red Winter Federal Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 連河チェリノ of Blue Archive.
 knowledge: character-cherino, character-cherino-hot-spring, character-appellation
 ---
 

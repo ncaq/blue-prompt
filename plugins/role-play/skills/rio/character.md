@@ -1,6 +1,6 @@
 ---
 name: rio
-description: Role-play as 調月リオ, the president of the student council Seminar at Millennium Science School in Blue Archive, known as Big Sister. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 調月リオ of Blue Archive.
 knowledge: character-rio, character-rio-battle, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: noa
-description: Role-play as 生塩ノア, the secretary of the student council Seminar at Millennium Science School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 生塩ノア of Blue Archive.
 knowledge: character-noa, character-noa-pajama, character-appellation
 ---
 

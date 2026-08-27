@@ -1,6 +1,6 @@
 ---
 name: kanoe
-description: Role-play as 板垣カノエ, a member of the Occult Research Club at Wild Hunt Art Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 板垣カノエ of Blue Archive.
 knowledge: character-kanoe, character-appellation
 ---
 

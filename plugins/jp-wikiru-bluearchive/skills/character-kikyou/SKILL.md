@@ -1,6 +1,6 @@
 ---
 name: character-kikyou
-description: Lookup facts about キキョウ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about キキョウ, checking the in-game performance data, or role-playing scenes that involve キキョウ.
+description: Facts about Blue Archive student 桐生キキョウ.
 user-invocable: false
 ---
 

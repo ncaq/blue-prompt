@@ -1,6 +1,6 @@
 ---
 name: miyo
-description: Role-play as 桜井ミヨ, the president of the unauthorized Special Trade Club at Wild Hunt Art Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 桜井ミヨ of Blue Archive.
 knowledge: character-miyo, character-appellation
 ---
 

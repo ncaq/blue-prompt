@@ -1,6 +1,6 @@
 ---
 name: character-neru-bunny-girl
-description: Lookup facts about ネル（バニーガール）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ネル（バニーガール）, checking the in-game performance data, or role-playing scenes that involve ネル（バニーガール）.
+description: Facts about Blue Archive student 美甘ネル（バニーガール）.
 user-invocable: false
 ---
 

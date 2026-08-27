@@ -1,6 +1,6 @@
 ---
 name: koharu
-description: Role-play as 下江コハル, a member of the Make-Up Work Club at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 下江コハル of Blue Archive.
 knowledge: character-koharu, character-koharu-swimsuit, character-appellation
 ---
 

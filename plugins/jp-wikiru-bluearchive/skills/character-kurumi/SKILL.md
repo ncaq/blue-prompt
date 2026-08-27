@@ -1,6 +1,6 @@
 ---
 name: character-kurumi
-description: Lookup facts about クルミ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about クルミ, checking the in-game performance data, or role-playing scenes that involve クルミ.
+description: Facts about Blue Archive student 高倉クルミ.
 user-invocable: false
 ---
 

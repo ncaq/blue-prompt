@@ -1,6 +1,6 @@
 ---
 name: character-michiru
-description: Lookup facts about ミチル, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミチル, checking the in-game performance data, or role-playing scenes that involve ミチル.
+description: Facts about Blue Archive student 千鳥ミチル.
 user-invocable: false
 ---
 

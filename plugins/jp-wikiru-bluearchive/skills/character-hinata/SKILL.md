@@ -1,6 +1,6 @@
 ---
 name: character-hinata
-description: Lookup facts about ヒナタ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヒナタ, checking the in-game performance data, or role-playing scenes that involve ヒナタ.
+description: Facts about Blue Archive student 若葉ヒナタ.
 user-invocable: false
 ---
 

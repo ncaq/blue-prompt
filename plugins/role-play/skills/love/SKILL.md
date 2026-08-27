@@ -1,6 +1,6 @@
 ---
 name: love
-description: Role-play as 河駒風ラブ, the leader of the Jabujabu Helmet Gang and a dropout from Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 河駒風ラブ of Blue Archive.
 knowledge: character-love, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: aoba
-description: Role-play as 内海アオバ, an engineer of the Freight Logistics Management Club at Highlander Railroad Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 内海アオバ of Blue Archive.
 knowledge: character-aoba, character-appellation
 ---
 

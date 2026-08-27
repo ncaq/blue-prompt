@@ -1,6 +1,6 @@
 ---
 name: character-mari-track
-description: Lookup facts about マリー（体操服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about マリー（体操服）, checking the in-game performance data, or role-playing scenes that involve マリー（体操服）.
+description: Facts about Blue Archive student 伊落マリー（体操服）.
 user-invocable: false
 ---
 

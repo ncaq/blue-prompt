@@ -317,15 +317,74 @@ let ``trimGameplayDetailsは入手方法が無ければ何も変えない`` () =
     let markdown = "## 基本情報\n\n紹介文\n\n## ボイス\n\n| 獲得 | セリフ |\n"
     Assert.Equal(markdown, BluePrompt.Wikiru.trimGameplayDetails markdown)
 
+/// プロフィールの表のうち、フルネームの行だけを持つ最小のナレッジ本体。
+/// 縦に結合されたセルが複製されて先頭へ付く実際の形に合わせる。
+let private studentMarkdown (fullName: string) (sections: string) : string =
+    $"## 基本情報\n\n| クリックで全体画像 | フルネーム | %s{fullName} |\n%s{sections}"
+
 [<Fact>]
 let ``studentSkillMarkdownはフロントマターと出典とナレッジを含む`` () =
     let skill =
-        BluePrompt.Wikiru.studentSkillMarkdown "character-yuuka" "ユウカ" "## 基本情報\n"
+        BluePrompt.Wikiru.studentSkillMarkdown
+            "character-yuuka"
+            "ユウカ"
+            (studentMarkdown "早瀬(はやせ)ユウカ" "")
 
     Assert.StartsWith("---\nname: character-yuuka\n", skill)
     Assert.Contains("\nuser-invocable: false\n", skill)
     Assert.Contains("https://bluearchive.wikiru.jp/?%E3%83%A6%E3%82%A6%E3%82%AB", skill)
     Assert.Contains("## 基本情報", skill)
+
+[<Fact>]
+let ``studentSkillMarkdownの説明は姓を補った名前だけを述べる`` () =
+    // 説明はスキルの一覧としてモデルのコンテキストへ載るため、
+    // 生徒ごとに変わるのが名前だけの短い1文であることを固定する。
+    let skill =
+        BluePrompt.Wikiru.studentSkillMarkdown
+            "character-yuuka"
+            "ユウカ"
+            (studentMarkdown "早瀬(はやせ)ユウカ" "")
+
+    Assert.Contains("\ndescription: Facts about Blue Archive student 早瀬ユウカ.\n", skill)
+
+[<Fact>]
+let ``familyNamedPageNameは衣装の接尾辞を残したまま姓を前へ置く`` () =
+    Assert.Equal(
+        "栗村アイリ（バンド）",
+        BluePrompt.Wikiru.familyNamedPageName "アイリ（バンド）" (studentMarkdown "栗村(くりむら)アイリ" "")
+    )
+
+[<Fact>]
+let ``familyNamedPageNameは姓を持たない生徒に何も足さない`` () =
+    // プロフィールのフルネームが名前だけのケイのような生徒でも、名前を二重にしない。
+    Assert.Equal("ケイ", BluePrompt.Wikiru.familyNamedPageName "ケイ" (studentMarkdown "ケイ" ""))
+
+[<Fact>]
+let ``familyNamedPageNameはフルネームが姓名で揃うページ名をそのまま使う`` () =
+    // ページ名の側が既に姓を含むコラボの生徒で、姓を二重にしない。
+    Assert.Equal(
+        "御坂美琴",
+        BluePrompt.Wikiru.familyNamedPageName "御坂美琴" (studentMarkdown "御坂美琴(みさかみこと)" "")
+    )
+
+[<Fact>]
+let ``familyNamedPageNameはフルネームが無ければ止まる`` () =
+    let error =
+        Assert.Throws<BluePrompt.Wikiru.StudentFullNameNotFound>(fun () ->
+            BluePrompt.Wikiru.familyNamedPageName "ユウカ" "## 基本情報\n" |> ignore)
+
+    Assert.Equal("ユウカ", error.pageName)
+
+[<Fact>]
+let ``familyNamedPageNameはページ名と繋がらないフルネームで止まる`` () =
+    // 姓を機械的に前へ置くと別人の名前を作ってしまうため、繋がらない時は書き出さない。
+    let error =
+        Assert.Throws<BluePrompt.Wikiru.StudentFullNameMismatch>(fun () ->
+            BluePrompt.Wikiru.familyNamedPageName "ユウカ" (studentMarkdown "早瀬(はやせ)ハルカ" "")
+            |> ignore)
+
+    Assert.Equal("ユウカ", error.pageName)
+    Assert.Equal("早瀬ハルカ", error.fullName)
 
 [<Fact>]
 let ``sectionTitlesはh2の見出しだけを現れる順に拾う`` () =
@@ -347,7 +406,7 @@ let ``studentSkillMarkdownのデータの構造は実際にある節だけを並
         BluePrompt.Wikiru.studentSkillMarkdown
             "character-kotori-cheer-squad"
             "コトリ（応援団）"
-            "## 基本情報\n\n## スキル\n\n## ボイス\n"
+            (studentMarkdown "豊見(とよみ)コトリ" "\n## スキル\n\n## ボイス\n")
 
     Assert.Contains("- セクションは基本情報・スキル・ボイスです\n", skill)
     Assert.DoesNotContain("愛用品", skill)

@@ -1,6 +1,6 @@
 ---
 name: character-shiroko
-description: Lookup facts about シロコ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about シロコ, checking the in-game performance data, or role-playing scenes that involve シロコ.
+description: Facts about Blue Archive student 砂狼シロコ.
 user-invocable: false
 ---
 

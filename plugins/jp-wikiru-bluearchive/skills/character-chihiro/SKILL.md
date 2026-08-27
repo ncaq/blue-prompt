@@ -1,6 +1,6 @@
 ---
 name: character-chihiro
-description: Lookup facts about チヒロ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about チヒロ, checking the in-game performance data, or role-playing scenes that involve チヒロ.
+description: Facts about Blue Archive student 各務チヒロ.
 user-invocable: false
 ---
 

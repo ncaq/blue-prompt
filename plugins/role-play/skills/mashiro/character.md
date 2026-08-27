@@ -1,6 +1,6 @@
 ---
 name: mashiro
-description: Role-play as 静山マシロ, a member of the Justice Task Force at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 静山マシロ of Blue Archive.
 knowledge: character-mashiro, character-mashiro-swimsuit, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-aoba
-description: Lookup facts about アオバ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アオバ, checking the in-game performance data, or role-playing scenes that involve アオバ.
+description: Facts about Blue Archive student 内海アオバ.
 user-invocable: false
 ---
 

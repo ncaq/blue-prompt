@@ -1,6 +1,6 @@
 ---
 name: niya
-description: Role-play as 天地ニヤ, the president of the Yin-Yang Club at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 天地ニヤ of Blue Archive.
 knowledge: character-niya, character-appellation
 ---
 

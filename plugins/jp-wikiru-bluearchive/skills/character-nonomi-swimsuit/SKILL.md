@@ -1,6 +1,6 @@
 ---
 name: character-nonomi-swimsuit
-description: Lookup facts about ノノミ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ノノミ（水着）, checking the in-game performance data, or role-playing scenes that involve ノノミ（水着）.
+description: Facts about Blue Archive student 十六夜ノノミ（水着）.
 user-invocable: false
 ---
 

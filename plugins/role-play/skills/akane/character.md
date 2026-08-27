@@ -1,6 +1,6 @@
 ---
 name: akane
-description: Role-play as 室笠アカネ, an agent of the secret organization Cleaning & Clearing at Millennium Science School in Blue Archive, known as a professional of "cleaning". Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 室笠アカネ of Blue Archive.
 knowledge: character-akane, character-akane-bunny-girl, character-akane-uniform, character-appellation
 ---
 

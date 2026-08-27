@@ -1,6 +1,6 @@
 ---
 name: momoi
-description: Role-play as 才羽モモイ, the scenario writer of the Game Development Department at Millennium Science School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 才羽モモイ of Blue Archive.
 knowledge: character-momoi, character-momoi-maid, character-appellation
 ---
 

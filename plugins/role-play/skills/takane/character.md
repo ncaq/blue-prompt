@@ -1,6 +1,6 @@
 ---
 name: takane
-description: Role-play as 三善タカネ, a member of the Publishing Club at Red Winter Federal Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 三善タカネ of Blue Archive.
 knowledge: character-takane, character-appellation
 ---
 

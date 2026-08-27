@@ -1,6 +1,6 @@
 ---
 name: hanae
-description: Role-play as 朝顔ハナエ, a first-year member of the Rescue Knights medical club at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 朝顔ハナエ of Blue Archive.
 knowledge: character-hanae, character-hanae-christmas, character-appellation
 ---
 

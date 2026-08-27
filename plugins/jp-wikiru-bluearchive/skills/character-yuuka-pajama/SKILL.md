@@ -1,6 +1,6 @@
 ---
 name: character-yuuka-pajama
-description: Lookup facts about ユウカ（パジャマ）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ユウカ（パジャマ）, checking the in-game performance data, or role-playing scenes that involve ユウカ（パジャマ）.
+description: Facts about Blue Archive student 早瀬ユウカ（パジャマ）.
 user-invocable: false
 ---
 

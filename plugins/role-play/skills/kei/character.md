@@ -1,6 +1,6 @@
 ---
 name: kei
-description: Role-play as ケイ, a member of the Anomaly Investigation Club at Millennium Science School in Blue Archive, an AI who gained a new body. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as ケイ of Blue Archive.
 knowledge: character-kei, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-chiaki
-description: Lookup facts about チアキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about チアキ, checking the in-game performance data, or role-playing scenes that involve チアキ.
+description: Facts about Blue Archive student 元宮チアキ.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-niko
-description: Lookup facts about ニコ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ニコ, checking the in-game performance data, or role-playing scenes that involve ニコ.
+description: Facts about Blue Archive student 吉野ニコ.
 user-invocable: false
 ---
 
