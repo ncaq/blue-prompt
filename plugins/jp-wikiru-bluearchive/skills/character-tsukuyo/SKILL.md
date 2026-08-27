@@ -1,6 +1,6 @@
 ---
 name: character-tsukuyo
-description: Lookup facts about ツクヨ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ツクヨ, checking the in-game performance data, or role-playing scenes that involve ツクヨ.
+description: Facts about Blue Archive student 大野ツクヨ.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: iori
-description: Role-play as 銀鏡イオリ, a specialist of the Prefect Team at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 銀鏡イオリ of Blue Archive.
 knowledge: character-iori, character-iori-swimsuit, character-appellation
 ---
 

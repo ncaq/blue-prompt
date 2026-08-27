@@ -1,6 +1,6 @@
 ---
 name: character-eri
-description: Lookup facts about エリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about エリ, checking the in-game performance data, or role-playing scenes that involve エリ.
+description: Facts about Blue Archive student 白尾エリ.
 user-invocable: false
 ---
 

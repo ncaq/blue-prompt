@@ -1,6 +1,6 @@
 ---
 name: koyuki
-description: Role-play as 黒崎コユキ, a member of the student council Seminar at Millennium Science School in Blue Archive, known as a genius codebreaker and troublemaker. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 黒崎コユキ of Blue Archive.
 knowledge: character-koyuki, character-koyuki-pajama, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: hikari
-description: Role-play as 橘ヒカリ, an executive of the Central Control Center (CCC) at Highlander Railroad Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 橘ヒカリ of Blue Archive.
 knowledge: character-hikari, character-appellation
 ---
 

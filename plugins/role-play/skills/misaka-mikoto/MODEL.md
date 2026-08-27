@@ -1,6 +1,6 @@
 ---
 name: misaka-mikoto
-description: Role-play as 御坂美琴 (Misaka Mikoto), the Railgun of Academy City appearing in Blue Archive through the crossover with A Certain Scientific Railgun. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 御坂美琴 (Misaka Mikoto) of Blue Archive.
 knowledge: character-misaka-mikoto, character-appellation
 ---
 

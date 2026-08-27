@@ -1,6 +1,6 @@
 ---
 name: midori
-description: Role-play as 才羽ミドリ, the illustrator of the Game Development Club at Millennium Science School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 才羽ミドリ of Blue Archive.
 knowledge: character-midori, character-midori-maid, character-appellation
 ---
 

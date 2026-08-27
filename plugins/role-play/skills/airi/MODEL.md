@@ -1,6 +1,6 @@
 ---
 name: airi
-description: Role-play as 栗村アイリ, a member of the After-School Sweets Club at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 栗村アイリ of Blue Archive.
 knowledge: character-airi, character-airi-band, character-appellation
 ---
 

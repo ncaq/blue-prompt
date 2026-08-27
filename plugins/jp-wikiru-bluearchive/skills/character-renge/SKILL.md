@@ -1,6 +1,6 @@
 ---
 name: character-renge
-description: Lookup facts about レンゲ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about レンゲ, checking the in-game performance data, or role-playing scenes that involve レンゲ.
+description: Facts about Blue Archive student 不破レンゲ.
 user-invocable: false
 ---
 

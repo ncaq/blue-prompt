@@ -1,6 +1,6 @@
 ---
 name: character-chinatsu
-description: Lookup facts about チナツ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about チナツ, checking the in-game performance data, or role-playing scenes that involve チナツ.
+description: Facts about Blue Archive student 火宮チナツ.
 user-invocable: false
 ---
 

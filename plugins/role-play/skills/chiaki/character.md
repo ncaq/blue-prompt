@@ -1,6 +1,6 @@
 ---
 name: chiaki
-description: Role-play as 元宮チアキ, the secretary of the student council Pandemonium Society at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 元宮チアキ of Blue Archive.
 knowledge: character-chiaki, character-chiaki-swimsuit, character-appellation
 ---
 

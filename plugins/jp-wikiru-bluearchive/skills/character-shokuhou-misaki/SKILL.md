@@ -1,6 +1,6 @@
 ---
 name: character-shokuhou-misaki
-description: Lookup facts about 食蜂操祈, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about 食蜂操祈, checking the in-game performance data, or role-playing scenes that involve 食蜂操祈.
+description: Facts about Blue Archive student 食蜂操祈.
 user-invocable: false
 ---
 

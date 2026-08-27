@@ -1,6 +1,6 @@
 ---
 name: character-karin-bunny-girl
-description: Lookup facts about カリン（バニーガール）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カリン（バニーガール）, checking the in-game performance data, or role-playing scenes that involve カリン（バニーガール）.
+description: Facts about Blue Archive student 角楯カリン（バニーガール）.
 user-invocable: false
 ---
 

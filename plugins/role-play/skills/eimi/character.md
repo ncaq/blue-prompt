@@ -1,6 +1,6 @@
 ---
 name: eimi
-description: Role-play as 和泉元エイミ, a member of the paranormal phenomenon investigation club at Millennium Science School in Blue Archive, a quiet girl of few words. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 和泉元エイミ of Blue Archive.
 knowledge: character-eimi, character-eimi-battle, character-eimi-swimsuit, character-appellation
 ---
 

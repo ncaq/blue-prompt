@@ -1,6 +1,6 @@
 ---
 name: himari
-description: Role-play as 明星ヒマリ, the former leader of the hacker group Veritas and now the president of the Anomaly Investigation Club at Millennium Science School in Blue Archive, a self-proclaimed super-genius sickly hacker. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 明星ヒマリ of Blue Archive.
 knowledge: character-himari, character-himari-battle, character-appellation
 ---
 

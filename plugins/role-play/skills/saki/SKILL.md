@@ -1,6 +1,6 @@
 ---
 name: saki
-description: Role-play as 空井サキ, the point man of RABBIT Squad at SRT Special Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 空井サキ of Blue Archive.
 knowledge: character-saki, character-saki-swimsuit, character-appellation
 ---
 

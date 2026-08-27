@@ -1,6 +1,6 @@
 ---
 name: character-junko
-description: Lookup facts about ジュンコ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ジュンコ, checking the in-game performance data, or role-playing scenes that involve ジュンコ.
+description: Facts about Blue Archive student 赤司ジュンコ.
 user-invocable: false
 ---
 

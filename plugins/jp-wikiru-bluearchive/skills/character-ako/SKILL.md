@@ -1,6 +1,6 @@
 ---
 name: character-ako
-description: Lookup facts about アコ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アコ, checking the in-game performance data, or role-playing scenes that involve アコ.
+description: Facts about Blue Archive student 天雨アコ.
 user-invocable: false
 ---
 

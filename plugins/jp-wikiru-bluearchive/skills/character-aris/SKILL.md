@@ -1,6 +1,6 @@
 ---
 name: character-aris
-description: Lookup facts about アリス, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アリス, checking the in-game performance data, or role-playing scenes that involve アリス.
+description: Facts about Blue Archive student 天童アリス.
 user-invocable: false
 ---
 

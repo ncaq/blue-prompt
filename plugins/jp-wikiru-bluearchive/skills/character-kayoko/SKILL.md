@@ -1,6 +1,6 @@
 ---
 name: character-kayoko
-description: Lookup facts about カヨコ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カヨコ, checking the in-game performance data, or role-playing scenes that involve カヨコ.
+description: Facts about Blue Archive student 鬼方カヨコ.
 user-invocable: false
 ---
 

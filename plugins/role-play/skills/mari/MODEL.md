@@ -1,6 +1,6 @@
 ---
 name: mari
-description: Role-play as 伊落マリー, a member of the Sisterhood at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 伊落マリー of Blue Archive.
 knowledge: character-mari, character-mari-idol, character-mari-track, character-appellation
 ---
 

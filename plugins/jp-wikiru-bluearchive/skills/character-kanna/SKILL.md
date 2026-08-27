@@ -1,6 +1,6 @@
 ---
 name: character-kanna
-description: Lookup facts about カンナ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カンナ, checking the in-game performance data, or role-playing scenes that involve カンナ.
+description: Facts about Blue Archive student 尾刃カンナ.
 user-invocable: false
 ---
 

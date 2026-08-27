@@ -1,6 +1,6 @@
 ---
 name: character-kirara
-description: Lookup facts about キララ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about キララ, checking the in-game performance data, or role-playing scenes that involve キララ.
+description: Facts about Blue Archive student 夜桜キララ.
 user-invocable: false
 ---
 

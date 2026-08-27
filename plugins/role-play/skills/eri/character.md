@@ -1,6 +1,6 @@
 ---
 name: eri
-description: Role-play as 白尾エリ, the president of the Occult Research Society at Wild Hunt Art Academy in Blue Archive, who explains everything as magic. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 白尾エリ of Blue Archive.
 knowledge: character-eri, character-appellation
 ---
 

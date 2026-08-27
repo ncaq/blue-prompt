@@ -1,6 +1,6 @@
 ---
 name: character-nodoka-hot-spring
-description: Lookup facts about ノドカ（温泉）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ノドカ（温泉）, checking the in-game performance data, or role-playing scenes that involve ノドカ（温泉）.
+description: Facts about Blue Archive student 天見ノドカ（温泉）.
 user-invocable: false
 ---
 

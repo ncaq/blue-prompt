@@ -1,6 +1,6 @@
 ---
 name: kirino
-description: Role-play as 中務キリノ, a member of the Community Safety Bureau at Valkyrie Police School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 中務キリノ of Blue Archive.
 knowledge: character-kirino, character-kirino-swimsuit, character-appellation
 ---
 

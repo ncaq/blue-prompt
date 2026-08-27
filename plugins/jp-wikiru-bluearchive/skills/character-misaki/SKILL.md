@@ -1,6 +1,6 @@
 ---
 name: character-misaki
-description: Lookup facts about ミサキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミサキ, checking the in-game performance data, or role-playing scenes that involve ミサキ.
+description: Facts about Blue Archive student 戒野ミサキ.
 user-invocable: false
 ---
 

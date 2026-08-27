@@ -1,6 +1,6 @@
 ---
 name: character-kokona
-description: Lookup facts about ココナ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ココナ, checking the in-game performance data, or role-playing scenes that involve ココナ.
+description: Facts about Blue Archive student 春原ココナ.
 user-invocable: false
 ---
 

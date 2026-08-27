@@ -1,6 +1,6 @@
 ---
 name: character-niya
-description: Lookup facts about ニヤ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ニヤ, checking the in-game performance data, or role-playing scenes that involve ニヤ.
+description: Facts about Blue Archive student 天地ニヤ.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: makoto
-description: Role-play as 羽沼マコト, the chairman of the Pandemonium Society at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 羽沼マコト of Blue Archive.
 knowledge: character-makoto, character-makoto-swimsuit, character-appellation
 ---
 

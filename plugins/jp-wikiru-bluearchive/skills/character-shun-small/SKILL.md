@@ -1,6 +1,6 @@
 ---
 name: character-shun-small
-description: Lookup facts about シュン（幼女）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about シュン（幼女）, checking the in-game performance data, or role-playing scenes that involve シュン（幼女）.
+description: Facts about Blue Archive student 春原シュン（幼女）.
 user-invocable: false
 ---
 

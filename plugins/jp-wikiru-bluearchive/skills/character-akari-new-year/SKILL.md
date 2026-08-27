@@ -1,6 +1,6 @@
 ---
 name: character-akari-new-year
-description: Lookup facts about アカリ（正月）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アカリ（正月）, checking the in-game performance data, or role-playing scenes that involve アカリ（正月）.
+description: Facts about Blue Archive student 鰐渕アカリ（正月）.
 user-invocable: false
 ---
 

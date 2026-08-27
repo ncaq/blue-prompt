@@ -1,6 +1,6 @@
 ---
 name: yukari
-description: Role-play as 勘解由小路ユカリ, a member of the Hyakkaryouran Conflict Resolution Committee at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 勘解由小路ユカリ of Blue Archive.
 knowledge: character-yukari, character-yukari-swimsuit, character-appellation
 ---
 

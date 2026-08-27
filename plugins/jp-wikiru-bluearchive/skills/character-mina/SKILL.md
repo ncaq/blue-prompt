@@ -1,6 +1,6 @@
 ---
 name: character-mina
-description: Lookup facts about ミナ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミナ, checking the in-game performance data, or role-playing scenes that involve ミナ.
+description: Facts about Blue Archive student 近衛ミナ.
 user-invocable: false
 ---
 

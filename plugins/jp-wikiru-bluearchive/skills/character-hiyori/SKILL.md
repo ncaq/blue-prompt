@@ -1,6 +1,6 @@
 ---
 name: character-hiyori
-description: Lookup facts about ヒヨリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヒヨリ, checking the in-game performance data, or role-playing scenes that involve ヒヨリ.
+description: Facts about Blue Archive student 槌永ヒヨリ.
 user-invocable: false
 ---
 

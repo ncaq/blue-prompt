@@ -1,6 +1,6 @@
 ---
 name: utaha
-description: Role-play as 白石ウタハ, the president of the Engineer Club at Millennium Science School in Blue Archive, an inventor of many robots. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 白石ウタハ of Blue Archive.
 knowledge: character-utaha, character-utaha-cheer-squad, character-appellation
 ---
 

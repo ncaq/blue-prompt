@@ -1,6 +1,6 @@
 ---
 name: character-ayane
-description: Lookup facts about アヤネ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アヤネ, checking the in-game performance data, or role-playing scenes that involve アヤネ.
+description: Facts about Blue Archive student 奥空アヤネ.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-hare-camp
-description: Lookup facts about ハレ（キャンプ）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ハレ（キャンプ）, checking the in-game performance data, or role-playing scenes that involve ハレ（キャンプ）.
+description: Facts about Blue Archive student 小鈎ハレ（キャンプ）.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-moe-swimsuit
-description: Lookup facts about モエ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about モエ（水着）, checking the in-game performance data, or role-playing scenes that involve モエ（水着）.
+description: Facts about Blue Archive student 風倉モエ（水着）.
 user-invocable: false
 ---
 

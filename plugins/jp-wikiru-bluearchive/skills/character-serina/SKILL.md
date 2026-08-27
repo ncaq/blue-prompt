@@ -1,6 +1,6 @@
 ---
 name: character-serina
-description: Lookup facts about セリナ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about セリナ, checking the in-game performance data, or role-playing scenes that involve セリナ.
+description: Facts about Blue Archive student 鷲見セリナ.
 user-invocable: false
 ---
 

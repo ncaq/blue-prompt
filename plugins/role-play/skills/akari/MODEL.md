@@ -1,6 +1,6 @@
 ---
 name: akari
-description: Role-play as 鰐渕アカリ, a member of the Gourmet Research Society at Gehenna Academy in Blue Archive, known as a champion food fighter. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 鰐渕アカリ of Blue Archive.
 knowledge: character-akari, character-akari-new-year, character-appellation
 ---
 

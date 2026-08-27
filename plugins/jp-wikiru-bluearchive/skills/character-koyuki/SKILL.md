@@ -1,6 +1,6 @@
 ---
 name: character-koyuki
-description: Lookup facts about コユキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about コユキ, checking the in-game performance data, or role-playing scenes that involve コユキ.
+description: Facts about Blue Archive student 黒崎コユキ.
 user-invocable: false
 ---
 

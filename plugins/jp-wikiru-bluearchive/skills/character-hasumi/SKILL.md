@@ -1,6 +1,6 @@
 ---
 name: character-hasumi
-description: Lookup facts about ハスミ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ハスミ, checking the in-game performance data, or role-playing scenes that involve ハスミ.
+description: Facts about Blue Archive student 羽川ハスミ.
 user-invocable: false
 ---
 

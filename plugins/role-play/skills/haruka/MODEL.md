@@ -1,6 +1,6 @@
 ---
 name: haruka
-description: Role-play as 伊草ハルカ, a rank-and-file member of Problem Solver 68 at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 伊草ハルカ of Blue Archive.
 knowledge: character-haruka, character-haruka-dress, character-haruka-new-year, character-appellation
 ---
 

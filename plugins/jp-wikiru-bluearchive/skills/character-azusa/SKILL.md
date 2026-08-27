@@ -1,6 +1,6 @@
 ---
 name: character-azusa
-description: Lookup facts about アズサ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アズサ, checking the in-game performance data, or role-playing scenes that involve アズサ.
+description: Facts about Blue Archive student 白洲アズサ.
 user-invocable: false
 ---
 

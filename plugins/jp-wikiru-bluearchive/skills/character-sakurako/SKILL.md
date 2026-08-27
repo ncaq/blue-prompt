@@ -1,6 +1,6 @@
 ---
 name: character-sakurako
-description: Lookup facts about サクラコ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about サクラコ, checking the in-game performance data, or role-playing scenes that involve サクラコ.
+description: Facts about Blue Archive student 歌住サクラコ.
 user-invocable: false
 ---
 

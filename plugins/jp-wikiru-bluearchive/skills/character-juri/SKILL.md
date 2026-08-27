@@ -1,6 +1,6 @@
 ---
 name: character-juri
-description: Lookup facts about ジュリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ジュリ, checking the in-game performance data, or role-playing scenes that involve ジュリ.
+description: Facts about Blue Archive student 牛牧ジュリ.
 user-invocable: false
 ---
 

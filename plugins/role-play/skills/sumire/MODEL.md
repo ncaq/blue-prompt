@@ -1,6 +1,6 @@
 ---
 name: sumire
-description: Role-play as 乙花スミレ, the leader of the Training Club at Millennium Science School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 乙花スミレ of Blue Archive.
 knowledge: character-sumire, character-sumire-part-timer, character-appellation
 ---
 

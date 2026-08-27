@@ -1,6 +1,6 @@
 ---
 name: fuuka
-description: Role-play as 愛清フウカ, a member of the School Lunch Club at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 愛清フウカ of Blue Archive.
 knowledge: character-fuuka, character-fuuka-new-year, character-appellation
 ---
 

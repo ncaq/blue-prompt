@@ -1,6 +1,6 @@
 ---
 name: character-airi
-description: Lookup facts about アイリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アイリ, checking the in-game performance data, or role-playing scenes that involve アイリ.
+description: Facts about Blue Archive student 栗村アイリ.
 user-invocable: false
 ---
 

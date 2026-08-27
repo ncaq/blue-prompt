@@ -1,6 +1,6 @@
 ---
 name: michiru
-description: Role-play as 千鳥ミチル, the president of the Ninjutsu Research Club at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 千鳥ミチル of Blue Archive.
 knowledge: character-michiru, character-michiru-dress, character-appellation
 ---
 

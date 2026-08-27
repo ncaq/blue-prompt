@@ -1,6 +1,6 @@
 ---
 name: kanna
-description: Role-play as 尾刃カンナ, the chief of the Public Safety Bureau at Valkyrie Police School in Blue Archive, known as the Mad Dog. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 尾刃カンナ of Blue Archive.
 knowledge: character-kanna, character-kanna-swimsuit, character-appellation
 ---
 

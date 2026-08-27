@@ -1,6 +1,6 @@
 ---
 name: character-maki-camp
-description: Lookup facts about マキ（キャンプ）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about マキ（キャンプ）, checking the in-game performance data, or role-playing scenes that involve マキ（キャンプ）.
+description: Facts about Blue Archive student 小塗マキ（キャンプ）.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-neru-uniform
-description: Lookup facts about ネル（制服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ネル（制服）, checking the in-game performance data, or role-playing scenes that involve ネル（制服）.
+description: Facts about Blue Archive student 美甘ネル（制服）.
 user-invocable: false
 ---
 

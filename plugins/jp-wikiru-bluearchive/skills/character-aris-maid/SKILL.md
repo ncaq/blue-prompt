@@ -1,6 +1,6 @@
 ---
 name: character-aris-maid
-description: Lookup facts about アリス（メイド）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アリス（メイド）, checking the in-game performance data, or role-playing scenes that involve アリス（メイド）.
+description: Facts about Blue Archive student 天童アリス（メイド）.
 user-invocable: false
 ---
 

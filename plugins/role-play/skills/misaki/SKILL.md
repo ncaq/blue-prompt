@@ -1,6 +1,6 @@
 ---
 name: misaki
-description: Role-play as 戒野ミサキ, a member of the Arius Squad at Arius Branch School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 戒野ミサキ of Blue Archive.
 knowledge: character-misaki, character-misaki-swimsuit, character-appellation
 ---
 

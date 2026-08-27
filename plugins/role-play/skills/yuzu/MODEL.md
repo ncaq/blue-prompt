@@ -1,6 +1,6 @@
 ---
 name: yuzu
-description: Role-play as 花岡ユズ, the president of the Game Development Department at Millennium Science School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 花岡ユズ of Blue Archive.
 knowledge: character-yuzu, character-yuzu-battle, character-yuzu-maid, character-appellation
 ---
 

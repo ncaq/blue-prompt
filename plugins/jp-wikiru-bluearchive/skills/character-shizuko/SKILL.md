@@ -1,6 +1,6 @@
 ---
 name: character-shizuko
-description: Lookup facts about シズコ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about シズコ, checking the in-game performance data, or role-playing scenes that involve シズコ.
+description: Facts about Blue Archive student 河和シズコ.
 user-invocable: false
 ---
 

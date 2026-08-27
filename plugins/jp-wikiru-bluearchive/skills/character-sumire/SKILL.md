@@ -1,6 +1,6 @@
 ---
 name: character-sumire
-description: Lookup facts about スミレ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about スミレ, checking the in-game performance data, or role-playing scenes that involve スミレ.
+description: Facts about Blue Archive student 乙花スミレ.
 user-invocable: false
 ---
 

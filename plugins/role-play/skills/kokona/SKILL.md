@@ -1,6 +1,6 @@
 ---
 name: kokona
-description: Role-play as 春原ココナ, an instructor of the childcare club Plum Blossom Garden at Shanhaijing Senior Secondary School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 春原ココナ of Blue Archive.
 knowledge: character-kokona, character-appellation
 ---
 

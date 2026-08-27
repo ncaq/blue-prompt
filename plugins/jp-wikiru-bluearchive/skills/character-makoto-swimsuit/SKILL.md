@@ -1,6 +1,6 @@
 ---
 name: character-makoto-swimsuit
-description: Lookup facts about マコト（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about マコト（水着）, checking the in-game performance data, or role-playing scenes that involve マコト（水着）.
+description: Facts about Blue Archive student 羽沼マコト（水着）.
 user-invocable: false
 ---
 

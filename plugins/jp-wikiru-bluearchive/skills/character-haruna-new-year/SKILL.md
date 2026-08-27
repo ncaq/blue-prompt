@@ -1,6 +1,6 @@
 ---
 name: character-haruna-new-year
-description: Lookup facts about ハルナ（正月）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ハルナ（正月）, checking the in-game performance data, or role-playing scenes that involve ハルナ（正月）.
+description: Facts about Blue Archive student 黒舘ハルナ（正月）.
 user-invocable: false
 ---
 

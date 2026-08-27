@@ -1,6 +1,6 @@
 ---
 name: moe
-description: Role-play as 風倉モエ, an operator of the RABBIT Platoon at SRT Special Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 風倉モエ of Blue Archive.
 knowledge: character-moe, character-moe-swimsuit, character-appellation
 ---
 

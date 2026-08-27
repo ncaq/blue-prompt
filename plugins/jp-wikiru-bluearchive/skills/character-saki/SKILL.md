@@ -1,6 +1,6 @@
 ---
 name: character-saki
-description: Lookup facts about サキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about サキ, checking the in-game performance data, or role-playing scenes that involve サキ.
+description: Facts about Blue Archive student 空井サキ.
 user-invocable: false
 ---
 

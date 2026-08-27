@@ -1,6 +1,6 @@
 ---
 name: character-suzumi
-description: Lookup facts about スズミ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about スズミ, checking the in-game performance data, or role-playing scenes that involve スズミ.
+description: Facts about Blue Archive student 守月スズミ.
 user-invocable: false
 ---
 

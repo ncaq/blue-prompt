@@ -1,6 +1,6 @@
 ---
 name: mina
-description: Role-play as 近衛ミナ, the head of the enforcement division of the student council Genryumon at Shanhaijing Senior Secondary School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 近衛ミナ of Blue Archive.
 knowledge: character-mina, character-appellation
 ---
 

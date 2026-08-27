@@ -1,6 +1,6 @@
 ---
 name: character-rei
-description: Lookup facts about レイ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about レイ, checking the in-game performance data, or role-playing scenes that involve レイ.
+description: Facts about Blue Archive student 野正レイ.
 user-invocable: false
 ---
 

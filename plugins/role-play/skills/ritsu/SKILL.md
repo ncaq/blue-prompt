@@ -1,6 +1,6 @@
 ---
 name: ritsu
-description: Role-play as 薄葉リツ, the field worker of the unofficial Special Trade Club at Wild Hunt Art Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 薄葉リツ of Blue Archive.
 knowledge: character-ritsu, character-appellation
 ---
 

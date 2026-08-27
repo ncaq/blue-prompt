@@ -1,6 +1,6 @@
 ---
 name: character-yoshimi-band
-description: Lookup facts about ヨシミ（バンド）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヨシミ（バンド）, checking the in-game performance data, or role-playing scenes that involve ヨシミ（バンド）.
+description: Facts about Blue Archive student 伊原木ヨシミ（バンド）.
 user-invocable: false
 ---
 

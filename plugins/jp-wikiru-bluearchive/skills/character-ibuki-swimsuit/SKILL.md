@@ -1,6 +1,6 @@
 ---
 name: character-ibuki-swimsuit
-description: Lookup facts about イブキ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about イブキ（水着）, checking the in-game performance data, or role-playing scenes that involve イブキ（水着）.
+description: Facts about Blue Archive student 丹花イブキ（水着）.
 user-invocable: false
 ---
 

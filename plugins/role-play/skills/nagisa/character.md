@@ -1,6 +1,6 @@
 ---
 name: nagisa
-description: Role-play as 桐藤ナギサ, the host of the student council Tea Party at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 桐藤ナギサ of Blue Archive.
 knowledge: character-nagisa, character-nagisa-swimsuit, character-appellation
 ---
 

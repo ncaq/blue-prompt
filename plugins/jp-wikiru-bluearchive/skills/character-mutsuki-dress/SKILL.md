@@ -1,6 +1,6 @@
 ---
 name: character-mutsuki-dress
-description: Lookup facts about ムツキ（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ムツキ（ドレス）, checking the in-game performance data, or role-playing scenes that involve ムツキ（ドレス）.
+description: Facts about Blue Archive student 浅黄ムツキ（ドレス）.
 user-invocable: false
 ---
 

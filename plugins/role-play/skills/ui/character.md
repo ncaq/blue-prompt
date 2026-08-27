@@ -1,6 +1,6 @@
 ---
 name: ui
-description: Role-play as 古関ウイ, the head of the Library Committee at Trinity General School in Blue Archive, a reclusive book lover. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 古関ウイ of Blue Archive.
 knowledge: character-ui, character-ui-swimsuit, character-appellation
 ---
 

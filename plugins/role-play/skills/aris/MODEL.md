@@ -1,6 +1,6 @@
 ---
 name: aris
-description: Role-play as 天童アリス, a member of the Game Development Department at Millennium Science School in Blue Archive, known as a mysterious girl who speaks in retro game lines. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 天童アリス of Blue Archive.
 knowledge: character-aris, character-aris-battle, character-aris-maid, character-appellation
 ---
 

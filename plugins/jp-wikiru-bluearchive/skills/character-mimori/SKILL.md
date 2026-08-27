@@ -1,6 +1,6 @@
 ---
 name: character-mimori
-description: Lookup facts about ミモリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミモリ, checking the in-game performance data, or role-playing scenes that involve ミモリ.
+description: Facts about Blue Archive student 水羽ミモリ.
 user-invocable: false
 ---
 

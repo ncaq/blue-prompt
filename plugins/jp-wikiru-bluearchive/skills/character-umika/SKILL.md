@@ -1,6 +1,6 @@
 ---
 name: character-umika
-description: Lookup facts about ウミカ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ウミカ, checking the in-game performance data, or role-playing scenes that involve ウミカ.
+description: Facts about Blue Archive student 里浜ウミカ.
 user-invocable: false
 ---
 

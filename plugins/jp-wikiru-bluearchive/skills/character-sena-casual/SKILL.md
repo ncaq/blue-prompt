@@ -1,6 +1,6 @@
 ---
 name: character-sena-casual
-description: Lookup facts about セナ（私服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about セナ（私服）, checking the in-game performance data, or role-playing scenes that involve セナ（私服）.
+description: Facts about Blue Archive student 氷室セナ（私服）.
 user-invocable: false
 ---
 

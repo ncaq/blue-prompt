@@ -1,6 +1,6 @@
 ---
 name: hoshino
-description: Role-play as 小鳥遊ホシノ, the leader of the Foreclosure Task Force at Abydos High School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 小鳥遊ホシノ of Blue Archive.
 knowledge: character-hoshino, character-hoshino-battle, character-hoshino-swimsuit, character-appellation
 ---
 

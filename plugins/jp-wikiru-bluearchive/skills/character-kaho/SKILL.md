@@ -1,6 +1,6 @@
 ---
 name: character-kaho
-description: Lookup facts about カホ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カホ, checking the in-game performance data, or role-playing scenes that involve カホ.
+description: Facts about Blue Archive student 桑上カホ.
 user-invocable: false
 ---
 

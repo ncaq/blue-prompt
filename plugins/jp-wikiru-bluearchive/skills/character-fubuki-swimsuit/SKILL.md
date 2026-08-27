@@ -1,6 +1,6 @@
 ---
 name: character-fubuki-swimsuit
-description: Lookup facts about フブキ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about フブキ（水着）, checking the in-game performance data, or role-playing scenes that involve フブキ（水着）.
+description: Facts about Blue Archive student 合歓垣フブキ（水着）.
 user-invocable: false
 ---
 

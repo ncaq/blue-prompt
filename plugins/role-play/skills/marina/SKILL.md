@@ -1,6 +1,6 @@
 ---
 name: marina
-description: Role-play as 池倉マリナ, the chairwoman of the public safety committee at Red Winter Federal Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 池倉マリナ of Blue Archive.
 knowledge: character-marina, character-marina-qipao, character-appellation
 ---
 

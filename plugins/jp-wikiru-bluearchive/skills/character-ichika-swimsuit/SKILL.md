@@ -1,6 +1,6 @@
 ---
 name: character-ichika-swimsuit
-description: Lookup facts about イチカ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about イチカ（水着）, checking the in-game performance data, or role-playing scenes that involve イチカ（水着）.
+description: Facts about Blue Archive student 仲正イチカ（水着）.
 user-invocable: false
 ---
 

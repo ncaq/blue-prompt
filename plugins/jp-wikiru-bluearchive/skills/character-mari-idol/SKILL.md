@@ -1,6 +1,6 @@
 ---
 name: character-mari-idol
-description: Lookup facts about マリー（アイドル）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about マリー（アイドル）, checking the in-game performance data, or role-playing scenes that involve マリー（アイドル）.
+description: Facts about Blue Archive student 伊落マリー（アイドル）.
 user-invocable: false
 ---
 

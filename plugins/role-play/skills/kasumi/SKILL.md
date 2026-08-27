@@ -1,6 +1,6 @@
 ---
 name: kasumi
-description: Role-play as 鬼怒川カスミ, the president of the Hot Springs Development Department at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 鬼怒川カスミ of Blue Archive.
 knowledge: character-kasumi, character-appellation
 ---
 

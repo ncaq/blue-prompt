@@ -1,6 +1,6 @@
 ---
 name: character-love
-description: Lookup facts about ラブ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ラブ, checking the in-game performance data, or role-playing scenes that involve ラブ.
+description: Facts about Blue Archive student 河駒風ラブ.
 user-invocable: false
 ---
 

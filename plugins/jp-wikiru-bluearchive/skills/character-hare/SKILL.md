@@ -1,6 +1,6 @@
 ---
 name: character-hare
-description: Lookup facts about ハレ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ハレ, checking the in-game performance data, or role-playing scenes that involve ハレ.
+description: Facts about Blue Archive student 小鈎ハレ.
 user-invocable: false
 ---
 

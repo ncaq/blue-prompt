@@ -1,6 +1,6 @@
 ---
 name: character-saten-ruiko
-description: Lookup facts about 佐天涙子, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about 佐天涙子, checking the in-game performance data, or role-playing scenes that involve 佐天涙子.
+description: Facts about Blue Archive student 佐天涙子.
 user-invocable: false
 ---
 

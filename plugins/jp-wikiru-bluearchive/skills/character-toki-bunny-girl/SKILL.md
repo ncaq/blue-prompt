@@ -1,6 +1,6 @@
 ---
 name: character-toki-bunny-girl
-description: Lookup facts about トキ（バニーガール）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about トキ（バニーガール）, checking the in-game performance data, or role-playing scenes that involve トキ（バニーガール）.
+description: Facts about Blue Archive student 飛鳥馬トキ（バニーガール）.
 user-invocable: false
 ---
 

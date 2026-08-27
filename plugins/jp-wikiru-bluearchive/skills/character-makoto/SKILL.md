@@ -1,6 +1,6 @@
 ---
 name: character-makoto
-description: Lookup facts about マコト, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about マコト, checking the in-game performance data, or role-playing scenes that involve マコト.
+description: Facts about Blue Archive student 羽沼マコト.
 user-invocable: false
 ---
 

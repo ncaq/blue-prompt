@@ -1,6 +1,6 @@
 ---
 name: character-chise
-description: Lookup facts about チセ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about チセ, checking the in-game performance data, or role-playing scenes that involve チセ.
+description: Facts about Blue Archive student 和楽チセ.
 user-invocable: false
 ---
 

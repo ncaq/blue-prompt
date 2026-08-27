@@ -1,6 +1,6 @@
 ---
 name: character-kasumi
-description: Lookup facts about カスミ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カスミ, checking the in-game performance data, or role-playing scenes that involve カスミ.
+description: Facts about Blue Archive student 鬼怒川カスミ.
 user-invocable: false
 ---
 

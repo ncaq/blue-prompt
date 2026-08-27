@@ -1,6 +1,6 @@
 ---
 name: kaede
-description: Role-play as 勇美カエデ, a member of the Training Club at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 勇美カエデ of Blue Archive.
 knowledge: character-kaede, character-appellation
 ---
 

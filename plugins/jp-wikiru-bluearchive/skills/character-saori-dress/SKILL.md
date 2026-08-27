@@ -1,6 +1,6 @@
 ---
 name: character-saori-dress
-description: Lookup facts about サオリ（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about サオリ（ドレス）, checking the in-game performance data, or role-playing scenes that involve サオリ（ドレス）.
+description: Facts about Blue Archive student 錠前サオリ（ドレス）.
 user-invocable: false
 ---
 

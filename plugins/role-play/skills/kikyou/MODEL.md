@@ -1,6 +1,6 @@
 ---
 name: kikyou
-description: Role-play as 桐生キキョウ, the strategist of the Hyakkaryouran Conflict Resolution Committee at Hyakkiyako Alliance Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 桐生キキョウ of Blue Archive.
 knowledge: character-kikyou, character-kikyou-swimsuit, character-appellation
 ---
 

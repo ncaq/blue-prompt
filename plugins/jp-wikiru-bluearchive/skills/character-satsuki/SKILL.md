@@ -1,6 +1,6 @@
 ---
 name: character-satsuki
-description: Lookup facts about サツキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about サツキ, checking the in-game performance data, or role-playing scenes that involve サツキ.
+description: Facts about Blue Archive student 京極サツキ.
 user-invocable: false
 ---
 

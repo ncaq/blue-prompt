@@ -1,6 +1,6 @@
 ---
 name: character-ui
-description: Lookup facts about ウイ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ウイ, checking the in-game performance data, or role-playing scenes that involve ウイ.
+description: Facts about Blue Archive student 古関ウイ.
 user-invocable: false
 ---
 

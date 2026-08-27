@@ -1,6 +1,6 @@
 ---
 name: character-kisaki
-description: Lookup facts about キサキ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about キサキ, checking the in-game performance data, or role-playing scenes that involve キサキ.
+description: Facts about Blue Archive student 竜華キサキ.
 user-invocable: false
 ---
 

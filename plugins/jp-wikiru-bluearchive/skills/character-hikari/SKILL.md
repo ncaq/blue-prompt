@@ -1,6 +1,6 @@
 ---
 name: character-hikari
-description: Lookup facts about ヒカリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヒカリ, checking the in-game performance data, or role-playing scenes that involve ヒカリ.
+description: Facts about Blue Archive student 橘ヒカリ.
 user-invocable: false
 ---
 

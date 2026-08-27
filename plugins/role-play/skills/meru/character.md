@@ -1,6 +1,6 @@
 ---
 name: meru
-description: Role-play as 姫木メル, a member of the library committee Knowledge Liberation Front at Red Winter Federal Academy in Blue Archive, known as the doujin artist Merry. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 姫木メル of Blue Archive.
 knowledge: character-meru, character-appellation
 ---
 

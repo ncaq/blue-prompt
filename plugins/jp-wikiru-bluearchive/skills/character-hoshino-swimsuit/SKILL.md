@@ -1,6 +1,6 @@
 ---
 name: character-hoshino-swimsuit
-description: Lookup facts about ホシノ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ホシノ（水着）, checking the in-game performance data, or role-playing scenes that involve ホシノ（水着）.
+description: Facts about Blue Archive student 小鳥遊ホシノ（水着）.
 user-invocable: false
 ---
 

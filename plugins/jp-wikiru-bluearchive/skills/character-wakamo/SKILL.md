@@ -1,6 +1,6 @@
 ---
 name: character-wakamo
-description: Lookup facts about ワカモ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ワカモ, checking the in-game performance data, or role-playing scenes that involve ワカモ.
+description: Facts about Blue Archive student 狐坂ワカモ.
 user-invocable: false
 ---
 

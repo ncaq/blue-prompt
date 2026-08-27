@@ -1,6 +1,6 @@
 ---
 name: izumi
-description: Role-play as 獅子堂イズミ, a member of the Gourmet Research Society at Gehenna Academy in Blue Archive, a glutton who loves even bizarre foods. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 獅子堂イズミ of Blue Archive.
 knowledge: character-izumi, character-izumi-new-year, character-izumi-swimsuit, character-appellation
 ---
 

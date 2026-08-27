@@ -1,6 +1,6 @@
 ---
 name: tsurugi
-description: Role-play as 剣先ツルギ, the leader of the Justice Task Force at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 剣先ツルギ of Blue Archive.
 knowledge: character-tsurugi, character-tsurugi-swimsuit, character-appellation
 ---
 

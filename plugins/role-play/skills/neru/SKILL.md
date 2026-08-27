@@ -1,6 +1,6 @@
 ---
 name: neru
-description: Role-play as 美甘ネル, the leader of the agent organization Cleaning & Clearing at Millennium Science School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 美甘ネル of Blue Archive.
 knowledge: character-neru, character-neru-bunny-girl, character-neru-uniform, character-appellation
 ---
 

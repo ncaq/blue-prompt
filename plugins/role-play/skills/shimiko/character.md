@@ -1,6 +1,6 @@
 ---
 name: shimiko
-description: Role-play as 円堂シミコ, a librarian of the Library Committee at Trinity General School in Blue Archive, known as an avid reader. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 円堂シミコ of Blue Archive.
 knowledge: character-shimiko, character-appellation
 ---
 

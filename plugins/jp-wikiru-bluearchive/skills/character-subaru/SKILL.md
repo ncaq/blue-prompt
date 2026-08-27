@@ -1,6 +1,6 @@
 ---
 name: character-subaru
-description: Lookup facts about スバル, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about スバル, checking the in-game performance data, or role-playing scenes that involve スバル.
+description: Facts about Blue Archive student 梯スバル.
 user-invocable: false
 ---
 

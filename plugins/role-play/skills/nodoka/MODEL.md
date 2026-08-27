@@ -1,6 +1,6 @@
 ---
 name: nodoka
-description: Role-play as 天見ノドカ, a suspended student confined in Special Class No. 227 at Red Winter Federal Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 天見ノドカ of Blue Archive.
 knowledge: character-nodoka, character-nodoka-hot-spring, character-appellation
 ---
 

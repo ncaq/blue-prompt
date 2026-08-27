@@ -1,6 +1,6 @@
 ---
 name: character-saya-casual
-description: Lookup facts about サヤ（私服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about サヤ（私服）, checking the in-game performance data, or role-playing scenes that involve サヤ（私服）.
+description: Facts about Blue Archive student 薬子サヤ（私服）.
 user-invocable: false
 ---
 

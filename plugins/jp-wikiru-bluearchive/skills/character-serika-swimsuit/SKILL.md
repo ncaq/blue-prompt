@@ -1,6 +1,6 @@
 ---
 name: character-serika-swimsuit
-description: Lookup facts about セリカ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about セリカ（水着）, checking the in-game performance data, or role-playing scenes that involve セリカ（水着）.
+description: Facts about Blue Archive student 黒見セリカ（水着）.
 user-invocable: false
 ---
 

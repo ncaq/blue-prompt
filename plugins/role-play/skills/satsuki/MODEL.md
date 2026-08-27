@@ -1,6 +1,6 @@
 ---
 name: satsuki
-description: Role-play as 京極サツキ, a councilor and the intelligence chief of the Pandemonium Society at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 京極サツキ of Blue Archive.
 knowledge: character-satsuki, character-satsuki-swimsuit, character-appellation
 ---
 

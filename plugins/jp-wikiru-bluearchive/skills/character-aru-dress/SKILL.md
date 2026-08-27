@@ -1,6 +1,6 @@
 ---
 name: character-aru-dress
-description: Lookup facts about アル（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アル（ドレス）, checking the in-game performance data, or role-playing scenes that involve アル（ドレス）.
+description: Facts about Blue Archive student 陸八魔アル（ドレス）.
 user-invocable: false
 ---
 

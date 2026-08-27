@@ -1,6 +1,6 @@
 ---
 name: character-kotama-camp
-description: Lookup facts about コタマ（キャンプ）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about コタマ（キャンプ）, checking the in-game performance data, or role-playing scenes that involve コタマ（キャンプ）.
+description: Facts about Blue Archive student 音瀬コタマ（キャンプ）.
 user-invocable: false
 ---
 

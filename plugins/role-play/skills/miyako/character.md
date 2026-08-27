@@ -1,6 +1,6 @@
 ---
 name: miyako
-description: Role-play as 月雪ミヤコ, the leader of RABBIT Squad at SRT Special Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 月雪ミヤコ of Blue Archive.
 knowledge: character-miyako, character-miyako-swimsuit, character-appellation
 ---
 

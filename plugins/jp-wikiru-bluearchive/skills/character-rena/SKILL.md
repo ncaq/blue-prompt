@@ -1,6 +1,6 @@
 ---
 name: character-rena
-description: Lookup facts about レナ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about レナ, checking the in-game performance data, or role-playing scenes that involve レナ.
+description: Facts about Blue Archive student 衣斐レナ.
 user-invocable: false
 ---
 

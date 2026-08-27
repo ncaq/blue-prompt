@@ -1,6 +1,6 @@
 ---
 name: chinatsu
-description: Role-play as 火宮チナツ, the medic of the Prefect Team at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 火宮チナツ of Blue Archive.
 knowledge: character-chinatsu, character-chinatsu-hot-spring, character-appellation
 ---
 

@@ -472,6 +472,45 @@ let fetchRolePlayMarkdown (pageName: string) : Task<string> =
 /// ナレッジ本体に節が1つも無かった時のページ名。
 exception StudentSectionNotFound of pageName: string
 
+/// プロフィールの表に「フルネーム」の行が無かった時のページ名。
+exception StudentFullNameNotFound of pageName: string
+
+/// フルネームがページ名と名前で繋がらなかった時のページ名とフルネーム。
+exception StudentFullNameMismatch of pageName: string * fullName: string
+
+/// プロフィールの表の「フルネーム」の見出しのセルと、その次のセルの値。
+/// 縦に結合されたセルが各行へ複製されて列の位置が揃わないため、
+/// 行頭からではなく見出しのセルを起点に読む。
+let private fullNamePattern = Regex @"\|[ ]*フルネーム[ ]*\|[ ]*([^|]+?)[ ]*\|"
+
+/// フルネームに添えられたふりがなの括弧。
+let private rubyPattern = Regex @"\([^)]*\)"
+
+/// ページ名の前へ姓を補う。
+/// wikiruのページ名は「アイリ」「アイリ（バンド）」のように姓を持たないが、
+/// スキルの説明は本文を読み込む前の一覧としてしか読まれないため、
+/// 姓が無いとそこだけでは誰のことなのかが決まらない。
+/// プロフィールの表のフルネームからふりがなを外し、
+/// ページ名の先頭と重なる部分より前を姓としてページ名の前へ置く。
+/// 衣装の接尾辞はページ名の側に残るので「アイリ（バンド）」は「栗村アイリ（バンド）」になり、
+/// 姓を持たない「ケイ」ではフルネーム全体が重なって何も足さない。
+let familyNamedPageName (pageName: string) (markdown: string) : string =
+    let matched = fullNamePattern.Match markdown
+
+    if not matched.Success then
+        raise (StudentFullNameNotFound pageName)
+
+    let fullName = rubyPattern.Replace(matched.Groups[1].Value, "")
+
+    let overlap =
+        seq { 0 .. fullName.Length - 1 }
+        |> Seq.tryFind (fun index ->
+            pageName.StartsWith(fullName.Substring index, StringComparison.Ordinal))
+
+    match overlap with
+    | Some index -> fullName.Substring(0, index) + pageName
+    | None -> raise (StudentFullNameMismatch(pageName, fullName))
+
 /// ナレッジ本体に実際に含まれる節のh2の見出しを、現れる順に並べる。
 /// 節を分けているのはh2なので、h3以下の小見出しは含めない。
 /// studentSectionTitlesのホワイトリストをそのまま書くと、
@@ -502,20 +541,11 @@ let studentSkillMarkdown (skillName: string) (pageName: string) (markdown: strin
         | [] -> raise (StudentSectionNotFound pageName)
         | titles -> String.concat "・" titles
 
-    // フロントマターのdescriptionは1行である必要があるため、ソース上でだけ分割して結合する。
-    //
-    // 節を列挙しないのは、どの節があるかがページごとに違うため。
-    // 愛用品を持たない衣装もあり、固定で並べると本文が挙げない節をここだけが挙げることになる。
-    // 日本語の節名をそのまま置ける文でもないので、
-    // 引くかどうかの判断に足りる事実の種類だけを述べる。
+    // スキルの説明は本文を読み込まなくても一覧としてモデルのコンテキストへ載るため、
+    // 270人分が積み上がる長さにはせず、誰の事実を引けるかだけを述べる。
+    // 何が載っているかは下の「データの構造」が節の一覧として持っている。
     let description =
-        String.concat
-            " "
-            [ $"Lookup facts about %s{pageName}, a Blue Archive student,"
-              "such as profile, stats, skills, bond stories, voice lines and trivia."
-              $"Use when answering questions about %s{pageName},"
-              "checking the in-game performance data,"
-              $"or role-playing scenes that involve %s{pageName}." ]
+        $"Facts about Blue Archive student %s{familyNamedPageName pageName markdown}."
 
     $"""---
 name: %s{skillName}

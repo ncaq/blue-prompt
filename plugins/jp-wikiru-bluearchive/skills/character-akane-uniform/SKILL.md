@@ -1,6 +1,6 @@
 ---
 name: character-akane-uniform
-description: Lookup facts about アカネ（制服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アカネ（制服）, checking the in-game performance data, or role-playing scenes that involve アカネ（制服）.
+description: Facts about Blue Archive student 室笠アカネ（制服）.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: mine
-description: Role-play as 蒼森ミネ, the leader of the Rescue Knight Order at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 蒼森ミネ of Blue Archive.
 knowledge: character-mine, character-mine-idol, character-appellation
 ---
 

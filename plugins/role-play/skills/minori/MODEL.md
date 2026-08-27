@@ -1,6 +1,6 @@
 ---
 name: minori
-description: Role-play as 安守ミノリ, the head of the Public Works Department at Red Winter Federal Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 安守ミノリ of Blue Archive.
 knowledge: character-minori, character-appellation
 ---
 

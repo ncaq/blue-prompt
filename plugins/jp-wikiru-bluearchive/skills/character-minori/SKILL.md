@@ -1,6 +1,6 @@
 ---
 name: character-minori
-description: Lookup facts about ミノリ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミノリ, checking the in-game performance data, or role-playing scenes that involve ミノリ.
+description: Facts about Blue Archive student 安守ミノリ.
 user-invocable: false
 ---
 

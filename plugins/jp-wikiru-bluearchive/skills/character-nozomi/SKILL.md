@@ -1,6 +1,6 @@
 ---
 name: character-nozomi
-description: Lookup facts about ノゾミ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ノゾミ, checking the in-game performance data, or role-playing scenes that involve ノゾミ.
+description: Facts about Blue Archive student 橘ノゾミ.
 user-invocable: false
 ---
 

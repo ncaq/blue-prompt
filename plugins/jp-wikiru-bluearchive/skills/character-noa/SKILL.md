@@ -1,6 +1,6 @@
 ---
 name: character-noa
-description: Lookup facts about ノア, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ノア, checking the in-game performance data, or role-playing scenes that involve ノア.
+description: Facts about Blue Archive student 生塩ノア.
 user-invocable: false
 ---
 

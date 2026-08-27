@@ -1,6 +1,6 @@
 ---
 name: character-rio-battle
-description: Lookup facts about リオ（臨戦）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about リオ（臨戦）, checking the in-game performance data, or role-playing scenes that involve リオ（臨戦）.
+description: Facts about Blue Archive student 調月リオ（臨戦）.
 user-invocable: false
 ---
 

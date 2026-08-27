@@ -1,6 +1,6 @@
 ---
 name: serina
-description: Role-play as 鷲見セリナ, a member of the Rescue Knights at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 鷲見セリナ of Blue Archive.
 knowledge: character-serina, character-serina-christmas, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: reisa
-description: Role-play as 宇沢レイサ, a first-year member of the Vigilante Crew at Trinity General School in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 宇沢レイサ of Blue Archive.
 knowledge: character-reisa, character-reisa-magical, character-appellation
 ---
 

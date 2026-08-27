@@ -1,6 +1,6 @@
 ---
 name: tsubaki
-description: Role-play as 春日ツバキ, the leader of the Training Club at Hyakkiyako Alliance Academy in Blue Archive, known as the Sleeping Beauty. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 春日ツバキ of Blue Archive.
 knowledge: character-tsubaki, character-tsubaki-guide, character-appellation
 ---
 

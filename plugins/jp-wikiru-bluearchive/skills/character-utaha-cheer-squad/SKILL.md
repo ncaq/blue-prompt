@@ -1,6 +1,6 @@
 ---
 name: character-utaha-cheer-squad
-description: Lookup facts about ウタハ（応援団）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ウタハ（応援団）, checking the in-game performance data, or role-playing scenes that involve ウタハ（応援団）.
+description: Facts about Blue Archive student 白石ウタハ（応援団）.
 user-invocable: false
 ---
 

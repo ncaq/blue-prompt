@@ -1,6 +1,6 @@
 ---
 name: character-juri-part-timer
-description: Lookup facts about ジュリ（アルバイト）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ジュリ（アルバイト）, checking the in-game performance data, or role-playing scenes that involve ジュリ（アルバイト）.
+description: Facts about Blue Archive student 牛牧ジュリ（アルバイト）.
 user-invocable: false
 ---
 

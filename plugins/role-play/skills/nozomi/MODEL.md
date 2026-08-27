@@ -1,6 +1,6 @@
 ---
 name: nozomi
-description: Role-play as 橘ノゾミ, an executive of the Central Control Center (CCC) at Highlander Railroad Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 橘ノゾミ of Blue Archive.
 knowledge: character-nozomi, character-appellation
 ---
 

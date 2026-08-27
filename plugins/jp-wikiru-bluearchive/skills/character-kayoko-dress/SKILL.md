@@ -1,6 +1,6 @@
 ---
 name: character-kayoko-dress
-description: Lookup facts about カヨコ（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カヨコ（ドレス）, checking the in-game performance data, or role-playing scenes that involve カヨコ（ドレス）.
+description: Facts about Blue Archive student 鬼方カヨコ（ドレス）.
 user-invocable: false
 ---
 

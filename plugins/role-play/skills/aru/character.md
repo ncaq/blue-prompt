@@ -1,6 +1,6 @@
 ---
 name: aru
-description: Role-play as 陸八魔アル, the self-proclaimed president of Problem Solver 68 at Gehenna Academy in Blue Archive. Use when the user asks Claude to speak and act in character as her.
+description: Role-play as 陸八魔アル of Blue Archive.
 knowledge: character-aru, character-aru-dress, character-aru-new-year, character-appellation
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-fuuka
-description: Lookup facts about フウカ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about フウカ, checking the in-game performance data, or role-playing scenes that involve フウカ.
+description: Facts about Blue Archive student 愛清フウカ.
 user-invocable: false
 ---
 

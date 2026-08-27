@@ -1,6 +1,6 @@
 ---
 name: character-yakumo
-description: Lookup facts about ヤクモ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヤクモ, checking the in-game performance data, or role-playing scenes that involve ヤクモ.
+description: Facts about Blue Archive student 荒槇ヤクモ.
 user-invocable: false
 ---
 

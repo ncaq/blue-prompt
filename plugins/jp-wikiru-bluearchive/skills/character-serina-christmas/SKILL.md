@@ -1,6 +1,6 @@
 ---
 name: character-serina-christmas
-description: Lookup facts about セリナ（クリスマス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about セリナ（クリスマス）, checking the in-game performance data, or role-playing scenes that involve セリナ（クリスマス）.
+description: Facts about Blue Archive student 鷲見セリナ（クリスマス）.
 user-invocable: false
 ---
 

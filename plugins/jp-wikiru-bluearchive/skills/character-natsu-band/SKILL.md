@@ -1,6 +1,6 @@
 ---
 name: character-natsu-band
-description: Lookup facts about ナツ（バンド）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ナツ（バンド）, checking the in-game performance data, or role-playing scenes that involve ナツ（バンド）.
+description: Facts about Blue Archive student 柚鳥ナツ（バンド）.
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: character-kazusa
-description: Lookup facts about カズサ, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カズサ, checking the in-game performance data, or role-playing scenes that involve カズサ.
+description: Facts about Blue Archive student 杏山カズサ.
 user-invocable: false
 ---
 
