@@ -219,6 +219,11 @@ let private removeCommentSection (markdown: string) : string =
     |> List.rev
     |> String.concat "\n"
 
+/// どの深さの見出しから見ても中身があることを表す状態。
+/// 本文の行はどの深さの見出しにとっても中身になるので行ごとに同じ値が要るが、
+/// 中身は常に同じで書き換えもしないため1つを使い回す。
+let private allDepthsHaveContent = Array.create (maxHeadingDepth + 1) true
+
 /// 中身を持たない見出しを消す。
 /// 画像を並べただけの節は画像の除去で本文を失い、見出しだけが残る。
 /// 見出しから次の見出しまでに本文が1行も無ければ、その見出しはもう何も指していない。
@@ -246,7 +251,7 @@ let private removeEmptyHeadings (markdown: string) : string =
                 if String.IsNullOrWhiteSpace line then
                     hasContent
                 else
-                    Array.create hasContent.Length true
+                    allDepthsHaveContent
 
             line :: kept, next
 
