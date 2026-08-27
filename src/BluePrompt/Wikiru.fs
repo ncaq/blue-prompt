@@ -288,10 +288,17 @@ let cleanupMarkdown (markdown: string) : string =
 
     // 画像を並べただけの折りたたみに付いていた説明は、
     // 画像の除去で指すものを失い、ちびキャラの見出しだけが本文として残る。
-    let withoutImageCaption =
-        Regex.Replace(withoutEditorNotice, @"^[^\S\r\n]*ちびキャラ.*$", "", RegexOptions.Multiline)
+    // 落とすのはキャプション由来の名詞句だけなので、句点を含む行は本文として残す。
+    // 否定の文字クラスは改行にも当たるため、行を跨いだ巻き込みを防ぐ。
+    let withoutChibiCaption =
+        Regex.Replace(
+            withoutEditorNotice,
+            @"^[^\S\r\n]*ちびキャラ[^。\r\n]*$",
+            "",
+            RegexOptions.Multiline
+        )
 
-    let withoutBlankLikeLine = blankLikeLinePattern.Replace(withoutImageCaption, "")
+    let withoutBlankLikeLine = blankLikeLinePattern.Replace(withoutChibiCaption, "")
 
     normalizeBlankLines (removeEmptyHeadings withoutBlankLikeLine)
 
