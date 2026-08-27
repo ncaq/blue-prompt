@@ -168,7 +168,7 @@ let private maxHeadingDepth = 6
 /// 上限をmaxHeadingDepthから組み立てて出どころを1つにする。
 /// removeEmptyHeadingsは捕捉した深さを配列の添字にそのまま使うため、
 /// 上限が定数とずれると実行時に範囲外で落ちる。
-let private headingPrefixPattern = @"^(#{1," + string maxHeadingDepth + @"}) "
+let private headingPrefixPattern = @"^(#{1," + string<int> maxHeadingDepth + @"}) "
 
 /// 見出し行への一致。#の数を見出しの深さとして捕捉する。
 let private headingDepthPattern = Regex headingPrefixPattern
