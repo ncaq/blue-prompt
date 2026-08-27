@@ -173,12 +173,6 @@ let private headingPrefixPattern = @"^(#{1," + string maxHeadingDepth + @"}) "
 /// 見出し行への一致。#の数を見出しの深さとして捕捉する。
 let private headingDepthPattern = Regex headingPrefixPattern
 
-/// 空行と同じ意味しか持たない行への一致。
-/// 実体参照のままの&nbsp;と、中身の無い引用。
-/// 残すと見出しが中身を持つかの判断で本文として数えられてしまう。
-let private blankLikeLinePattern =
-    Regex(@"^[^\S\r\n]*(&nbsp;|>)[^\S\r\n]*$", RegexOptions.Multiline)
-
 /// コメント欄の見出し行への一致。#の数を見出しの深さとして捕捉する。
 let private commentHeadingPattern =
     Regex(headingPrefixPattern + @"コメント(フォーム)?[^\S\r\n]*$")
@@ -259,71 +253,72 @@ let private removeEmptyHeadings (markdown: string) : string =
 
     Array.foldBack step (markdown.Split '\n') initial |> fst |> String.concat "\n"
 
+/// 外部リンクの跡として残った🌐アイコンを消す。
+/// wikiのJavaScriptが外部リンクの中へ付け足すアイコンは、
+/// リンク外しの後にただの文字として残る。
+let private removeExternalLinkIcon (markdown: string) : string =
+    Regex.Replace(markdown, @"[^\S\r\n]*🌐", "")
+
+/// 読点の前に残った空白を詰める。
+/// セル内改行の結合で挟んだ読点の前に、元の空白テキストノード由来の空白が残ることがある。
+/// 日本語では読点の前に空白を置かない。
+let private trimSpaceBeforeComma (markdown: string) : string =
+    Regex.Replace(markdown, @"[^\S\r\n]+(?=、)", "")
+
+/// 区切り文字だけになった行を消す。
+/// 画像だけのリンクを「/」で並べたナビゲーションは、
+/// 画像除去とリンク外しの後に区切り文字だけの行になる。
+/// セル内改行の結合で挟んだ読点も、続く要素が空行や空列の除去で消えると孤立する。
+/// 空白は行内のものだけに限定して、行を跨いだ巻き込みを防ぐ。
+let private removeSeparatorRemnant (markdown: string) : string =
+    Regex.Replace(markdown, @"^[^\S\r\n]*([/、][^\S\r\n]*)+$", "", RegexOptions.Multiline)
+
+/// 編集者向けの欄の案内を消す。
+/// ページのテンプレートが置いていく「〜を書く欄です。」は、
+/// 記事を書く人へ向けた欄の案内で、生徒についての事実ではない。
+/// 行全体が案内であることを求めるため、手前に別の文を持つ行は残す。
+/// 否定の文字クラスは改行にも当たるため、行を跨いだ巻き込みを防ぐ。
+let private removeEditorNotice (markdown: string) : string =
+    Regex.Replace(markdown, @"^[^\S\r\n]*[^。\r\n]*を書く欄です。[^\S\r\n]*$", "", RegexOptions.Multiline)
+
+/// 画像を失ったちびキャラの説明を消す。
+/// 画像を並べただけの折りたたみに付いていた説明は、
+/// 画像の除去で指すものを失い、ちびキャラの見出しだけが本文として残る。
+/// 落とすのはキャプション由来の名詞句だけなので、句点を含む行は本文として残す。
+/// 否定の文字クラスは改行にも当たるため、行を跨いだ巻き込みを防ぐ。
+let private removeChibiCaption (markdown: string) : string =
+    Regex.Replace(markdown, @"^[^\S\r\n]*ちびキャラ[^。\r\n]*$", "", RegexOptions.Multiline)
+
+/// 空行と同じ意味しか持たない行を消す。
+/// 実体参照のままの&nbsp;と、中身の無い引用が対象になる。
+/// 残すと見出しが中身を持つかの判断で本文として数えられてしまう。
+let private removeBlankLikeLine (markdown: string) : string =
+    Regex.Replace(markdown, @"^[^\S\r\n]*(&nbsp;|>)[^\S\r\n]*$", "", RegexOptions.Multiline)
+
 /// 変換後Markdownの後始末。
-/// 最初の見出しより前のナビゲーションを切り落とし、
-/// 脚注をGFMの文法へ変換し、
-/// コメント欄の節を落とし、
-/// 外部リンクの跡として残った🌐アイコンを消し、
-/// セル内改行の結合で挟んだ読点の前に残った空白を詰め、
-/// 画像だけのリンク列の跡や孤立した読点として残った区切り文字だけの行を消し、
-/// wikiのテンプレートが置いた編集者向けの案内と、画像を失った説明の行を消し、
-/// 空行と同じ意味しか持たない行を消し、
-/// それらの除去で中身を失った見出しを消し、連続する空行を1つへ潰す。
-/// 脚注の変換を先に済ませるのは、
-/// コメント欄の節から脚注の定義だけを拾い出す判定を、
-/// 変換後の1つの表記だけで書けるようにするため。
+/// wikiruのページ由来のノイズを落として、ナレッジとして読める形へ整える。
+/// 何をどの順で施すかは以下のパイプラインがそのまま示していて、
+/// 個々の段が何を落とすのかはそれぞれの関数に書いてある。
+/// 順序に意味があるのは以下の3箇所だけで、残りは互いに影響しない。
+///
+/// - 脚注の変換はコメント欄の節を落とすより先。
+///   節から脚注の定義だけを拾い出す判定を、変換後の1つの表記だけで書けるようにするため
+/// - 中身を失った見出しの除去は、行を落とす段を全て終えた後。
+///   途中で見ると、後の段で空になる見出しを取りこぼすため
+/// - 空行を潰す仕上げは最後。行を落とした跡が空行として残るため
 let cleanupMarkdown (markdown: string) : string =
-    let withoutCommentSection =
-        removeCommentSection (convertFootnotes (trimPreamble markdown))
-
-    // wikiのJavaScriptが外部リンクの中へ付け足す🌐アイコンは、
-    // リンク外しの後にただの文字として残る。
-    let withoutExternalLinkIcon =
-        Regex.Replace(withoutCommentSection, @"[^\S\r\n]*🌐", "")
-
-    // セル内改行の結合で挟んだ読点の前に、元の空白テキストノード由来の空白が残ることがある。
-    // 日本語では読点の前に空白は置かないので詰める。
-    let withoutSpaceBeforeComma =
-        Regex.Replace(withoutExternalLinkIcon, @"[^\S\r\n]+(?=、)", "")
-
-    // 画像だけのリンクを「/」で並べたナビゲーションは、
-    // 画像除去とリンク外しの後に区切り文字だけの行になる。
-    // セル内改行の結合で挟んだ読点も、続く要素が空行や空列の除去で消えると孤立する。
-    // 空白は行内のものだけに限定して、行を跨いだ巻き込みを防ぐ。
-    let withoutSeparatorRemnant =
-        Regex.Replace(
-            withoutSpaceBeforeComma,
-            @"^[^\S\r\n]*([/、][^\S\r\n]*)+$",
-            "",
-            RegexOptions.Multiline
-        )
-
-    // ページのテンプレートが置いていく「〜を書く欄です。」は、
-    // 記事を書く人へ向けた欄の案内で、生徒についての事実ではない。
-    // 行全体が案内であることを求めるため、手前に別の文を持つ行は残す。
-    let withoutEditorNotice =
-        Regex.Replace(
-            withoutSeparatorRemnant,
-            @"^[^\S\r\n]*[^。\r\n]*を書く欄です。[^\S\r\n]*$",
-            "",
-            RegexOptions.Multiline
-        )
-
-    // 画像を並べただけの折りたたみに付いていた説明は、
-    // 画像の除去で指すものを失い、ちびキャラの見出しだけが本文として残る。
-    // 落とすのはキャプション由来の名詞句だけなので、句点を含む行は本文として残す。
-    // 否定の文字クラスは改行にも当たるため、行を跨いだ巻き込みを防ぐ。
-    let withoutChibiCaption =
-        Regex.Replace(
-            withoutEditorNotice,
-            @"^[^\S\r\n]*ちびキャラ[^。\r\n]*$",
-            "",
-            RegexOptions.Multiline
-        )
-
-    let withoutBlankLikeLine = blankLikeLinePattern.Replace(withoutChibiCaption, "")
-
-    normalizeBlankLines (removeEmptyHeadings withoutBlankLikeLine)
+    markdown
+    |> trimPreamble
+    |> convertFootnotes
+    |> removeCommentSection
+    |> removeExternalLinkIcon
+    |> trimSpaceBeforeComma
+    |> removeSeparatorRemnant
+    |> removeEditorNotice
+    |> removeChibiCaption
+    |> removeBlankLikeLine
+    |> removeEmptyHeadings
+    |> normalizeBlankLines
 
 /// h2見出し行への一致。見出しのテキストを捕捉する。
 let private sectionHeadingPattern = Regex @"^## +(.*?)\s*$"
