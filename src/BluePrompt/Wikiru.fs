@@ -278,10 +278,11 @@ let cleanupMarkdown (markdown: string) : string =
 
     // ページのテンプレートが置いていく「〜を書く欄です。」は、
     // 記事を書く人へ向けた欄の案内で、生徒についての事実ではない。
+    // 行全体が案内であることを求めるため、手前に別の文を持つ行は残す。
     let withoutEditorNotice =
         Regex.Replace(
             withoutSeparatorRemnant,
-            @"^[^\S\r\n]*.*を書く欄です。[^\S\r\n]*$",
+            @"^[^\S\r\n]*[^。\r\n]*を書く欄です。[^\S\r\n]*$",
             "",
             RegexOptions.Multiline
         )
