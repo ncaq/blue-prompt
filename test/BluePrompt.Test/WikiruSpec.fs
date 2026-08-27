@@ -157,6 +157,30 @@ let ``空行と同じ意味しか持たない行は取り除かれる`` () =
     Assert.Equal("## 小ネタ\n\n実際の小ネタ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
+let ``引用の段落の区切りも空行と同じに扱われる`` () =
+    // 中身の無い引用の行はGFMでは引用の中の段落の区切りだが、
+    // wikiruの生成物では空行の代わりに現れるだけなので落とす。
+    // 引用が2つへ割れるのは承知の上の挙動として固定する。
+    let markdown = "## 小ネタ\n\n> 引用の1段落目\n>\n> 2段落目\n"
+
+    Assert.Equal("## 小ネタ\n\n> 引用の1段落目\n\n> 2段落目\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``3階層の見出しでも中身の有無が上位へ伝わる`` () =
+    // 最も深い見出しだけが本文を持つ場合、上位の2つも連鎖して残る。
+    let markdown = "## 小ネタ\n\n### 立ち絵バリエーション\n\n#### 表情差分\n\n本文\n"
+
+    Assert.Equal(
+        "## 小ネタ\n\n### 立ち絵バリエーション\n\n#### 表情差分\n\n本文\n",
+        BluePrompt.Wikiru.cleanupMarkdown markdown
+    )
+
+[<Fact>]
+let ``3階層の見出しは最も深い見出しが空だと連鎖して落ちる`` () =
+    let markdown = "## ボイス\n\nセリフ\n\n## 小ネタ\n\n### 立ち絵バリエーション\n\n#### 表情差分\n"
+    Assert.Equal("## ボイス\n\nセリフ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
 let ``中身を失った見出しは取り除かれる`` () =
     // 画像を並べただけの節は画像の除去で本文を失い、見出しだけが残る。
     let markdown = "## 小ネタ\n\n本文\n\n### 立ち絵バリエーション\n"
