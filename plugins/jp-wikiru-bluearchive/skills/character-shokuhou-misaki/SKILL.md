@@ -4,7 +4,7 @@ description: Lookup facts about 食蜂操祈, a Blue Archive student, such as pr
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「食蜂操祈」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「食蜂操祈」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

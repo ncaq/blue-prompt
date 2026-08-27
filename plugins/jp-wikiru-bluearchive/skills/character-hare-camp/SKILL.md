@@ -4,7 +4,7 @@ description: Lookup facts about ハレ（キャンプ）, a Blue Archive student
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ハレ（キャンプ）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ハレ（キャンプ）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

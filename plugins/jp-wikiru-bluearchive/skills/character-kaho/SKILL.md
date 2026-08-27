@@ -4,7 +4,7 @@ description: Lookup facts about カホ, a Blue Archive student, such as profile,
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「カホ」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「カホ」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

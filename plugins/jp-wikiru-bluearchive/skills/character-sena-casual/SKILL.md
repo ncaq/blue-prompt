@@ -4,7 +4,7 @@ description: Lookup facts about セナ（私服）, a Blue Archive student, such
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「セナ（私服）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「セナ（私服）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

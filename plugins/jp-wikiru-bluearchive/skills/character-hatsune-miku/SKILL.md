@@ -4,7 +4,7 @@ description: Lookup facts about 初音ミク, a Blue Archive student, such as pr
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「初音ミク」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「初音ミク」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

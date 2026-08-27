@@ -4,7 +4,7 @@ description: Lookup facts about ヒナ（水着）, a Blue Archive student, such
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ヒナ（水着）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ヒナ（水着）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

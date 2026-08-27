@@ -4,7 +4,7 @@ description: Lookup facts about トモエ（チーパオ）, a Blue Archive stud
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「トモエ（チーパオ）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「トモエ（チーパオ）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

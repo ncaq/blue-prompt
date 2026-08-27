@@ -4,7 +4,7 @@ description: Lookup facts about マリー（アイドル）, a Blue Archive stud
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「マリー（アイドル）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「マリー（アイドル）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

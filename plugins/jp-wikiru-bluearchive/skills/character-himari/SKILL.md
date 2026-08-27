@@ -4,7 +4,7 @@ description: Lookup facts about ヒマリ, a Blue Archive student, such as profi
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ヒマリ」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ヒマリ」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

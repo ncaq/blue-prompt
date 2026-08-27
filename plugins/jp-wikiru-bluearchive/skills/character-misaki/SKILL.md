@@ -4,7 +4,7 @@ description: Lookup facts about ミサキ, a Blue Archive student, such as profi
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ミサキ」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ミサキ」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

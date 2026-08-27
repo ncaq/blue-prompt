@@ -4,7 +4,7 @@ description: Lookup facts about リオ（臨戦）, a Blue Archive student, such
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「リオ（臨戦）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「リオ（臨戦）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

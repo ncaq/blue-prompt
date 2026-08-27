@@ -4,7 +4,7 @@ description: Lookup facts about チェリノ（温泉）, a Blue Archive student
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「チェリノ（温泉）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「チェリノ（温泉）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

@@ -4,7 +4,7 @@ description: Lookup facts about セリナ（クリスマス）, a Blue Archive s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「セリナ（クリスマス）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「セリナ（クリスマス）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

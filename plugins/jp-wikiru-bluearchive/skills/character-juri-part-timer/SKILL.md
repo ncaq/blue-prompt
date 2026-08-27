@@ -4,7 +4,7 @@ description: Lookup facts about ジュリ（アルバイト）, a Blue Archive s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ジュリ（アルバイト）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ジュリ（アルバイト）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

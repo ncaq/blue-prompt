@@ -4,7 +4,7 @@ description: Lookup facts about ネル, a Blue Archive student, such as profile,
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ネル」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ネル」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

@@ -4,7 +4,7 @@ description: Lookup facts about シロコ＊テラー, a Blue Archive student, s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「シロコ＊テラー」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「シロコ＊テラー」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

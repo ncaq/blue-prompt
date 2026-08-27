@@ -4,7 +4,7 @@ description: Lookup facts about アコ（ドレス）, a Blue Archive student, s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「アコ（ドレス）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「アコ（ドレス）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

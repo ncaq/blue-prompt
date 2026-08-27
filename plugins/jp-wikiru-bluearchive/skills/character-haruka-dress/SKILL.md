@@ -4,7 +4,7 @@ description: Lookup facts about ハルカ（ドレス）, a Blue Archive student
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ハルカ（ドレス）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ハルカ（ドレス）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

@@ -4,7 +4,7 @@ description: Lookup facts about キキョウ（水着）, a Blue Archive student
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「キキョウ（水着）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「キキョウ（水着）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

@@ -4,7 +4,7 @@ description: Lookup facts about サクラコ（アイドル）, a Blue Archive s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「サクラコ（アイドル）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「サクラコ（アイドル）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

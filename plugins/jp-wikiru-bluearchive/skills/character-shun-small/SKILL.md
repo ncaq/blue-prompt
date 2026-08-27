@@ -4,7 +4,7 @@ description: Lookup facts about シュン（幼女）, a Blue Archive student, s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「シュン（幼女）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「シュン（幼女）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

@@ -4,7 +4,7 @@ description: Lookup facts about アツコ（水着）, a Blue Archive student, s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「アツコ（水着）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「アツコ（水着）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

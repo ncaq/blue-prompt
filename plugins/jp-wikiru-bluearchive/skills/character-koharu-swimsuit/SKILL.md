@@ -4,7 +4,7 @@ description: Lookup facts about コハル（水着）, a Blue Archive student, s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「コハル（水着）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「コハル（水着）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

@@ -523,7 +523,7 @@ description: %s{description}
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「%s{pageName}」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「%s{pageName}」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

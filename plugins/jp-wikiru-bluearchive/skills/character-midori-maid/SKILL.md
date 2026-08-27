@@ -4,7 +4,7 @@ description: Lookup facts about ミドリ（メイド）, a Blue Archive student
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ミドリ（メイド）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ミドリ（メイド）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

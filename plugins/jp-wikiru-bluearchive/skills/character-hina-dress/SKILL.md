@@ -4,7 +4,7 @@ description: Lookup facts about ヒナ（ドレス）, a Blue Archive student, s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ヒナ（ドレス）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ヒナ（ドレス）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

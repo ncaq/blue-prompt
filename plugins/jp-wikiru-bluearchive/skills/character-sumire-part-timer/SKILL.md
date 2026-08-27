@@ -4,7 +4,7 @@ description: Lookup facts about スミレ（アルバイト）, a Blue Archive s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「スミレ（アルバイト）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「スミレ（アルバイト）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

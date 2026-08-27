@@ -4,7 +4,7 @@ description: Lookup facts about ウタハ（応援団）, a Blue Archive student
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ウタハ（応援団）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ウタハ（応援団）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

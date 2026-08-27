@@ -4,7 +4,7 @@ description: Lookup facts about ジュンコ, a Blue Archive student, such as pr
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ジュンコ」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ジュンコ」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

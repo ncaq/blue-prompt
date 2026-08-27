@@ -4,7 +4,7 @@ description: Lookup facts about アイリ（バンド）, a Blue Archive student
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「アイリ（バンド）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「アイリ（バンド）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

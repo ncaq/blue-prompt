@@ -4,7 +4,7 @@ description: Lookup facts about アスナ（制服）, a Blue Archive student, s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「アスナ（制服）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「アスナ（制服）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

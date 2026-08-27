@@ -4,7 +4,7 @@ description: Lookup facts about ミネ（アイドル）, a Blue Archive student
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ミネ（アイドル）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ミネ（アイドル）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

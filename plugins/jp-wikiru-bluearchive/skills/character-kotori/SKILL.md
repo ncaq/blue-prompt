@@ -4,7 +4,7 @@ description: Lookup facts about コトリ, a Blue Archive student, such as profi
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「コトリ」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「コトリ」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

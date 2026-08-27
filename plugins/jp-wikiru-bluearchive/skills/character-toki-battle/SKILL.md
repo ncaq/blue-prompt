@@ -4,7 +4,7 @@ description: Lookup facts about トキ（臨戦）, a Blue Archive student, such
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「トキ（臨戦）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「トキ（臨戦）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

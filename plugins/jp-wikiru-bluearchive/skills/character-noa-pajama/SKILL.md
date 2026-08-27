@@ -4,7 +4,7 @@ description: Lookup facts about ノア（パジャマ）, a Blue Archive student
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ノア（パジャマ）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ノア（パジャマ）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

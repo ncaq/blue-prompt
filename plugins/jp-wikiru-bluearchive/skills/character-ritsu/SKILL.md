@@ -4,7 +4,7 @@ description: Lookup facts about リツ, a Blue Archive student, such as profile,
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「リツ」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「リツ」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

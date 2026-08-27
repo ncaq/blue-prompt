@@ -4,7 +4,7 @@ description: Lookup facts about チセ, a Blue Archive student, such as profile,
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「チセ」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「チセ」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

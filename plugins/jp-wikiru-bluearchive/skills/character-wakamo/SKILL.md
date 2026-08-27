@@ -4,7 +4,7 @@ description: Lookup facts about ワカモ, a Blue Archive student, such as profi
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ワカモ」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ワカモ」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

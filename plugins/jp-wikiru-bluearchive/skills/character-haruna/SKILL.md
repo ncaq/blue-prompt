@@ -4,7 +4,7 @@ description: Lookup facts about ハルナ, a Blue Archive student, such as profi
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ハルナ」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ハルナ」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

@@ -4,7 +4,7 @@ description: Lookup facts about モモイ（メイド）, a Blue Archive student
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「モモイ（メイド）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「モモイ（メイド）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 

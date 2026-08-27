@@ -4,7 +4,7 @@ description: Lookup facts about トキ（バニーガール）, a Blue Archive s
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「トキ（バニーガール）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「トキ（バニーガール）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
