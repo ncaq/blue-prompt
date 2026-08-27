@@ -111,14 +111,16 @@ let structuredContentQuery: Extract.ContentQuery =
       FlattenTables = false }
 
 /// 生徒個別ページからナレッジとして残すセクションの見出し。
-/// ゲーム内の事実を載せているセクションだけを列挙するホワイトリスト。
-/// 「ゲームにおいて」「運用考察」「小ネタ」などのwiki独自の解説・考察は
-/// 著作権方針(plugins/jp-wikiru-bluearchive/README.md)によりそのままの形では置かないため、
+/// ゲーム内外の事実を載せているセクションだけを列挙するホワイトリスト。
+/// 「小ネタ」はゲーム内外の事実のまとめで、事実には著作権が発生しないため、
+/// 他の事実セクションと同じ扱いで残す(plugins/jp-wikiru-bluearchive/README.md)。
+/// 「ゲームにおいて」「運用考察」などのwiki独自の解説・考察は
+/// 著作権方針によりそのままの形では置かないため、
 /// 列挙されていないセクションは落ちる。
 /// 「スキル成長素材」と「贈り物」は素材や品物が画像で表現されていて、
 /// 画像除去後は数量だけが残り事実として読めないため外している。
 let studentSectionTitles: string list =
-    [ "基本情報"; "スキル"; "固有武器"; "愛用品"; "能力解放"; "絆ランクボーナス"; "絆ストーリー"; "ボイス" ]
+    [ "基本情報"; "スキル"; "固有武器"; "愛用品"; "能力解放"; "絆ランクボーナス"; "絆ストーリー"; "ボイス"; "小ネタ" ]
 
 /// 生徒個別ページからrole-playスキルの参照として残すセクションの見出し。
 /// 人格と話し方を示す基本情報とボイスだけを残し、
@@ -133,6 +135,9 @@ let private trimPreamble (markdown: string) : string =
     match Regex.Match(markdown, @"^#{1,6} ", RegexOptions.Multiline) with
     | m when m.Success -> markdown[m.Index ..]
     | _ -> markdown
+
+/// GFMの脚注定義行(「[^1]: 本文」)への一致。
+let private footnoteDefinitionPattern = Regex @"^\[\^(\d+)\]: "
 
 /// wikiruの脚注をGFMの脚注文法へ変換する。
 /// 本文中の参照はリンクを外した後に「\*1」の形で残り、
@@ -156,43 +161,164 @@ let private convertFootnotes (markdown: string) : string =
 let private normalizeBlankLines (markdown: string) : string =
     Regex.Replace(markdown, @"\n{3,}", "\n\n").Trim() + "\n"
 
+/// Markdownの見出しの最も深いレベル。
+let private maxHeadingDepth = 6
+
+/// 見出し行の先頭。#の並びを見出しの深さとして捕捉する。
+/// 上限をmaxHeadingDepthから組み立てて出どころを1つにする。
+/// removeEmptyHeadingsは捕捉した深さを配列の添字にそのまま使うため、
+/// 上限が定数とずれると実行時に範囲外で落ちる。
+let private headingPrefixPattern = @"^(#{1," + string<int> maxHeadingDepth + @"}) "
+
+/// 見出し行への一致。#の数を見出しの深さとして捕捉する。
+let private headingDepthPattern = Regex headingPrefixPattern
+
+/// コメント欄の見出し行への一致。#の数を見出しの深さとして捕捉する。
+let private commentHeadingPattern =
+    Regex(headingPrefixPattern + @"コメント(フォーム)?[^\S\r\n]*$")
+
+/// コメント欄の節を丸ごと落とす。
+/// コメントそのものは後から読み込まれるので取得したHTMLには残らないが、
+/// 投稿のルールを畳んで置いているページがあり、
+/// 見出しだけを消すとルールの本文が直前の節の続きとして残ってしまう。
+/// 節の終わりは同じ深さ以下の見出しで、そこから先はまた残す。
+/// 節の中に同じ見出しが入れ子で現れた時は浅い方の深さを保つ。
+/// 内側の深さで数えると外側の節が終わる前に除去が止まり、続きが残ってしまう。
+/// 脚注の定義はページの末尾に置かれてこの節へ紛れ込むため、
+/// 本文への参照ごと落ちてしまわないように残す。
+let private removeCommentSection (markdown: string) : string =
+    let step (kept: string list, dropping: int option) (line: string) =
+        match commentHeadingPattern.Match line with
+        | m when m.Success ->
+            let depth = m.Groups[1].Value.Length
+
+            kept,
+            Some(
+                match dropping with
+                | Some outer -> min outer depth
+                | None -> depth
+            )
+        | _ ->
+            match dropping with
+            | None -> line :: kept, None
+            | Some depth ->
+                match headingDepthPattern.Match line with
+                | m when m.Success && m.Groups[1].Value.Length <= depth -> line :: kept, None
+                | _ when footnoteDefinitionPattern.IsMatch line -> line :: kept, dropping
+                | _ -> kept, dropping
+
+    markdown.Split '\n'
+    |> Array.fold step ([], None)
+    |> fst
+    |> List.rev
+    |> String.concat "\n"
+
+/// どの深さの見出しから見ても中身があることを表す状態。
+/// 本文の行はどの深さの見出しにとっても中身になるので行ごとに同じ値が要るが、
+/// 中身は常に同じで書き換えもしないため1つを使い回す。
+let private allDepthsHaveContent = Array.create (maxHeadingDepth + 1) true
+
+/// 中身を持たない見出しを消す。
+/// 画像を並べただけの節は画像の除去で本文を失い、見出しだけが残る。
+/// 見出しから次の見出しまでに本文が1行も無ければ、その見出しはもう何も指していない。
+/// 小見出しが全て落ちて空になった上位の見出しも同じ判断で落ちるように、
+/// 文書の末尾から見ていき、見出しの深さごとに中身の有無を持つ。
+/// 添字を見出しの深さへそのまま合わせるため、配列の0番は使わない。
+let private removeEmptyHeadings (markdown: string) : string =
+    let step (line: string) (kept: string list, hasContent: bool array) =
+        match headingDepthPattern.Match line with
+        | m when m.Success ->
+            let depth = m.Groups[1].Value.Length
+            let keep = hasContent[depth]
+
+            // この見出しで自身と同じ深さ以下の区間が終わるため、そこまでの中身は消化済みになる。
+            // 残す場合はこの見出し自体が、より浅い見出しから見た中身になる。
+            let next =
+                Array.init hasContent.Length (fun index ->
+                    if index >= depth then false
+                    elif keep then true
+                    else hasContent[index])
+
+            (if keep then line :: kept else kept), next
+        | _ ->
+            let next =
+                if String.IsNullOrWhiteSpace line then
+                    hasContent
+                else
+                    allDepthsHaveContent
+
+            line :: kept, next
+
+    let initial = ([], Array.create (maxHeadingDepth + 1) false)
+
+    Array.foldBack step (markdown.Split '\n') initial |> fst |> String.concat "\n"
+
+/// 外部リンクの跡として残った🌐アイコンを消す。
+/// wikiのJavaScriptが外部リンクの中へ付け足すアイコンは、
+/// リンク外しの後にただの文字として残る。
+let private removeExternalLinkIcon (markdown: string) : string =
+    Regex.Replace(markdown, @"[^\S\r\n]*🌐", "")
+
+/// 読点の前に残った空白を詰める。
+/// セル内改行の結合で挟んだ読点の前に、元の空白テキストノード由来の空白が残ることがある。
+/// 日本語では読点の前に空白を置かない。
+let private trimSpaceBeforeComma (markdown: string) : string =
+    Regex.Replace(markdown, @"[^\S\r\n]+(?=、)", "")
+
+/// 区切り文字だけになった行を消す。
+/// 画像だけのリンクを「/」で並べたナビゲーションは、
+/// 画像除去とリンク外しの後に区切り文字だけの行になる。
+/// セル内改行の結合で挟んだ読点も、続く要素が空行や空列の除去で消えると孤立する。
+/// 空白は行内のものだけに限定して、行を跨いだ巻き込みを防ぐ。
+let private removeSeparatorRemnant (markdown: string) : string =
+    Regex.Replace(markdown, @"^[^\S\r\n]*([/、][^\S\r\n]*)+$", "", RegexOptions.Multiline)
+
+/// 編集者向けの欄の案内を消す。
+/// ページのテンプレートが置いていく「〜を書く欄です。」は、
+/// 記事を書く人へ向けた欄の案内で、生徒についての事実ではない。
+/// 行全体が案内であることを求めるため、手前に別の文を持つ行は残す。
+/// 否定の文字クラスは改行にも当たるため、行を跨いだ巻き込みを防ぐ。
+let private removeEditorNotice (markdown: string) : string =
+    Regex.Replace(markdown, @"^[^\S\r\n]*[^。\r\n]*を書く欄です。[^\S\r\n]*$", "", RegexOptions.Multiline)
+
+/// 画像を失ったちびキャラの説明を消す。
+/// 画像を並べただけの折りたたみに付いていた説明は、
+/// 画像の除去で指すものを失い、ちびキャラの見出しだけが本文として残る。
+/// 落とすのはキャプション由来の名詞句だけなので、句点を含む行は本文として残す。
+/// 否定の文字クラスは改行にも当たるため、行を跨いだ巻き込みを防ぐ。
+let private removeChibiCaption (markdown: string) : string =
+    Regex.Replace(markdown, @"^[^\S\r\n]*ちびキャラ[^。\r\n]*$", "", RegexOptions.Multiline)
+
+/// 空行と同じ意味しか持たない行を消す。
+/// 実体参照のままの&nbsp;と、中身の無い引用が対象になる。
+/// 残すと見出しが中身を持つかの判断で本文として数えられてしまう。
+let private removeBlankLikeLine (markdown: string) : string =
+    Regex.Replace(markdown, @"^[^\S\r\n]*(&nbsp;|>)[^\S\r\n]*$", "", RegexOptions.Multiline)
+
 /// 変換後Markdownの後始末。
-/// 最初の見出しより前のナビゲーションを切り落とし、
-/// 中身を取り除いて残骸になったコメント欄の見出しを消し、
-/// 外部リンクの跡として残った🌐アイコンを消し、
-/// セル内改行の結合で挟んだ読点の前に残った空白を詰め、
-/// 画像だけのリンク列の跡や孤立した読点として残った区切り文字だけの行を消し、
-/// 脚注をGFMの文法へ変換し、連続する空行を1つへ潰す。
+/// wikiruのページ由来のノイズを落として、ナレッジとして読める形へ整える。
+/// 何をどの順で施すかは以下のパイプラインがそのまま示していて、
+/// 個々の段が何を落とすのかはそれぞれの関数に書いてある。
+/// 順序に意味があるのは以下の3箇所だけで、残りは互いに影響しない。
+///
+/// - 脚注の変換はコメント欄の節を落とすより先。
+///   節から脚注の定義だけを拾い出す判定を、変換後の1つの表記だけで書けるようにするため
+/// - 中身を失った見出しの除去は、行を落とす段を全て終えた後。
+///   途中で見ると、後の段で空になる見出しを取りこぼすため
+/// - 空行を潰す仕上げは最後。行を落とした跡が空行として残るため
 let cleanupMarkdown (markdown: string) : string =
-    let withoutCommentHeading =
-        Regex.Replace(trimPreamble markdown, @"^#{1,6} コメント(フォーム)?\s*$", "", RegexOptions.Multiline)
-
-    // wikiのJavaScriptが外部リンクの中へ付け足す🌐アイコンは、
-    // リンク外しの後にただの文字として残る。
-    let withoutExternalLinkIcon =
-        Regex.Replace(withoutCommentHeading, @"[^\S\r\n]*🌐", "")
-
-    // セル内改行の結合で挟んだ読点の前に、元の空白テキストノード由来の空白が残ることがある。
-    // 日本語では読点の前に空白は置かないので詰める。
-    let withoutSpaceBeforeComma =
-        Regex.Replace(withoutExternalLinkIcon, @"[^\S\r\n]+(?=、)", "")
-
-    // 画像だけのリンクを「/」で並べたナビゲーションは、
-    // 画像除去とリンク外しの後に区切り文字だけの行になる。
-    // セル内改行の結合で挟んだ読点も、続く要素が空行や空列の除去で消えると孤立する。
-    // 空白は行内のものだけに限定して、行を跨いだ巻き込みを防ぐ。
-    let withoutSeparatorRemnant =
-        Regex.Replace(
-            withoutSpaceBeforeComma,
-            @"^[^\S\r\n]*([/、][^\S\r\n]*)+$",
-            "",
-            RegexOptions.Multiline
-        )
-
-    normalizeBlankLines (convertFootnotes withoutSeparatorRemnant)
-
-/// GFMの脚注定義行(「[^1]: 本文」)への一致。
-let private footnoteDefinitionPattern = Regex @"^\[\^(\d+)\]: "
+    markdown
+    |> trimPreamble
+    |> convertFootnotes
+    |> removeCommentSection
+    |> removeExternalLinkIcon
+    |> trimSpaceBeforeComma
+    |> removeSeparatorRemnant
+    |> removeEditorNotice
+    |> removeChibiCaption
+    |> removeBlankLikeLine
+    |> removeEmptyHeadings
+    |> normalizeBlankLines
 
 /// h2見出し行への一致。見出しのテキストを捕捉する。
 let private sectionHeadingPattern = Regex @"^## +(.*?)\s*$"
@@ -386,7 +512,7 @@ let studentSkillMarkdown (skillName: string) (pageName: string) (markdown: strin
         String.concat
             " "
             [ $"Lookup facts about %s{pageName}, a Blue Archive student,"
-              "such as profile, stats, skills, bond stories and voice lines."
+              "such as profile, stats, skills, bond stories, voice lines and trivia."
               $"Use when answering questions about %s{pageName},"
               "checking the in-game performance data,"
               $"or role-playing scenes that involve %s{pageName}." ]
@@ -397,7 +523,7 @@ description: %s{description}
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「%s{pageName}」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「%s{pageName}」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
@@ -408,7 +534,7 @@ user-invocable: false
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 

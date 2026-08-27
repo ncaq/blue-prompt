@@ -1,21 +1,21 @@
 ---
 name: character-chise-swimsuit
-description: Lookup facts about チセ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about チセ（水着）, checking the in-game performance data, or role-playing scenes that involve チセ（水着）.
+description: Lookup facts about チセ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about チセ（水着）, checking the in-game performance data, or role-playing scenes that involve チセ（水着）.
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「チセ（水着）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「チセ（水着）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・愛用品・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・愛用品・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -348,3 +348,11 @@ user-invocable: false
 |                       |                                                                    |
 | :-------------------: | ------------------------------------------------------------------ |
 | イベントボイスリンク1 | 「出張！百夜堂海の家FC計画」、「【復刻】出張！百夜堂海の家FC計画」 |
+
+## 小ネタ
+
+**「お散歩～お散歩～。…えっ？違うの？」**、 陰陽部のゆるふわアイドル。水着に着替えてキラキラ探し。戦闘時には何故かカニが引っ付いている。 彼女の水着姿を見れたファンは大興奮。実物をカホが見たらどうなることやら
+
+通常衣装と変わらず俳句をよく詠んでおり、浮世離れした言動もそのまま。
+
+出張！百夜堂海の家FC計画では全くの素人にもかかわらず、ムシクイーンの大会で予想外の活躍を見せる。

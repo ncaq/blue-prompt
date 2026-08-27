@@ -1,21 +1,21 @@
 ---
 name: character-misaki-swimsuit
-description: Lookup facts about ミサキ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about ミサキ（水着）, checking the in-game performance data, or role-playing scenes that involve ミサキ（水着）.
+description: Lookup facts about ミサキ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミサキ（水着）, checking the in-game performance data, or role-playing scenes that involve ミサキ（水着）.
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ミサキ（水着）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ミサキ（水着）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -298,3 +298,11 @@ user-invocable: false
 |                       |                         |
 | :-------------------: | ----------------------- |
 | イベントボイスリンク1 | 【復刻】Sheside outside |
+
+## 小ネタ
+
+Sheside outsideでお披露目された水着姿。 イベント中では訳あって離脱中のサオリの代わりにアリウススクワッドの臨時リーダーを務めている。 またDJ B.o.Bのサオリに対する横柄な振る舞いを目撃して集団リンチ「話し合い」を持ちかけるなど情に厚い一面を見せた。
+
+サオリ（水着）・ヒヨリ（水着）・アツコ（水着）とミサキ（水着）を同時編成すると戦闘終了後のリザルト画面で特殊演出が発生する。 しかしこの4人は3人がアタッカーで攻撃属性が全員異なっている上シナジーが**皆無**であり、特殊演出を見る以外の目的で4人を同時編成するシチュエーションはほぼ存在しない。 特殊演出が発生する組み合わせはなんらかのシナジーが発生するよう設計される場合がほとんど[^2]であり、シナジーが皆無なのは稀である。
+
+[^2]: 例外はシロコ + シロコ＊テラー程度だが、この２人はかなり特殊な関係性であり実装時期がかけ離れている

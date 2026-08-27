@@ -1,21 +1,21 @@
 ---
 name: character-sena-casual
-description: Lookup facts about セナ（私服）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about セナ（私服）, checking the in-game performance data, or role-playing scenes that involve セナ（私服）.
+description: Lookup facts about セナ（私服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about セナ（私服）, checking the in-game performance data, or role-playing scenes that involve セナ（私服）.
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「セナ（私服）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「セナ（私服）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -320,3 +320,11 @@ user-invocable: false
 |                       |                                      |
 | :-------------------: | ------------------------------------ |
 | イベントボイスリンク1 | パンデミック・ハザード～奇跡の一枚～ |
+
+## 小ネタ
+
+白いワンピースに着替え、休日を過ごすセナ。 救急医学部長としての使命は忘れていない様だが、内心には若干の変化がある模様。
+
+水着衣装ではないが、立ち絵では足元に浜辺が映っている。~~なお実装時期~~
+
+余談だが、衣装区分が「私服」のプレイアブル生徒は2021年9月実装のサヤ（私服）以来約3年5か月ぶりの二人目。

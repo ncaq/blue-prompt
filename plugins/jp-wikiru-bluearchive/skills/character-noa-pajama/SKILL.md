@@ -1,21 +1,21 @@
 ---
 name: character-noa-pajama
-description: Lookup facts about ノア（パジャマ）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about ノア（パジャマ）, checking the in-game performance data, or role-playing scenes that involve ノア（パジャマ）.
+description: Lookup facts about ノア（パジャマ）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ノア（パジャマ）, checking the in-game performance data, or role-playing scenes that involve ノア（パジャマ）.
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ノア（パジャマ）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ノア（パジャマ）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -339,3 +339,7 @@ user-invocable: false
 |                       |                                                        |
 | :-------------------: | ------------------------------------------------------ |
 | イベントボイスリンク1 | 「秘密のミッドナイトパーティー～オニの手は鐘と共に～」 |
+
+## 小ネタ
+
+秘密のミッドナイトパーティー～オニの手は鐘と共に～で実装されたパジャマ姿。 絶対的な記憶力は変わらずでイベントストーリーではホラー映画さながらの迫力を演出した。 コユキもとても怖かったようでお祝いイラストでも般若面の形相としてネタにされている。

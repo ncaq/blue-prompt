@@ -1,21 +1,21 @@
 ---
 name: character-akane-bunny-girl
-description: Lookup facts about アカネ（バニーガール）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about アカネ（バニーガール）, checking the in-game performance data, or role-playing scenes that involve アカネ（バニーガール）.
+description: Lookup facts about アカネ（バニーガール）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アカネ（バニーガール）, checking the in-game performance data, or role-playing scenes that involve アカネ（バニーガール）.
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「アカネ（バニーガール）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「アカネ（バニーガール）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -300,3 +300,7 @@ user-invocable: false
 |         新年          | あけましておめでとうございます、ご主人様。…もう新年ですね。今年は本当に良い事がたくさんありますように…。                                                                                             |
 |        誕生日         | 私の誕生日を覚えてくださっていたのですか？ありがとうございます、ご主人様。これ以上に嬉しいことはございません。                                                                                       |
 |      先生誕生日       | お誕生日おめでとうございます、ご主人様！本日は、ウサギからの特別なご奉仕を、期待していてくださいね？ウサギの特別な奉仕、ですか？うふふ…さあ、何でしょうね？大丈夫。怖くないですよ～さあ、よしよし…。 |
+
+## 小ネタ
+
+**「この際、ご主人様と一緒にウサギの道を歩んでみるのも…？」**、 バニーガールに変装したC＆Cの~~ボマー~~メイド。スペシャルに転向したことで爆弾魔の面をちょっとお披露目。 直接爆破ではなく仕掛けるに留めている辺り、この姿でもまだ抑えている模様。

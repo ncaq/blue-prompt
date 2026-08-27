@@ -1,21 +1,21 @@
 ---
 name: character-tsubaki-guide
-description: Lookup facts about ツバキ（ガイド）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about ツバキ（ガイド）, checking the in-game performance data, or role-playing scenes that involve ツバキ（ガイド）.
+description: Lookup facts about ツバキ（ガイド）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ツバキ（ガイド）, checking the in-game performance data, or role-playing scenes that involve ツバキ（ガイド）.
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ツバキ（ガイド）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ツバキ（ガイド）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -303,3 +303,7 @@ user-invocable: false
 |                       |                                                    |
 | :-------------------: | -------------------------------------------------- |
 | イベントボイスリンク1 | にぎにぎとゆきゆきて、【復刻】にぎにぎとゆきゆきて |
+
+## 小ネタ
+
+にぎにぎとゆきゆきてで~~冒頭から対戦車榴弾まで平然とぶっ放す~~自由奔放なゲヘナ学園の修学旅行でガイド役を担当したツバキの姿。 バスガイド風だがウミカの手によるもの。 修学旅行の運営は~~陰陽部に押し付けられた~~お祭り運営委員会が急遽請け負うことになったがシズコが出張で不在という不運が重なり協力を要請され修行部も担当することになった。 いつも眠たそうな彼女だがすぐ先生へ協力を要請するなど、部長としての采配は確かなものだった。 EXスキルは修学旅行中に発生した喧嘩を~~ゲンコツで~~仲裁する内容となっている。

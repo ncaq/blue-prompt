@@ -10,9 +10,42 @@ let ``pageUriはページ名をパーセントエンコードしたURLを組み�
     )
 
 [<Fact>]
-let ``cleanupMarkdownはコメント欄の見出しの残骸を取り除く`` () =
-    let markdown = "# 本文\n\n内容\n\n## コメントフォーム\n\n付記\n"
-    Assert.Equal("# 本文\n\n内容\n\n付記\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+let ``cleanupMarkdownはコメント欄の節を丸ごと取り除く`` () =
+    // コメントそのものは後から読み込まれるので残らないが、
+    // 投稿のルールを畳んで置いているページがあり、見出しだけを消すと本文が残ってしまう。
+    let markdown = "# 本文\n\n内容\n\n## コメントフォーム\n\n### ルールについて\n\n違反投稿は削除します\n"
+    Assert.Equal("# 本文\n\n内容\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``コメント欄の次の節はまた残る`` () =
+    let markdown = "## コメント\n\nルール\n\n## 小ネタ\n\n本文\n"
+    Assert.Equal("## 小ネタ\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``コメント欄より深い小見出しでは節が終わらない`` () =
+    // 節の終わりは同じ深さ以下の見出しなので、深い小見出しは節の中身として落ちる。
+    let markdown = "## 小ネタ\n\n本文\n\n### コメント\n\nルール\n\n#### 子見出し\n\n子の本文\n"
+    Assert.Equal("## 小ネタ\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``コメント欄より浅い見出しで節が終わる`` () =
+    let markdown = "## 小ネタ\n\n本文\n\n### コメント\n\nルール\n\n## ボイス\n\nセリフ\n"
+    Assert.Equal("## 小ネタ\n\n本文\n\n## ボイス\n\nセリフ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``入れ子のコメント欄の見出しで節が早く終わらない`` () =
+    // 深さを上書きすると内側の見出しの深さで節が終わり、外側の節の続きが残ってしまう。
+    let markdown =
+        "## 小ネタ\n\n本文\n\n## コメント\n\nルール\n\n### コメント\n\n入れ子のルール\n\n### 続きのルール\n\n続き\n"
+
+    Assert.Equal("## 小ネタ\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``コメント欄へ紛れ込んだ脚注の定義は残る`` () =
+    // 脚注の定義はページの末尾に置かれるためコメント欄の節に含まれるが、
+    // 落とすと本文に残った参照が宙に浮く。
+    let markdown = "## 小ネタ\n\n本文\\*1\n\n## コメント\n\nルール\n\n\\*1 注釈  \n"
+    Assert.Equal("## 小ネタ\n\n本文[^1]\n\n[^1]: 注釈\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
 let ``cleanupMarkdownは連続する空行を1つへ潰す`` () =
@@ -90,6 +123,86 @@ let ``エスケープされていないアスタリスクは変換されない``
     Assert.Equal("# h\n\n*1 これは脚注ではない\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
+let ``編集者向けの欄の案内は取り除かれる`` () =
+    // ページのテンプレートが置いていく案内で、生徒についての事実ではない。
+    let markdown = "## 小ネタ\n\nキャラの性格やストーリーの紹介を書く欄です。\n\n実際の小ネタ\n"
+    Assert.Equal("## 小ネタ\n\n実際の小ネタ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``案内の前に別の文がある行は残る`` () =
+    // 落とすのは行全体が案内である場合だけで、
+    // 事実の文に案内が続く行を丸ごと落としてはいけない。
+    let markdown = "## 小ネタ\n\n本文の文です。ここから先を書く欄です。\n"
+
+    Assert.Equal("## 小ネタ\n\n本文の文です。ここから先を書く欄です。\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``画像を失ったちびキャラの説明は取り除かれる`` () =
+    // 画像を並べただけの折りたたみに付いていた説明で、画像の除去で指すものを失う。
+    let markdown = "## 小ネタ\n\nちびキャラ/別ポーズ\n\n実際の小ネタ\n"
+    Assert.Equal("## 小ネタ\n\n実際の小ネタ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``ちびキャラで始まる本文の文は残る`` () =
+    // 落としたいのはキャプション由来の名詞句だけで、
+    // 小ネタの本文が同じ語で始まっても落としてはいけない。
+    let markdown = "## 小ネタ\n\nちびキャラは制服と同じデザインです。\n"
+
+    Assert.Equal("## 小ネタ\n\nちびキャラは制服と同じデザインです。\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``空行と同じ意味しか持たない行は取り除かれる`` () =
+    // 実体参照のままの&nbsp;と中身の無い引用は、残すと見出しの中身として数えられてしまう。
+    let markdown = "## 小ネタ\n\n&nbsp;\n\n>\n\n実際の小ネタ\n"
+    Assert.Equal("## 小ネタ\n\n実際の小ネタ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``引用の段落の区切りも空行と同じに扱われる`` () =
+    // 中身の無い引用の行はGFMでは引用の中の段落の区切りだが、
+    // wikiruの生成物では空行の代わりに現れるだけなので落とす。
+    // 引用が2つへ割れるのは承知の上の挙動として固定する。
+    let markdown = "## 小ネタ\n\n> 引用の1段落目\n>\n> 2段落目\n"
+
+    Assert.Equal("## 小ネタ\n\n> 引用の1段落目\n\n> 2段落目\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``3階層の見出しでも中身の有無が上位へ伝わる`` () =
+    // 最も深い見出しだけが本文を持つ場合、上位の2つも連鎖して残る。
+    let markdown = "## 小ネタ\n\n### 立ち絵バリエーション\n\n#### 表情差分\n\n本文\n"
+
+    Assert.Equal(
+        "## 小ネタ\n\n### 立ち絵バリエーション\n\n#### 表情差分\n\n本文\n",
+        BluePrompt.Wikiru.cleanupMarkdown markdown
+    )
+
+[<Fact>]
+let ``3階層の見出しは最も深い見出しが空だと連鎖して落ちる`` () =
+    let markdown = "## ボイス\n\nセリフ\n\n## 小ネタ\n\n### 立ち絵バリエーション\n\n#### 表情差分\n"
+    Assert.Equal("## ボイス\n\nセリフ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``中身を失った見出しは取り除かれる`` () =
+    // 画像を並べただけの節は画像の除去で本文を失い、見出しだけが残る。
+    let markdown = "## 小ネタ\n\n本文\n\n### 立ち絵バリエーション\n"
+    Assert.Equal("## 小ネタ\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``小見出しが全て消えた見出しも取り除かれる`` () =
+    let markdown = "## 小ネタ\n\n### 立ち絵バリエーション\n\n## ボイス\n\n本文\n"
+    Assert.Equal("## ボイス\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``中身を持つ見出しは前の空の見出しに巻き込まれない`` () =
+    let markdown = "## 小ネタ\n\n## ボイス\n\n本文\n"
+    Assert.Equal("## ボイス\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``中身を持つ小見出しがあれば上位の見出しも残る`` () =
+    let markdown = "## 小ネタ\n\n### 使用している銃の元ネタ\n\n解説\n"
+
+    Assert.Equal("## 小ネタ\n\n### 使用している銃の元ネタ\n\n解説\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
 let ``studentContentQueryは折りたたみの中身を残し開閉UIだけ取り除く`` () =
     // 生徒ページでは絆ストーリー一覧やボイスなどの本文が折りたたみの中に入っている。
     // セレクタの引き算が表記変更で空振りすると、折りたたみごと本文が消える。
@@ -142,6 +255,22 @@ let ``filterSectionsはh3以下の小見出しをh2セクションごと扱う``
     let markdown = "## スキル\n\n### EXスキル\n\n内容\n\n## 小ネタ\n\n### 元ネタ\n\n解説\n"
 
     Assert.Equal("## スキル\n\n### EXスキル\n\n内容\n", BluePrompt.Wikiru.filterSections [ "スキル" ] markdown)
+
+[<Fact>]
+let ``studentSectionTitlesは小ネタを残す`` () =
+    // 小ネタはゲーム内外の事実のまとめで、事実には著作権が発生しないため、
+    // 運用考察などの執筆者の考察とは扱いが異なる。
+    // 文言の見直しで落ちるとナレッジから静かに消えるため、実リストへ確かめる。
+    Assert.Contains("小ネタ", BluePrompt.Wikiru.studentSectionTitles)
+
+[<Fact>]
+let ``studentSectionTitlesでの選別で小ネタのh3小見出しも残る`` () =
+    let markdown = "## 小ネタ\n\n### 使用している銃の元ネタ\n\n解説\n\n## 運用考察\n\n考察本文\n"
+
+    Assert.Equal(
+        "## 小ネタ\n\n### 使用している銃の元ネタ\n\n解説\n",
+        BluePrompt.Wikiru.filterSections BluePrompt.Wikiru.studentSectionTitles markdown
+    )
 
 [<Fact>]
 let ``filterSectionsは最初のh2より前の部分を残す`` () =

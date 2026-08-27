@@ -1,21 +1,21 @@
 ---
 name: character-utaha-cheer-squad
-description: Lookup facts about ウタハ（応援団）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about ウタハ（応援団）, checking the in-game performance data, or role-playing scenes that involve ウタハ（応援団）.
+description: Lookup facts about ウタハ（応援団）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ウタハ（応援団）, checking the in-game performance data, or role-playing scenes that involve ウタハ（応援団）.
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「ウタハ（応援団）」のゲーム内の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ウタハ（応援団）」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -340,3 +340,11 @@ user-invocable: false
 |                       |                                                                                                                    |
 | :-------------------: | ------------------------------------------------------------------------------------------------------------------ |
 | イベントボイスリンク1 | 「ON YOUR MARK @MILLENNIUM　～キヴォトス晄輪大祭～」、「【復刻】ON YOUR MARK @MILLENNIUM　～キヴォトス晄輪大祭～」 |
+
+## 小ネタ
+
+**「フレ、フレ、ミレニアム！頑張れ頑張れ、ミレニアム！！」**、 晄輪大祭でミレニアムの応援団長を務める~~頭の良い馬鹿こと~~エンジニア部の部長。 椅子ゆえに設置場所から動けなかった雷ちゃんも、MK-Ⅲではついに自走可能に。 ストライカーに転向して情熱の赴くまま、共に最前線（FRONT）へ突っ走る。
+
+銃を使わないため、リロードモーションでは応援団のような動きを見せるウタハの横で雷ちゃんが弾倉を補充する。
+
+エンジニア部の中では最も応援に前向き。 ちなみに衣装はヒビキの作ったものだが、他の部員と違い彼女のみ学ラン風の衣装となっている。
