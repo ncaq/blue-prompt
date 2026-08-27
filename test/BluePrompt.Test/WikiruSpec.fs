@@ -110,6 +110,14 @@ let ``編集者向けの欄の案内は取り除かれる`` () =
     Assert.Equal("## 小ネタ\n\n実際の小ネタ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
+let ``案内の前に別の文がある行は残る`` () =
+    // 落とすのは行全体が案内である場合だけで、
+    // 事実の文に案内が続く行を丸ごと落としてはいけない。
+    let markdown = "## 小ネタ\n\n本文の文です。ここから先を書く欄です。\n"
+
+    Assert.Equal("## 小ネタ\n\n本文の文です。ここから先を書く欄です。\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
 let ``画像を失ったちびキャラの説明は取り除かれる`` () =
     // 画像を並べただけの折りたたみに付いていた説明で、画像の除去で指すものを失う。
     let markdown = "## 小ネタ\n\nちびキャラ/別ポーズ\n\n実際の小ネタ\n"
