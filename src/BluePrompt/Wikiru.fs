@@ -181,12 +181,22 @@ let private commentHeadingPattern = Regex @"^(#{1,6}) コメント(フォーム)
 /// 投稿のルールを畳んで置いているページがあり、
 /// 見出しだけを消すとルールの本文が直前の節の続きとして残ってしまう。
 /// 節の終わりは同じ深さ以下の見出しで、そこから先はまた残す。
+/// 節の中に同じ見出しが入れ子で現れた時は浅い方の深さを保つ。
+/// 内側の深さで数えると外側の節が終わる前に除去が止まり、続きが残ってしまう。
 /// 脚注の定義はページの末尾に置かれてこの節へ紛れ込むため、
 /// 本文への参照ごと落ちてしまわないように残す。
 let private removeCommentSection (markdown: string) : string =
     let step (kept: string list, dropping: int option) (line: string) =
         match commentHeadingPattern.Match line with
-        | m when m.Success -> kept, Some m.Groups[1].Value.Length
+        | m when m.Success ->
+            let depth = m.Groups[1].Value.Length
+
+            kept,
+            Some(
+                match dropping with
+                | Some outer -> min outer depth
+                | None -> depth
+            )
         | _ ->
             match dropping with
             | None -> line :: kept, None
