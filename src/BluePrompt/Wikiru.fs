@@ -164,8 +164,14 @@ let private normalizeBlankLines (markdown: string) : string =
 /// Markdownの見出しの最も深いレベル。
 let private maxHeadingDepth = 6
 
+/// 見出し行の先頭。#の並びを見出しの深さとして捕捉する。
+/// 上限をmaxHeadingDepthから組み立てて出どころを1つにする。
+/// removeEmptyHeadingsは捕捉した深さを配列の添字にそのまま使うため、
+/// 上限が定数とずれると実行時に範囲外で落ちる。
+let private headingPrefixPattern = @"^(#{1," + string maxHeadingDepth + @"}) "
+
 /// 見出し行への一致。#の数を見出しの深さとして捕捉する。
-let private headingDepthPattern = Regex @"^(#{1,6}) "
+let private headingDepthPattern = Regex headingPrefixPattern
 
 /// 空行と同じ意味しか持たない行への一致。
 /// 実体参照のままの&nbsp;と、中身の無い引用。
@@ -174,7 +180,8 @@ let private blankLikeLinePattern =
     Regex(@"^[^\S\r\n]*(&nbsp;|>)[^\S\r\n]*$", RegexOptions.Multiline)
 
 /// コメント欄の見出し行への一致。#の数を見出しの深さとして捕捉する。
-let private commentHeadingPattern = Regex @"^(#{1,6}) コメント(フォーム)?[^\S\r\n]*$"
+let private commentHeadingPattern =
+    Regex(headingPrefixPattern + @"コメント(フォーム)?[^\S\r\n]*$")
 
 /// コメント欄の節を丸ごと落とす。
 /// コメントそのものは後から読み込まれるので取得したHTMLには残らないが、
