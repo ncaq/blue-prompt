@@ -1,6 +1,6 @@
 ---
 name: character-rio-battle
-description: Lookup facts about リオ（臨戦）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about リオ（臨戦）, checking the in-game performance data, or role-playing scenes that involve リオ（臨戦）.
+description: Lookup facts about リオ（臨戦）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about リオ（臨戦）, checking the in-game performance data, or role-playing scenes that involve リオ（臨戦）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -320,3 +320,9 @@ user-invocable: false
 |                       |                |
 | :-------------------: | -------------- |
 | イベントボイスリンク1 | 鋼鉄大陸攻略戦 |
+
+## 小ネタ
+
+Ex. デカグラマトン編「第3章 不離一体の空」で特殊スーツを纏った姿。 この特殊スーツには射撃サポート機能が備わっているようだが通常版で「射撃が苦手」と紹介されているようにスチルでは現代では「反動[^2]の跳ね上がりに弱い」としてオートマチックハンドガンでは推奨されない「カップ＆ソーサー」で構えている。 ただしEXスキルでは「サムスフォワード」で構えている。 また、戦闘では遮蔽物で転びそうになったりリロードをしくじりそうになったりと、そもそも運動そのものが苦手な可能性が明らかとなった。（その為の特殊スーツなのかもしれないが）、 因みに異なる環境下での活動を想定してか、発熱機能や冷却機能も特殊スーツに搭載されている。（手動の緊急排熱装置も完備）
+
+[^2]: なお、リオの護身用拳銃がM1911の元ネタ通り.45口径のままであれば、その反動は看過できないほど大きいと思われる

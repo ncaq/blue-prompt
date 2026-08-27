@@ -1,6 +1,6 @@
 ---
 name: character-asuna-uniform
-description: Lookup facts about アスナ（制服）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about アスナ（制服）, checking the in-game performance data, or role-playing scenes that involve アスナ（制服）.
+description: Lookup facts about アスナ（制服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about アスナ（制服）, checking the in-game performance data, or role-playing scenes that involve アスナ（制服）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -327,3 +327,7 @@ user-invocable: false
 |                       |                                                                                                                                |
 | :-------------------: | ------------------------------------------------------------------------------------------------------------------------------ |
 | イベントボイスリンク1 | 「Code: BOX ミレニアムに迫る影～一つの問いと二つの答え～」、「【復刻】Code: BOX ミレニアムに迫る影～一つの問いと二つの答え～」 |
+
+## 小ネタ
+
+学生らしく制服に着替えたアスナ。 時計仕掛けの花のパヴァーヌ2章でゲヘナ学園の調査任務をしていた時の他、4周年イベント「Code:Box」にてトリニティ生を案内するガイドの役割をする時に身に着けた。 普段はメイドらしく先生の事を『ご主人様』と呼んでいるが、この格好の時はメインストーリー初登場の時同様に『先生』と呼んでいる。

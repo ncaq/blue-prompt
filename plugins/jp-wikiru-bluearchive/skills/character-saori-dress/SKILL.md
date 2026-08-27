@@ -1,6 +1,6 @@
 ---
 name: character-saori-dress
-description: Lookup facts about サオリ（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about サオリ（ドレス）, checking the in-game performance data, or role-playing scenes that involve サオリ（ドレス）.
+description: Lookup facts about サオリ（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about サオリ（ドレス）, checking the in-game performance data, or role-playing scenes that involve サオリ（ドレス）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -318,3 +318,9 @@ user-invocable: false
 |                       |                                     |
 | :-------------------: | ----------------------------------- |
 | イベントボイスリンク1 | 【復刻】0068 オペラより愛をこめて！ |
+
+## 小ネタ
+
+ドレスに着替えたサオリ。シナリオなどでは立ち絵が2種類あり、非戦闘時は髪を下ろしている。 カフェ来訪時のSDモデルもちゃんとそちらの姿になっているが、残念ながらロビー画面の立ち絵を切り替えることはできない。 通常ver同様マスク差分との切り替えは可能なので、水着verに引き続きメモリアルロビーを含めロビー画面が3種類ある点は共通している。 一方編成画面では2パターンの立ち姿があり、立ち絵を再現したものに加え戦闘時の正面姿という2種類の立ち絵の中間とも言える姿を見ることができる。
+
+ピックアップ名の「密やかに花咲く心」の元ネタは、ヨハン・シュトラウス2世作曲のワルツ「シトロンの花咲くところ」。 合わせてピックアップされているアル（ドレス）、カヨコ（ドレス）のピックアップ名も同様にシュトラウスの曲から取られている。

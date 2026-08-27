@@ -1,6 +1,6 @@
 ---
 name: character-ibuki-swimsuit
-description: Lookup facts about イブキ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about イブキ（水着）, checking the in-game performance data, or role-playing scenes that involve イブキ（水着）.
+description: Lookup facts about イブキ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about イブキ（水着）, checking the in-game performance data, or role-playing scenes that involve イブキ（水着）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -314,3 +314,7 @@ user-invocable: false
 |                       |                                             |
 | :-------------------: | ------------------------------------------- |
 | イベントボイスリンク1 | 「出航！万魔船 マコト議長の華麗なる避暑」」 |
+
+## 小ネタ
+
+出航！万魔船 マコト議長の華麗なる避暑でお披露目された水着姿。 マコトが確認書類をノールックでオンボロな小型船をチャーターするという失態を犯してしまいバカンスが危ぶまれる事態に陥ったが彼女の一言でそのまま決行し、今回の騒動の間接的な引き金を引いてしまった。 ~~当然100％悪いのはノールックで書類にサインした人ですよ~~、 エンジンが故障して漂流した際には周囲は気を使って「スケジュール通り」を装っていたが、そうした雰囲気を察しており敢えて無邪気に振る舞っていた。 海賊船騒動ではガレオン船の艦載砲がライフルリングの無い滑降砲のため正確ではないという断りをいれつつも計算して射表を作成し天才少女ぶりを発揮した。

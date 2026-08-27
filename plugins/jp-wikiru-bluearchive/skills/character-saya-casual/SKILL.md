@@ -1,6 +1,6 @@
 ---
 name: character-saya-casual
-description: Lookup facts about サヤ（私服）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about サヤ（私服）, checking the in-game performance data, or role-playing scenes that involve サヤ（私服）.
+description: Lookup facts about サヤ（私服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about サヤ（私服）, checking the in-game performance data, or role-playing scenes that involve サヤ（私服）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・愛用品・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・愛用品・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -328,3 +328,13 @@ user-invocable: false
 |                       |                                                                    |
 | :-------------------: | ------------------------------------------------------------------ |
 | イベントボイスリンク1 | 「ネバーランドでつかまえて」、「【復刻】ネバーランドでつかまえて」 |
+
+## 小ネタ
+
+**「ふっふっふっ……ぼく様は現在進行形で成長してるのだ！」**、 ストリート系の私服に身を包んだ薬子サヤ。 インドア系のマッドサイエンティストと思いきや、休日にはスケートボードで自由自在に山海経の街を駆け回る。
+
+初登場はネバーランドでつかまえてで、シュンに自作の若返ることができる薬品を試験させ幼女の姿にしてしまった(一応この結果はサヤにとっても予想外だったようだが)。
+
+立ち絵では呑気に刀削麺を食べているが、横で緑色のいかにも危険そうな薬品が漏れ出ている。~~サヤ氏！サヤ氏横ー！~~
+
+何気に通常衣装を差し置いて3回もピックアップガチャが開催されている。

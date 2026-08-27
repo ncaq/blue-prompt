@@ -1,6 +1,6 @@
 ---
 name: character-saori-swimsuit
-description: Lookup facts about サオリ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about サオリ（水着）, checking the in-game performance data, or role-playing scenes that involve サオリ（水着）.
+description: Lookup facts about サオリ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about サオリ（水着）, checking the in-game performance data, or role-playing scenes that involve サオリ（水着）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -327,3 +327,9 @@ user-invocable: false
 |                       |                     |
 | :-------------------: | ------------------- |
 | イベントボイスリンク1 | 「Sheside outside」 |
+
+## 小ネタ
+
+5thPVで姿を見せ、晴れて『Sheside outside』で登場した水着姿のサオリ。 「アウトロービーチ」でDJをやるためジャンパーを羽織り、デニムのショートパンツを着用していることから水着らしさはないが、PVの登場シーンでの生徒たちは敵として現れるスケバンを除いて全員水着のため、黒いキャミソール型のセパレートタイプの水着＋ショートパンツか、キャミソールとのショートパンツの下にビキニというビーチファッションなのかもしれない。 ~~サオリ(DJ)（石上静香氏談）~~、 「アリウススクワッド」のリーダーではあるが、諸事情によりイベントでは他のメンバーと別行動をしている。
+
+アリウス分校では音楽関係の機材を生徒会長を自称する大人が全て破壊したと語られていたが、「人気DJの護衛任務」ということでDJについて調べていくうちに音楽や使用機材へ理解を深めたようだ。 メタ的にはベアトリーチェへの反抗という意味合いもあるのだろうか。 また「第4章 忘れられた神々のためのキリエ」でアリウス分校はトリニティ総合学園に事実上攻め落とされたため、現在「アリウススクワッド」は解散状態となっている。 先生の手引きもあって「自分探しの旅」に出たサオリは最後まで残留していた他の「アリウススクワッド」のメンバーと離別状態であるため、5thPVでも「イベントを楽しむアツコヒヨリミサキ」と「一人黙々と仕事をこなすサオリ」という対比構造になっている。

@@ -1,6 +1,6 @@
 ---
 name: character-fuuka-new-year
-description: Lookup facts about フウカ（正月）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about フウカ（正月）, checking the in-game performance data, or role-playing scenes that involve フウカ（正月）.
+description: Lookup facts about フウカ（正月）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about フウカ（正月）, checking the in-game performance data, or role-playing scenes that involve フウカ（正月）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -302,3 +302,11 @@ user-invocable: false
 |                       |                                                                                    |
 | :-------------------: | ---------------------------------------------------------------------------------- |
 | イベントボイスリンク1 | 「喰積の 前にいささか ～一番勝負～」、「【復刻】喰積の 前にいささか ～一番勝負～」 |
+
+## 小ネタ
+
+**「給食部の特製おせちです！」**、 着物姿の給食部部長。装いを新たにしても、トラブルに巻き込まれるのは変わらない。（主に美食研究会のせいで）、 通常衣装の際に見せた呆れ顔も健在。눈\_눈
+
+キヴォトスの免許制度については不明だがバイクに乗ることができるらしく、EXスキルのモーションではおせちを届けた後にバイクで走り去っていく。
+
+特製おせちで味方の士気を引き上げる。更に待ち時間に試食を振る舞う事で、待ち疲れによるダウンもケアだ。

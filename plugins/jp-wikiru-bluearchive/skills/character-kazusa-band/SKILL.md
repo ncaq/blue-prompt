@@ -1,6 +1,6 @@
 ---
 name: character-kazusa-band
-description: Lookup facts about カズサ（バンド）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about カズサ（バンド）, checking the in-game performance data, or role-playing scenes that involve カズサ（バンド）.
+description: Lookup facts about カズサ（バンド）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カズサ（バンド）, checking the in-game performance data, or role-playing scenes that involve カズサ（バンド）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・愛用品・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・愛用品・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -347,3 +347,9 @@ user-invocable: false
 |                       |                                |
 | :-------------------: | ------------------------------ |
 | イベントボイスリンク1 | -ive aLIVE!【復刻】-ive aLIVE! |
+
+## 小ネタ
+
+-ive aLIVE!にてトリニティ総合学園の学園祭「トリニティ謝肉祭」で急遽結成されたガールズバンド「シュガーラッシュ」でのカズサの姿。 Tシャツのバンドのロゴはカズサの猫耳をモチーフにしたものと考えられるが、バンド結成の発案者はアイリである。 時系列上では放課後スイーツ物語 甘い秘密と銃撃戦の後にあたり何かとスケ番時代の二つ名「キャスパリーグ」と弄られがち。
+
+Tシャツ姿になったことで今までパーカーで隠されていた体型が図らずして強調される格好になった。 貧乳か着痩せ体質なのかについては先生によって見解が分かれるところ。 立ち絵だとバンドロゴに隠れて服の陰影が見えづらくなっているが、無地の白Tシャツ姿（下記画像）を見るに真っ平らではない。しかし、カットインCGでもやはり控えめではある。 一方で、イベントムービーの3Dモデルではちゃんと膨らみがあって揺れている。これについては、開発コメンタリーにて3Dモーション担当者の好みで少し盛ったり揺らしたりしたことが明かされている。

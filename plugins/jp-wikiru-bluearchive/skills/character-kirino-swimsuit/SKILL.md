@@ -1,6 +1,6 @@
 ---
 name: character-kirino-swimsuit
-description: Lookup facts about キリノ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about キリノ（水着）, checking the in-game performance data, or role-playing scenes that involve キリノ（水着）.
+description: Lookup facts about キリノ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about キリノ（水着）, checking the in-game performance data, or role-playing scenes that involve キリノ（水着）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -305,3 +305,13 @@ user-invocable: false
 |                       |                            |
 | :-------------------: | -------------------------- |
 | イベントボイスリンク1 | Say-Bing!【復刻】Say-Bing! |
+
+## 小ネタ
+
+Say-Bing!で水着に着替えたキリノ。 ライフセーバーとして職務を全うするためか日焼け予防のTシャツにライフジャケットを羽織りライフガードチューブ所持し、ヴァルキューレ警察学校のもう一つのシンボルカラーであるパープルのビキニを着用しておりヴァルキューレ海警と関連性が見られる。
+
+射撃の腕前を筆頭に何かとポンコツ扱いされがちな彼女であるが、仕事人気質な為にウォーターパークでも公安局での取り調べのような振る舞いをするカンナを指導するという珍しいシーンが見られた。
+
+ビキニは露出度の高い女性の行楽用水着のイメージが非常に強いが1996年よりオリンピックの正式種目になったビーチバレーではその競技の歴史的経緯により、女性選手のユニフォームとして水着のビキニが使用されているので真面目な彼女の事だから「スポーツ用の水着」としては着用している……筈。
+
+イベント告知PVでは~~鋭角なハイレグだった~~カンナと並びキリノの~~締まったお尻の~~プリティーさに気づかされる先生も多かったようだ。

@@ -1,6 +1,6 @@
 ---
 name: character-mari-track
-description: Lookup facts about マリー（体操服）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about マリー（体操服）, checking the in-game performance data, or role-playing scenes that involve マリー（体操服）.
+description: Lookup facts about マリー（体操服）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about マリー（体操服）, checking the in-game performance data, or role-playing scenes that involve マリー（体操服）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -326,3 +326,7 @@ user-invocable: false
 |                       |                                                                                          |
 | :-------------------: | ---------------------------------------------------------------------------------------- |
 | イベントボイスリンク1 | 「Get Set,GO！ ～キヴォトス晄輪大祭～」、「【復刻】Get Set,GO！ ～キヴォトス晄輪大祭～」 |
+
+## 小ネタ
+
+**「応援してくださった分、頑張りますね！」**、 実行委員に志願したシスターフッドの見習いシスター。普段はベールで隠れているケモミミが露わになっている。 お人好しが過ぎて競技をこなしつつ人助けをするというオーバーワークの結果、意識が朦朧とするぐらい疲れ果てることに。 ストライカーに転向し、前線でヒーラーを務める。自身を除く周囲の味方に水を配る他、自身と最前線を張る味方一人にエールを送る。 実行委員で編成するとユウカが味方の誘導を付与しつつシールドを配り、マリーが周囲の味方を癒し、ハスミが敵を狙撃するという風に役割分担がしっかりできている。 しかも三人とも神秘属性であり、応援団長も入れれば晄輪大祭メンバーで神秘ストライカー編成が作れる。 ちなみにEXスキル演出をよく見ると、ケモミミだけでなくヒト耳も付いていることが確認できる。 障害物を飛び越える時は跳び箱の開脚飛びを行う。

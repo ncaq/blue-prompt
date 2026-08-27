@@ -1,6 +1,6 @@
 ---
 name: character-kayoko-dress
-description: Lookup facts about カヨコ（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about カヨコ（ドレス）, checking the in-game performance data, or role-playing scenes that involve カヨコ（ドレス）.
+description: Lookup facts about カヨコ（ドレス）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about カヨコ（ドレス）, checking the in-game performance data, or role-playing scenes that involve カヨコ（ドレス）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -326,3 +326,9 @@ user-invocable: false
 |                       |                                                                |
 | :-------------------: | -------------------------------------------------------------- |
 | イベントボイスリンク1 | 0068 オペラより愛をこめて！【復刻】0068 オペラより愛をこめて！ |
+
+## 小ネタ
+
+便利屋68が受けた仕事の依頼で潜入のためにドレス姿に着替えたカヨコ。 落ち着いた佇まいと着こなしによるアダルトな雰囲気が年相応とは思えない色気を出しており、イベントシナリオでは相変わらず冷静に便利屋の頭脳として働く。 概ね今までと作中での行動や立ち位置は変わらないが、各種スキルがどう見ても過去にヒットマンかエージェント(暗殺や潜入等)をやっていたとしか思えない名称だらけで未だに謎が多い彼女の過去について更に色々な憶測を生んでいる。 その過去が明らかになる日は来るのだろうか？
+
+ピックアップ名の「美しく明けきメタル」の元ネタは、ヨハン・シュトラウス2世作曲のワルツ「美しく青きドナウ」。 合わせてピックアップされているアル（ドレス）、サオリ（ドレス）のピックアップ名も同様にシュトラウスの曲から取られている。

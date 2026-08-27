@@ -1,6 +1,6 @@
 ---
 name: character-yukari-swimsuit
-description: Lookup facts about ユカリ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about ユカリ（水着）, checking the in-game performance data, or role-playing scenes that involve ユカリ（水着）.
+description: Lookup facts about ユカリ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ユカリ（水着）, checking the in-game performance data, or role-playing scenes that involve ユカリ（水着）.
 user-invocable: false
 ---
 
@@ -15,7 +15,7 @@ user-invocable: false
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 

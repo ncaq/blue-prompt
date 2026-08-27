@@ -1,6 +1,6 @@
 ---
 name: character-yoshimi-band
-description: Lookup facts about ヨシミ（バンド）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about ヨシミ（バンド）, checking the in-game performance data, or role-playing scenes that involve ヨシミ（バンド）.
+description: Lookup facts about ヨシミ（バンド）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヨシミ（バンド）, checking the in-game performance data, or role-playing scenes that involve ヨシミ（バンド）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -324,3 +324,7 @@ user-invocable: false
 |                       |                                |
 | :-------------------: | ------------------------------ |
 | イベントボイスリンク1 | -ive aLIVE!【復刻】-ive aLIVE! |
+
+## 小ネタ
+
+-ive aLIVE!にてトリニティ総合学園の学園祭「トリニティ謝肉祭」で急遽結成されたガールズバンド「シュガーラッシュ」でのヨシミの姿。 カズサの猫耳をモチーフにしたと思われるロゴは彼女の手によるもの。（ただしバンド結成の発案者はアイリなので理由は不明）、 イベントではじゃんけんの変種で二手に組み分ける時の掛け声である「グッパージャス」が他のメンバーに通じないという一幕があり彼女だけ別の地区出身であることが考えられる。 因みに「グッパージャス」は関東付近で見られる掛け声であるが、掛け声の他にグーとチョキ、パーとチョキ、手の表裏で組み分けるやり方など様々なバリエーションがある。 トリニティでは関東～関西と比較的広範囲で見られる「ぐっとぱーで別れましょ」が優勢のようだ。

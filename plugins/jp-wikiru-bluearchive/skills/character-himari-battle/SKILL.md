@@ -1,6 +1,6 @@
 ---
 name: character-himari-battle
-description: Lookup facts about ヒマリ（臨戦）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about ヒマリ（臨戦）, checking the in-game performance data, or role-playing scenes that involve ヒマリ（臨戦）.
+description: Lookup facts about ヒマリ（臨戦）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ヒマリ（臨戦）, checking the in-game performance data, or role-playing scenes that involve ヒマリ（臨戦）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -345,3 +345,9 @@ user-invocable: false
 |                      |                                   |
 | :------------------: | --------------------------------- |
 | イベントボイスリンク | 鋼鉄大陸攻略戦、DECAGRAMMATON決戦 |
+
+## 小ネタ
+
+もはや不朽のSFシリーズ「スター・ウォーズ」に登場する「スピーダー・バイク」を連想させるような浮遊式の屋外用車椅子を引っ提げて登場したヒマリ。 臨戦状態になったことで、超天才清楚系病弱**万能**美少女ハッカーへと進化(?)した。~~相変わらず長い肩書・・・~~ 「バイク」と称すると「**車椅子です**」と強めに釘を刺される。　~~ほな、車椅子か・・・~~ EXスキルではバイクの定番アクションと化した「AKIRA（1988年）」の「金田スライドブレーキ（Akira Slide）」を披露している。 （足は不自由なので、地面にはついていない）
+
+リミッター全解除時の車椅子は0-100km/hを0.956秒で叩き出すとのことだが、 この数値は現実においてスイスのチューリッヒ工科大とルツェルン応用科学芸術大学が共同で作ったEV「mythen」が更新したギネスの加速世界記録と全く同じである。

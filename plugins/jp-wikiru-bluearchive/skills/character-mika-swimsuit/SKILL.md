@@ -1,6 +1,6 @@
 ---
 name: character-mika-swimsuit
-description: Lookup facts about ミカ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories and voice lines. Use when answering questions about ミカ（水着）, checking the in-game performance data, or role-playing scenes that involve ミカ（水着）.
+description: Lookup facts about ミカ（水着）, a Blue Archive student, such as profile, stats, skills, bond stories, voice lines and trivia. Use when answering questions about ミカ（水着）, checking the in-game performance data, or role-playing scenes that involve ミカ（水着）.
 user-invocable: false
 ---
 
@@ -8,14 +8,14 @@ user-invocable: false
 
 # データの構造
 
-- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイスです
+- セクションは基本情報・スキル・固有武器・能力解放・絆ランクボーナス・絆ストーリー・ボイス・小ネタです
 - 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意
 
 - データに無い情報は、別バージョンの生徒のスキルや出典のページで確認してください。似た名前の生徒の性能を混ぜないでください
-- wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
+- 小ネタはゲーム内外の事実のまとめです。一方、wiki執筆者による解説や運用考察は著作権方針により含めていません。必要な場合は出典のページを直接参照してください
 
 # ナレッジ
 
@@ -356,3 +356,7 @@ user-invocable: false
 |                       |                |
 | :-------------------: | -------------- |
 | イベントボイスリンク1 | 夏空のやくそく |
+
+## 小ネタ
+
+幼馴染と共に水着姿になったミカ。 友達思いだが短絡的で突っ走りがちな所はあるものの、自棄になって暴走していたあの頃と比べて精神的に成長している。 連射形態になる事で何度も大技を放てるが、流石に息切れするのか大技の要求コストが多くなっていく（終いには10コスト必要になってしまう）、 夏空のやくそくではワーカーホリック気味のナギサを案じてセイアと共に海のサマーバカンスに引っ張り出す……という流れだが、キヴォトス特有の様々なトラブルに見舞われてしまう。 時系列上では第1部メインストーリーVol.3「エデン条約編」後であるが、なんだかんだでティーパーティーの最高幹部の前に顔を出せる程度には許されているようでセイアからエデン条約編の出来事を揶揄されたり言い返すシーンも見られた。 またSerenade Promenadeでは「謹慎中」と発言していたがこちらの紹介文では「元」が外されておりティーパーティーに復帰した可能性を示唆している。 （武闘派トップに相応しくて他派閥のリーダーと友好関係を築けそうなパテル分派がミカ以外に居なかったのだろう）
