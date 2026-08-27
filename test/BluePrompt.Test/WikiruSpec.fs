@@ -116,6 +116,14 @@ let ``画像を失ったちびキャラの説明は取り除かれる`` () =
     Assert.Equal("## 小ネタ\n\n実際の小ネタ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
+let ``ちびキャラで始まる本文の文は残る`` () =
+    // 落としたいのはキャプション由来の名詞句だけで、
+    // 小ネタの本文が同じ語で始まっても落としてはいけない。
+    let markdown = "## 小ネタ\n\nちびキャラは制服と同じデザインです。\n"
+
+    Assert.Equal("## 小ネタ\n\nちびキャラは制服と同じデザインです。\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
 let ``空行と同じ意味しか持たない行は取り除かれる`` () =
     // 実体参照のままの&nbsp;と中身の無い引用は、残すと見出しの中身として数えられてしまう。
     let markdown = "## 小ネタ\n\n&nbsp;\n\n>\n\n実際の小ネタ\n"
