@@ -22,6 +22,25 @@ let ``コメント欄の次の節はまた残る`` () =
     Assert.Equal("## 小ネタ\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
+let ``コメント欄より深い小見出しでは節が終わらない`` () =
+    // 節の終わりは同じ深さ以下の見出しなので、深い小見出しは節の中身として落ちる。
+    let markdown = "## 小ネタ\n\n本文\n\n### コメント\n\nルール\n\n#### 子見出し\n\n子の本文\n"
+    Assert.Equal("## 小ネタ\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``コメント欄より浅い見出しで節が終わる`` () =
+    let markdown = "## 小ネタ\n\n本文\n\n### コメント\n\nルール\n\n## ボイス\n\nセリフ\n"
+    Assert.Equal("## 小ネタ\n\n本文\n\n## ボイス\n\nセリフ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``入れ子のコメント欄の見出しで節が早く終わらない`` () =
+    // 深さを上書きすると内側の見出しの深さで節が終わり、外側の節の続きが残ってしまう。
+    let markdown =
+        "## 小ネタ\n\n本文\n\n## コメント\n\nルール\n\n### コメント\n\n入れ子のルール\n\n### 続きのルール\n\n続き\n"
+
+    Assert.Equal("## 小ネタ\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
 let ``コメント欄へ紛れ込んだ脚注の定義は残る`` () =
     // 脚注の定義はページの末尾に置かれるためコメント欄の節に含まれるが、
     // 落とすと本文に残った参照が宙に浮く。
