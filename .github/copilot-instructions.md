@@ -535,6 +535,41 @@ oneshotのsystemdサービスが起動時と生成物の変更時に同期を実
 ModelとKnowledgeとRAGテンプレートはいずれも既定で同期の対象です。
 モジュールの検証はnix-fast-buildのchecks(`nixos-module`)に含まれています。
 
+# 想定するRAGの環境
+
+Knowledgeの分割の粒度や断片への見出しの前置は、
+特定のRAG設定の登録先で検索が当たることを実測して決めています。
+検証に使っている登録先の設定は以下の通りです。
+
+- 埋め込み: `RAG_EMBEDDING_ENGINE`は`ollama`。
+  モデルはmultilingual-e5-largeのGGUF q8_0で、
+  `RAG_EMBEDDING_QUERY_PREFIX`の`query: `と、
+  `RAG_EMBEDDING_CONTENT_PREFIX`の`passage: `を本文への文字列連結で付けます
+- 分割: `CHUNK_SIZE`は1000、`CHUNK_OVERLAP`は100のOpen WebUIの既定値
+- 検索: `RAG_TOP_K`は既定値の3。ハイブリッド検索とリランカーは使っていません
+- ベクタDB: `VECTOR_DB`は`pgvector`
+
+埋め込みのエンジンの選択は検索精度に影響しません。
+同じモデルならsentence-transformersのfp32とOllamaのGGUF q8_0で、
+文書の埋め込みのコサイン一致度は平均0.9996あり、
+検索の指標も変わらないことを実測で確認しています。
+そのため生成側が気にする必要があるのはモデルと分割の粒度だけで、
+登録先がどのエンジンで埋め込むかは気にしなくて構いません。
+
+実測はこのリポジトリのKnowledgeの実物(3361ファイル、10011チャンク)と、
+日本語の20問で行っています。
+経緯と数値は以下のissueに記録があります。
+
+- エンジンの選定: https://github.com/ncaq/blue-prompt/issues/171
+- モデルの選定: https://github.com/ncaq/blue-prompt/issues/196
+
+この設定での登録先の実際の構築は、
+dotfilesの https://github.com/ncaq/dotfiles/pull/1550 が行っています。
+
+モデルの乗り換えや、
+ハイブリッド検索とリランカーの導入でこの前提が変わる時は、
+モデル選定のissueの測定をやり直した上でこの節を更新します。
+
 # wikiru由来のテキストとプロンプトインジェクション
 
 wikiruは誰でも編集できるwikiなので、
