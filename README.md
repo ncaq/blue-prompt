@@ -198,6 +198,30 @@ Open WebUIには会話の途中でファイルを開く手段が無く、
 リンクを残しても開けない参照を読ませるだけだからです。
 これらは`nix build .#open-webui-knowledge`で作るKnowledgeコレクションとして登録してください。
 
+### 検証しているRAG設定
+
+Knowledgeコレクションの分割の粒度は、
+作者が以下のRAG設定のインスタンスで検索が当たることを実測して決めています。
+別の設定でも動きますが、
+検索の当たり方はこの構成でしか検証していません。
+
+- 埋め込みモデル: [intfloat/multilingual-e5-large](https://huggingface.co/intfloat/multilingual-e5-large)。
+  e5系はprefixを前提に学習されているため、
+  `RAG_EMBEDDING_QUERY_PREFIX`に`query: `を、
+  `RAG_EMBEDDING_CONTENT_PREFIX`に`passage: `を指定します
+- 埋め込みエンジン: `RAG_EMBEDDING_ENGINE`は`ollama`で、GGUFのq8_0量子化。
+  ただしエンジンの違いは検索精度に影響しないことを実測で確認しているので、
+  既定のsentence-transformersのままモデル名だけ合わせても同じ結果になります
+- 分割と検索: `CHUNK_SIZE`は1000、`CHUNK_OVERLAP`は100、`RAG_TOP_K`は3の、
+  いずれもOpen WebUIの既定値。ハイブリッド検索とリランカーは使っていません
+- ベクタDB: `VECTOR_DB`は`pgvector`。
+  既定のChromaDBでの動作は未検証ですが、検索の当たり方が変わる要素ではないはずです
+
+実測の経緯と数値は以下のissueに記録があります。
+
+- エンジンの選定: https://github.com/ncaq/blue-prompt/issues/171
+- モデルの選定: https://github.com/ncaq/blue-prompt/issues/196
+
 ### NixOSモジュールによる宣言的な同期
 
 Open WebUIをNixOSで運用している場合は、
