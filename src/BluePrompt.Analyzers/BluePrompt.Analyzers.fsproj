@@ -19,7 +19,7 @@
       アナライザーはCLIホストが読み込んだSDKとFSharp.Compiler.Serviceで実行されるため、
       実行時アセンブリは出力へコピーしない。
     -->
-    <PackageReference Include="FSharp.Analyzers.SDK" Version="0.37.2" ExcludeAssets="runtime" />
+    <PackageReference Include="FSharp.Analyzers.SDK" Version="0.38.0" ExcludeAssets="runtime" />
     <!--
       FSharp.CoreはFSharp.Analyzers.SDKとFSharp.Compiler.Serviceが完全一致で要求する版に従う。
       単独で上げるとNU1608で復元が失敗するため、Renovateでは更新を無効化している。
