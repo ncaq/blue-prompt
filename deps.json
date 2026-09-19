@@ -21,18 +21,13 @@
   },
   {
     "pname": "FSharp.Analyzers.SDK",
-    "version": "0.37.2",
-    "hash": "sha256-W+4jWsOaMXDCAFpPPjUbtIbGxZPZyA2Z97Nr7Zw+h9E="
+    "version": "0.39.2",
+    "hash": "sha256-lhu5lt7EZx/LXk2f6Sw2Vm8LPDP98DM+ebEeW8k5iNM="
   },
   {
     "pname": "FSharp.Compiler.Service",
-    "version": "43.12.201",
-    "hash": "sha256-lYlDHWSRUqkyUwzdSJnFlB6dfrclDlPo7n8dJiGQvC4="
-  },
-  {
-    "pname": "FSharp.Core",
-    "version": "10.1.201",
-    "hash": "sha256-NzxdRJgL+5RQpUm8Y6Mc0w7sakxqThv6qHpP+u0x5x0="
+    "version": "43.12.400",
+    "hash": "sha256-NN8n4Ls8HE0XFAAgUf/p6FbzNS3hrQcUEN78KpMpCfs="
   },
   {
     "pname": "FSharp.SystemTextJson",
@@ -41,13 +36,13 @@
   },
   {
     "pname": "G-Research.FSharp.Analyzers",
-    "version": "0.23.0",
-    "hash": "sha256-rS7eh5dmY5eqWVPadyL5E4fljJJv/gDlCOUU+2rBl5Y="
+    "version": "0.25.0",
+    "hash": "sha256-2jQxhKh5sZj6uSdyMYzSb0bohjJiatKFxr7hfWEKnL4="
   },
   {
     "pname": "Ionide.Analyzers",
-    "version": "0.17.0",
-    "hash": "sha256-s33saaU8wuI7d2ritrjwPjRixZYW2uTslKrcX5U4IeE="
+    "version": "0.19.0",
+    "hash": "sha256-FKN17nsk8/IutGKLZVUe//cu+0Q4A3UqAmFwgR00rSI="
   },
   {
     "pname": "McMaster.NETCore.Plugins",
@@ -60,9 +55,14 @@
     "hash": "sha256-j6kLSrn2sJA6sUf+tcDAfwI9maDTjU5+xZl7qd+5pEA="
   },
   {
+    "pname": "Microsoft.Extensions.DependencyInjection.Abstractions",
+    "version": "10.0.11",
+    "hash": "sha256-5PZeQgWmVo8K+7GgKEVAd6xcn+3XVNVzT4cg/DBtjqY="
+  },
+  {
     "pname": "Microsoft.Extensions.Logging.Abstractions",
-    "version": "6.0.0",
-    "hash": "sha256-QNqcQ3x+MOK7lXbWkCzSOWa/2QyYNbdM/OEEbWN15Sw="
+    "version": "10.0.11",
+    "hash": "sha256-HdUH2q55lbAwMswMdQjX01DrgaxegtbyMo4VYezhB1o="
   },
   {
     "pname": "Microsoft.NET.Test.Sdk",
