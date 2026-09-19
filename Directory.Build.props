@@ -22,12 +22,12 @@
       GeneratePathPropertyでパッケージパスの$(Pkg...)変数を生成させて、
       Directory.Build.targetsのanalyzers-pathフラグから参照する。
     -->
-    <PackageReference Include="G-Research.FSharp.Analyzers" Version="0.23.0">
+    <PackageReference Include="G-Research.FSharp.Analyzers" Version="0.25.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>analyzers</IncludeAssets>
       <GeneratePathProperty>true</GeneratePathProperty>
     </PackageReference>
-    <PackageReference Include="Ionide.Analyzers" Version="0.17.0">
+    <PackageReference Include="Ionide.Analyzers" Version="0.19.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>analyzers</IncludeAssets>
       <GeneratePathProperty>true</GeneratePathProperty>

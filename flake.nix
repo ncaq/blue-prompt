@@ -218,16 +218,10 @@
           # そのコマンド名の別名も一緒に置く。
           fsharp-analyzers = pkgs.buildDotnetGlobalTool {
             pname = "fsharp-analyzers";
-            version = "0.37.2";
-            nugetHash = "sha256-tbQYxXQ39bXmvFQo9CL4A91RK5IHi3P6poUSc+C8448=";
+            version = "0.39.2";
+            nugetHash = "sha256-pgg4rulOez5IlzK2oswL1ETxpuSunsMcnTxxitY3eAg=";
             dotnet-sdk = pkgs.dotnet-sdk_10;
             dotnet-runtime = pkgs.dotnet-sdk_10;
-            # net8.0向けに配布されているツールをSDK 10のランタイムで動かす。
-            makeWrapperArgs = [
-              "--set-default"
-              "DOTNET_ROLL_FORWARD"
-              "Major"
-            ];
             # binのラッパーはfixupフェーズのdotnetFixupHookが作るため、
             # 別名のリンクはその後に張る。
             postFixup = ''

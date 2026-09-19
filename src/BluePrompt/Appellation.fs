@@ -84,9 +84,8 @@ let private noteOfReference (notes: Map<string, string>) (reference: IElement) :
     | Some note -> Some note
     | None ->
         match reference.GetAttribute "title" with
-        | null
-        | "" -> None
-        | title -> Some title
+        | Str.NullOrEmpty -> None
+        | Str.NonEmpty title -> Some title
 
 /// セルの中身を「名前と注釈の組」の列へ分解する。
 /// 名前の区切りはbr要素と読点「、」の両方が使われているため、どちらでも区切る。

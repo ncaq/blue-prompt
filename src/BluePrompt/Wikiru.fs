@@ -394,8 +394,8 @@ let fetchMarkdown (pageName: string) : Task<string> =
 let sourceHeader (source: Uri) : string =
     let pageName =
         match source.Query.TrimStart '?' with
-        | "" -> source.AbsoluteUri
-        | query -> Uri.UnescapeDataString query
+        | Str.NullOrEmpty -> source.AbsoluteUri
+        | Str.NonEmpty query -> Uri.UnescapeDataString query
 
     $"出典: [%s{pageName} - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{source.AbsoluteUri})\n\n"
 
@@ -406,9 +406,8 @@ let knowledgeHeader (pageName: string) : string = sourceHeader (pageUri pageName
 let private writeFile (outputPath: string) (content: string) : Task<unit> =
     task {
         match Path.GetDirectoryName outputPath with
-        | null
-        | "" -> ()
-        | directory -> Directory.CreateDirectory directory |> ignore
+        | Str.NullOrEmpty -> ()
+        | Str.NonEmpty directory -> Directory.CreateDirectory directory |> ignore
 
         do! File.WriteAllTextAsync(outputPath, content)
     }
@@ -577,12 +576,11 @@ let writeStudentSkill (pageName: string) (outputPath: string) : Task<string list
     task {
         let skillName =
             match Path.GetDirectoryName outputPath with
-            | null
-            | "" ->
+            | Str.NullOrEmpty ->
                 raise (
                     ArgumentException($"スキル名を導出するディレクトリがありません: %s{outputPath}", nameof outputPath)
                 )
-            | directory -> Path.GetFileName directory
+            | Str.NonEmpty directory -> Path.GetFileName directory
 
         let! markdown = fetchStudentMarkdown pageName
         do! writeFile outputPath (studentSkillMarkdown skillName pageName markdown)

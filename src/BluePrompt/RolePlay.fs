@@ -81,8 +81,8 @@ let parseReference (path: string) (markdown: string) : Reference =
         match sourcePattern.Match markdown with
         | source when source.Success ->
             match (sourceUri source.Groups["url"].Value).Query.TrimStart '?' with
-            | "" -> missing "出典のページ名"
-            | query -> Uri.UnescapeDataString query
+            | Str.NullOrEmpty -> missing "出典のページ名"
+            | Str.NonEmpty query -> Uri.UnescapeDataString query
         | _ -> missing "出典の行"
 
     let body = markdown.Trim()

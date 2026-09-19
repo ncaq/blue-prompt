@@ -247,10 +247,10 @@ let private stringField (node: JsonNode) (keys: string list) : string =
 /// 原因から遠い場所で失敗するため、応答の形が変わった時点で気付けるように止める。
 let private requiredStringField (url: string) (node: JsonNode) (keys: string list) : string =
     match stringField node keys with
-    | "" ->
+    | Str.NullOrEmpty ->
         let path = String.concat "." keys
         raise (SyncError $"%s{url}の応答に%s{path}がありません: %s{node.ToJsonString()}")
-    | value -> value
+    | Str.NonEmpty value -> value
 
 /// ファイルをアップロードしてfile idを得る。
 /// 既定ではアップロードの後処理がバックグラウンドへ回されて、
