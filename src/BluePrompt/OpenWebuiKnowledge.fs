@@ -57,8 +57,8 @@ let private toFileNameBase (stem: string) (headings: string list) : string =
     stem :: headings
     |> List.choose (fun part ->
         match sanitize part with
-        | "" -> None
-        | sanitized -> Some sanitized)
+        | Str.NullOrEmpty -> None
+        | Str.NonEmpty sanitized -> Some sanitized)
     |> String.concat "-"
 
 /// ファイル名の本体に許す最大のバイト数。

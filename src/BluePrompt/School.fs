@@ -117,8 +117,8 @@ let private pageName (cell: IElement) : string option =
 
             // ページ名が空のリンクは「名前(ページ名: )」という壊れた表記になるので読まない。
             match Uri.UnescapeDataString encoded with
-            | "" -> None
-            | page -> Some page
+            | Str.NullOrEmpty -> None
+            | Str.NonEmpty page -> Some page
         | _ -> None)
 
 /// パース済みDOMから一覧の全レコードを取り出す。

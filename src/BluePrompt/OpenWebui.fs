@@ -142,8 +142,8 @@ let parseFrontmatter (path: string) (content: string) : Frontmatter =
                     |> Array.toList
                     |> List.choose (fun name ->
                         match name.Trim() with
-                        | "" -> None
-                        | trimmed -> Some trimmed)
+                        | Str.NullOrEmpty -> None
+                        | Str.NonEmpty trimmed -> Some trimmed)
 
             { Name = field "name"
               Description = field "description"
@@ -353,9 +353,8 @@ let ofJson (origin: string) (json: string) : ModelForm =
 let writeModel (skillDirectory: string) (outputPath: string) : Task<unit> =
     task {
         match Path.GetDirectoryName outputPath with
-        | null
-        | "" -> ()
-        | directory -> Directory.CreateDirectory directory |> ignore
+        | Str.NullOrEmpty -> ()
+        | Str.NonEmpty directory -> Directory.CreateDirectory directory |> ignore
 
         do! File.WriteAllTextAsync(outputPath, toJson (buildModelForm skillDirectory))
     }

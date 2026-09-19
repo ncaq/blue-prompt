@@ -2,6 +2,7 @@ module BluePrompt.Test.OpenWebuiSpec
 
 open System.IO
 open Xunit
+open BluePrompt
 open BluePrompt.OpenWebui
 
 /// スキルディレクトリをテスト用の一時ディレクトリへ組み立てる。
@@ -13,9 +14,8 @@ let private makeSkillDirectory (files: (string * string) list) : string =
         let path = Path.Combine(directory, fileName)
 
         match Path.GetDirectoryName path with
-        | null
-        | "" -> ()
-        | parent -> Directory.CreateDirectory parent |> ignore
+        | Str.NullOrEmpty -> ()
+        | Str.NonEmpty parent -> Directory.CreateDirectory parent |> ignore
 
         File.WriteAllText(path, content)
 
