@@ -4,11 +4,6 @@
     <TargetFramework>$(BluePromptAnalyzersTargetFramework)</TargetFramework>
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <!--
-      FSharp.Compiler.ServiceはFSharp.Coreのバージョン完全一致を要求するため、
-      SDKの暗黙参照ではなく下のPackageReferenceで明示的に固定する。
-    -->
-    <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="EditorServiceAnalyzer.fs" />
@@ -22,9 +17,13 @@
     <PackageReference Include="FSharp.Analyzers.SDK" Version="0.39.2" ExcludeAssets="runtime" />
     <!--
       FSharp.CoreはFSharp.Analyzers.SDKとFSharp.Compiler.Serviceが完全一致で要求する版に従う。
-      単独で上げるとNU1608で復元が失敗するため、Renovateでは更新を無効化している。
-      上げる時はFSharp.Analyzers.SDKの更新に合わせて、その依存が要求する版へ揃える。
+      版そのものはDirectory.Build.propsのFSharpCoreVersionで全プロジェクト共通に固定しているので、
+      ここでは共通の参照へ完全一致の範囲指定と、
+      実行時アセンブリを出力へコピーしない指定だけを上書きする。
     -->
-    <PackageReference Include="FSharp.Core" Version="[10.1.400]" ExcludeAssets="runtime" />
+    <PackageReference
+      Update="FSharp.Core"
+      Version="[$(FSharpCoreVersion)]"
+      ExcludeAssets="runtime" />
   </ItemGroup>
 </Project>
