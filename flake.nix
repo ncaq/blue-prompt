@@ -56,20 +56,17 @@
 
       # リポジトリにはあるが、スキルとしては配布しないファイルとディレクトリの名前。
       # character.mdとquoteは本文を生成するための入力で、
-      # *.template.mdは全生徒で共通の骨格、
-      # MODEL.mdはOpen WebUIのModel向けの本文なので、
+      # *.template.mdは全生徒で共通の骨格なので、
       # Claude CodeやOpenCodeのスキルとして読ませる意味が無い。
-      # 特にMODEL.mdはSKILL.mdとほぼ同じ内容なので、
-      # 配るとスキルのディレクトリに人格の指示が二重に置かれた状態になる。
-      # MODEL.mdはリポジトリへ置かずopen-webui-modelの中で生成するが、
-      # 手元で生成したものがスキルのディレクトリへ紛れ込んでも配らないように一覧へ残す。
+      #
+      # Open WebUIのModel向けのMODEL.mdはopen-webui-modelの中で生成し、
+      # スキルのディレクトリには存在しない前提なのでここには載せない。
       #
       # F#側で同じ名前を持つのはsrc/BluePrompt/SkillFile.fsで、
       # Nixへ定数を渡す手段が無いので重複は仕組み上残る。
       # どちらかの名前を変える時はもう片方も直す。
       nonSkillNames = [
         "character.md"
-        "MODEL.md"
         "MODEL.template.md"
         "quote"
         "SKILL.template.md"
