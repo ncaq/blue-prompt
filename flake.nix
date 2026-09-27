@@ -460,6 +460,24 @@
                 fi
                 touch $out
               '';
+
+          # 生成コマンドを手元のソースからReleaseで起動する。
+          # dotnet runは構成を指定しないとDebugでビルドするが、
+          # MSBuildにはdotnet runからの呼び出しを見分ける手掛かりが無く、
+          # 既定の構成を変えるとdotnet buildやdotnet testやリントまでReleaseになってしまう。
+          # 開発時の解析はDebugのままにして、生成の実行だけを速くするためにコマンドを分ける。
+          # dotnet runは呼び出し元のディレクトリで起動するので、
+          # 引数の相対パスはこのコマンドを呼んだ場所が基準になる。
+          blue-prompt-dev = pkgs.writeShellApplication {
+            name = "blue-prompt";
+            runtimeInputs = [ pkgs.git ];
+            # コマンド置換を引数へ直接書くとset -eが効かないため、
+            # リポジトリの外で呼ばれた時にその場で止まるよう変数へ受ける。
+            text = ''
+              root=$(git rev-parse --show-toplevel)
+              exec dotnet run --configuration Release --project "$root/src/BluePrompt" -- "$@"
+            '';
+          };
         in
         {
           treefmt.config = {
@@ -658,6 +676,7 @@
               dotnet-sdk_10
               fsautocomplete
               fsharp-analyzers
+              blue-prompt-dev
 
               # HTML→Markdown変換。
               pandoc
