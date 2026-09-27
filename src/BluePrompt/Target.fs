@@ -11,7 +11,7 @@ open System.Threading.Tasks
 type WikiruTarget =
     | Appellation of page: string * markdownOutput: string * jsonOutput: string
     | Knowledge of page: string * output: string
-    | School of page: string * output: string
+    | School of page: string * markdownOutput: string * jsonOutput: string
     | StudentSkill of page: string * output: string
     | RolePlayReference of page: string * output: string
 
@@ -44,7 +44,8 @@ let resolveWikiru (root: string) (target: WikiruTarget) : WikiruTarget =
     | Appellation(page, markdownOutput, jsonOutput) ->
         Appellation(page, resolve markdownOutput, resolve jsonOutput)
     | Knowledge(page, output) -> Knowledge(page, resolve output)
-    | School(page, output) -> School(page, resolve output)
+    | School(page, markdownOutput, jsonOutput) ->
+        School(page, resolve markdownOutput, resolve jsonOutput)
     | StudentSkill(page, output) -> StudentSkill(page, resolve output)
     | RolePlayReference(page, output) -> RolePlayReference(page, resolve output)
 
@@ -61,7 +62,7 @@ let writeWikiru (target: WikiruTarget) : Task<string list> =
     | Appellation(page, markdownOutput, jsonOutput) ->
         Wikiru.writeAppellation page markdownOutput jsonOutput
     | Knowledge(page, output) -> Wikiru.writeKnowledge page output
-    | School(page, output) -> Wikiru.writeSchool page output
+    | School(page, markdownOutput, jsonOutput) -> Wikiru.writeSchool page markdownOutput jsonOutput
     | StudentSkill(page, output) -> Wikiru.writeStudentSkill page output
     | RolePlayReference(page, output) -> Wikiru.writeRolePlayReference page output
 

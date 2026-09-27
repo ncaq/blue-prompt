@@ -1,6 +1,6 @@
 /// wikiruの学校別キャラクター一覧の構造化。
 /// 「どの学校のどの部活に誰が居るか」をレコードの列へパースし、
-/// LLM向けのMarkdownをそこから生成する。
+/// LLM向けのMarkdownと機械読み出し用のJSONの両方をそこから生成する。
 /// このページは生徒1人を1つのテーブルとして並べたカードの敷き詰めで、
 /// pandocへそのまま流すと1行1列のテーブルが人数分並ぶだけの読めない一覧になるため、
 /// pandocを通さずDOMから直接読む。
@@ -34,6 +34,9 @@ type Entry =
         /// 名前と同じ場合とリンクが無い場合はNone。
         Page: string option
     }
+
+/// JSONファイル全体。出典URLとレコードの列を持つ。
+type Document = { Source: string; Entries: Entry list }
 
 /// 一覧から1件も生徒を得られなかった時。
 /// サイト側の構造変更でパースが全滅した可能性が高く、空のデータによる上書きを防ぐ。
@@ -205,3 +208,9 @@ let toReferenceMarkdown (entries: Entry list) : string =
     |> List.groupBy _.School
     |> List.collect schoolBlock
     |> String.concat "\n"
+
+/// レコードの列を機械読み出し用のJSON文字列へ直列化する。
+let toJson (document: Document) : string = JsonCodec.serialize document
+
+/// JSON文字列をDocumentへ読み戻す。toJsonの逆変換。
+let ofJson (json: string) : Document = JsonCodec.deserialize<Document> json

@@ -271,3 +271,40 @@ let ``toReferenceMarkdownはセルの縦棒をエスケープする`` () =
                 Page = None } ]
 
     Assert.Contains("| 部活\\|係 | ★3 | 名前\\|付き |", markdown)
+
+[<Fact>]
+let ``toJsonはcamelCaseのキーとnullのoptionで直列化する`` () =
+    let json =
+        toJson
+            { Source = "https://bluearchive.wikiru.jp/?example"
+              Entries =
+                [ { School = "連邦生徒会"
+                    Club = None
+                    Rarity = "NPC"
+                    Name = "連邦生徒会長"
+                    Page = Some "スモモ" } ] }
+
+    Assert.Contains("\"source\": \"https://bluearchive.wikiru.jp/?example\"", json)
+    Assert.Contains("\"school\": \"連邦生徒会\"", json)
+    Assert.Contains("\"club\": null", json)
+    Assert.Contains("\"rarity\": \"NPC\"", json)
+    Assert.Contains("\"name\": \"連邦生徒会長\"", json)
+    Assert.Contains("\"page\": \"スモモ\"", json)
+
+[<Fact>]
+let ``ofJsonはtoJsonの出力を同じDocumentへ読み戻す`` () =
+    let document =
+        { Source = "https://bluearchive.wikiru.jp/?example"
+          Entries =
+            [ { School = "アビドス高等学校"
+                Club = Some "対策委員会"
+                Rarity = "★3"
+                Name = "ホシノ"
+                Page = None }
+              { School = "連邦生徒会"
+                Club = None
+                Rarity = "NPC"
+                Name = "連邦生徒会長"
+                Page = Some "スモモ" } ] }
+
+    Assert.Equal(document, ofJson (toJson document))

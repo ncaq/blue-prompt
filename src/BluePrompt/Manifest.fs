@@ -866,7 +866,8 @@ let wikiruTargets: Target.WikiruTarget list =
       )
       Target.School(
           "学校別",
-          "plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md"
+          "plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md",
+          "plugins/jp-wikiru-bluearchive/skills/character-index-by-group/school.json"
       ) ]
     @ (students
        |> List.collect (fun student ->

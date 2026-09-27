@@ -625,12 +625,18 @@ let writeAppellation
     }
 
 /// wikiruの学校別キャラクター一覧ページを構造化データへパースし、
-/// LLM参照用のreference.mdを書き出す。
+/// LLM参照用のreference.mdと機械読み出し用のJSONを書き出す。
 /// 整形は掛けず、書き出したパスを返す。
-let writeSchool (pageName: string) (outputPath: string) : Task<string list> =
+let writeSchool (pageName: string) (markdownPath: string) (jsonPath: string) : Task<string list> =
     task {
         let! html = Page.fetchContentHtml (pageUri pageName) structuredContentQuery
         let entries = School.parseHtml html
-        do! writeFile outputPath (knowledgeHeader pageName + School.toReferenceMarkdown entries)
-        return [ outputPath ]
+        do! writeFile markdownPath (knowledgeHeader pageName + School.toReferenceMarkdown entries)
+
+        let document: School.Document =
+            { Source = (pageUri pageName).AbsoluteUri
+              Entries = entries }
+
+        do! writeFile jsonPath (School.toJson document)
+        return [ markdownPath; jsonPath ]
     }

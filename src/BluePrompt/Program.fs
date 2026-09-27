@@ -41,8 +41,9 @@ module PageOutput =
                 | Page _ -> "取得するwikiruのページ名。"
                 | Output _ -> "書き出すファイルのパス。"
 
-/// キャラ呼称表は参照用と機械読み出し用の2つを書き出すため、出力先も2つ取る。
-module AppellationOutput =
+/// キャラ呼称表や学校別一覧のように、
+/// 構造化したテーブルから参照用と機械読み出し用の2つを書き出すコマンドの引数。
+module MarkdownJsonOutput =
     type Args =
         | [<ExactlyOnce>] Page of name: string
         | [<ExactlyOnce>] Markdown_Output of path: string
@@ -53,7 +54,7 @@ module AppellationOutput =
                 match this with
                 | Page _ -> "取得するwikiruのページ名。"
                 | Markdown_Output _ -> "LLM参照用のreference.mdの出力パス。"
-                | Json_Output _ -> "機械読み出し用のappellation.jsonの出力パス。"
+                | Json_Output _ -> "機械読み出し用のJSONの出力パス。"
 
 /// スキルのディレクトリを読んで単一の出力先へ書き出すコマンドの引数。
 module SkillOutput =
@@ -107,10 +108,10 @@ module WikiruCommand =
     [<CliPrefix(CliPrefix.None); HelpFlags("--help", "-h", "help")>]
     type Args =
         | All of ParseResults<Root.Args>
-        | Appellation of ParseResults<AppellationOutput.Args>
+        | Appellation of ParseResults<MarkdownJsonOutput.Args>
         | Knowledge of ParseResults<PageOutput.Args>
         | Roleplay_Reference of ParseResults<PageOutput.Args>
-        | School of ParseResults<PageOutput.Args>
+        | School of ParseResults<MarkdownJsonOutput.Args>
         | Student_Skill of ParseResults<PageOutput.Args>
         | Html of ParseResults<PageOutput.Args>
         | Student_Html of ParseResults<PageOutput.Args>
@@ -122,7 +123,7 @@ module WikiruCommand =
                 | Appellation _ -> "キャラ呼称表を構造化し、参照用のreference.mdと機械読み出し用のJSONを書き出す。"
                 | Knowledge _ -> "記事をMarkdown化してナレッジファイルとして書き出す。"
                 | Roleplay_Reference _ -> "生徒個別ページからプロフィールとボイスを抜き出し、衣装別の参照ファイルとして書き出す。"
-                | School _ -> "学校別キャラクター一覧を構造化し、学校ごとの一覧のreference.mdを書き出す。"
+                | School _ -> "学校別キャラクター一覧を構造化し、学校ごとの一覧のreference.mdと機械読み出し用のJSONを書き出す。"
                 | Student_Skill _ -> "生徒個別ページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
                 | Html _ -> "記事から抽出した本文をMarkdown化せずHTMLのまま書き出す。抽出設定の確認用。"
                 | Student_Html _ -> "生徒個別ページの抽出設定で本文をHTMLのまま書き出す。抽出設定の確認用。"
@@ -185,22 +186,21 @@ let private runWikiru (args: ParseResults<WikiruCommand.Args>) : int =
     let pageOutput (sub: ParseResults<PageOutput.Args>) =
         sub.GetResult PageOutput.Page, sub.GetResult PageOutput.Output
 
+    /// wikiruのページ名とMarkdownとJSONの出力先を取るコマンドの共通の取り出し。
+    let markdownJsonOutput (sub: ParseResults<MarkdownJsonOutput.Args>) =
+        sub.GetResult MarkdownJsonOutput.Page,
+        sub.GetResult MarkdownJsonOutput.Markdown_Output,
+        sub.GetResult MarkdownJsonOutput.Json_Output
+
     /// 引数から組み立てた生成対象を書き出して整形する。
     let create (target: Target.WikiruTarget) = run (Target.createWikiru target)
 
     match args.GetSubCommand() with
     | WikiruCommand.All sub -> run (Manifest.createAll (sub.GetResult Root.Root))
-    | WikiruCommand.Appellation sub ->
-        create (
-            Target.Appellation(
-                sub.GetResult AppellationOutput.Page,
-                sub.GetResult AppellationOutput.Markdown_Output,
-                sub.GetResult AppellationOutput.Json_Output
-            )
-        )
+    | WikiruCommand.Appellation sub -> create (Target.Appellation(markdownJsonOutput sub))
     | WikiruCommand.Knowledge sub -> create (Target.Knowledge(pageOutput sub))
     | WikiruCommand.Roleplay_Reference sub -> create (Target.RolePlayReference(pageOutput sub))
-    | WikiruCommand.School sub -> create (Target.School(pageOutput sub))
+    | WikiruCommand.School sub -> create (Target.School(markdownJsonOutput sub))
     | WikiruCommand.Student_Skill sub -> create (Target.StudentSkill(pageOutput sub))
     | WikiruCommand.Html sub -> run (pageOutput sub ||> Wikiru.writeContentHtml Wikiru.contentQuery)
     | WikiruCommand.Student_Html sub ->

@@ -5,9 +5,6 @@
 module BluePrompt.Appellation
 
 open System
-open System.Text.Encodings.Web
-open System.Text.Json
-open System.Text.Json.Serialization
 open AngleSharp.Dom
 open AngleSharp.Html.Parser
 
@@ -300,26 +297,9 @@ let toCallerMarkdown (caller: string) (entries: Entry list) : string =
 
         [ "| 相手 | 呼称 |"; "| --- | --- |" ] @ rows @ [ "" ] |> String.concat "\n"
 
-/// JSON直列化の設定。
-/// F#のoption型をnullと値の対応で書けるようにJsonFSharpOptionsを使い、
-/// 日本語をエスケープせずそのまま書いてdiffを読めるようにする。
-/// FSharp.SystemTextJson v1.1以降の公式推奨であるフルーエントビルダーで組み込む。
-let private serializerOptions =
-    let options =
-        JsonSerializerOptions(
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        )
-
-    JsonFSharpOptions.Default().AddToJsonSerializerOptions options
-    options
-
 /// レコードの列を機械読み出し用のJSON文字列へ直列化する。
-let toJson (document: Document) : string =
-    JsonSerializer.Serialize(document, serializerOptions) + "\n"
+let toJson (document: Document) : string = JsonCodec.serialize document
 
 /// JSON文字列をDocumentへ読み戻す。toJsonの逆変換。
 /// 生成済みのappellation.jsonからwikiruへアクセスせずに呼称を読み出す用途で使う。
-let ofJson (json: string) : Document =
-    JsonSerializer.Deserialize<Document>(json, serializerOptions)
+let ofJson (json: string) : Document = JsonCodec.deserialize<Document> json
