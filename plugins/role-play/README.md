@@ -30,15 +30,17 @@
 の生徒個別ページからの自動生成ファイルです。
 手で編集せず、リポジトリルートで以下のコマンドで再生成してください。
 `src/BluePrompt/Manifest.fs`に書いた生成物を全てまとめて更新します。
+`blue-prompt`はdevShellが置くコマンドで、
+手元のソースをReleaseでビルドして起動します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru all --root .
+blue-prompt wikiru all --root .
 ```
 
 衣装を1つだけ生成し直す時は個別コマンドを使います。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page 'ユウカ（体操服）' --output plugins/role-play/skills/yuuka/track.md
+blue-prompt wikiru roleplay-reference --page 'ユウカ（体操服）' --output plugins/role-play/skills/yuuka/track.md
 ```
 
 ## 本文の生成
@@ -117,7 +119,7 @@ wikiruへはアクセスしません。
 呼称表そのものを更新したい時は先に`wikiru appellation`で再生成してください。
 
 ```console
-dotnet run --project src/BluePrompt -- roleplay skill --character 'ユウカ' \
+blue-prompt roleplay skill --character 'ユウカ' \
   --template plugins/role-play \
   --appellation plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json \
   --output plugins/role-play/skills/yuuka
@@ -128,7 +130,7 @@ dotnet run --project src/BluePrompt -- roleplay skill --character 'ユウカ' \
 統合チェックの`roleplay-generated`もこれを実行して生成物の鮮度を確かめます。
 
 ```console
-dotnet run --project src/BluePrompt -- roleplay all --root .
+blue-prompt roleplay all --root .
 ```
 
 新しい生徒を足す時は、

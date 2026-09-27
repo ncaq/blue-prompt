@@ -68,9 +68,11 @@ LLMに記憶を頼らせるのではなく、
 リポジトリルートで以下を実行します。
 `src/BluePrompt/Manifest.fs`に書いた対象を並列に取得して書き出し、
 最後に`nix fmt`を1回だけ掛けます。
+`blue-prompt`はdevShellが置くコマンドで、
+手元のソースをReleaseでビルドして起動します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru all --root .
+blue-prompt wikiru all --root .
 ```
 
 新しいスキルを足す時は以下の個別コマンドで生成してから、
@@ -84,7 +86,7 @@ JSONをリポジトリへ置くことで、
 後段の生成処理が呼称を読み出すたびにwikiruへアクセスせずに済みます。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru appellation --page 'キャラ呼称表' \
+blue-prompt wikiru appellation --page 'キャラ呼称表' \
   --markdown-output plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md \
   --json-output plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json
 ```
@@ -94,7 +96,7 @@ dotnet run --project src/BluePrompt -- wikiru appellation --page 'キャラ呼�
 学校ごとの1つのテーブルへまとめた`reference.md`を生成します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru school --page '学校別' \
+blue-prompt wikiru school --page '学校別' \
   --output plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md
 ```
 
@@ -103,7 +105,7 @@ dotnet run --project src/BluePrompt -- wikiru school --page '学校別' \
 スキル名は出力先のディレクトリ名から導出されます。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru student-skill --page 'ユウカ' \
+blue-prompt wikiru student-skill --page 'ユウカ' \
   --output plugins/jp-wikiru-bluearchive/skills/character-yuuka/SKILL.md
 ```
 
