@@ -471,9 +471,11 @@
           blue-prompt-dev = pkgs.writeShellApplication {
             name = "blue-prompt";
             runtimeInputs = [ pkgs.git ];
+            # コマンド置換を引数へ直接書くとset -eが効かないため、
+            # リポジトリの外で呼ばれた時にその場で止まるよう変数へ受ける。
             text = ''
-              exec dotnet run --configuration Release \
-                --project "$(git rev-parse --show-toplevel)/src/BluePrompt" -- "$@"
+              root=$(git rev-parse --show-toplevel)
+              exec dotnet run --configuration Release --project "$root/src/BluePrompt" -- "$@"
             '';
           };
         in
