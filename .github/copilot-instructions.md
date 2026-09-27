@@ -147,6 +147,12 @@ dotnet msbuild lint.proj /t:AnalyzeFSharpProject -warnaserror -m
 dotnet msbuild src/BluePrompt /t:AnalyzeFSharpProject -warnaserror
 ```
 
+どちらも解析の前に必要な復元を自分で済ませるため、事前の準備は要りません。
+`src/BluePrompt.Analyzers`はどのプロジェクトからも参照されず、
+`dotnet build`や`dotnet test`では復元されないためです。
+Nixのビルドだけは復元をRuntimeIdentifier付きで済ませているので、
+`-p:BluePromptLintRestore=false`でこの復元を飛ばしています。
+
 ## NuGet依存の更新
 
 fsprojのPackageReferenceを変更したら以下を一回実行するだけで、
