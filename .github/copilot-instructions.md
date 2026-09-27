@@ -71,6 +71,15 @@ dotnet test test/BluePrompt.Test
 `dotnet test`は外部サイト依存テスト(`Category=Network`)も含めて実行します。
 Nix経由の統合検証(外部サイト依存テストを除く)はnix-fast-buildのchecksに含まれています。
 
+生成コマンドを手元のソースから実行する時は、
+devShellが置く`blue-prompt`コマンドを使います。
+中身は`dotnet run --configuration Release --project src/BluePrompt --`で、
+引数はそのまま渡り、相対パスは呼び出した場所が基準になります。
+`dotnet build`や`dotnet test`やリントは既定のDebugのままです。
+MSBuildには`dotnet run`からの呼び出しを見分ける手掛かりが無く、
+既定の構成をReleaseにするとこれらまで巻き込むため、
+実行だけをコマンドとして分けています。
+
 ## コマンドラインの構成
 
 サブコマンドと引数は[Argu](https://fsprojects.github.io/Argu/)の判別共用体で宣言しています。
@@ -234,7 +243,7 @@ wikiruの記事からの自動生成ファイルです。
 1回の起動で済むため、ページごとに起動してJITと`nix fmt`のコストを払い直さずに済みます。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru all --root .
+blue-prompt wikiru all --root .
 ```
 
 対象の一覧はJSONのような外部の設定ファイルではなく、
@@ -258,7 +267,7 @@ wikiruへアクセスせずrole-playスキルの本文だけを全て生成し�
 統合チェックの`roleplay-generated`が生成物の鮮度を確かめる時に使われます。
 
 ```console
-dotnet run --project src/BluePrompt -- roleplay all --root .
+blue-prompt roleplay all --root .
 ```
 
 ## 個別の生成
@@ -270,7 +279,7 @@ dotnet run --project src/BluePrompt -- roleplay all --root .
 一般的なページを整形した`reference.md`は以下で生成します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru knowledge --page '<ページ名>' --output <出力ファイル>
+blue-prompt wikiru knowledge --page '<ページ名>' --output <出力ファイル>
 ```
 
 キャラ呼称表のスキルは、
@@ -278,7 +287,7 @@ dotnet run --project src/BluePrompt -- wikiru knowledge --page '<ページ名>' 
 機械読み出し用の`appellation.json`を以下で同時に生成します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru appellation --page 'キャラ呼称表' \
+blue-prompt wikiru appellation --page 'キャラ呼称表' \
   --markdown-output plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md \
   --json-output plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json
 ```
@@ -288,7 +297,7 @@ dotnet run --project src/BluePrompt -- wikiru appellation --page 'キャラ呼�
 学校ごとの1つのテーブルへまとめた`reference.md`を以下で生成します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru school --page '学校別' \
+blue-prompt wikiru school --page '学校別' \
   --output plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md
 ```
 
@@ -296,14 +305,14 @@ dotnet run --project src/BluePrompt -- wikiru school --page '学校別' \
 スキル名は出力先のディレクトリ名から導出されます。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru student-skill --page '<生徒のページ名>' --output <SKILL.mdの出力パス>
+blue-prompt wikiru student-skill --page '<生徒のページ名>' --output <SKILL.mdの出力パス>
 ```
 
 role-playスキルの衣装別参照ファイルは、
 生徒個別ページからプロフィールとボイスだけを抜き出して以下で生成します。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru roleplay-reference --page '<生徒のページ名>' --output <出力ファイル>
+blue-prompt wikiru roleplay-reference --page '<生徒のページ名>' --output <出力ファイル>
 ```
 
 role-playスキルの本文は、
@@ -356,7 +365,7 @@ wikiruへはアクセスせず、リポジトリへ併置した生成物だけ�
 `nix fmt`も1回にまとまります。
 
 ```console
-dotnet run --project src/BluePrompt -- roleplay skill --character '<キャラクター名>' \
+blue-prompt roleplay skill --character '<キャラクター名>' \
   --template plugins/role-play \
   --appellation plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json \
   --output <スキルのディレクトリ>
@@ -378,7 +387,7 @@ OpenCodeのスキルも、
 こちらは`nix fmt`を実行しません。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru html --page '<ページ名>' --output <出力ファイル>
+blue-prompt wikiru html --page '<ページ名>' --output <出力ファイル>
 ```
 
 生徒個別ページは折りたたみを残すなど抽出設定が異なるため、
@@ -386,7 +395,7 @@ dotnet run --project src/BluePrompt -- wikiru html --page '<ページ名>' --out
 こちらも`nix fmt`を実行しません。
 
 ```console
-dotnet run --project src/BluePrompt -- wikiru student-html --page '<生徒のページ名>' --output <出力ファイル>
+blue-prompt wikiru student-html --page '<生徒のページ名>' --output <出力ファイル>
 ```
 
 ## 代表的な発言
@@ -446,7 +455,7 @@ nix build .#open-webui-model
 スキル1つ分を単体で変換したい時は以下を使います。
 
 ```console
-dotnet run --project src/BluePrompt -- open-webui model --skill <スキルディレクトリ> --output <出力ファイル>
+blue-prompt open-webui model --skill <スキルディレクトリ> --output <出力ファイル>
 ```
 
 ## Knowledge定義の生成
@@ -478,7 +487,7 @@ nix build .#open-webui-knowledge
 スキル1つ分を単体で変換したい時は以下を使います。
 
 ```console
-dotnet run --project src/BluePrompt -- open-webui knowledge --skill <スキルディレクトリ> --output <出力ディレクトリ>
+blue-prompt open-webui knowledge --skill <スキルディレクトリ> --output <出力ディレクトリ>
 ```
 
 ## ModelとKnowledgeの紐付け
@@ -509,7 +518,7 @@ Knowledgeのファイルは`meta.file_hash`(生バイト列のSHA-256)で比較�
 中身が変わっていないファイルには触りません。
 
 ```console
-dotnet run --project src/BluePrompt -- open-webui sync --model <モデル定義ディレクトリ> --base-url <ベースURL> \
+blue-prompt open-webui sync --model <モデル定義ディレクトリ> --base-url <ベースURL> \
   [--base-model-id <id>] [--api-key-file <パス>] \
   [--knowledge <ディレクトリ>] [--rag-template-file <パス>]
 ```
