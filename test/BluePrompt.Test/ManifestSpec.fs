@@ -139,9 +139,9 @@ let private wikiruOutputs =
     Manifest.wikiruTargets
     |> List.collect (fun target ->
         match target with
-        | Target.Appellation(_, markdownOutput, jsonOutput) -> [ markdownOutput; jsonOutput ]
+        | Target.Appellation(_, markdownOutput, jsonOutput)
+        | Target.School(_, markdownOutput, jsonOutput) -> [ markdownOutput; jsonOutput ]
         | Target.Knowledge(_, output)
-        | Target.School(_, output)
         | Target.StudentSkill(_, output)
         | Target.RolePlayReference(_, output) -> [ output ])
 

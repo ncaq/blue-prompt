@@ -93,11 +93,13 @@ blue-prompt wikiru appellation --page 'キャラ呼称表' \
 
 学校別キャラクター一覧のスキルは、
 生徒1人を1つのテーブルにしたカードの敷き詰めから所属をレコードへ構造化して、
-学校ごとの1つのテーブルへまとめた`reference.md`を生成します。
+学校ごとの1つのテーブルへまとめた`reference.md`と、
+同じレコードを機械読み出し用にした`school.json`を同時に生成します。
 
 ```console
 blue-prompt wikiru school --page '学校別' \
-  --output plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md
+  --markdown-output plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md \
+  --json-output plugins/jp-wikiru-bluearchive/skills/character-index-by-group/school.json
 ```
 
 生徒個別のスキルは1人分の量が少ないため、

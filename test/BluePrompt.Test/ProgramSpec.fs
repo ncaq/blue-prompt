@@ -23,7 +23,15 @@ let private commands =
       "wikiru knowledge", [| "wikiru"; "knowledge"; "--page"; "ページ"; "--output"; "out.md" |]
       "wikiru roleplay-reference",
       [| "wikiru"; "roleplay-reference"; "--page"; "ページ"; "--output"; "out.md" |]
-      "wikiru school", [| "wikiru"; "school"; "--page"; "学校別"; "--output"; "out.md" |]
+      "wikiru school",
+      [| "wikiru"
+         "school"
+         "--page"
+         "学校別"
+         "--markdown-output"
+         "reference.md"
+         "--json-output"
+         "school.json" |]
       "wikiru student-skill",
       [| "wikiru"; "student-skill"; "--page"; "ページ"; "--output"; "SKILL.md" |]
       "wikiru html", [| "wikiru"; "html"; "--page"; "ページ"; "--output"; "out.html" |]
