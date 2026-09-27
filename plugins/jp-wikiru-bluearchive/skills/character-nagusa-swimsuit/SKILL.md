@@ -230,6 +230,8 @@ user-invocable: false
 
 ### メモリアルロビー
 
+**BGM：Floating Floatie**
+
 このブラウザは動画を再生できません。
 
 ## ボイス
