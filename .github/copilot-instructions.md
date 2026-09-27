@@ -333,6 +333,9 @@ wikiruへはアクセスせず、リポジトリへ併置した生成物だけ�
 - `plugins/role-play/SKILL.template.md`: Claude Code向け。SKILL.mdになります
 - `plugins/role-play/MODEL.template.md`: Open WebUIのModel向け。MODEL.mdになります
 
+MODEL.mdはSKILL.mdと同じ入力から組み立てられるビルド成果物なので、
+リポジトリへは置かず`nix build .#open-webui-model`の中で生成します。
+
 ナレッジの引き方が経路で違うため、
 噛み合わない数文のために本文ごと分けています。
 `open-webui model`はMODEL.mdがあればSKILL.mdより優先して使います。
@@ -367,10 +370,8 @@ wikiruへはアクセスせず、リポジトリへ併置した生成物だけ�
 全生徒に効く指示は2つのテンプレートを、
 その生徒だけの指示はcharacter.mdを編集して生成し直します。
 
-2つの届け先はどちらもファイル名が決まっているため、
+SKILL.mdはファイル名が決まっているため、
 渡すのはテンプレートのディレクトリと出力先のディレクトリです。
-1度の起動でSKILL.mdとMODEL.mdの両方が書き出され、
-`nix fmt`も1回にまとまります。
 
 ```console
 blue-prompt roleplay skill --character '<キャラクター名>' \
@@ -379,14 +380,29 @@ blue-prompt roleplay skill --character '<キャラクター名>' \
   --output <スキルのディレクトリ>
 ```
 
-character.mdとquote/と2つのテンプレートとMODEL.mdは配布物から除かれます。
-Claude Codeのプラグインも、
-OpenCodeのスキルも、
-配布ZIPも、
-これらを除いた実体を指します。
-生成の入力と別の届け先向けの本文をスキルとして読ませる意味が無く、
-特にMODEL.mdはSKILL.mdとほぼ同じ内容なので、
-配るとスキルのディレクトリへ人格の指示が二重に置かれた状態になるためです。
+MODEL.mdの中身を手元で確かめたい時は、
+リポジトリの外の出力先を指定して以下で全員分を書き出せます。
+出力先の下へスキル名のディレクトリごとにMODEL.mdが書き出されます。
+ビルド成果物なので`nix fmt`は掛けません。
+スキルのディレクトリへ書き出すとマーケットプレイスで配られてしまう上に、
+衣装の参照ファイルと見なされて以後の生成も止まるため、
+出力先はリポジトリの外にしてください。
+
+```console
+blue-prompt roleplay model --root . --output <出力ディレクトリ>
+```
+
+MODEL.mdをリポジトリへ置かないのは、
+SKILL.mdとほぼ同じ内容なので、
+スキルのディレクトリへ置くと人格の指示が二重に置かれた状態で配られるためです。
+Claude CodeとClaude.aiのweb版のマーケットプレイスはリポジトリの`plugins/`をそのまま配るため、
+配布物を組み立てる時に除外する方法ではそちらの経路に効きません。
+
+character.mdとquote/と2つのテンプレートはスキルのディレクトリに置いたままです。
+Nixで組み立てるOpenCodeのスキルやhome-manager経由のClaude Codeのプラグインや配布ZIPからは除かれますが、
+マーケットプレイスの経路では一緒に配られます。
+生成の入力なので読ませる意味はありませんが、
+人格の指示が二重になるMODEL.mdと違って害も無いため許容しています。
 除外する名前はflake.nixの`nonSkillNames`が持っていて、
 漏れは統合チェックが検出します。
 
@@ -445,6 +461,8 @@ Modelは会話の入口を選ぶだけで、
 MODEL.md(無ければSKILL.md)の本文を、
 システムプロンプトへ焼き込んだワークスペースModelの作成フォームJSONへ変換します。
 生成物は`POST /api/v1/models/create`へそのまま渡して登録できる形式です。
+role-playスキルのMODEL.mdはリポジトリに無く、
+`nix build .#open-webui-model`がビルドの中で`roleplay model`で生成してから変換します。
 
 読ませたい参照データは本文が節として持っている前提なので、
 ここでは参照ファイルを解決しません。

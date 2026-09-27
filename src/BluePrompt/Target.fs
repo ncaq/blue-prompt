@@ -70,6 +70,19 @@ let writeWikiru (target: WikiruTarget) : Task<string list> =
 let writeRolePlay (skill: RolePlaySkill) : Task<string list> =
     RolePlay.writeSkill skill.Caller skill.Template skill.Appellation skill.Output
 
+/// Open WebUIのModel向けの本文を、出力先の下のスキル名のディレクトリへ書き出し、書いたパスを返す。
+/// スキル名はスキルのディレクトリの名前と揃える。
+let writeRolePlayModel (outputDirectory: string) (skill: RolePlaySkill) : Task<string list> =
+    RolePlay.writeModel
+        skill.Caller
+        skill.Template
+        skill.Appellation
+        skill.Output
+        (Path.Combine(
+            outputDirectory,
+            Path.GetFileName(Path.TrimEndingDirectorySeparator skill.Output)
+        ))
+
 /// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
 /// nixの起動とtreefmtの評価が所要時間の支配項なので、
 /// 複数のファイルを書き出す対象も1回の起動でまとめて整形する。

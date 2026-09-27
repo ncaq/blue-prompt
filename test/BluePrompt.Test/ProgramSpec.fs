@@ -37,6 +37,7 @@ let private commands =
       "wikiru html", [| "wikiru"; "html"; "--page"; "ページ"; "--output"; "out.html" |]
       "wikiru student-html", [| "wikiru"; "student-html"; "--page"; "ページ"; "--output"; "out.html" |]
       "roleplay all", [| "roleplay"; "all"; "--root"; "." |]
+      "roleplay model", [| "roleplay"; "model"; "--root"; "."; "--output"; "out" |]
       "roleplay skill",
       [| "roleplay"
          "skill"
@@ -81,6 +82,7 @@ let private parsedName (argv: string array) : string =
     | Program.RootCommand.Roleplay sub ->
         match sub.GetSubCommand() with
         | Program.RolePlayCommand.All _ -> "roleplay all"
+        | Program.RolePlayCommand.Model _ -> "roleplay model"
         | Program.RolePlayCommand.Skill _ -> "roleplay skill"
     | Program.RootCommand.Open_Webui sub ->
         match sub.GetSubCommand() with

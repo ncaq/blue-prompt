@@ -1012,11 +1012,14 @@ let private checkKnowledgeSkills (root: string) : Task<unit> =
         | failures -> return raise (KnowledgeSkillMissing failures)
     }
 
-/// role-playスキルを全て並列に書き出し、書いたパスを返す。整形は掛けない。
+/// role-playスキルの全員分を並列に書き出し、書いたパスを返す。整形は掛けない。
 /// 失敗があればGenerationFailedを送出する。
-let writeRolePlaySkills (root: string) : Task<string list> =
+let private writeAllRolePlay
+    (root: string)
+    (write: Target.RolePlaySkill -> Task<string list>)
+    : Task<string list> =
     task {
-        // ナレッジの検査が効くのはこの一括更新の経路だけで、roleplay skillの単体の生成は素通りする。
+        // ナレッジの検査が効くのはこの一括の経路だけで、roleplay skillの単体の生成は素通りする。
         // 掛ける場所を増やしても、Manifestへ足す前のスキルはrolePlaySkillsに載っておらず検査の対象にならない。
         // どちらにせよManifestへ足した後の一括更新で落ちるので、ここ1箇所に留める。
         do! checkKnowledgeSkills root
@@ -1024,13 +1027,25 @@ let writeRolePlaySkills (root: string) : Task<string list> =
         let! results =
             rolePlaySkills
             |> List.map (fun skill ->
-                Target.rolePlayName skill,
-                (fun () -> Target.writeRolePlay (Target.resolveRolePlay root skill)))
+                Target.rolePlayName skill, (fun () -> write (Target.resolveRolePlay root skill)))
             |> runBounded degreeOfParallelism
 
         match partition results with
         | paths, [] -> return paths
         | _, failures -> return raise (GenerationFailed failures)
+    }
+
+/// role-playスキルのSKILL.mdを全て並列に書き出し、書いたパスを返す。整形は掛けない。
+let writeRolePlaySkills (root: string) : Task<string list> =
+    writeAllRolePlay root Target.writeRolePlay
+
+/// role-playスキルのOpen WebUIのModel向けの本文を全て、
+/// 出力先の下のスキル名のディレクトリへMODEL.mdとして書き出す。
+/// リポジトリへ置かないビルド成果物なので整形は掛けない。
+let createRolePlayModels (root: string) (outputDirectory: string) : Task<unit> =
+    task {
+        let! (_: string list) = writeAllRolePlay root (Target.writeRolePlayModel outputDirectory)
+        return ()
     }
 
 /// role-playスキルを全て生成し直してから、まとめてnix fmtを掛ける。
