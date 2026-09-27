@@ -16,6 +16,25 @@
     <Error
       Condition="'@(ProjectToAnalyze)' == ''"
       Text="リント対象のfsprojが1件も見つかりません。globの前提が崩れています。" />
+    <!--
+      解析の前に対象を全て復元する。
+      BluePrompt.Analyzersはどのプロジェクトからも参照されないため、
+      `dotnet build`や`dotnet test`では復元されず、
+      復元されていないプロジェクトにはFSharp.Analyzers.Buildのターゲットが読み込まれない。
+      実行者に復元を覚えさせずに済むように、リントの入口が自分で済ませる。
+      復元は評価結果を書き換えるため、
+      解析とは別のグローバルプロパティを渡して別の評価で走らせ、
+      後続の解析が復元後の状態で評価し直されるようにする。
+      `-p:BluePromptLintRestore=false`で飛ばせる。
+      Nixのビルドは解析の前にRuntimeIdentifier付きで復元を済ませていて、
+      ここでRuntimeIdentifier無しで復元し直すと後のinstallPhaseが使う結果を上書きしてしまうため。
+    -->
+    <MSBuild
+      Condition="'$(BluePromptLintRestore)' != 'false'"
+      Projects="@(ProjectToAnalyze)"
+      Targets="Restore"
+      Properties="BluePromptLintRestoring=true"
+      BuildInParallel="true" />
     <MSBuild
       Projects="@(ProjectToAnalyze)"
       Targets="AnalyzeFSharpProject"

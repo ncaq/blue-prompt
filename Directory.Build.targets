@@ -27,8 +27,17 @@
     BluePrompt.Analyzers自身の解析でもこのビルドは省略できない。
     Propertiesを指定せず現在のグローバルプロパティを継承させることで、
     同一ビルド内の複数プロジェクトからの呼び出しがプロジェクト結果キャッシュへ当たる。
+    BluePrompt.Analyzersはどのプロジェクトからも参照されず`dotnet build`では復元されないため、
+    特定のプロジェクトだけを解析する時にも復元をここで済ませる。
+    復元はlint.projと同じく別のグローバルプロパティを渡して、
+    ビルドとは別の評価で走らせ、同じく`-p:BluePromptLintRestore=false`で飛ばせる。
   -->
   <Target Name="BuildBluePromptAnalyzers" BeforeTargets="_AnalyzeFSharpProject">
+    <MSBuild
+      Condition="'$(BluePromptLintRestore)' != 'false'"
+      Projects="$(MSBuildThisFileDirectory)src/BluePrompt.Analyzers/BluePrompt.Analyzers.fsproj"
+      Targets="Restore"
+      Properties="BluePromptLintRestoring=true" />
     <MSBuild
       Projects="$(MSBuildThisFileDirectory)src/BluePrompt.Analyzers/BluePrompt.Analyzers.fsproj"
       Targets="Build" />
