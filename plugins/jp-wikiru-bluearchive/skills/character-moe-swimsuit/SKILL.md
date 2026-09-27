@@ -220,13 +220,13 @@ user-invocable: false
 
 ## 絆ストーリー
 
-|     |                      |            |                                |
-| :-: | -------------------- | :--------: | ------------------------------ |
-| EP  | タイトル             | 解放絆RANK | 報酬                           |
-|  1  | Explosive hazards    |     2      | 青輝石x20                      |
-|  2  | Danger close         |     3      | 青輝石x40                      |
+|     |                       |            |                                |
+| :-: | --------------------- | :--------: | ------------------------------ |
+| EP  | タイトル              | 解放絆RANK | 報酬                           |
+|  1  | Explosive hazards     |     2      | 青輝石x20                      |
+|  2  | Danger close          |     3      | 青輝石x40                      |
 |  3  | Logistics information |     5      | 青輝石x60                      |
-|  4  | Area beautification  |     6      | 青輝石x80,メモリアルロビー解禁 |
+|  4  | Area beautification   |     6      | 青輝石x80,メモリアルロビー解禁 |
 
 ### メモリアルロビー
 
