@@ -15,6 +15,7 @@ let skill: string = "SKILL.md"
 /// スキル本体と同じ内容を、
 /// ナレッジが紐付けから自動で渡される前提の書き方で持つ。
 /// open-webui modelはこれがあればスキル本体より優先する。
+/// 配布するスキルのディレクトリには置かず、ビルド時にroleplay modelで生成する。
 let model: string = "MODEL.md"
 
 /// 生徒に固有の手書きの部分を書くファイル。

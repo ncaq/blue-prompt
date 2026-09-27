@@ -19,9 +19,9 @@
 
 ## 衣装ごとの参照ファイル
 
-どのスキルにもSKILL.mdとMODEL.mdの他に、
+どのスキルにもSKILL.mdの他に、
 衣装(実装)ごとのプロフィールとゲーム内ボイス一覧を収めた参照ファイルがあります。
-中身はSKILL.mdとMODEL.mdの本文へインライン化されるため、
+中身はSKILL.mdとOpen WebUI向けのMODEL.mdの本文へインライン化されるため、
 このファイルは生成の入力であり、
 単体で衣装のデータを引きたい時のための控えでもあります。
 
@@ -45,7 +45,7 @@ blue-prompt wikiru roleplay-reference --page 'ユウカ（体操服）' --output
 
 ## 本文の生成
 
-どのスキルのSKILL.mdとMODEL.mdも自動生成ファイルです。
+どのスキルのSKILL.mdも、Open WebUI向けのMODEL.mdも自動生成ファイルです。
 本文の骨格はこのプラグインの直下のテンプレートが持っていて、
 全ての生徒が同じものを使います。
 生徒ごとに違うのは差し込む値だけです。
@@ -57,6 +57,9 @@ blue-prompt wikiru roleplay-reference --page 'ユウカ（体操服）' --output
 - MODEL.template.md: Open WebUIのModel向け。MODEL.mdになります。
   ナレッジは紐付けから自動で渡される前提の書き方です
 
+MODEL.mdはSKILL.mdと同じ入力から組み立てられるので、リポジトリへは置きません。
+`nix build .#open-webui-model`がビルドの中で`roleplay model`で生成して、
+`open-webui model`へ渡します。
 `open-webui model`はMODEL.mdがあればSKILL.mdより優先して使います。
 1つの本文へ両方の言い方を収めると、
 どちらの経路でも半分は当てはまらない説明を読ませることになるため、
@@ -111,10 +114,9 @@ Open WebUIのModelにはそもそも開く手段が無いためです。
 全生徒に効く指示を変えたい時は2つのテンプレートを、
 その生徒だけの指示を変えたい時はcharacter.mdを編集して、
 以下のコマンドで生成し直してください。
-2つの届け先はどちらもファイル名が決まっているため、
-渡すのはテンプレートのディレクトリと出力先のディレクトリで、
-1度の起動で両方が書き出されます。
-SKILL.mdとMODEL.mdを直接編集してはいけません。
+SKILL.mdはファイル名が決まっているため、
+渡すのはテンプレートのディレクトリと出力先のディレクトリです。
+SKILL.mdを直接編集してはいけません。
 wikiruへはアクセスしません。
 呼称表そのものを更新したい時は先に`wikiru appellation`で再生成してください。
 
@@ -131,6 +133,15 @@ blue-prompt roleplay skill --character 'ユウカ' \
 
 ```console
 blue-prompt roleplay all --root .
+```
+
+MODEL.mdの中身を手元で確かめたい時は、
+リポジトリの外の出力先を指定して以下で書き出せます。
+出力先の下へスキル名のディレクトリごとにMODEL.mdが書き出されます。
+ビルド成果物なので`nix fmt`は掛けません。
+
+```console
+blue-prompt roleplay model --root . --output <出力ディレクトリ>
 ```
 
 新しい生徒を足す時は、
@@ -171,16 +182,16 @@ quote/が無ければ0件として扱い、
 
 ## 配布物から除かれるファイル
 
-生成の入力であるcharacter.mdとquote/とテンプレート、
-それにMODEL.mdは配布物から除かれます。
-Claude Codeのプラグインも、
-OpenCodeのスキルも、
-配布ZIPも、
-これらを除いた実体を指します。
-
-スキルとして読ませる意味が無いからで、
-特にMODEL.mdはSKILL.mdとほぼ同じ内容なので、
+MODEL.mdはSKILL.mdとほぼ同じ内容なので、
 配るとスキルのディレクトリへ人格の指示が二重に置かれた状態になります。
+マーケットプレイスはこのプラグインのディレクトリをそのまま配るため、
+MODEL.mdはリポジトリへ置かずにビルドの中で生成しています。
+
+生成の入力であるcharacter.mdとquote/とテンプレートはこのディレクトリに置いたままです。
+Nixで組み立てるOpenCodeのスキルとhome-manager経由のClaude Codeのプラグインと配布ZIPからは除かれますが、
+マーケットプレイスの経路では一緒に配られます。
+スキルとして読ませる意味はありませんが、
+人格の指示が二重になるMODEL.mdと違って害も無いため許容しています。
 
 除外する名前はリポジトリルートのflake.nixの`nonSkillNames`が持っています。
 スキルのディレクトリへ配布したくないファイルやディレクトリを増やす時は、

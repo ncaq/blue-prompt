@@ -23,7 +23,7 @@ let private baseFileName: string = "normal.md"
 
 /// スキルのディレクトリにあるMarkdownのうち、衣装別の参照ファイルではないもの。
 let private nonReferenceFileNames =
-    Set.ofList [ SkillFile.skill; SkillFile.model; SkillFile.character ]
+    Set.ofList [ SkillFile.skill; SkillFile.character ]
 
 /// 参照ファイル1つ分の、本文へ差し込むために要る情報。
 /// 中身は本文へそのまま写す。
@@ -112,7 +112,7 @@ let toCostumeMarkdown (references: Reference list) : string =
     |> String.concat "\n\n"
 
 /// スキルのディレクトリから衣装別の参照ファイルを読む。
-/// SKILL.mdとMODEL.mdとcharacter.md以外のMarkdownを参照ファイルと見なす。
+/// SKILL.mdとcharacter.md以外のMarkdownを参照ファイルと見なす。
 /// 除外を並べる形なので、
 /// スキルのディレクトリへREADME.mdのような別のMarkdownを置くと、
 /// 出典の行を持たない衣装の参照ファイルと見なされてReferenceShapeErrorになる。
@@ -314,54 +314,73 @@ let renderSkill (input: SkillInput) : string =
     + "\n\n"
     + Template.renderOrFail input.TemplatePath values input.Template
 
-/// 届け先の、骨格になるテンプレートと書き出す本文のファイル名の組。
-/// どちらの届け先も同じ入力から組み立てるので、生成は常に両方まとめて行う。
-let private destinations =
-    [ SkillFile.skillTemplate, SkillFile.skill
-      SkillFile.modelTemplate, SkillFile.model ]
+/// 全生徒で共通のテンプレートと、スキルのディレクトリに併置された生成物から、本文を1つ書き出す。
+/// 生徒に固有の手書きの部分と衣装別の参照ファイルと代表的な発言は、スキルのディレクトリから読む。
+/// 整形は掛けず、書き出したパスを返す。
+let private writeBody
+    (templatePath: string)
+    (outputPath: string)
+    (caller: string)
+    (jsonPath: string)
+    (skillDirectory: string)
+    : Task<string list> =
+    task {
+        let characterPath = Path.Combine(skillDirectory, SkillFile.character)
+        let! character = File.ReadAllTextAsync characterPath
+        let! references = readReferences skillDirectory
+        let! quotes = readQuotes skillDirectory
+        let! json = File.ReadAllTextAsync jsonPath
+        let! template = File.ReadAllTextAsync templatePath
 
-/// 全生徒で共通のテンプレートと、併置された生成物から、role-playスキルの本文を書き出す。
-/// 届け先はClaude Code向けのSKILL.mdとOpen WebUIのModel向けのMODEL.mdの2つで、
+        let body =
+            renderSkill
+                { Caller = caller
+                  TemplatePath = templatePath
+                  Template = template
+                  CharacterPath = characterPath
+                  Character = OpenWebui.parseFrontmatter characterPath character
+                  References = references
+                  Quotes = quotes
+                  Appellation = Appellation.ofJson json }
+
+        do! File.WriteAllTextAsync(outputPath, body)
+        return [ outputPath ]
+    }
+
+/// Claude Code向けのSKILL.mdをスキルのディレクトリへ書き出す。
 /// テンプレートも出力もファイル名が決まっているため、受け取るのはそれぞれのディレクトリになる。
-/// 生徒に固有の手書きの部分と衣装別の参照ファイルは、出力先のディレクトリから読む。
-/// 整形は掛けず、書き出した2つのパスを返す。
+/// 整形は掛けず、書き出したパスを返す。
 /// 整形の呼び出しは一括生成で1回にまとめられるように書き出しと分けてTargetが持つ。
 let writeSkill
     (caller: string)
     (templateDirectory: string)
     (jsonPath: string)
+    (skillDirectory: string)
+    : Task<string list> =
+    writeBody
+        (Path.Combine(templateDirectory, SkillFile.skillTemplate))
+        (Path.Combine(skillDirectory, SkillFile.skill))
+        caller
+        jsonPath
+        skillDirectory
+
+/// Open WebUIのModel向けのMODEL.mdを出力先のディレクトリへ書き出す。
+/// SKILL.mdと同じ入力から組み立てられるビルド成果物なので、リポジトリへは置かない。
+/// スキルのディレクトリはそのまま配布されるので、
+/// そこへ置くと人格の指示が二重に置かれた状態になるため。
+/// Open WebUIのシステムプロンプトになるだけで人が読むものではないため、整形も掛けない。
+let writeModel
+    (caller: string)
+    (templateDirectory: string)
+    (jsonPath: string)
+    (skillDirectory: string)
     (outputDirectory: string)
     : Task<string list> =
-    task {
-        let characterPath = Path.Combine(outputDirectory, SkillFile.character)
-        let! character = File.ReadAllTextAsync characterPath
-        let! references = readReferences outputDirectory
-        let! quotes = readQuotes outputDirectory
-        let! json = File.ReadAllTextAsync jsonPath
-        let frontmatter = OpenWebui.parseFrontmatter characterPath character
-        let document = Appellation.ofJson json
+    Directory.CreateDirectory outputDirectory |> ignore
 
-        let paths =
-            destinations
-            |> List.map (fun (templateName, outputName) ->
-                Path.Combine(templateDirectory, templateName),
-                Path.Combine(outputDirectory, outputName))
-
-        for templatePath, outputPath in paths do
-            let! template = File.ReadAllTextAsync templatePath
-
-            let skill =
-                renderSkill
-                    { Caller = caller
-                      TemplatePath = templatePath
-                      Template = template
-                      CharacterPath = characterPath
-                      Character = frontmatter
-                      References = references
-                      Quotes = quotes
-                      Appellation = document }
-
-            do! File.WriteAllTextAsync(outputPath, skill)
-
-        return List.map snd paths
-    }
+    writeBody
+        (Path.Combine(templateDirectory, SkillFile.modelTemplate))
+        (Path.Combine(outputDirectory, SkillFile.model))
+        caller
+        jsonPath
+        skillDirectory
