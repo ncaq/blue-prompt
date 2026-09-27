@@ -1044,7 +1044,7 @@ let writeRolePlaySkills (root: string) : Task<string list> =
 /// リポジトリへ置かないビルド成果物なので整形は掛けない。
 let createRolePlayModels (root: string) (outputDirectory: string) : Task<unit> =
     task {
-        let! _ = writeAllRolePlay root (Target.writeRolePlayModel outputDirectory)
+        let! (_: string list) = writeAllRolePlay root (Target.writeRolePlayModel outputDirectory)
         return ()
     }
 
