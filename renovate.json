@@ -17,7 +17,7 @@
       "groupName": "fsharp-analyzers"
     },
     {
-      "description": "FSharp.CoreはFSharp.Analyzers.SDKが完全一致で要求する版に従うため、単独で上げるとNU1608で復元が失敗する。SDKの更新に合わせて手動で揃える。",
+      "description": "FSharp.CoreはFSharp.Analyzers.SDKが完全一致で要求する版に従うため、単独で上げるとNU1608で復元が失敗する。SDKの更新時にupdate-depsがSDKの要求する版へ揃える。",
       "matchPackageNames": ["FSharp.Core"],
       "enabled": false
     }

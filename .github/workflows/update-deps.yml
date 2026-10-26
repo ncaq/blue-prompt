@@ -2,7 +2,8 @@ name: update-deps
 
 # RenovateはfsprojとDirectory.Build.propsのPackageReferenceだけを書き換えるため、
 # Nixのビルドが読むdeps.jsonが古いまま残り必須チェックのnix-fast-buildが落ちます。
-# F#アナライザーのCLIツールのhashを持つfsharp-analyzers.jsonも同様です。
+# F#アナライザーのCLIツールのhashを持つfsharp-analyzers.jsonと、
+# SDKが要求するFSharp.Coreの固定版を持つDirectory.Build.propsも同様です。
 # Mendのホスト版RenovateはpostUpgradeTasksを実行できないので、
 # 代わりにRenovateのブランチへこれらの再生成をコミットして追従させます。
 #
@@ -60,7 +61,7 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
-          mapfile -t files < <(git diff --name-only -- deps.json fsharp-analyzers.json)
+          mapfile -t files < <(git diff --name-only -- Directory.Build.props deps.json fsharp-analyzers.json)
           if [ "${#files[@]}" -eq 0 ]; then
             echo '再生成したファイルに変更はありません。'
             exit 0

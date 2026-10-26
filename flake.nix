@@ -312,19 +312,49 @@
           };
 
           # NuGet依存のロックファイルの再生成と整形を一回の実行で済ませる。
+          # FSharp.Coreの固定版とF#アナライザーのCLIのhashのように、
+          # SDKの版から決まるのにRenovateが追従しないものもここで揃える。
           # コミットは他の変更とコミット単位を揃えたいため行わない。
           # fetch-depsはネットワークを使うためNixサンドボックス外で実行する必要があり、
           # nix runで起動するスクリプトとして提供する。
           update-deps = pkgs.writeShellApplication {
             name = "update-deps";
             runtimeInputs = [
+              pkgs.curl
               pkgs.git
+              pkgs.gnused
               pkgs.jq
               pkgs.nix
+              pkgs.xmlstarlet
             ];
             text = ''
               cd "$(git rev-parse --show-toplevel)"
-              ${blue-prompt.passthru.fetch-deps} deps.json
+              # FSharp.CoreはFSharp.Analyzers.SDKが完全一致で要求する版へ固定する必要があり、
+              # 食い違っていると復元自体が失敗するため、fetch-depsより先に揃える。
+              # RenovateはSDKしか上げないので、SDKのnuspecから要求する版を読み取る。
+              sdk_version=$(
+                xmlstarlet select --template \
+                  --value-of '//PackageReference[@Include="FSharp.Analyzers.SDK"]/@Version' \
+                  src/BluePrompt.Analyzers/BluePrompt.Analyzers.fsproj
+              )
+              fsharp_core_version=$(
+                curl --fail --silent --show-error --location \
+                  "https://api.nuget.org/v3-flatcontainer/fsharp.analyzers.sdk/$sdk_version/fsharp.analyzers.sdk.nuspec" |
+                  xmlstarlet select -N nuspec=http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd \
+                    --template --match '//nuspec:dependency[@id="FSharp.Core"]' --value-of @version --nl |
+                  sort --unique |
+                  tr --delete '[]'
+              )
+              if [[ ! $fsharp_core_version =~ ^[0-9.]+$ ]]; then
+                echo "FSharp.Analyzers.SDK $sdk_version が要求するFSharp.Coreの版を1つに決められません: $fsharp_core_version" >&2
+                exit 1
+              fi
+              sed --in-place \
+                "s|<FSharpCoreVersion>[^<]*</FSharpCoreVersion>|<FSharpCoreVersion>$fsharp_core_version</FSharpCoreVersion>|" \
+                Directory.Build.props
+              # fetch-depsは評価時点のソースを復元するため、
+              # 上で書き換えた内容を反映させるにはここで評価し直す必要がある。
+              "$(nix build --no-link --print-out-paths .#blue-prompt.fetch-deps)" deps.json
               # CLIツールのパッケージはfetch-depsの対象にならないため、
               # SDKと同じ版のhashを別に取得してflake.nixが読むファイルへ書き出す。
               version=$(jq --raw-output '.[] | select(.pname == "FSharp.Analyzers.SDK") | .version' deps.json)

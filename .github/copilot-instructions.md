@@ -169,6 +169,11 @@ CLIはツールのパッケージなのでfetch-depsの対象にならず、
 deps.jsonのFSharp.Analyzers.SDKと同じ版のhashを別に取得しています。
 SDKの版と食い違っていればflake.nixの評価時に止まります。
 
+Directory.Build.propsの`FSharpCoreVersion`も、
+SDKが完全一致で要求する版へ揃える必要があります。
+食い違っていると復元自体が失敗するため、
+`update-deps`はfetch-depsの前にSDKのnuspecから要求する版を読み取って書き換えます。
+
 RenovateはfsprojとDirectory.Build.propsのPackageReferenceしか書き換えないため、
 そのままではこれらが古いまま残りnix-fast-buildが落ちます。
 Mendのホスト版RenovateはpostUpgradeTasksを実行できないので、
