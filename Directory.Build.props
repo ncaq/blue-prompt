@@ -33,7 +33,7 @@
     SDKを上げて再生成すれば追従する。
   -->
   <PropertyGroup>
-    <FSharpCoreVersion>10.1.400</FSharpCoreVersion>
+    <FSharpCoreVersion>10.1.402</FSharpCoreVersion>
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     <DisableImplicitLibraryPacksFolder>true</DisableImplicitLibraryPacksFolder>
   </PropertyGroup>
