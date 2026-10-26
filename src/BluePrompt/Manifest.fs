@@ -44,7 +44,7 @@ let referenceFileName (student: Student) : string =
 
 /// 実装済みの全生徒。衣装違いもwikiruのページが分かれているため1行ずつ持つ。
 /// 並びはベースの生徒の五十音順で、素の衣装を先頭に衣装違いが続く。
-/// 出典はwikiruのキャラクター一覧で、NPCは含めない。
+/// 出典はwikiruのキャラクター一覧で、プレイアブルではない登場人物は含めずunplayablesへ置く。
 let students: Student list =
     [ { Page = "アイリ"
         Base = "airi"
@@ -875,6 +875,84 @@ let students: Student list =
         Base = "shokuhou-misaki"
         Costume = None } ]
 
+/// プレイアブルではない登場人物。
+/// 未実装の生徒と、アロナのように生徒ではない人物の両方を含む。
+/// ロールプレイの対象にせず、生徒の会話で話題に上った時に設定を引くためのナレッジだけを持つ。
+type Unplayable =
+    {
+        /// wikiruのページ名。
+        Page: string
+        /// グローバル版の英語表記から作ったスラッグ。ナレッジのスキル名の元になる。
+        /// 生徒と違って作中で呼び名が定まっていない人物もいるため、
+        /// 日本語の読みではなくbluearchive.wikiのNPCのカテゴリのページ名に揃える。
+        Slug: string
+    }
+
+/// プレイアブルではない登場人物のナレッジのスキル名。生徒と同じくcharacter-<slug>。
+let unplayableSkillName (unplayable: Unplayable) : string = $"character-%s{unplayable.Slug}"
+
+/// wikiruの学校別キャラクター一覧でレアリティがNPCとされている全員。
+/// 並びはページ名の五十音順。
+/// 実装されて生徒になったら、ここから外してstudentsへ移す。
+let unplayables: Unplayable list =
+    [ { Page = "アオイ"; Slug = "aoi" }
+      { Page = "アキラ"; Slug = "akira" }
+      { Page = "アケミ"; Slug = "akemi" }
+      { Page = "アザミ"; Slug = "azami" }
+      { Page = "アミ"; Slug = "ami" }
+      { Page = "アヤメ"; Slug = "ayame" }
+      { Page = "アユム"; Slug = "ayumu" }
+      { Page = "アラタ"; Slug = "arata" }
+      { Page = "アロナ"; Slug = "arona" }
+      { Page = "カイ"; Slug = "kai" }
+      // 5人で1ページなので、個人ではなく戦隊の名前で1つにする。
+      { Page = "カイテンジャー"; Slug = "kaitenger" }
+      { Page = "カグヤ"; Slug = "kaguya" }
+      { Page = "カナエ"; Slug = "kanae" }
+      { Page = "カヤ"; Slug = "kaya" }
+      { Page = "カレン"; Slug = "karen" }
+      { Page = "クズノハ"; Slug = "kuzunoha" }
+      { Page = "コクリコ"; Slug = "kokuriko" }
+      { Page = "サナエ"; Slug = "sanae" }
+      { Page = "サユリ"; Slug = "sayuri" }
+      { Page = "シノン"; Slug = "shinon" }
+      { Page = "シュロ"; Slug = "shuro" }
+      { Page = "ショウコ"; Slug = "shouko" }
+      { Page = "スイコ"; Slug = "suiko" }
+      { Page = "スオウ"; Slug = "suou" }
+      { Page = "スミカ"; Slug = "sumika" }
+      { Page = "スモモ"; Slug = "sumomo" }
+      { Page = "ソラ"; Slug = "sora" }
+      { Page = "ツバサ"; Slug = "tsubasa" }
+      { Page = "ナゴミ"; Slug = "nagomi" }
+      { Page = "ナツキ"; Slug = "natsuki" }
+      { Page = "ナナミ"; Slug = "nanami" }
+      { Page = "ニヤニヤ教授"
+        Slug = "professor-smug" }
+      { Page = "ハイネ"; Slug = "haine" }
+      { Page = "ヒロミ"; Slug = "hiromi" }
+      { Page = "プラナ"; Slug = "plana" }
+      { Page = "マイ"; Slug = "mai" }
+      { Page = "マイア"; Slug = "maia" }
+      { Page = "マキナ"; Slug = "makina" }
+      { Page = "マユミ"; Slug = "mayumi" }
+      { Page = "ミスズ"; Slug = "misuzu" }
+      { Page = "ミツキ"; Slug = "mitsuki" }
+      { Page = "ミナト"; Slug = "minato" }
+      { Page = "ミライ"; Slug = "mirai" }
+      { Page = "モモカ"; Slug = "momoka" }
+      { Page = "ユキノ"; Slug = "yukino" }
+      { Page = "ユメ"; Slug = "yume" }
+      { Page = "ヨウコ"; Slug = "youko" }
+      { Page = "ラナ"; Slug = "rana" }
+      { Page = "リン"; Slug = "rin" }
+      { Page = "連邦生徒会長"
+        Slug = "student-council-president" }
+      // 会長を自称する別人。bluearchive.wikiには個別のページが無く、
+      // 連邦生徒会長のページの立ち絵に添えられた(False)の表記に揃える。
+      { Page = "連邦生徒会長（金髪）"
+        Slug = "student-council-president-false" } ]
+
 /// wikiruから取り込む対象。パスはリポジトリのルートからの相対。
 let wikiruTargets: Target.WikiruTarget list =
     [ Target.Appellation(
@@ -897,6 +975,12 @@ let wikiruTargets: Target.WikiruTarget list =
                  student.Page,
                  $"plugins/role-play/skills/%s{student.Base}/%s{referenceFileName student}"
              ) ]))
+    @ (unplayables
+       |> List.map (fun unplayable ->
+           Target.UnplayableSkill(
+               unplayable.Page,
+               $"plugins/jp-wikiru-bluearchive/skills/%s{unplayableSkillName unplayable}/SKILL.md"
+           )))
 
 /// テンプレートから本文を生成するrole-playスキル。パスはリポジトリのルートからの相対。
 /// 素の衣装の1行からベースの生徒ごとに1つ導出する。
@@ -969,15 +1053,21 @@ let private partition
 /// character.mdが挙げるナレッジのうち実在しなかった名前を、character.mdのパスごとに並べたもの。
 exception KnowledgeSkillMissing of failures: (string * string list) list
 
-/// 生徒個別スキルの名前。スキル名は出力先のディレクトリの名前と一致する。
-let studentSkillNames (targets: Target.WikiruTarget list) : Set<string> =
+/// 生徒個別スキルとプレイアブルではない登場人物のスキルの名前。
+/// スキル名は出力先のディレクトリの名前と一致する。
+/// ユメを語るホシノのように、生徒がプレイアブルではない登場人物のナレッジを引けるとよい場合があるため、
+/// character.mdが挙げてよい名前にはそのスキルも含める。
+let characterSkillNames (targets: Target.WikiruTarget list) : Set<string> =
     targets
     |> List.choose (function
-        | Target.StudentSkill(_, output) -> Path.GetDirectoryName output |> Path.GetFileName |> Some
+        | Target.StudentSkill(_, output)
+        | Target.UnplayableSkill(_, output) ->
+            Path.GetDirectoryName output |> Path.GetFileName |> Some
         | _ -> None)
     |> Set.ofList
 
-/// character.mdが挙げるナレッジのうち、生徒個別スキルとして実在しない名前を集める。
+/// character.mdが挙げるナレッジのうち、
+/// 生徒個別スキルやプレイアブルではない登場人物のスキルとして実在しない名前を集める。
 /// この名前は生成物へ参照先としてそのまま書き出されるため、
 /// 綴りを間違えても生成対象を足し忘れても、生成物の差分だけでは気付けない。
 /// 実在するものだけになっていれば空を返す。
@@ -994,7 +1084,8 @@ let missingKnowledgeSkills
         | [] -> None
         | missing -> Some(path, missing))
 
-/// role-playスキルのcharacter.mdが挙げるナレッジが、全て実在する生徒個別スキルかを確かめる。
+/// role-playスキルのcharacter.mdが挙げるナレッジが、
+/// 全て実在する生徒個別スキルかプレイアブルではない登場人物のスキルかを確かめる。
 /// 実在しない名前があればKnowledgeSkillMissingを送出する。
 /// wikiruTargetsとrolePlaySkillsの両方を知っているのはここだけなので、この検査もここが持つ。
 ///
@@ -1025,7 +1116,7 @@ let private checkKnowledgeSkills (root: string) : Task<unit> =
         if 0 < readFailures.Count then
             return raise (GenerationFailed(List.ofSeq readFailures))
 
-        match missingKnowledgeSkills (studentSkillNames wikiruTargets) (List.ofSeq declared) with
+        match missingKnowledgeSkills (characterSkillNames wikiruTargets) (List.ofSeq declared) with
         | [] -> ()
         | failures -> return raise (KnowledgeSkillMissing failures)
     }

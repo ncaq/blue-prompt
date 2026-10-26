@@ -13,6 +13,7 @@ type WikiruTarget =
     | Knowledge of page: string * output: string
     | School of page: string * markdownOutput: string * jsonOutput: string
     | StudentSkill of page: string * output: string
+    | UnplayableSkill of page: string * output: string
     | RolePlayReference of page: string * output: string
 
 /// テンプレートから本文を生成するrole-playスキル。
@@ -29,6 +30,7 @@ let wikiruName (target: WikiruTarget) : string =
     | Knowledge(page = page)
     | School(page = page)
     | StudentSkill(page = page)
+    | UnplayableSkill(page = page)
     | RolePlayReference(page = page) -> page
 
 /// 失敗の報告に使う対象の表示名。演じる生徒の呼び名で見分ける。
@@ -47,6 +49,7 @@ let resolveWikiru (root: string) (target: WikiruTarget) : WikiruTarget =
     | School(page, markdownOutput, jsonOutput) ->
         School(page, resolve markdownOutput, resolve jsonOutput)
     | StudentSkill(page, output) -> StudentSkill(page, resolve output)
+    | UnplayableSkill(page, output) -> UnplayableSkill(page, resolve output)
     | RolePlayReference(page, output) -> RolePlayReference(page, resolve output)
 
 /// スキルのパスをルートからの相対として解決する。挙動はresolveWikiruと同じ。
@@ -64,6 +67,7 @@ let writeWikiru (target: WikiruTarget) : Task<string list> =
     | Knowledge(page, output) -> Wikiru.writeKnowledge page output
     | School(page, markdownOutput, jsonOutput) -> Wikiru.writeSchool page markdownOutput jsonOutput
     | StudentSkill(page, output) -> Wikiru.writeStudentSkill page output
+    | UnplayableSkill(page, output) -> Wikiru.writeUnplayableSkill page output
     | RolePlayReference(page, output) -> Wikiru.writeRolePlayReference page output
 
 /// スキルの本文を併置された生成物から書き出し、書いたパスを返す。整形は掛けない。

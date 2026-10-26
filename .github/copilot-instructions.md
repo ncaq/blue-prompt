@@ -207,8 +207,8 @@ renovate.jsonの`gitIgnoredAuthors`が作者を無視の対象にしています
 `plugins/role-play/`配下の人格のスキルはユーザが会話を始める入口なので、
 この指定は付けません。
 
-生徒個別のスキルのフロントマターは生成物なので、
-指定を変える時は`src/BluePrompt/Wikiru.fs`の`studentSkillMarkdown`を直します。
+生徒個別のスキルとプレイアブルではない登場人物のスキルのフロントマターは生成物なので、
+指定を変える時は`src/BluePrompt/Wikiru.fs`の`characterSkillMarkdown`を直します。
 
 # スキルのdescription
 
@@ -220,6 +220,7 @@ descriptionは本文を読み込まなくても、
 使う場面の言い換えや、本文が持っている内容の要約は書きません。
 
 - 生徒個別のスキル: `Facts about Blue Archive student 栗村アイリ.`
+- プレイアブルではない登場人物のスキル: `Facts about Blue Archive character 七神リン.`
 - role-playのスキル: `Role-play as 栗村アイリ of Blue Archive.`
 
 生徒のスキルで何が載っているかは、
@@ -234,6 +235,12 @@ wikiruのページ名は「アイリ」「アイリ（バンド）」のよう�
 フルネームが無いページや、
 フルネームとページ名が名前で繋がらないページは、
 別人の名前を作らないようにエラーで止まります。
+
+プレイアブルではない登場人物のスキルも同じ方法で姓を補いますが、
+作中で姓が明かされていない人物や、
+アロナのように生徒ではない人物がいるため、
+フルネームが無いか空欄のページではページ名をそのまま使います。
+フルネームとページ名が繋がらない時に止まるのは生徒と同じです。
 
 role-playのスキルのdescriptionは、
 character.mdのフロントマターから生成物へそのまま写ります。
@@ -327,6 +334,35 @@ blue-prompt wikiru school --page '学校別' \
 ```console
 blue-prompt wikiru student-skill --page '<生徒のページ名>' --output <SKILL.mdの出力パス>
 ```
+
+プレイアブルではない登場人物のスキルも、
+生徒個別ページと同じ形のページから以下で生成します。
+ロールプレイするにはボイスや発言が足りないため、
+role-playのスキルは作らずナレッジだけを持ちます。
+生徒の会話で話題に上った時に設定を引くためのもので、
+role-playのcharacter.mdの`knowledge:`からも挙げられます。
+
+```console
+blue-prompt wikiru unplayable-skill --page '<ページ名>' --output <SKILL.mdの出力パス>
+```
+
+対象はwikiruの学校別キャラクター一覧でレアリティがNPCとされている人物で、
+`Manifest.fs`の`unplayables`が持ちます。
+wikiruはNPCと呼んでいますが、
+未実装の生徒も生徒なので、
+生成物でもコードでもその呼び方はしません。
+アロナのように生徒ではない人物も含むため、
+descriptionではcharacter、本文では登場人物と呼びます。
+
+残す節は生徒のホワイトリストを土台に、
+アロナとプラナとソラが持つボイス集と、
+カイテンジャーのメンバーごとの節を足しています。
+
+スキル名のスラッグは、
+作中で呼び名が定まっていない人物もいるため、
+グローバル版の英語表記であるbluearchive.wikiのNPCのカテゴリのページ名に揃えます。
+実装されて生徒になった時は、`unplayables`から外して`students`へ移し、
+`character-<slug>`のディレクトリを生徒の命名で生成し直します。
 
 role-playスキルの衣装別参照ファイルは、
 生徒個別ページからプロフィールとボイスと小ネタだけを抜き出して以下で生成します。

@@ -125,6 +125,7 @@ module WikiruCommand =
         | Roleplay_Reference of ParseResults<PageOutput.Args>
         | School of ParseResults<MarkdownJsonOutput.Args>
         | Student_Skill of ParseResults<PageOutput.Args>
+        | Unplayable_Skill of ParseResults<PageOutput.Args>
         | Html of ParseResults<PageOutput.Args>
         | Student_Html of ParseResults<PageOutput.Args>
 
@@ -137,6 +138,7 @@ module WikiruCommand =
                 | Roleplay_Reference _ -> "生徒個別ページからプロフィールとボイスと小ネタを抜き出し、衣装別の参照ファイルとして書き出す。"
                 | School _ -> "学校別キャラクター一覧を構造化し、学校ごとの一覧のreference.mdと機械読み出し用のJSONを書き出す。"
                 | Student_Skill _ -> "生徒個別ページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
+                | Unplayable_Skill _ -> "プレイアブルではない登場人物のページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
                 | Html _ -> "記事から抽出した本文をMarkdown化せずHTMLのまま書き出す。抽出設定の確認用。"
                 | Student_Html _ -> "生徒個別ページの抽出設定で本文をHTMLのまま書き出す。抽出設定の確認用。"
 
@@ -216,6 +218,7 @@ let private runWikiru (args: ParseResults<WikiruCommand.Args>) : int =
     | WikiruCommand.Roleplay_Reference sub -> create (Target.RolePlayReference(pageOutput sub))
     | WikiruCommand.School sub -> create (Target.School(markdownJsonOutput sub))
     | WikiruCommand.Student_Skill sub -> create (Target.StudentSkill(pageOutput sub))
+    | WikiruCommand.Unplayable_Skill sub -> create (Target.UnplayableSkill(pageOutput sub))
     | WikiruCommand.Html sub -> run (pageOutput sub ||> Wikiru.writeContentHtml Wikiru.contentQuery)
     | WikiruCommand.Student_Html sub ->
         run (pageOutput sub ||> Wikiru.writeContentHtml Wikiru.studentContentQuery)
