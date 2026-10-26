@@ -7,6 +7,16 @@
   "gitIgnoredAuthors": ["320042325+blue-prompt-update-deps[bot]@users.noreply.github.com"],
   "packageRules": [
     {
+      "description": "F#アナライザーの一式は互いのFSharp.Analyzers.SDKの版で結び付いていて、個別に上げると読み込めないアナライザーが出るため、まとめて1つのPRで上げる。",
+      "matchPackageNames": [
+        "FSharp.Analyzers.Build",
+        "FSharp.Analyzers.SDK",
+        "G-Research.FSharp.Analyzers",
+        "Ionide.Analyzers"
+      ],
+      "groupName": "fsharp-analyzers"
+    },
+    {
       "description": "FSharp.CoreはFSharp.Analyzers.SDKが完全一致で要求する版に従うため、単独で上げるとNU1608で復元が失敗する。SDKの更新に合わせて手動で揃える。",
       "matchPackageNames": ["FSharp.Core"],
       "enabled": false
