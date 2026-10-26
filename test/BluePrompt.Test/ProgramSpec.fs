@@ -34,6 +34,8 @@ let private commands =
          "school.json" |]
       "wikiru student-skill",
       [| "wikiru"; "student-skill"; "--page"; "ページ"; "--output"; "SKILL.md" |]
+      "wikiru unplayable-skill",
+      [| "wikiru"; "unplayable-skill"; "--page"; "ページ"; "--output"; "SKILL.md" |]
       "wikiru html", [| "wikiru"; "html"; "--page"; "ページ"; "--output"; "out.html" |]
       "wikiru student-html", [| "wikiru"; "student-html"; "--page"; "ページ"; "--output"; "out.html" |]
       "roleplay all", [| "roleplay"; "all"; "--root"; "." |]
@@ -77,6 +79,7 @@ let private parsedName (argv: string array) : string =
         | Program.WikiruCommand.Roleplay_Reference _ -> "wikiru roleplay-reference"
         | Program.WikiruCommand.School _ -> "wikiru school"
         | Program.WikiruCommand.Student_Skill _ -> "wikiru student-skill"
+        | Program.WikiruCommand.Unplayable_Skill _ -> "wikiru unplayable-skill"
         | Program.WikiruCommand.Html _ -> "wikiru html"
         | Program.WikiruCommand.Student_Html _ -> "wikiru student-html"
     | Program.RootCommand.Roleplay sub ->

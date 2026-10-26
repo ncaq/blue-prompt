@@ -410,6 +410,53 @@ let ``familyNamedPageNameはページ名と繋がらないフルネームで止�
     Assert.Equal("早瀬ハルカ", error.fullName)
 
 [<Fact>]
+let ``familyNamedPageNameはフルネームが空欄なら止まる`` () =
+    // 空欄のセルは空白だけが残るため、それを姓として繋げようとせず、無いものとして扱う。
+    let error =
+        Assert.Throws<BluePrompt.Wikiru.StudentFullNameNotFound>(fun () ->
+            BluePrompt.Wikiru.familyNamedPageName "ユウカ" (studentMarkdown " " "") |> ignore)
+
+    Assert.Equal("ユウカ", error.pageName)
+
+[<Fact>]
+let ``unplayableSkillMarkdownの説明は登場人物として姓を補った名前を述べる`` () =
+    // 未実装の生徒も生徒なので、wikiruのレアリティの表記のNPCとは呼ばない。
+    let skill =
+        BluePrompt.Wikiru.unplayableSkillMarkdown
+            "character-rin"
+            "リン"
+            (studentMarkdown "七神(なながみ)リン" "")
+
+    Assert.StartsWith("---\nname: character-rin\n", skill)
+    Assert.Contains("\ndescription: Facts about Blue Archive character 七神リン.\n", skill)
+    Assert.Contains("\nuser-invocable: false\n", skill)
+    Assert.Contains("『ブルーアーカイブ』の登場人物「リン」の", skill)
+    Assert.DoesNotContain("NPC", skill)
+
+[<Fact>]
+let ``unplayableDisplayNameはフルネームが空欄ならページ名をそのまま使う`` () =
+    // 連邦生徒会長のように作中で姓名が明かされていない人物でも書き出せる。
+    Assert.Equal(
+        "連邦生徒会長",
+        BluePrompt.Wikiru.unplayableDisplayName "連邦生徒会長" (studentMarkdown " " "")
+    )
+
+[<Fact>]
+let ``unplayableDisplayNameはフルネームの行が無ければページ名をそのまま使う`` () =
+    // アロナのようにプロフィールがフルネームの行を持たない人物でも書き出せる。
+    Assert.Equal("アロナ", BluePrompt.Wikiru.unplayableDisplayName "アロナ" "## 基本情報\n")
+
+[<Fact>]
+let ``unplayableDisplayNameはページ名と繋がらないフルネームで止まる`` () =
+    // 姓を補えない時に黙ってページ名へ落とすと、抽出の崩れに気付けない。
+    let error =
+        Assert.Throws<BluePrompt.Wikiru.StudentFullNameMismatch>(fun () ->
+            BluePrompt.Wikiru.unplayableDisplayName "リン" (studentMarkdown "不知火(しらぬい)カヤ" "")
+            |> ignore)
+
+    Assert.Equal("リン", error.pageName)
+
+[<Fact>]
 let ``sectionTitlesはh2の見出しだけを現れる順に拾う`` () =
     let markdown = "前書き\n\n## 基本情報\n\n### 内訳\n\n本文\n\n## ボイス\n"
 

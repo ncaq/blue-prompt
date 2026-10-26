@@ -9,6 +9,10 @@ Hashi = "Hashi"
 IIF = "IIF"
 # ブルーアーカイブのBGM名「U mak3 m3 smil3」のleetspeak表記。数字での分割で"mak"をtypoと判定する。
 mak = "mak"
+# ブルーアーカイブの登場人物「リン」のスキル名character-rinの一部。
+rin = "rin"
+# 「**S**uper」のように頭文字だけを強調した表記。強調の記号での分割で"uper"をtypoと判定する。
+uper = "uper"
 
 [default.extend-identifiers]
 # ブルーアーカイブのメモリアルロビー制作スタッフ名。camelCase分割で"Ist"をtypoと判定する。

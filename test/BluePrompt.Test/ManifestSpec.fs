@@ -143,6 +143,7 @@ let private wikiruOutputs =
         | Target.School(_, markdownOutput, jsonOutput) -> [ markdownOutput; jsonOutput ]
         | Target.Knowledge(_, output)
         | Target.StudentSkill(_, output)
+        | Target.UnplayableSkill(_, output)
         | Target.RolePlayReference(_, output) -> [ output ])
 
 [<Fact>]
@@ -164,6 +165,29 @@ let ``生徒スキルの出力先はSKILL.md`` () =
 
     for output in outputs do
         Assert.Equal(SkillFile.skill, Path.GetFileName output)
+
+[<Fact>]
+let ``プレイアブルではない登場人物のスキルの出力先はSKILL.md`` () =
+    let outputs =
+        Manifest.wikiruTargets
+        |> List.choose (function
+            | Target.UnplayableSkill(_, output) -> Some output
+            | _ -> None)
+
+    Assert.NotEmpty outputs
+
+    for output in outputs do
+        Assert.Equal(SkillFile.skill, Path.GetFileName output)
+
+[<Fact>]
+let ``プレイアブルではない登場人物は生徒と同じページを持たない`` () =
+    // 実装されてstudentsへ移した時にunplayablesから外し忘れると、同じ人物のスキルが2つ並ぶ。
+    let studentPages = Manifest.students |> List.map _.Page |> Set.ofList
+
+    Assert.NotEmpty Manifest.unplayables
+
+    for unplayable in Manifest.unplayables do
+        Assert.DoesNotContain(unplayable.Page, studentPages)
 
 [<Fact>]
 let ``role-playスキルが読む呼称表はwikiruの対象が書き出す`` () =
@@ -188,13 +212,14 @@ let ``role-playスキルの出力先には衣装別の参照ファイルが書�
         Assert.Contains(references, fun reference -> Path.GetDirectoryName reference = skill.Output)
 
 [<Fact>]
-let ``生徒個別スキルの名前は出力先のディレクトリの名前`` () =
+let ``生徒個別スキルとプレイアブルではない登場人物のスキルの名前は出力先のディレクトリの名前`` () =
     let names =
-        Manifest.studentSkillNames
+        Manifest.characterSkillNames
             [ Target.StudentSkill("ユウカ", "plugins/skills/character-yuuka/SKILL.md")
+              Target.UnplayableSkill("ユメ", "plugins/skills/character-yume/SKILL.md")
               Target.Knowledge("ページ", "plugins/skills/other/reference.md") ]
 
-    Assert.Equal<Set<string>>(Set.ofList [ "character-yuuka" ], names)
+    Assert.Equal<Set<string>>(Set.ofList [ "character-yuuka"; "character-yume" ], names)
 
 [<Fact>]
 let ``ナレッジの名前が生徒個別スキルとして実在すれば空`` () =

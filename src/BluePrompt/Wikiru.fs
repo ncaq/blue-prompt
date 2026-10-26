@@ -139,6 +139,16 @@ let studentSectionTitles: string list =
 /// タイトルだけでは中身の作り話を誘うため外している。
 let rolePlaySectionTitles: string list = [ "基本情報"; "ボイス"; "小ネタ" ]
 
+/// プレイアブルではない登場人物のページからナレッジとして残すセクションの見出し。
+/// 生徒個別ページと同じ形のページが多いので生徒のホワイトリストを土台にして、
+/// 生徒のページには無い事実のセクションだけを足す。
+/// アロナとプラナとソラはゲーム内のボイスを「ボイス集」の節に持つ。
+/// カイテンジャーは5人で1ページで、メンバーごとのプロフィールと紹介文がそれぞれ1つの節になっている。
+/// 「公式ツイッターの紹介」は埋め込みのツイートだけで、抽出すると中身が残らないため含めない。
+let unplayableSectionTitles: string list =
+    studentSectionTitles
+    @ [ "ボイス集"; "カイテンレッド"; "カイテンブラック"; "カイテングリーン"; "カイテンイエロー"; "カイテンピンク" ]
+
 /// 最初の見出しより前を切り落とす。
 /// wikiruの記事は本文が最初の見出しから始まり、
 /// それより前は関連ページへのナビゲーションや注意書きで、ナレッジには要らない。
@@ -467,6 +477,11 @@ let private fetchStudentSections
 let fetchStudentMarkdown (pageName: string) : Task<string> =
     fetchStudentSections studentContentQuery studentSectionTitles pageName
 
+/// wikiruのプレイアブルではない登場人物のページをナレッジ用Markdownへ変換する。
+/// 生徒個別ページと同じ抽出設定で、事実を載せているセクションだけへ選別する。
+let fetchUnplayableMarkdown (pageName: string) : Task<string> =
+    fetchStudentSections studentContentQuery unplayableSectionTitles pageName
+
 /// 基本情報セクションの「入手方法」の見出し以降(入手方法・ステータス・装備)を切り落とす。
 /// role-playの参照に要るのはプロフィールと紹介文だけで、
 /// 性能データはrole-playには使わないため。
@@ -501,6 +516,30 @@ let private fullNamePattern = Regex @"\|[ ]*フルネーム[ ]*\|[ ]*([^|]+?)[ ]
 /// フルネームに添えられたふりがなの括弧。
 let private rubyPattern = Regex @"\([^)]*\)"
 
+/// プロフィールの表のフルネームからふりがなを外したもの。
+/// 行が無いか、空欄で空白しか残らない時はNone。
+let private tryFullName (markdown: string) : string option =
+    let matched = fullNamePattern.Match markdown
+
+    if matched.Success then
+        match rubyPattern.Replace(matched.Groups[1].Value, "").Trim() with
+        | Str.NullOrEmpty -> None
+        | Str.NonEmpty fullName -> Some fullName
+    else
+        None
+
+/// フルネームのうちページ名の先頭と重なる部分より前を姓として、ページ名の前へ置く。
+/// 重なる部分が無ければ、別人の名前を作らないように止まる。
+let private prependFamilyName (pageName: string) (fullName: string) : string =
+    let overlap =
+        seq { 0 .. fullName.Length - 1 }
+        |> Seq.tryFind (fun index ->
+            pageName.StartsWith(fullName.Substring index, StringComparison.Ordinal))
+
+    match overlap with
+    | Some index -> fullName.Substring(0, index) + pageName
+    | None -> raise (StudentFullNameMismatch(pageName, fullName))
+
 /// ページ名の前へ姓を補う。
 /// wikiruのページ名は「アイリ」「アイリ（バンド）」のように姓を持たないが、
 /// スキルの説明は本文を読み込む前の一覧としてしか読まれないため、
@@ -510,21 +549,18 @@ let private rubyPattern = Regex @"\([^)]*\)"
 /// 衣装の接尾辞はページ名の側に残るので「アイリ（バンド）」は「栗村アイリ（バンド）」になり、
 /// 姓を持たない「ケイ」ではフルネーム全体が重なって何も足さない。
 let familyNamedPageName (pageName: string) (markdown: string) : string =
-    let matched = fullNamePattern.Match markdown
+    match tryFullName markdown with
+    | Some fullName -> prependFamilyName pageName fullName
+    | None -> raise (StudentFullNameNotFound pageName)
 
-    if not matched.Success then
-        raise (StudentFullNameNotFound pageName)
-
-    let fullName = rubyPattern.Replace(matched.Groups[1].Value, "")
-
-    let overlap =
-        seq { 0 .. fullName.Length - 1 }
-        |> Seq.tryFind (fun index ->
-            pageName.StartsWith(fullName.Substring index, StringComparison.Ordinal))
-
-    match overlap with
-    | Some index -> fullName.Substring(0, index) + pageName
-    | None -> raise (StudentFullNameMismatch(pageName, fullName))
+/// プレイアブルではない登場人物のページ名の前へ、分かっていれば姓を補う。
+/// 作中で姓が明かされていない人物や、アロナのように生徒ではない人物がいて、
+/// フルネームの行が無いか空欄のページがあるため、その時はページ名をそのまま使う。
+/// フルネームがあるのにページ名と繋がらない時は、生徒と同じく別人の名前を作らないように止まる。
+let unplayableDisplayName (pageName: string) (markdown: string) : string =
+    match tryFullName markdown with
+    | Some fullName -> prependFamilyName pageName fullName
+    | None -> pageName
 
 /// ナレッジ本体に実際に含まれる節のh2の見出しを、現れる順に並べる。
 /// 節を分けているのはh2なので、h3以下の小見出しは含めない。
@@ -543,12 +579,21 @@ let sectionTitles (markdown: string) : string list =
     |> List.ofArray
     |> List.distinct
 
-/// 生徒スキルのSKILL.md全体を組み立てる。
-/// 生徒1人分のナレッジは別ファイルへ分けるほどの量にならないため、
+/// 生徒個別のスキルとプレイアブルではない登場人物のスキルのSKILL.md全体を組み立てる。
+/// 1人分のナレッジは別ファイルへ分けるほどの量にならないため、
 /// フロントマターと使い方の説明とナレッジ本体を1つのSKILL.mdに収める。
 /// 事実を引くための参照専用で、ユーザがスラッシュコマンドとして呼ぶ意味が無いため、
 /// user-invocable: falseでコマンドの一覧からは外す。
-let studentSkillMarkdown (skillName: string) (pageName: string) (markdown: string) : string =
+/// 両者で違うのは、説明と本文での呼び方と、説明に載せる名前の決め方だけ。
+/// 名前の決め方はプロフィールを読むため、節の有無を先に確かめてから呼ぶように関数で受け取る。
+let private characterSkillMarkdown
+    (englishNoun: string)
+    (japaneseNoun: string)
+    (displayName: string -> string -> string)
+    (skillName: string)
+    (pageName: string)
+    (markdown: string)
+    : string =
     // 節を1つも読み取れないまま組み立てると、
     // 何が載っているかを述べない壊れた説明のスキルを書き出すことになる。
     let sections =
@@ -557,10 +602,10 @@ let studentSkillMarkdown (skillName: string) (pageName: string) (markdown: strin
         | titles -> String.concat "・" titles
 
     // スキルの説明は本文を読み込まなくても一覧としてモデルのコンテキストへ載るため、
-    // 270人分が積み上がる長さにはせず、誰の事実を引けるかだけを述べる。
+    // 300人分が積み上がる長さにはせず、誰の事実を引けるかだけを述べる。
     // 何が載っているかは下の「データの構造」が節の一覧として持っている。
     let description =
-        $"Facts about Blue Archive student %s{familyNamedPageName pageName markdown}."
+        $"Facts about Blue Archive %s{englishNoun} %s{displayName pageName markdown}."
 
     $"""---
 name: %s{skillName}
@@ -568,7 +613,7 @@ description: %s{description}
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の生徒「%s{pageName}」のゲーム内外の事実を調べるためのスキルです。
+『ブルーアーカイブ』の%s{japaneseNoun}「%s{pageName}」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
@@ -585,10 +630,27 @@ user-invocable: false
 
 %s{knowledgeHeader pageName}%s{markdown}"""
 
-/// wikiruの生徒個別ページをMarkdown化し、SKILL.mdとして書き出す。
+/// 生徒スキルのSKILL.md全体を組み立てる。説明には姓を補った名前を載せる。
+let studentSkillMarkdown (skillName: string) (pageName: string) (markdown: string) : string =
+    characterSkillMarkdown "student" "生徒" familyNamedPageName skillName pageName markdown
+
+/// プレイアブルではない登場人物のスキルのSKILL.md全体を組み立てる。
+/// ロールプレイの対象にせず、生徒の会話で話題に上った時に設定を引くためのナレッジだけを持つ。
+/// 生徒個別ページと同じ形のページなので、本文の組み立ては生徒と共有する。
+/// 未実装の生徒も生徒なので、wikiruのレアリティの表記のNPCとは呼ばない。
+/// アロナのように生徒ではない人物も含むため、説明と本文ではcharacterと登場人物と呼ぶ。
+let unplayableSkillMarkdown (skillName: string) (pageName: string) (markdown: string) : string =
+    characterSkillMarkdown "character" "登場人物" unplayableDisplayName skillName pageName markdown
+
+/// 生徒個別ページと同じ形のページをMarkdown化し、組み立てたSKILL.mdとして書き出す。
 /// スキル名は出力先のディレクトリ名と一致する必要があるため、出力パスから導出する。
 /// 整形は掛けず、書き出したパスを返す。
-let writeStudentSkill (pageName: string) (outputPath: string) : Task<string list> =
+let private writeCharacterSkill
+    (fetch: string -> Task<string>)
+    (build: string -> string -> string -> string)
+    (pageName: string)
+    (outputPath: string)
+    : Task<string list> =
     task {
         let skillName =
             match Path.GetDirectoryName outputPath with
@@ -598,10 +660,18 @@ let writeStudentSkill (pageName: string) (outputPath: string) : Task<string list
                 )
             | Str.NonEmpty directory -> Path.GetFileName directory
 
-        let! markdown = fetchStudentMarkdown pageName
-        do! writeFile outputPath (studentSkillMarkdown skillName pageName markdown)
+        let! markdown = fetch pageName
+        do! writeFile outputPath (build skillName pageName markdown)
         return [ outputPath ]
     }
+
+/// wikiruの生徒個別ページをMarkdown化し、SKILL.mdとして書き出す。
+let writeStudentSkill (pageName: string) (outputPath: string) : Task<string list> =
+    writeCharacterSkill fetchStudentMarkdown studentSkillMarkdown pageName outputPath
+
+/// wikiruのプレイアブルではない登場人物のページをMarkdown化し、SKILL.mdとして書き出す。
+let writeUnplayableSkill (pageName: string) (outputPath: string) : Task<string list> =
+    writeCharacterSkill fetchUnplayableMarkdown unplayableSkillMarkdown pageName outputPath
 
 /// wikiruの生徒個別ページをMarkdown化し、
 /// role-playスキルが参照する衣装別の参照ファイルとして書き出す。
