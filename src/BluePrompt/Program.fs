@@ -134,7 +134,7 @@ module WikiruCommand =
                 | All _ -> "マニフェストの対象を並列に取得して書き出し、role-playスキルも生成し直してから、まとめてnix fmtを掛ける。"
                 | Appellation _ -> "キャラ呼称表を構造化し、参照用のreference.mdと機械読み出し用のJSONを書き出す。"
                 | Knowledge _ -> "記事をMarkdown化してナレッジファイルとして書き出す。"
-                | Roleplay_Reference _ -> "生徒個別ページからプロフィールとボイスを抜き出し、衣装別の参照ファイルとして書き出す。"
+                | Roleplay_Reference _ -> "生徒個別ページからプロフィールとボイスと小ネタを抜き出し、衣装別の参照ファイルとして書き出す。"
                 | School _ -> "学校別キャラクター一覧を構造化し、学校ごとの一覧のreference.mdと機械読み出し用のJSONを書き出す。"
                 | Student_Skill _ -> "生徒個別ページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
                 | Html _ -> "記事から抽出した本文をMarkdown化せずHTMLのまま書き出す。抽出設定の確認用。"

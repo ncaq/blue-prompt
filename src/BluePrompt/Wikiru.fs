@@ -85,6 +85,15 @@ let studentContentQuery: Extract.ContentQuery =
                 contentQuery.RemoveSelectors
         ReplaceImagesWithAlt = true }
 
+/// role-playスキルの参照用の抽出設定。
+/// 生徒個別ページの設定に加えて、取り消し線(del)を中身ごと取り除く。
+/// 小ネタの取り消し線はwiki編集者の茶化しのツッコミで、
+/// 残すと演じる生徒が自分への揶揄を自己認識として取り込んでしまう。
+/// Markdownにすると取り消し線が行を跨ぐことがあるため、HTMLの段階で要素ごと落とす。
+let rolePlayContentQuery: Extract.ContentQuery =
+    { studentContentQuery with
+        RemoveSelectors = "del" :: studentContentQuery.RemoveSelectors }
+
 /// pandocを通さずDOMを直接読むページ用の抽出設定。
 /// キャラ呼称表と学校別キャラクター一覧のように、
 /// テーブルをレコードへ構造化してからMarkdownを組み立てる経路で使う。
@@ -123,9 +132,12 @@ let studentSectionTitles: string list =
     [ "基本情報"; "スキル"; "固有武器"; "愛用品"; "能力解放"; "絆ランクボーナス"; "絆ストーリー"; "ボイス"; "小ネタ" ]
 
 /// 生徒個別ページからrole-playスキルの参照として残すセクションの見出し。
-/// 人格と話し方を示す基本情報とボイスだけを残し、
+/// 人格と話し方を示す基本情報とボイスに、
+/// 衣装ごとの出来事や人柄を伝える小ネタを加えて残し、
 /// 性能データの参照はjp-wikiru-bluearchive側のスキルに任せる。
-let rolePlaySectionTitles: string list = [ "基本情報"; "ボイス" ]
+/// 絆ストーリーはタイトルと報酬の表、メモリアルロビーはBGMとスタッフの表しか持たず、
+/// タイトルだけでは中身の作り話を誘うため外している。
+let rolePlaySectionTitles: string list = [ "基本情報"; "ボイス"; "小ネタ" ]
 
 /// 最初の見出しより前を切り落とす。
 /// wikiruの記事は本文が最初の見出しから始まり、
@@ -438,10 +450,14 @@ let writeContentHtml
     }
 
 /// wikiruの生徒個別ページを取得し、指定した見出しのセクションだけのMarkdownへ変換する。
-/// 折りたたみの中身を残した設定で取得する。
-let private fetchStudentSections (titles: string list) (pageName: string) : Task<string> =
+/// 生徒個別ページ向けの抽出設定のうち、用途に合ったものを受け取る。
+let private fetchStudentSections
+    (query: Extract.ContentQuery)
+    (titles: string list)
+    (pageName: string)
+    : Task<string> =
     task {
-        let! html = Page.fetchContentHtml (pageUri pageName) studentContentQuery
+        let! html = Page.fetchContentHtml (pageUri pageName) query
         let! markdown = Pandoc.toMarkdown html
         return filterSections titles (cleanupMarkdown markdown)
     }
@@ -449,7 +465,7 @@ let private fetchStudentSections (titles: string list) (pageName: string) : Task
 /// wikiruの生徒個別ページをナレッジ用Markdownへ変換する。
 /// 事実を載せているセクションだけへ選別する。
 let fetchStudentMarkdown (pageName: string) : Task<string> =
-    fetchStudentSections studentSectionTitles pageName
+    fetchStudentSections studentContentQuery studentSectionTitles pageName
 
 /// 基本情報セクションの「入手方法」の見出し以降(入手方法・ステータス・装備)を切り落とす。
 /// role-playの参照に要るのはプロフィールと紹介文だけで、
@@ -461,10 +477,10 @@ let trimGameplayDetails (markdown: string) : string =
     )
 
 /// wikiruの生徒個別ページをrole-playスキルの参照用Markdownへ変換する。
-/// プロフィールと紹介文とボイスだけを残す。
+/// プロフィールと紹介文とボイスと小ネタだけを残す。
 let fetchRolePlayMarkdown (pageName: string) : Task<string> =
     task {
-        let! markdown = fetchStudentSections rolePlaySectionTitles pageName
+        let! markdown = fetchStudentSections rolePlayContentQuery rolePlaySectionTitles pageName
         return trimGameplayDetails markdown
     }
 

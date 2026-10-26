@@ -1,6 +1,8 @@
 module BluePrompt.Test.WikiruSpec
 
+open Falco.Markup
 open Xunit
+open BluePrompt.Test.HtmlFixture
 
 [<Fact>]
 let ``pageUriはページ名をパーセントエンコードしたURLを組み立てる`` () =
@@ -217,6 +219,27 @@ let ``studentContentQueryは画像を除去せずaltのテキストへ置き換�
     let query = BluePrompt.Wikiru.studentContentQuery
     Assert.DoesNotContain("img", query.RemoveSelectors)
     Assert.True query.ReplaceImagesWithAlt
+
+[<Fact>]
+let ``rolePlayContentQueryは取り消し線を中身ごと取り除き生徒ページの本文は残す`` () =
+    // 小ネタの取り消し線は編集者のツッコミで、演じる人格へ混ざると困る。
+    let html =
+        renderDocument
+            [ Elem.div
+                  [ Attr.id "body" ]
+                  [ Elem.p [] [ Elem.del [] [ Text.raw "もはやオカン" ]; Text.raw "世話を焼いている" ]
+                    Elem.div
+                        [ Attr.class' "rgn-container" ]
+                        [ Elem.span [ Attr.class' "rgn-button" ] [ Text.raw "+" ]
+                          Elem.p [] [ Text.raw "折りたたみの本文" ] ] ] ]
+
+    let extracted =
+        BluePrompt.Extract.contentHtml BluePrompt.Wikiru.rolePlayContentQuery html
+
+    Assert.DoesNotContain("もはやオカン", extracted)
+    Assert.Contains("世話を焼いている", extracted)
+    Assert.Contains("折りたたみの本文", extracted)
+    Assert.DoesNotContain("rgn-button", extracted)
 
 [<Fact>]
 let ``structuredContentQueryはDOM構造を保ったままスクリプトとコメント欄を除く`` () =
