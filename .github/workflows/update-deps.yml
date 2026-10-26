@@ -2,15 +2,17 @@ name: update-deps
 
 # RenovateはfsprojとDirectory.Build.propsのPackageReferenceだけを書き換えるため、
 # Nixのビルドが読むdeps.jsonが古いまま残り必須チェックのnix-fast-buildが落ちます。
+# F#アナライザーのCLIツールのhashを持つfsharp-analyzers.jsonと、
+# SDKが要求するFSharp.Coreの固定版を持つDirectory.Build.propsも同様です。
 # Mendのホスト版RenovateはpostUpgradeTasksを実行できないので、
-# 代わりにRenovateのブランチへdeps.jsonの再生成をコミットして追従させます。
+# 代わりにRenovateのブランチへこれらの再生成をコミットして追従させます。
 #
 # NuGetと関係のない更新でも起動しますが、
-# deps.jsonに差分が無ければ何もせず終わるので対象を絞っていません。
+# 再生成したファイルに差分が無ければ何もせず終わるので対象を絞っていません。
 # Renovateがrebaseで強制pushすると、
 # GitHubが見る差分にはこのワークフローが足したコミットの巻き戻ししか現れないため、
 # PackageReferenceを持つファイルで絞ると、
-# deps.jsonが古いまま復旧しない経路ができてしまいます。
+# 再生成したファイルが古いまま復旧しない経路ができてしまいます。
 on:
   push:
     branches: [renovate/**]
@@ -53,22 +55,43 @@ jobs:
         with:
           client-id: ${{ vars.UPDATE_DEPS_APP_CLIENT_ID }}
           private-key: ${{ secrets.UPDATE_DEPS_APP_PRIVATE_KEY }}
-          permission-contents: write # deps.jsonのコミット
-      - name: Commit deps.json
+          permission-contents: write # 再生成したファイルのコミット
+      - name: Commit regenerated files
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
-          if git diff --quiet -- deps.json; then
-            echo 'deps.jsonに変更はありません。'
+          mapfile -t files < <(git diff --name-only -- Directory.Build.props deps.json fsharp-analyzers.json)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo '再生成したファイルに変更はありません。'
             exit 0
           fi
-          # Gitでコミットせずcontents APIへ渡すのは、
+          additions=$(
+            for file in "${files[@]}"; do
+              jq --null-input --arg path "$file" --arg contents "$(base64 --wrap 0 "$file")" \
+                '{ path: $path, contents: $contents }'
+            done | jq --slurp .
+          )
+          # Gitでコミットせず`createCommitOnBranch`で作るのは、
           # GitHubがサーバ側で署名してVerifiedになるからです。
-          # Renovate自身のコミットも同じ経路で作られています。
-          gh api --method PUT "repos/$GITHUB_REPOSITORY/contents/deps.json" \
-            --field message='build(deps): deps.jsonを再生成' \
-            --field content="$(base64 --wrap 0 deps.json)" \
-            --field sha="$(git rev-parse 'HEAD:deps.json')" \
-            --field branch="$GITHUB_REF_NAME" \
-            --silent
+          # Renovate自身のコミットも同じくサーバ側で作られています。
+          # contents APIと違い複数のファイルを1つのコミットへまとめられます。
+          # `expectedHeadOid`により、
+          # 再生成の間にブランチが進んでいた時は古い内容で上書きせず失敗します。
+          jq --null-input \
+            --arg repository "$GITHUB_REPOSITORY" \
+            --arg branch "$GITHUB_REF_NAME" \
+            --arg head "$(git rev-parse HEAD)" \
+            --argjson additions "$additions" \
+            '{
+              query: "mutation ($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }",
+              variables: {
+                input: {
+                  branch: { repositoryNameWithOwner: $repository, branchName: $branch },
+                  expectedHeadOid: $head,
+                  message: { headline: "build(deps): NuGet依存の固定を再生成" },
+                  fileChanges: { additions: $additions }
+                }
+              }
+            }' |
+            gh api graphql --input - --silent
