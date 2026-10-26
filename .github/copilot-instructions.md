@@ -118,7 +118,8 @@ FSACが持つ診断(FSAC0001未使用open・FSAC0002冗長な修飾子・FSAC000
 `src/BluePrompt.Analyzers`の自作アナライザーで同じ検出をリントとして再現しています。
 FSACにはバッチ実行の手段が無いため、
 FSACが内部で使うFSharp.Compiler.ServiceのEditorServices APIを直接呼んでいます。
-FSharp.Analyzers.SDKのバージョンはflake.nixのfsharp-analyzersと一致させる必要があります。
+FSharp.Analyzers.SDKとfsharp-analyzers CLIのバージョンは一致させる必要があるため、
+flake.nixはCLIの版をdeps.jsonに記録されたSDKの版から導きます。
 これらをエディタにも出すかはLSPクライアント側の設定次第なので、
 エディタが黙っていてもリントが落ちることはあります。
 
@@ -156,22 +157,28 @@ Nixのビルドだけは復元をRuntimeIdentifier付きで済ませているの
 ## NuGet依存の更新
 
 fsprojのPackageReferenceを変更したら以下を一回実行するだけで、
-deps.jsonの再生成と整形が完了します。
+deps.jsonとfsharp-analyzers.jsonの再生成と整形が完了します。
 コミットは他の変更とまとめて手動で行います。
 
 ```console
 nix run .#update-deps
 ```
 
+fsharp-analyzers.jsonはfsharp-analyzers CLIのNuGetパッケージのhashを持ちます。
+CLIはツールのパッケージなのでfetch-depsの対象にならず、
+deps.jsonのFSharp.Analyzers.SDKと同じ版のhashを別に取得しています。
+SDKの版と食い違っていればflake.nixの評価時に止まります。
+
 RenovateはfsprojとDirectory.Build.propsのPackageReferenceしか書き換えないため、
-そのままではdeps.jsonが古いまま残りnix-fast-buildが落ちます。
+そのままではこれらが古いまま残りnix-fast-buildが落ちます。
 Mendのホスト版RenovateはpostUpgradeTasksを実行できないので、
 代わりに`.github/workflows/update-deps.yml`が、
-Renovateのブランチへdeps.jsonの再生成をコミットして追従させます。
+Renovateのブランチへ再生成をコミットして追従させます。
 
-コミットはGitのpushではなくcontents APIへの書き込みで作ります。
+コミットはGitのpushではなくGraphQLの`createCommitOnBranch`で作ります。
 GitHubがサーバ側で署名するためVerifiedになり、
-同じ経路で作られるRenovate自身のコミットと揃うからです。
+同じくサーバ側で作られるRenovate自身のコミットと揃うからです。
+contents APIと違い複数のファイルを1つのコミットへまとめられます。
 
 トークンはGITHUB_TOKENではなく専用のGitHub Appのものを使います。
 GITHUB_TOKENが作ったコミットはワークフローを起動しない仕様のため、

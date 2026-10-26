@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "description": [
-    "gitIgnoredAuthorsが指しているのは、update-depsワークフローがRenovateのブランチへ足すdeps.jsonの再生成コミットの作者であるblue-prompt-update-depsアプリです。Renovateは自分以外の作者のコミットがあるブランチを人手で編集されたとみなして以後の更新を止めるため、この作者だけは自分たちのものとして扱わせます。コミットする側のGitHub Appを作り直すとメールアドレスの数値部分が変わります。"
+    "gitIgnoredAuthorsが指しているのは、update-depsワークフローがRenovateのブランチへ足すNuGet依存の固定の再生成コミットの作者であるblue-prompt-update-depsアプリです。Renovateは自分以外の作者のコミットがあるブランチを人手で編集されたとみなして以後の更新を止めるため、この作者だけは自分たちのものとして扱わせます。コミットする側のGitHub Appを作り直すとメールアドレスの数値部分が変わります。"
   ],
   "extends": ["github>ncaq/renovate-config"],
   "gitIgnoredAuthors": ["320042325+blue-prompt-update-deps[bot]@users.noreply.github.com"],

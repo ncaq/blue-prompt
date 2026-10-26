@@ -215,18 +215,37 @@
           # MSBuildのAnalyzeFSharpProjectターゲットは`dotnet fsharp-analyzers`を起動し、
           # それはdotnet CLIのツール解決でPATH上の`dotnet-fsharp-analyzers`に解決されるため、
           # そのコマンド名の別名も一緒に置く。
-          fsharp-analyzers = pkgs.buildDotnetGlobalTool {
-            pname = "fsharp-analyzers";
-            version = "0.39.2";
-            nugetHash = "sha256-pgg4rulOez5IlzK2oswL1ETxpuSunsMcnTxxitY3eAg=";
-            dotnet-sdk = pkgs.dotnet-sdk_10;
-            dotnet-runtime = pkgs.dotnet-sdk_10;
-            # binのラッパーはfixupフェーズのdotnetFixupHookが作るため、
-            # 別名のリンクはその後に張る。
-            postFixup = ''
-              ln -s $out/bin/fsharp-analyzers $out/bin/dotnet-fsharp-analyzers
-            '';
-          };
+          #
+          # CLIはBluePrompt.Analyzersが参照するFSharp.Analyzers.SDKと同じ版である必要があるため、
+          # 版はdeps.jsonに記録されたSDKの版から導いて二重管理を避ける。
+          # ツールのパッケージはfetch-depsの対象にならないので、
+          # hashはupdate-depsがfsharp-analyzers.jsonへ書き出したものを使う。
+          # SDKだけが上がってhashが古いまま残った時は、
+          # 分かりにくいhashの不一致ではなく評価時にここで止める。
+          fsharp-analyzers =
+            let
+              sdk = lib.findFirst (
+                dep: dep.pname == "FSharp.Analyzers.SDK"
+              ) (throw "deps.jsonにFSharp.Analyzers.SDKがありません。") (lib.importJSON ./deps.json);
+              cli = lib.importJSON ./fsharp-analyzers.json;
+            in
+            assert lib.assertMsg (cli.version == sdk.version) ''
+              fsharp-analyzers.jsonの版がdeps.jsonのFSharp.Analyzers.SDKの版と一致しません。
+              `nix run .#update-deps`で再生成してください。
+              fsharp-analyzers.json: ${cli.version}
+              deps.json: ${sdk.version}'';
+            pkgs.buildDotnetGlobalTool {
+              pname = "fsharp-analyzers";
+              inherit (cli) version;
+              nugetHash = cli.hash;
+              dotnet-sdk = pkgs.dotnet-sdk_10;
+              dotnet-runtime = pkgs.dotnet-sdk_10;
+              # binのラッパーはfixupフェーズのdotnetFixupHookが作るため、
+              # 別名のリンクはその後に張る。
+              postFixup = ''
+                ln -s $out/bin/fsharp-analyzers $out/bin/dotnet-fsharp-analyzers
+              '';
+            };
 
           blue-prompt = pkgs.buildDotnetModule {
             pname = "blue-prompt";
@@ -300,13 +319,24 @@
             name = "update-deps";
             runtimeInputs = [
               pkgs.git
+              pkgs.jq
               pkgs.nix
             ];
             text = ''
               cd "$(git rev-parse --show-toplevel)"
               ${blue-prompt.passthru.fetch-deps} deps.json
+              # CLIツールのパッケージはfetch-depsの対象にならないため、
+              # SDKと同じ版のhashを別に取得してflake.nixが読むファイルへ書き出す。
+              version=$(jq --raw-output '.[] | select(.pname == "FSharp.Analyzers.SDK") | .version' deps.json)
+              hash=$(
+                nix store prefetch-file --json --hash-type sha256 \
+                  "https://www.nuget.org/api/v2/package/fsharp-analyzers/$version" |
+                  jq --raw-output .hash
+              )
+              jq --null-input --arg version "$version" --arg hash "$hash" \
+                '{ version: $version, hash: $hash }' >fsharp-analyzers.json
               # 生成されたJSONをリポジトリのフォーマット規約(prettier)に揃える。
-              nix fmt deps.json
+              nix fmt deps.json fsharp-analyzers.json
             '';
           };
 

@@ -11,6 +11,8 @@
   <ItemGroup>
     <!--
       バージョンはfsharp-analyzers CLI(flake.nixで供給)と一致させる必要がある。
+      flake.nixはCLIの版をdeps.jsonに記録されたこのパッケージの版から導くので、
+      ここを上げて`nix run .#update-deps`を実行すればCLIも追従する。
       アナライザーはCLIホストが読み込んだSDKとFSharp.Compiler.Serviceで実行されるため、
       実行時アセンブリは出力へコピーしない。
     -->
