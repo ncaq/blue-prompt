@@ -33,7 +33,7 @@
     SDKを上げて再生成すれば追従する。
   -->
   <PropertyGroup>
-    <FSharpCoreVersion>10.1.400</FSharpCoreVersion>
+    <FSharpCoreVersion>10.1.402</FSharpCoreVersion>
     <DisableImplicitFSharpCoreReference>true</DisableImplicitFSharpCoreReference>
     <DisableImplicitLibraryPacksFolder>true</DisableImplicitLibraryPacksFolder>
   </PropertyGroup>
@@ -51,12 +51,12 @@
       GeneratePathPropertyでパッケージパスの$(Pkg...)変数を生成させて、
       Directory.Build.targetsのanalyzers-pathフラグから参照する。
     -->
-    <PackageReference Include="G-Research.FSharp.Analyzers" Version="0.25.0">
+    <PackageReference Include="G-Research.FSharp.Analyzers" Version="0.26.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>analyzers</IncludeAssets>
       <GeneratePathProperty>true</GeneratePathProperty>
     </PackageReference>
-    <PackageReference Include="Ionide.Analyzers" Version="0.19.0">
+    <PackageReference Include="Ionide.Analyzers" Version="0.20.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>analyzers</IncludeAssets>
       <GeneratePathProperty>true</GeneratePathProperty>
