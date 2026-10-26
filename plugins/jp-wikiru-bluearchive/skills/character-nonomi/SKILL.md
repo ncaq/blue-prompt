@@ -269,8 +269,6 @@ user-invocable: false
 
 **BGM：Shooting Stars**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

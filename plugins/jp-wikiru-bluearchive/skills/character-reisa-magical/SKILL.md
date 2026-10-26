@@ -266,8 +266,6 @@ user-invocable: false
 
 **BGM：0k@eri**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

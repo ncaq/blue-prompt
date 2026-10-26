@@ -232,8 +232,6 @@ user-invocable: false
 
 **BGM：OHAYOU Daily morning**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

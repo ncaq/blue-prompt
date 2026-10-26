@@ -231,8 +231,6 @@ user-invocable: false
 
 **BGM：Sometimes I Cry**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

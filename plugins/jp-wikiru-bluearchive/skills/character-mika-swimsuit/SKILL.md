@@ -263,8 +263,6 @@ user-invocable: false
 
 **BGM：You're My Princess**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

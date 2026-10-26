@@ -255,8 +255,6 @@ user-invocable: false
 
 **BGM：Distant Star**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

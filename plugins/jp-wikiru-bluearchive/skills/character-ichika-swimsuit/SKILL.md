@@ -233,8 +233,6 @@ user-invocable: false
 
 **BGM：Fruitful Blossom**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**
