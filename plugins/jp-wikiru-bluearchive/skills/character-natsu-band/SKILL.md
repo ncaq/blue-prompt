@@ -233,8 +233,6 @@ user-invocable: false
 
 **BGM：U mak3 m3 smil3**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

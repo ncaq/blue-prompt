@@ -234,8 +234,6 @@ user-invocable: false
 
 **BGM：Toki no Nagare**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

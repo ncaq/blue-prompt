@@ -232,8 +232,6 @@ user-invocable: false
 
 **BGM：Sweet Allegro**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

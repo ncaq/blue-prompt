@@ -244,8 +244,6 @@ user-invocable: false
 
 **BGM：Tasty New Year**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

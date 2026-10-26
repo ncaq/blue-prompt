@@ -233,8 +233,6 @@ user-invocable: false
 
 **BGM：Sunset Memory**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

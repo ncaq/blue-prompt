@@ -234,8 +234,6 @@ user-invocable: false
 
 **BGM：Otomegokoro**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

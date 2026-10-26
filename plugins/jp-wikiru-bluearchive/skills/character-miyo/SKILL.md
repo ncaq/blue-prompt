@@ -231,8 +231,6 @@ user-invocable: false
 
 **BGM：NekoTime**
 
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**

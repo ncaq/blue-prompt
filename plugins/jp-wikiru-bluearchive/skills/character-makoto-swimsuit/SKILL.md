@@ -233,7 +233,7 @@ user-invocable: false
 
 ### メモリアルロビー
 
-このブラウザは動画を再生できません。
+**BGM：Rosa Plateada**
 
 ## ボイス
 

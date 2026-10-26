@@ -227,10 +227,6 @@ user-invocable: false
 |  3  | I hate being alone             |     5      | 青輝石x60                      |
 |  4  | I hate this world(without you) |     6      | 青輝石x80,メモリアルロビー解禁 |
 
-### メモリアルロビー
-
-このブラウザは動画を再生できません。
-
 ## ボイス
 
 **一般**
