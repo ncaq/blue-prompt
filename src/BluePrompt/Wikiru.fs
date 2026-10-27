@@ -15,10 +15,6 @@ let pageUri (pageName: string) : Uri =
 /// 両者が同じ表記を参照することで、表記の変更が片方だけに伝わって空振りすることを防ぐ。
 let private collapsibleSelector = ".rgn-container"
 
-/// 画像のセレクタ。
-/// contentQueryは除去し、studentContentQueryは除去対象から外してaltのテキストへ置き換える。
-let private imageSelector = "img"
-
 /// どの抽出経路でも本文として扱わないノイズのセレクタ。
 /// contentQueryとstructuredContentQueryの双方がこの値を参照することで、
 /// セレクタの追加が片方だけに伝わって取りこぼしへ戻ることを防ぐ。
@@ -62,28 +58,24 @@ let contentQuery: Extract.ContentQuery =
           "a[href*='cmd=edit']"
           // includeプラグインが差し込むinclude元ページへのリンク。
           // リンクアンラップの後にページ名だけの行が残り、直前の表の一部と誤読される。
-          ".permalink"
-          // 画像。lazyload用プレースホルダのdata URIしか取れずノイズになる。
-          imageSelector ]
+          ".permalink" ]
         @ noiseSelectors
-      UnwrapLinks = true
-      ReplaceImagesWithAlt = false
+      UnwrapInternalLinks = true
+      // 画像は遅延読み込みのdata-srcから絶対URLを組み立てて残し、元の画像を辿れるようにする。
+      ResolveImages = true
       FlattenTables = true }
 
 /// 生徒個別ページ用の抽出設定。
 /// 生徒ページでは絆ランクボーナスや絆ストーリー一覧やボイスといった本文が
 /// 折りたたみ(rgn)の中に入っているため、折りたたみ全体は除去せず、
 /// 開閉ボタンと「クリックで展開」のラベルだけを取り除いて中身を残す。
-/// スキル成長素材のような表は素材を画像で表現しているため、
-/// 画像は除去せずaltに入っている素材名のテキストへ置き換える。
 let studentContentQuery: Extract.ContentQuery =
     { contentQuery with
         RemoveSelectors =
             [ ".rgn-button"; ".rgn-description" ]
             @ List.filter
-                (fun selector -> selector <> collapsibleSelector && selector <> imageSelector)
-                contentQuery.RemoveSelectors
-        ReplaceImagesWithAlt = true }
+                (fun selector -> selector <> collapsibleSelector)
+                contentQuery.RemoveSelectors }
 
 /// role-playスキルの参照用の抽出設定。
 /// 生徒個別ページの設定に加えて、取り消し線(del)を中身ごと取り除く。
@@ -106,17 +98,15 @@ let rolePlayContentQuery: Extract.ContentQuery =
 /// - リンクを外さない。
 ///   Appellationは脚注アンカー(note_super)のhref/titleと編集リンクの判定に使い、
 ///   Schoolはカードのaのhrefから生徒個別ページのページ名を復元するのに使う
-/// - 画像をaltのテキストへ置き換えない。
-///   Appellationではセル内のアイコンのTextContentが空で無害なだけだが、
-///   Schoolではアイコンのaltが生徒名そのものなので、
-///   置き換えるとカードの名前へ混ざってレアリティと名前の分解が壊れる
+/// - 画像に手を加えない。
+///   どちらのパースも画像を読まず、URLを解決しても使い道が無い
 /// - テーブルを平坦化しない。
 ///   Appellationのrowspanも、Schoolのカードのセル内のbrも、それぞれのパースが自前で扱う
 let structuredContentQuery: Extract.ContentQuery =
     { ContentSelectors = [ "#body"; "#note" ]
       RemoveSelectors = noiseSelectors
-      UnwrapLinks = false
-      ReplaceImagesWithAlt = false
+      UnwrapInternalLinks = false
+      ResolveImages = false
       FlattenTables = false }
 
 /// 生徒個別ページからナレッジとして残すセクションの見出し。
@@ -126,8 +116,6 @@ let structuredContentQuery: Extract.ContentQuery =
 /// 「ゲームにおいて」「運用考察」などのwiki独自の解説・考察は
 /// 著作権方針によりそのままの形では置かないため、
 /// 列挙されていないセクションは落ちる。
-/// 「スキル成長素材」と「贈り物」は素材や品物が画像で表現されていて、
-/// 画像除去後は数量だけが残り事実として読めないため外している。
 let studentSectionTitles: string list =
     [ "基本情報"; "スキル"; "固有武器"; "愛用品"; "能力解放"; "絆ランクボーナス"; "絆ストーリー"; "ボイス"; "小ネタ" ]
 
@@ -241,7 +229,7 @@ let private removeCommentSection (markdown: string) : string =
 let private allDepthsHaveContent = Array.create (maxHeadingDepth + 1) true
 
 /// 中身を持たない見出しを消す。
-/// 画像を並べただけの節は画像の除去で本文を失い、見出しだけが残る。
+/// 節の中身が抽出や後始末で全て落ちると、見出しだけが残る。
 /// 見出しから次の見出しまでに本文が1行も無ければ、その見出しはもう何も指していない。
 /// 小見出しが全て落ちて空になった上位の見出しも同じ判断で落ちるように、
 /// 文書の末尾から見ていき、見出しの深さごとに中身の有無を持つ。
@@ -288,8 +276,7 @@ let private trimSpaceBeforeComma (markdown: string) : string =
     Regex.Replace(markdown, @"[^\S\r\n]+(?=、)", "")
 
 /// 区切り文字だけになった行を消す。
-/// 画像だけのリンクを「/」で並べたナビゲーションは、
-/// 画像除去とリンク外しの後に区切り文字だけの行になる。
+/// リンクを「/」で並べたナビゲーションは、並べた要素が落ちると区切り文字だけの行になる。
 /// セル内改行の結合で挟んだ読点も、続く要素が空行や空列の除去で消えると孤立する。
 /// 空白は行内のものだけに限定して、行を跨いだ巻き込みを防ぐ。
 let private removeSeparatorRemnant (markdown: string) : string =
@@ -302,14 +289,6 @@ let private removeSeparatorRemnant (markdown: string) : string =
 /// 否定の文字クラスは改行にも当たるため、行を跨いだ巻き込みを防ぐ。
 let private removeEditorNotice (markdown: string) : string =
     Regex.Replace(markdown, @"^[^\S\r\n]*[^。\r\n]*を書く欄です。[^\S\r\n]*$", "", RegexOptions.Multiline)
-
-/// 画像を失ったちびキャラの説明を消す。
-/// 画像を並べただけの折りたたみに付いていた説明は、
-/// 画像の除去で指すものを失い、ちびキャラの見出しだけが本文として残る。
-/// 落とすのはキャプション由来の名詞句だけなので、句点を含む行は本文として残す。
-/// 否定の文字クラスは改行にも当たるため、行を跨いだ巻き込みを防ぐ。
-let private removeChibiCaption (markdown: string) : string =
-    Regex.Replace(markdown, @"^[^\S\r\n]*ちびキャラ[^。\r\n]*$", "", RegexOptions.Multiline)
 
 /// 空行と同じ意味しか持たない行を消す。
 /// 実体参照のままの&nbsp;と、中身の無い引用が対象になる。
@@ -337,7 +316,6 @@ let cleanupMarkdown (markdown: string) : string =
     |> trimSpaceBeforeComma
     |> removeSeparatorRemnant
     |> removeEditorNotice
-    |> removeChibiCaption
     |> removeBlankLikeLine
     |> removeEmptyHeadings
     |> normalizeBlankLines

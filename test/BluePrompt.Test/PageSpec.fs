@@ -281,8 +281,8 @@ let private fixtureHtml =
 let private fixtureQuery: BluePrompt.Extract.ContentQuery =
     { ContentSelectors = [ "#content" ]
       RemoveSelectors = [ "#header" ]
-      UnwrapLinks = true
-      ReplaceImagesWithAlt = false
+      UnwrapInternalLinks = true
+      ResolveImages = false
       FlattenTables = true }
 
 [<Fact>]
@@ -297,6 +297,51 @@ let ``fetchContentHtmlは取得したDOMへ抽出を適用する`` () : Task =
         // リンクはタグだけ外れてテキストが残る。
         Assert.DoesNotContain("<a ", html)
         Assert.Contains("anchor text", html)
+    }
+
+[<Fact>]
+let ``fetchContentHtmlは取得元のURLを基準にリンクと画像を解決する`` () : Task =
+    task {
+        // 相対参照とサイト内の判定は、文字列からのパースでは決まらず取得元のURLで決まる。
+        let html =
+            renderDocument
+                [ Elem.main
+                      [ Attr.id "content" ]
+                      [ Elem.p
+                            []
+                            [ Elem.a [ Attr.href "./?other" ] [ Text.raw "internal text" ]
+                              Elem.a
+                                  [ Attr.href "https://example.com/post" ]
+                                  [ Text.raw "external text" ]
+                              Elem.img
+                                  [ Attr.class' "lazyload"
+                                    Attr.create "data-src" "attach2/icon.png"
+                                    Attr.src "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP"
+                                    Attr.alt "素材名" ] ] ] ]
+
+        let query =
+            { fixtureQuery with
+                ResolveImages = true }
+
+        do!
+            withServedHtml html (fun url ->
+                task {
+                    let! extracted = BluePrompt.Page.fetchContentHtml url query
+
+                    // 取得元と同じホストへのリンクは外れる。
+                    Assert.DoesNotContain("other", extracted)
+                    Assert.Contains("internal text", extracted)
+
+                    Assert.Contains(
+                        """<a href="https://example.com/post">external text</a>""",
+                        extracted
+                    )
+                    // 画像はdata-srcを取得元のURLで解決し、srcとaltだけを持つ。
+                    Assert.Contains(
+                        $"""<img alt="素材名" src="%s{Uri(url, "attach2/icon.png").AbsoluteUri}">""",
+                        extracted
+                    )
+                })
     }
 
 [<Fact>]

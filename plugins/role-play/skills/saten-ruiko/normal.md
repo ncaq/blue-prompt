@@ -2,29 +2,29 @@
 
 ## 基本情報
 
-|   プロフィール   |                          |
-| :--------------: | :----------------------: |
-|       名前       |         佐天涙子         |
-|    フルネーム    |  佐天涙子(さてんるいこ)  |
-|    レアリティ    |            ★1            |
-|       役割       |         SPECIAL          |
-|    ポジション    |           BACK           |
-|      クラス      |        アタッカー        |
-|      武器種      |           SMG            |
-|      遮蔽物      |            \-            |
-|    攻撃タイプ    |           貫通           |
-|    防御タイプ    |         特殊装甲         |
-|       学園       |      柵川中学1年生       |
-|       部活       |            \-            |
-|       年齢       |           12歳           |
-|      誕生日      |            \-            |
-|       身長       |          160cm           |
-|       趣味       | ネット麻雀、スイーツ調査 |
-|     デザイン     |            \-            |
-|     イラスト     |         ミミトケ         |
-|        CV        |        伊藤かな恵        |
-|    ちびキャラ    |                          |
-| 各バージョン一覧 |       ★1 佐天涙子        |
+|                                                         画像                                                         |   プロフィール   |                                                                                                                                  |
+| :------------------------------------------------------------------------------------------------------------------: | :--------------: | :------------------------------------------------------------------------------------------------------------------------------: |
+| ![佐天涙子.png](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E4BD90E5A4A9E6B699E5AD902E706E67.png) |       名前       |                                                             佐天涙子                                                             |
+|                                                                                                                      |    フルネーム    |                                                      佐天涙子(さてんるいこ)                                                      |
+|                                                                                                                      |    レアリティ    |                                                                ★1                                                                |
+|                                                                                                                      |       役割       |                                                             SPECIAL                                                              |
+|                                                                                                                      |    ポジション    |                                                               BACK                                                               |
+|                                                                                                                      |      クラス      |                                                            アタッカー                                                            |
+|                                                                                                                      |      武器種      |                                                               SMG                                                                |
+|                                                                                                                      |      遮蔽物      |                                                                \-                                                                |
+|                                                                                                                      |    攻撃タイプ    |                                                               貫通                                                               |
+|                                                                                                                      |    防御タイプ    |                                                             特殊装甲                                                             |
+|                                                                                                                      |       学園       |                                                          柵川中学1年生                                                           |
+|                                                                                                                      |       部活       |                                                                \-                                                                |
+|                                                                                                                      |       年齢       |                                                               12歳                                                               |
+|                                                                                                                      |      誕生日      |                                                                \-                                                                |
+|                                                                                                                      |       身長       |                                                              160cm                                                               |
+|                                                                                                                      |       趣味       |                                                     ネット麻雀、スイーツ調査                                                     |
+|                                                                                                                      |     デザイン     |                                                                \-                                                                |
+|                                                                                                                      |     イラスト     |                                                             ミミトケ                                                             |
+|                                                                                                                      |        CV        |                                                            伊藤かな恵                                                            |
+|                                                                                                                      |    ちびキャラ    | ![佐天涙子_SD2.png](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E4BD90E5A4A9E6B699E5AD905F5344322E706E67.png) |
+|                                                                                                                      | 各バージョン一覧 |                                                           ★1 佐天涙子                                                            |
 
 **基本情報**
 
@@ -100,6 +100,8 @@
 学園都市内における能力者としての強度(レベル)は最も低い無能力者(レベル0)。ただし超常的な異能の発露が全く無いという訳ではなく、普段は操ることができないものの一応『空力使い(エアロハンド)』と呼ばれる能力を持つ。 それゆえコラボやカードゲームなどの作品外出演では『無属性キャラ』として扱われることもあるが、本コラボでは貫通属性になっている。 御坂美琴のような能力者に対しては劣等感を抱くこともあるものの、普段は明るくまっすぐな性格で能力者相手でも金属バットを手に立ち向かっていく。 その好奇心は数々の災いを招き、トラブルメーカーとして要注意人物になっている。
 
 特にこれといった能力がない代わりに、何をやらせても人並み以上にできる。 人付き合いの良さから多くの交流があり、家事も得意でサバカレーを作ったシーンが有名。 なにげにマリーと同じく、銃を装備していながらも戦闘中には一切使わない生徒である。
+
+![表情差分1.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE58886312E6A7067.jpg)![表情差分2.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE58886322E6A7067.jpg)![表情差分3.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE58886332E6A7067.jpg)、 ![表情差分4.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE58886342E6A7067.jpg)![表情差分5.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE58886352E6A7067.jpg)![表情差分6.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE58886362E6A7067.jpg)、 ![表情差分7.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE58886372E6A7067.jpg)![表情差分8.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE58886382E6A7067.jpg)![表情差分9.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE58886392E6A7067.jpg)、 ![表情差分10.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE5888631302E6A7067.jpg)![表情差分11.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE5888631312E6A7067.jpg)![表情差分12.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE5888631322E6A7067.jpg)、 ![表情差分13.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE5888631332E6A7067.jpg)![表情差分14.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE5888631342E6A7067.jpg)![表情差分15.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE5888631352E6A7067.jpg)、 ![表情差分16.jpg](https://bluearchive.wikiru.jp/attach2/E4BD90E5A4A9E6B699E5AD90_E8A1A8E68385E5B7AEE5888631362E6A7067.jpg)
 
 ### 使用している銃の元ネタ
 

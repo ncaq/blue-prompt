@@ -17,6 +17,21 @@ let private headingSelector = "h1, h2, h3, h4, h5, h6"
 /// ブロックごとのループの中で文字列を組み立て直さないように定数として持つ。
 let private structureSelector = $"%s{headingSelector}, table, ul, ol"
 
+/// ノードが中身を持つかどうか。
+/// 画像は文字を持たないが、立ち絵や素材のアイコンのように画像だけで値になるセルがあるため中身として数える。
+/// TextContentはアクセスごとに部分木を走査して文字列を生成するため、
+/// 呼び出し側が既に取り出したテキストを受け取って走査し直さない。
+/// 空判定はトリム文字列を確保しないIsNullOrWhiteSpaceで行う。
+let private hasContentWith (text: string) (node: INode) : bool =
+    not (String.IsNullOrWhiteSpace text)
+    || match node with
+       | :? IElement as element ->
+           element.LocalName = "img" || not (isNull (element.QuerySelector "img"))
+       | _ -> false
+
+/// ノードが中身を持つかどうか。テキストを手元に持っていない時に使う。
+let private hasContent (node: INode) : bool = hasContentWith node.TextContent node
+
 /// 表全体を横断する1セルだけの行(小見出しや自由記述)を段落として表の外へ出し、
 /// 表をその前後で分割する。
 /// 列を持つ行と同じ表に混ぜると、長い記述に合わせた列幅の整形で他の行が際限なく伸びるため。
@@ -97,7 +112,7 @@ let private joinSeparator (previousText: string) (nextText: string) : string opt
 /// 兄弟をnextの方向へ辿って最初に中身のあるノードを、トリム済みテキストと組で返す。
 /// TextContentはアクセスごとに部分木を走査して文字列を生成するため、
 /// 見つけたノードのテキストを呼び出し側が取り直さずに済むように一緒に返す。
-/// 走査中の空判定はトリム文字列を確保しないIsNullOrWhiteSpaceで行う。
+/// 画像だけのノードのテキストは空になる。
 let private siblingWithContent (next: INode -> INode) (node: INode) : (INode * string) option =
     let rec go (sibling: INode) =
         if isNull sibling then
@@ -105,10 +120,10 @@ let private siblingWithContent (next: INode -> INode) (node: INode) : (INode * s
         else
             let text = sibling.TextContent
 
-            if String.IsNullOrWhiteSpace text then
-                go (next sibling)
-            else
+            if hasContentWith text sibling then
                 Some(sibling, text.Trim())
+            else
+                go (next sibling)
 
     go (next node)
 
@@ -146,7 +161,7 @@ let private joinCellLineBreaks (document: IDocument) : unit =
                 | None -> br.Remove()
                 | Some separator -> br.Replace [| document.CreateTextNode separator :> INode |]
         | _ ->
-            // セル先頭や末尾のbr(画像除去の跡など)は繋ぐ相手がいないので取り除く。
+            // セル先頭や末尾のbrは繋ぐ相手がいないので取り除く。
             br.Remove()
 
 /// セル内のdivやpなどのブロック要素の境界を繋いでタグを外す。
@@ -185,13 +200,13 @@ let private unwrapCellBlocks (document: IDocument) : unit =
             | enclosingTable -> isLayoutTable enclosingTable
 
         if not inLayoutTable && isNull (block.QuerySelector structureSelector) then
-            let text = block.TextContent.Trim()
+            let text = block.TextContent
 
-            if text <> "" && isNull (block.Closest "th") then
+            if hasContentWith text block && isNull (block.Closest "th") then
                 match precedingNode block with
                 | None -> ()
                 | Some(_, previous) ->
-                    match joinSeparator previous text with
+                    match joinSeparator previous (text.Trim()) with
                     | None -> ()
                     | Some separator ->
                         block.Before [| document.CreateTextNode separator :> INode |]
@@ -246,7 +261,8 @@ let private replaceChildren (parent: IElement) (children: IElement array) : unit
 /// rowspan/colspanを考慮した格子を組み立て、結合セルを個別セルへ複製展開する。
 /// 複製はサブツリーをコピーしない。
 /// 深いコピーを繰り返すと入れ子テーブルを含むセルで乗算的に膨らむため。
-/// 画像の除去などで全セルが空になった行はノイズでしかないので取り除く。
+/// 全セルが空になった行はノイズでしかないので取り除く。
+/// 複製は画像を持たないので、画像だけのセルの複製は空になる。
 /// 展開した場合は消費した格子のエントリ数をSomeで返す。
 /// 総エントリ数の見積りが残り予算budgetを超える表は、
 /// メモリ枯渇やハングを防ぐため展開せずそのまま残してNoneを返す。
@@ -326,7 +342,9 @@ let private expandMergedCells
                     if entry.IsOrigin then
                         entry.Cell.RemoveAttribute "rowspan" |> ignore
                         entry.Cell.RemoveAttribute "colspan" |> ignore
-                        entry.Cell :> IElement, String.IsNullOrWhiteSpace(cellText entry.Cell)
+
+                        entry.Cell :> IElement,
+                        not (hasContentWith (cellText entry.Cell) entry.Cell)
                     else
                         let text = if entry.KeepsText then cellText entry.Cell else ""
                         let copy = document.CreateElement entry.Cell.LocalName
@@ -342,7 +360,7 @@ let private expandMergedCells
         Some estimatedEntries
 
 /// 見出しの下が全て空になった列を列ごと取り除く。
-/// 画像の除去などで空になった列はノイズでしかないため。
+/// 空の列はノイズでしかないため。
 /// ただし2行の表では空セルがデータの欠けを意味しうるので、
 /// 見出しに中身のある列は3行以上の表でだけ取り除く。
 /// 先頭行を見出し行として扱えるのは全セルがthの場合だけで、
@@ -353,28 +371,25 @@ let private dropEmptyColumns (table: IHtmlTableElement) : unit =
     if 2 <= survivingRows.Length then
         // AngleSharpのIHtmlCollectionはLengthもインデクサも呼ぶたびに子要素を線形に舐め、
         // TextContentもアクセスごとに部分木を走査して文字列を新規生成するため、
-        // セルとそのテキストを一度だけ配列へ落として判定に使う。
+        // セルとその中身の有無を一度だけ配列へ落として判定に使う。
         // 列単位のセル削除は残った列のセルの位置を変えないので、事前に落とした配列のまま扱える。
         let rowCells = survivingRows |> Array.map (fun row -> Seq.toArray row.Cells)
 
-        let rowTexts =
+        let rowContents =
             rowCells
-            |> Array.map (Array.map (fun (cell: IHtmlTableCellElement) -> cell.TextContent.Trim()))
+            |> Array.map (Array.map (fun (cell: IHtmlTableCellElement) -> hasContent cell))
 
         let hasHeaderRow = rowCells[0] |> Array.forall (fun cell -> cell.TagName = "TH")
         let columnCount = rowCells |> Array.map Array.length |> Array.max
 
         // 行によってセル数が違うため、短い行では列が無いことを空として扱う。
-        let cellTextAt (index: int) (texts: string array) : string =
-            if index < texts.Length then texts[index] else ""
+        let cellIsEmptyAt (index: int) (contents: bool array) : bool =
+            index >= contents.Length || not contents[index]
 
         for index in columnCount - 1 .. -1 .. 0 do
-            let headerIsEmpty = String.IsNullOrEmpty(cellTextAt index rowTexts[0])
+            let headerIsEmpty = cellIsEmptyAt index rowContents[0]
 
-            let bodyIsEmpty =
-                rowTexts
-                |> Seq.skip 1
-                |> Seq.forall (fun texts -> String.IsNullOrEmpty(cellTextAt index texts))
+            let bodyIsEmpty = rowContents |> Seq.skip 1 |> Seq.forall (cellIsEmptyAt index)
 
             if bodyIsEmpty && (headerIsEmpty || hasHeaderRow && 3 <= survivingRows.Length) then
                 for cells in rowCells do
@@ -392,9 +407,7 @@ let private normalizePairsRows (document: IDocument) (table: IHtmlTableElement) 
         // TextContentはアクセスごとに部分木走査と文字列生成を伴うため、
         // 行の先頭でセルごとの空判定を一度だけ配列へ落として使い回す。
         let cellIsBlank =
-            cells
-            |> Array.map (fun (cell: IHtmlTableCellElement) ->
-                String.IsNullOrWhiteSpace cell.TextContent)
+            cells |> Array.map (fun (cell: IHtmlTableCellElement) -> not (hasContent cell))
 
         let pairLength =
             match Array.tryFindIndexBack not cellIsBlank with
