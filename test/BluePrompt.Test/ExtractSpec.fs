@@ -360,6 +360,9 @@ let ``見出しの下が全て空の列は取り除かれる`` () =
 let ``画像だけを持つ列と行は空として扱わない`` () =
     // プロフィールの表の立ち絵のように、画像だけのセルが値になっている表がある。
     // 文字を持たないことで空の列とみなすと、立ち絵が列ごと消える。
+    let portrait = Elem.img [ Attr.src "https://example.com/a.png"; Attr.alt "" ]
+    let chibi = Elem.img [ Attr.src "https://example.com/b.png"; Attr.alt "" ]
+
     let html =
         renderContentDocument
             [ Elem.table
@@ -371,20 +374,15 @@ let ``画像だけを持つ列と行は空として扱わない`` () =
                           Elem.th [] [ Text.raw "ちびキャラ" ] ]
                     Elem.tr
                         []
-                        [ Elem.td
-                              [ Attr.rowspan "2" ]
-                              [ Elem.img [ Attr.src "https://example.com/a.png"; Attr.alt "" ] ]
+                        [ Elem.td [ Attr.rowspan "2" ] [ portrait ]
                           Elem.td [] [ Text.raw "ユウカ" ]
                           Elem.td [] [] ]
-                    Elem.tr
-                        []
-                        [ Elem.td [] []
-                          Elem.td [] [ Elem.img [ Attr.src "https://a.test/b.png"; Attr.alt "" ] ] ] ] ]
+                    Elem.tr [] [ Elem.td [] []; Elem.td [] [ chibi ] ] ] ]
 
     let extracted = BluePrompt.Extract.contentHtml contentQuery html
 
     Assert.Contains("https://example.com/a.png", extracted)
-    Assert.Contains("https://a.test/b.png", extracted)
+    Assert.Contains("https://example.com/b.png", extracted)
     Assert.Equal(3, Regex.Matches(extracted, "<tr>").Count)
 
 [<Fact>]

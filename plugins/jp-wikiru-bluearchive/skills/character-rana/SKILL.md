@@ -168,7 +168,7 @@ user-invocable: false
 
 **△△△**
 
-&ref(): File not found: "Weapon_Icon_△△△.png" at page "img";
+&ref(): File not found: "Weapon*Icon*△△△.png" at page "img";
 
 **詳細**
 
