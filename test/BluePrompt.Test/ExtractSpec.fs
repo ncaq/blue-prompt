@@ -44,8 +44,8 @@ let private fixtureHtml =
 let private fixtureQuery: BluePrompt.Extract.ContentQuery =
     { ContentSelectors = [ "#content"; "#note" ]
       RemoveSelectors = [ "#header"; "#menu"; "#footer" ]
-      UnwrapLinks = true
-      ReplaceImagesWithAlt = false
+      UnwrapInternalLinks = true
+      ResolveImages = false
       FlattenTables = true }
 
 /// 本文だけを見る検証で使う、#contentへ絞ったクエリ。
@@ -78,25 +78,101 @@ let ``contentHtmlはリンクを外しテーブルを平坦化する`` () =
     Assert.DoesNotContain("、second", html)
 
 [<Fact>]
-let ``ReplaceImagesWithAltは画像をaltの文字列へ置き換え空altやファイル名だけの画像は取り除く`` () =
+let ``UnwrapInternalLinksは他のサイトへのリンクを残す`` () =
     let html =
         renderContentDocument
             [ Elem.p
                   []
-                  [ Elem.img [ Attr.src "a.png"; Attr.alt "素材名" ]
-                    Elem.img [ Attr.src "b.png"; Attr.alt "" ]
-                    Elem.img [ Attr.src "c.png" ]
-                    Elem.img [ Attr.src "d.png"; Attr.alt "アイコン_0.PNG" ] ] ]
+                  [ Elem.a [ Attr.href "#section" ] [ Text.raw "anchor text" ]
+                    Elem.a [ Attr.href "./?page" ] [ Text.raw "relative text" ]
+                    Elem.a
+                        [ Attr.href "https://example.com/post"; Attr.rel "nofollow" ]
+                        [ Text.raw "external text" ] ] ]
+
+    let extracted = BluePrompt.Extract.contentHtml contentQuery html
+
+    // ページ内アンカーと相対リンクはタグだけ外れてテキストが残る。
+    Assert.DoesNotContain("#section", extracted)
+    Assert.DoesNotContain("./?page", extracted)
+    Assert.Contains("anchor text", extracted)
+    Assert.Contains("relative text", extracted)
+    // 残すリンクはhref以外の属性を持たない。
+    Assert.Contains("""<a href="https://example.com/post">external text</a>""", extracted)
+
+[<Fact>]
+let ``UnwrapInternalLinksは中身を持たないリンクにURLを表示文字として入れる`` () =
+    // 埋め込みのツイートは空のaだけを持ち、そのままでは何も指せないリンクになる。
+    let html =
+        renderContentDocument
+            [ Elem.blockquote
+                  [ Attr.class' "twitter-tweet" ]
+                  [ Elem.a [ Attr.href "https://twitter.com/user/status/1" ] [] ] ]
+
+    let extracted = BluePrompt.Extract.contentHtml contentQuery html
+
+    Assert.Contains(
+        """<a href="https://twitter.com/user/status/1">https://twitter.com/user/status/1</a>""",
+        extracted
+    )
+
+[<Fact>]
+let ``UnwrapInternalLinksは同じURLの画像を包むだけのリンクを外す`` () =
+    // 画像を原寸で開くためのリンクは、画像のURLを繰り返すだけになる。
+    let html =
+        renderContentDocument
+            [ Elem.p
+                  []
+                  [ Elem.a
+                        [ Attr.href "https://example.com/a.jpg"; Attr.title "a.jpg" ]
+                        [ Elem.img [ Attr.src "https://example.com/a.jpg"; Attr.alt "" ] ]
+                    Elem.a
+                        [ Attr.href "https://example.com/page" ]
+                        [ Elem.img [ Attr.src "https://example.com/b.jpg"; Attr.alt "" ] ] ] ]
 
     let query =
         { contentQuery with
-            ReplaceImagesWithAlt = true }
+            ResolveImages = true }
 
     let extracted = BluePrompt.Extract.contentHtml query html
 
-    Assert.Contains("素材名", extracted)
-    Assert.DoesNotContain("<img", extracted)
-    Assert.DoesNotContain("アイコン_0.PNG", extracted)
+    Assert.DoesNotContain("""<a href="https://example.com/a.jpg">""", extracted)
+    Assert.Contains("""<img alt="" src="https://example.com/a.jpg">""", extracted)
+    // 別のページを指す画像のリンクは残る。
+    Assert.Contains(
+        """<a href="https://example.com/page"><img alt="" src="https://example.com/b.jpg"></a>""",
+        extracted
+    )
+
+[<Fact>]
+let ``ResolveImagesは遅延読み込みの本物のURLを残し解決できない画像は取り除く`` () =
+    let html =
+        renderContentDocument
+            [ Elem.p
+                  []
+                  [ Elem.img
+                        [ Attr.class' "lazyload"
+                          Attr.create "data-src" "https://example.com/a.png"
+                          Attr.src "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP"
+                          Attr.width "20"
+                          Attr.alt "素材名" ]
+                    Elem.img [ Attr.src "https://example.com/b.png"; Attr.alt "" ]
+                    // プレースホルダしか持たない画像。
+                    Elem.img
+                        [ Attr.src "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP"; Attr.alt "仮" ]
+                    // 文字列からパースした文書には基準のURLが無く、相対参照は解決できない。
+                    Elem.img [ Attr.src "c.png"; Attr.alt "相対" ] ] ]
+
+    let query =
+        { contentQuery with
+            ResolveImages = true }
+
+    let extracted = BluePrompt.Extract.contentHtml query html
+
+    Assert.Contains("""<img alt="素材名" src="https://example.com/a.png">""", extracted)
+    Assert.Contains("""<img alt="" src="https://example.com/b.png">""", extracted)
+    Assert.DoesNotContain("data:", extracted)
+    Assert.DoesNotContain("仮", extracted)
+    Assert.DoesNotContain("相対", extracted)
 
 [<Fact>]
 let ``セル内のブロック要素は区切り文字を挟んで平坦化される`` () =
@@ -279,6 +355,35 @@ let ``見出しの下が全て空の列は取り除かれる`` () =
 
     Assert.DoesNotContain("画像", extracted)
     Assert.Contains("<td>ユウカ</td>", extracted)
+
+[<Fact>]
+let ``画像だけを持つ列と行は空として扱わない`` () =
+    // プロフィールの表の立ち絵のように、画像だけのセルが値になっている表がある。
+    // 文字を持たないことで空の列とみなすと、立ち絵が列ごと消える。
+    let portrait = Elem.img [ Attr.src "https://example.com/a.png"; Attr.alt "" ]
+    let chibi = Elem.img [ Attr.src "https://example.com/b.png"; Attr.alt "" ]
+
+    let html =
+        renderContentDocument
+            [ Elem.table
+                  []
+                  [ Elem.tr
+                        []
+                        [ Elem.th [] [ Text.raw "立ち絵" ]
+                          Elem.th [] [ Text.raw "名前" ]
+                          Elem.th [] [ Text.raw "ちびキャラ" ] ]
+                    Elem.tr
+                        []
+                        [ Elem.td [ Attr.rowspan "2" ] [ portrait ]
+                          Elem.td [] [ Text.raw "ユウカ" ]
+                          Elem.td [] [] ]
+                    Elem.tr [] [ Elem.td [] []; Elem.td [] [ chibi ] ] ] ]
+
+    let extracted = BluePrompt.Extract.contentHtml contentQuery html
+
+    Assert.Contains("https://example.com/a.png", extracted)
+    Assert.Contains("https://example.com/b.png", extracted)
+    Assert.Equal(3, Regex.Matches(extracted, "<tr>").Count)
 
 [<Fact>]
 let ``キーと値のペアを横に並べた行は1行1ペアの2列になる`` () =

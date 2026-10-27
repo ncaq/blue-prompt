@@ -83,8 +83,7 @@ let ``読点の前の空白は詰められる`` () =
 
 [<Fact>]
 let ``区切り文字だけになった行は取り除かれる`` () =
-    // 画像だけのリンクを「/」で並べたナビゲーションは、
-    // 画像除去とリンク外しの後に区切り文字だけの行として残る。
+    // リンクを「/」で並べたナビゲーションは、並べた要素が落ちると区切り文字だけの行として残る。
     let markdown = "# h\n\n/\n\n本文\n\n/ /\n"
     Assert.Equal("# h\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
@@ -139,20 +138,6 @@ let ``案内の前に別の文がある行は残る`` () =
     Assert.Equal("## 小ネタ\n\n本文の文です。ここから先を書く欄です。\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
-let ``画像を失ったちびキャラの説明は取り除かれる`` () =
-    // 画像を並べただけの折りたたみに付いていた説明で、画像の除去で指すものを失う。
-    let markdown = "## 小ネタ\n\nちびキャラ/別ポーズ\n\n実際の小ネタ\n"
-    Assert.Equal("## 小ネタ\n\n実際の小ネタ\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
-
-[<Fact>]
-let ``ちびキャラで始まる本文の文は残る`` () =
-    // 落としたいのはキャプション由来の名詞句だけで、
-    // 小ネタの本文が同じ語で始まっても落としてはいけない。
-    let markdown = "## 小ネタ\n\nちびキャラは制服と同じデザインです。\n"
-
-    Assert.Equal("## 小ネタ\n\nちびキャラは制服と同じデザインです。\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
-
-[<Fact>]
 let ``空行と同じ意味しか持たない行は取り除かれる`` () =
     // 実体参照のままの&nbsp;と中身の無い引用は、残すと見出しの中身として数えられてしまう。
     let markdown = "## 小ネタ\n\n&nbsp;\n\n>\n\n実際の小ネタ\n"
@@ -184,7 +169,7 @@ let ``3階層の見出しは最も深い見出しが空だと連鎖して落ち�
 
 [<Fact>]
 let ``中身を失った見出しは取り除かれる`` () =
-    // 画像を並べただけの節は画像の除去で本文を失い、見出しだけが残る。
+    // 節の中身が抽出や後始末で全て落ちると、見出しだけが残る。
     let markdown = "## 小ネタ\n\n本文\n\n### 立ち絵バリエーション\n"
     Assert.Equal("## 小ネタ\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
@@ -214,11 +199,14 @@ let ``studentContentQueryは折りたたみの中身を残し開閉UIだけ取�
     Assert.Contains(".rgn-description", query.RemoveSelectors)
 
 [<Fact>]
-let ``studentContentQueryは画像を除去せずaltのテキストへ置き換える`` () =
-    // 素材や品物は画像で表現されていて、altに入っている名前が唯一の事実になる。
-    let query = BluePrompt.Wikiru.studentContentQuery
-    Assert.DoesNotContain("img", query.RemoveSelectors)
-    Assert.True query.ReplaceImagesWithAlt
+let ``Markdownにする抽出設定は画像をURL付きで残す`` () =
+    // 元の画像を辿れるようにURLを残し、素材や品物の名前はaltとして残る。
+    for query in
+        [ BluePrompt.Wikiru.contentQuery
+          BluePrompt.Wikiru.studentContentQuery
+          BluePrompt.Wikiru.rolePlayContentQuery ] do
+        Assert.DoesNotContain("img", query.RemoveSelectors)
+        Assert.True query.ResolveImages
 
 [<Fact>]
 let ``rolePlayContentQueryは取り消し線を中身ごと取り除き生徒ページの本文は残す`` () =
@@ -249,7 +237,8 @@ let ``structuredContentQueryはDOM構造を保ったままスクリプトとコ�
     // 一方でスクリプト片や投稿フォーム由来の任意ユーザー入力の除去は、
     // contentQueryと同じ理由でこの経路にも必要。
     let query = BluePrompt.Wikiru.structuredContentQuery
-    Assert.False query.UnwrapLinks
+    Assert.False query.UnwrapInternalLinks
+    Assert.False query.ResolveImages
     Assert.False query.FlattenTables
     Assert.Contains("script", query.RemoveSelectors)
     Assert.Contains(".pcomment", query.RemoveSelectors)

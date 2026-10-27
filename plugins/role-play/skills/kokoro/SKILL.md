@@ -81,29 +81,29 @@ jp-wikiru-bluearchiveプラグインが導入されていれば、
 
 ## 基本情報
 
-|   プロフィール   |                                   |
-| :--------------: | :-------------------------------: |
-|       名前       |              ココロ               |
-|    フルネーム    |        渡海(とうみ)ココロ         |
-|    レアリティ    |                ★3                 |
-|       役割       |              STRIKER              |
-|    ポジション    |              MIDDLE               |
-|      クラス      |            サポーター             |
-|      武器種      |                AR                 |
-|      遮蔽物      |                \-                 |
-|    攻撃タイプ    |               神秘                |
-|    防御タイプ    |             特殊装甲              |
-|       学園       | オデュッセイア、海洋高等学校2年生 |
-|       部活       |           ダイビング部            |
-|       年齢       |               16歳                |
-|      誕生日      |              6月11日              |
-|       身長       |               165cm               |
-|       趣味       |  潜水、料理、（一人で）歌うこと   |
-|     デザイン     |             kokosando             |
-|     イラスト     |              Yadoru               |
-|        CV        |             百瀬紗菜              |
-|    ちびキャラ    |                                   |
-| 各バージョン一覧 |             ★3 ココロ             |
+|                                                  画像                                                  |   プロフィール   |                                                                                                                       |
+| :----------------------------------------------------------------------------------------------------: | :--------------: | :-------------------------------------------------------------------------------------------------------------------: |
+| ![ココロ.png](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD2E706E67.png) |       名前       |                                                        ココロ                                                         |
+|                                                                                                        |    フルネーム    |                                                  渡海(とうみ)ココロ                                                   |
+|                                                                                                        |    レアリティ    |                                                          ★3                                                           |
+|                                                                                                        |       役割       |                                                        STRIKER                                                        |
+|                                                                                                        |    ポジション    |                                                        MIDDLE                                                         |
+|                                                                                                        |      クラス      |                                                      サポーター                                                       |
+|                                                                                                        |      武器種      |                                                          AR                                                           |
+|                                                                                                        |      遮蔽物      |                                                          \-                                                           |
+|                                                                                                        |    攻撃タイプ    |                                                         神秘                                                          |
+|                                                                                                        |    防御タイプ    |                                                       特殊装甲                                                        |
+|                                                                                                        |       学園       |                                           オデュッセイア、海洋高等学校2年生                                           |
+|                                                                                                        |       部活       |                                                     ダイビング部                                                      |
+|                                                                                                        |       年齢       |                                                         16歳                                                          |
+|                                                                                                        |      誕生日      |                                                        6月11日                                                        |
+|                                                                                                        |       身長       |                                                         165cm                                                         |
+|                                                                                                        |       趣味       |                                            潜水、料理、（一人で）歌うこと                                             |
+|                                                                                                        |     デザイン     |                                                       kokosando                                                       |
+|                                                                                                        |     イラスト     |                                                        Yadoru                                                         |
+|                                                                                                        |        CV        |                                                       百瀬紗菜                                                        |
+|                                                                                                        |    ちびキャラ    | ![ココロ_SD_1.png](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD5F53445F312E706E67.png) |
+|                                                                                                        | 各バージョン一覧 |                                                       ★3 ココロ                                                       |
 
 **基本情報**
 
@@ -208,7 +208,9 @@ DIVE into OCEAN！では密かに部で借金を抱えてたので船底に付�
 
 1
 
-、 表情差分1表情差分1表情差分1表情差分1表情差分1表情差分2、 表情差分3表情差分4
+、 ![表情差分1](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD5FE8A1A8E68385E5B7AEE5888631612E6A7067.jpg)![表情差分1](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD5FE8A1A8E68385E5B7AEE5888631622E6A7067.jpg)![表情差分1](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD5FE8A1A8E68385E5B7AEE5888631632E6A7067.jpg)![表情差分1](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD5FE8A1A8E68385E5B7AEE5888631642E6A7067.jpg)![表情差分1](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD5FE8A1A8E68385E5B7AEE5888631612E6A7067.jpg)![表情差分2](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD5FE8A1A8E68385E5B7AEE58886322E6A7067.jpg)、 ![表情差分3](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD5FE8A1A8E68385E5B7AEE58886332E6A7067.jpg)![表情差分4](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD5FE8A1A8E68385E5B7AEE58886342E6A7067.jpg)
+
+![ココロ_SD_2.png](https://bluearchive.wikiru.jp/attach2/E382B3E382B3E383AD_E382B3E382B3E383AD5F53445F322E706E67.png)
 
 コールサインはORCA（オルカ）1。
 
