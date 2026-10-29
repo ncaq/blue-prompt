@@ -253,12 +253,18 @@ Open WebUIは`WEBUI_AUTH`を無効にしてもAPIにはBearerトークンを要�
 UIが裏で行っているのと同じことを自分で行うだけなので、
 インスタンス側に追加の設定は要りません。
 
-oneshotのsystemdサービスが、
+systemdサービスが、
 起動時とスキルの変更時にAPIで登録済みのModelと突き合わせて、
 無ければ作成し、
 差分があれば更新し、
 差分が無ければ何も書き込みません。
 繰り返し実行しても結果は同じです。
+
+同期は裏で走り、
+boot時の`multi-user.target`の到達や`nixos-rebuild switch`は完了を待ちません。
+Knowledgeのアップロードは登録先での埋め込みで長く掛かるためです。
+成否は`nixos-rebuild`の出力には出ないので、
+`systemctl status blue-prompt-open-webui-sync`とジャーナルで確かめてください。
 
 スキルが改良された時は、
 flake inputを更新して構成を切り替えるだけで、
