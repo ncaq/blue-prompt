@@ -618,8 +618,16 @@ API経由で同期しています。
 この同期を宣言的に行うNixOSモジュールが、
 `modules/nixos.nix`にあり`nixosModules.default`として公開されています。
 エンドポイントのURLなど登録先に依存する情報だけをオプションで入力すると、
-oneshotのsystemdサービスが起動時と生成物の変更時に同期を実行します。
+systemdサービスが起動時と生成物の変更時に同期を実行します。
 ModelとKnowledgeとRAGテンプレートはいずれも既定で同期の対象です。
+
+サービスはoneshotではなく`Type=exec`で、
+プロセスを起動できた時点で起動ジョブを終えます。
+Knowledgeのアップロードは登録先での埋め込みで長く掛かるため、
+oneshotにするとboot時の`multi-user.target`の到達と、
+構成を切り替える`nixos-rebuild switch`が完了まで待たされるからです。
+同期の成否は`nixos-rebuild`の出力には出ないので、
+ユニットの状態とジャーナルで確かめます。
 モジュールの検証はnix-fast-buildのchecks(`nixos-module`)に含まれています。
 
 # 想定するRAGの環境

@@ -5,12 +5,26 @@
 # flake.nixが`blue-prompt`と生成物をそのまま接続することで、
 # スキルを追加してもこのモジュールへの追記は必要ない。
 #
-# 同期はoneshotのsystemdサービスがBluePromptのopen-webui syncサブコマンドで行う。
+# 同期は一度走って終わるsystemdサービスが、
+# BluePromptのopen-webui syncサブコマンドで行う。
 # Open WebUIのModelはDBに保存される状態なのでNixだけでは宣言できず、
 # APIで突き合わせて足りない分だけ書き込むことで冪等にする。
 # ユニットには生成物のディレクトリが焼き込まれているため、
 # スキルを改良して構成を切り替えるとユニットが変わって同期が再実行され、
 # 登録済みのModelとKnowledgeが自動で上書きされる。
+#
+# 同期の完了は待たせない。
+# Knowledgeのアップロードは1ファイルごとに登録先で埋め込みが走り、
+# 断片の数だけ時間が積み上がる。
+# oneshotにするとユニットの起動ジョブが同期の完了まで終わらず、
+# boot時のmulti-user.targetの到達と、
+# 構成の切り替えでユニットを起動し直すnixos-rebuild switchが、
+# 重要でもない同期に付き合って待ち続けてしまう。
+# Type=execならプロセスを起動できた時点で起動ジョブが終わるため、
+# 同期は裏で続き、結果はジャーナルとユニットの状態で後から確かめる。
+# nixpkgsのollama-model-loaderがモデルの取得を裏で続けるのと同じ形である。
+# RemainAfterExitは残して完了後もactiveのまま置くことで、
+# 構成の切り替えでユニットが変わった時だけ再実行されるようにする。
 #
 # エンドポイントのURLや推論へ使う上流モデルのような、
 # 登録先のインスタンスに依存してこのリポジトリからは知り得ない情報だけを、
@@ -115,7 +129,8 @@ in
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       serviceConfig = {
-        Type = "oneshot";
+        # oneshotではなくexecにして、同期の完了を起動ジョブに待たせない。理由は冒頭のコメント。
+        Type = "exec";
         RemainAfterExit = true;
         DynamicUser = true;
         # ExecStartはシェルを経由しないため、
