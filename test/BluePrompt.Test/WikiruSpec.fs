@@ -1,5 +1,6 @@
 module BluePrompt.Test.WikiruSpec
 
+open System.Threading.Tasks
 open Falco.Markup
 open Xunit
 open BluePrompt.Test.HtmlFixture
@@ -238,6 +239,41 @@ let ``rolePlayContentQueryは取り消し線を中身ごと取り除き生徒ペ
     Assert.Contains("世話を焼いている", extracted)
     Assert.Contains("折りたたみの本文", extracted)
     Assert.DoesNotContain("rgn-button", extracted)
+
+[<Fact>]
+let ``ネタバレ隠しのフォーム部品があってもプロフィールは箇条書きのまま姓を補える`` () : Task =
+    task {
+        // アキラの部活のセルはネタバレ隠しプラグインのinputとlabelを含む。
+        // フォーム部品が項目に残るとpandocがリスト全体を段落へ崩し、
+        // フルネームの項目が読めずに姓を補えないまま黙ってページ名へ戻ってしまう。
+        let spoiler =
+            Elem.span
+                [ Attr.class' "plugin-spoiler" ]
+                [ Elem.input [ Attr.class' "spoiler-check"; Attr.type' "checkbox" ]
+                  Elem.label [ Attr.class' "spoiler-overlay" ] []
+                  Text.raw "寮監隊" ]
+
+        let html =
+            renderDocument
+                [ Elem.div
+                      [ Attr.id "body" ]
+                      [ Text.h2 "基本情報"
+                        Elem.table
+                            []
+                            [ Elem.tr [] [ Elem.th [] [ Text.raw "名前" ]; Elem.td [] [ Text.raw "アキラ" ] ]
+                              Elem.tr
+                                  []
+                                  [ Elem.th [] [ Text.raw "フルネーム" ]
+                                    Elem.td [] [ Text.raw "清澄(きよすみ)アキラ" ] ]
+                              Elem.tr [] [ Elem.th [] [ Text.raw "部活" ]; Elem.td [] [ spoiler ] ] ] ] ]
+
+        let extracted = BluePrompt.Extract.contentHtml BluePrompt.Wikiru.contentQuery html
+        let! converted = BluePrompt.Pandoc.toMarkdown extracted
+        let markdown = BluePrompt.Wikiru.cleanupMarkdown converted
+
+        Assert.Contains("\n- 部活: 寮監隊\n", markdown)
+        Assert.Equal("清澄アキラ", BluePrompt.Wikiru.unplayableDisplayName "アキラ" markdown)
+    }
 
 [<Fact>]
 let ``structuredContentQueryはDOM構造を保ったままスクリプトとコメント欄を除く`` () =
