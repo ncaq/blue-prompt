@@ -1,6 +1,6 @@
 ---
 name: character-akira
-description: Facts about Blue Archive character 清澄アキラ.
+description: Facts about Blue Archive character アキラ.
 user-invocable: false
 ---
 
@@ -23,14 +23,21 @@ user-invocable: false
 
 ## 基本情報
 
-|                                                  画像                                                  | プロフィール |                        |
-| :----------------------------------------------------------------------------------------------------: | :----------: | :--------------------: |
-| ![アキラ.png](https://bluearchive.wikiru.jp/attach2/E382A2E382ADE383A9_E382A2E382ADE383A92E706E67.png) |     名前     |         アキラ         |
-|                                                                                                        |  フルネーム  |  清澄(きよすみ)アキラ  |
-|                                                                                                        |     学園     | ワイルドハント芸術学院 |
-|                                                                                                        |     部活     |         寮監隊         |
-|                                                                                                        |   デザイン   |         CHILD          |
-|                                                                                                        |   イラスト   |         CHILD          |
+画像: ![アキラ.png](https://bluearchive.wikiru.jp/attach2/E382A2E382ADE383A9_E382A2E382ADE383A92E706E67.png)
+
+名前: アキラ
+
+フルネーム: 清澄(きよすみ)アキラ
+
+学園: ワイルドハント芸術学院
+
+部活:
+
+寮監隊
+
+デザイン: CHILD
+
+イラスト: CHILD
 
 **登場シナリオ**
 
