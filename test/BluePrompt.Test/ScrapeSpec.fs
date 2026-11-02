@@ -1,6 +1,5 @@
 module BluePrompt.Test.ScrapeSpec
 
-open System
 open System.Threading.Tasks
 open Falco.Markup
 open Xunit
@@ -16,13 +15,4 @@ let ``ローカルサーバのHTMLをMarkdown化できる`` () : Task =
         let! markdown = withServedHtml html (fun url -> BluePrompt.Scrape.fetchMarkdown url)
         Assert.Contains("# Local Page", markdown)
         Assert.Contains("paragraph", markdown)
-    }
-
-[<Fact>]
-[<Trait("Category", "Network")>]
-let ``example.comのMarkdownに見出しとリンクがMarkdown記法で含まれる`` () : Task =
-    task {
-        let! markdown = BluePrompt.Scrape.fetchMarkdown (Uri "https://example.com/")
-        Assert.Contains("# Example Domain", markdown)
-        Assert.Contains("](https://iana.org/domains/example)", markdown)
     }

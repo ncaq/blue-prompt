@@ -11,6 +11,7 @@
     <Compile Include="Fmt.fs" />
     <Compile Include="Pandoc.fs" />
     <Compile Include="Table.fs" />
+    <Compile Include="TableList.fs" />
     <Compile Include="Markdown.fs" />
     <Compile Include="Template.fs" />
     <Compile Include="Extract.fs" />

@@ -95,6 +95,16 @@ let ``読点だけになった行は取り除かれる`` () =
     Assert.Equal("# h\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
+let ``立ち絵に添えられた全体画像の案内は読点ごと取り除かれる`` () =
+    // 縮小画像を包む全体画像へのリンクの説明で、リンクを外した後は辿る先が無い。
+    let markdown = "# h\n\n- 画像: ![a](https://example.com/a.png)、クリックで全体画像\n- 名前: ヒナ\n"
+
+    Assert.Equal(
+        "# h\n\n- 画像: ![a](https://example.com/a.png)\n- 名前: ヒナ\n",
+        BluePrompt.Wikiru.cleanupMarkdown markdown
+    )
+
+[<Fact>]
 let ``水平線の行は区切り文字の除去では消えない`` () =
     let markdown = "# h\n\n本文\n\n---\n\n付記\n"
     Assert.Equal("# h\n\n本文\n\n---\n\n付記\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
@@ -329,10 +339,10 @@ let ``trimGameplayDetailsは入手方法が無ければ何も変えない`` () =
     let markdown = "## 基本情報\n\n紹介文\n\n## ボイス\n\n| 獲得 | セリフ |\n"
     Assert.Equal(markdown, BluePrompt.Wikiru.trimGameplayDetails markdown)
 
-/// プロフィールの表のうち、フルネームの行だけを持つ最小のナレッジ本体。
-/// 縦に結合されたセルが複製されて先頭へ付く実際の形に合わせる。
+/// プロフィールの箇条書きのうち、フルネームの項目だけを持つ最小のナレッジ本体。
+/// 立ち絵の項目が先頭へ付く実際の形に合わせる。
 let private studentMarkdown (fullName: string) (sections: string) : string =
-    $"## 基本情報\n\n| クリックで全体画像 | フルネーム | %s{fullName} |\n%s{sections}"
+    $"## 基本情報\n\n- 画像: ![ユウカ.png](https://example.com/a.png)\n- フルネーム: %s{fullName}\n%s{sections}"
 
 [<Fact>]
 let ``studentSkillMarkdownはフロントマターと出典とナレッジを含む`` () =
@@ -400,10 +410,10 @@ let ``familyNamedPageNameはページ名と繋がらないフルネームで止�
 
 [<Fact>]
 let ``familyNamedPageNameはフルネームが空欄なら止まる`` () =
-    // 空欄のセルは空白だけが残るため、それを姓として繋げようとせず、無いものとして扱う。
+    // 空欄のセルは項目に残らずキーだけの行になるため、無いものとして扱う。
     let error =
         Assert.Throws<BluePrompt.Wikiru.StudentFullNameNotFound>(fun () ->
-            BluePrompt.Wikiru.familyNamedPageName "ユウカ" (studentMarkdown " " "") |> ignore)
+            BluePrompt.Wikiru.familyNamedPageName "ユウカ" "## 基本情報\n\n- フルネーム\n" |> ignore)
 
     Assert.Equal("ユウカ", error.pageName)
 

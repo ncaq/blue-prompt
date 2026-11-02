@@ -34,7 +34,14 @@ type ContentQuery =
         /// テーブルのrowspan/colspanを個別セルへ展開し、セル内の改行やブロック要素を1行へ繋ぐか。
         /// GFMのパイプテーブルは結合セルもセル内改行も表現できず、
         /// pandocが変換を諦めてテーブル全体を[TABLE]という文字列へ潰してしまうため。
+        /// TablesToListsの箇条書きへの置き換えも、この展開で揃った格子を読む。
         FlattenTables: bool
+        /// 平坦化したデータの表を箇条書きへ置き換えるか。
+        /// パイプテーブルは整形で列幅が揃えられ、広いセルが1つあるだけで全ての行が空白で埋まる上に、
+        /// 行が見出し行から切り離されると列の意味を失う。
+        /// 箇条書きは項目ごとに列名を抱えるので、どちらの問題も起きない。
+        /// 見出しを含むレイアウト用の表は置き換えない。FlattenTablesと併せて使う。
+        TablesToLists: bool
     }
 
 /// 一致した要素をDOMから取り除く。
@@ -132,7 +139,7 @@ let headingText (heading: IElement) : string =
     |> _.Trim()
 
 /// パース済みDOMからqueryに従って本文だけをHTML文字列として抜き出す。
-/// RemoveSelectorsの除去とResolveImages・FlattenTables・UnwrapInternalLinksの変形を、
+/// RemoveSelectorsの除去とResolveImages・FlattenTables・TablesToLists・UnwrapInternalLinksの変形を、
 /// この適用順で施した後に、
 /// ContentSelectorsへ一致した要素のouterHTMLを連結して返す。
 /// documentは変形で破壊的に書き換わる。
@@ -153,6 +160,10 @@ let contentHtmlOfDocument (query: ContentQuery) (document: IDocument) : string =
     // リンクを外す前に行う。
     if query.FlattenTables then
         Table.flatten document
+
+    // 箇条書きへの置き換えは、結合セルの展開と空行・空列の除去を済ませた表を読む。
+    if query.TablesToLists then
+        TableList.convert document
 
     if query.UnwrapInternalLinks then
         unwrapInternalLinks document

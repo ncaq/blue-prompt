@@ -283,7 +283,8 @@ let private fixtureQuery: BluePrompt.Extract.ContentQuery =
       RemoveSelectors = [ "#header" ]
       UnwrapInternalLinks = true
       ResolveImages = false
-      FlattenTables = true }
+      FlattenTables = true
+      TablesToLists = false }
 
 [<Fact>]
 let ``fetchContentHtmlは取得したDOMへ抽出を適用する`` () : Task =
