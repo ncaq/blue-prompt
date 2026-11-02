@@ -293,6 +293,24 @@ let ``入れ子の表は内側から箇条書きになる`` () =
     Assert.Contains("<li>外側: <ul><li>内側: 値</li></ul></li>", html)
 
 [<Fact>]
+let ``内側の表の題名が作る見出しで外側の表がレイアウト扱いにならない`` () =
+    // 内側の表を先に置き換えると題名の見出しが外側のセルへ入るが、
+    // それは置き換えが作った見出しで、外側の表がレイアウトであることを意味しない。
+    let inner =
+        Elem.table
+            []
+            [ Elem.tr [] [ Elem.th [] [ Text.raw "題名" ] ]
+              Elem.tr [] [ Elem.th [] [ Text.raw "列名" ] ]
+              Elem.tr [] [ Elem.td [] [ Text.raw "値" ] ] ]
+
+    let html =
+        extract
+            [ Elem.table [] [ Elem.tr [] [ Elem.th [] [ Text.raw "外側" ]; Elem.td [] [ inner ] ] ] ]
+
+    Assert.DoesNotContain("<table", html)
+    Assert.Contains("<li>外側: <h2>題名</h2><ul><li>列名: 値</li></ul></li>", html)
+
+[<Fact>]
 let ``箇条書きにした表はpandocで見出しと項目のMarkdownになる`` () : Task =
     task {
         let html =
