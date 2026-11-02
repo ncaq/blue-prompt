@@ -366,16 +366,18 @@ let private isDataTable (table: IHtmlTableElement) : bool =
 /// 文書中のデータの表を全て箇条書きへ置き換える。
 /// 題名の見出しは表の直前にある見出しの1つ下の深さにする。見出しが無ければh2になる。
 /// 内側の表を先に置き換えないと外側のセルの中身を複製する時に表のままになるため、文書の逆順に走査する。
+/// データの表かどうかは走査の前に全て判定しておく。
+/// 内側の表の題名が作った見出しが外側のセルへ入り、置き換えの後ではレイアウトに見えてしまうため。
 let convert (document: IDocument) : unit =
     document.QuerySelectorAll $"%s{headingSelector}, table"
     |> Seq.toArray
     |> Array.fold
         (fun (level, tables) element ->
             match element with
-            | :? IHtmlTableElement as table -> level, (table, level + 1) :: tables
+            | :? IHtmlTableElement as table when isDataTable table ->
+                level, (table, level + 1) :: tables
+            | :? IHtmlTableElement -> level, tables
             | heading -> int (heading.LocalName.Substring 1), tables)
         (1, [])
     |> snd
-    |> List.iter (fun (table, titleLevel) ->
-        if isDataTable table then
-            convertTable document titleLevel table)
+    |> List.iter (fun (table, titleLevel) -> convertTable document titleLevel table)
