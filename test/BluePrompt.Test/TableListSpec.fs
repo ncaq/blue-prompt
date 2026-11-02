@@ -174,6 +174,23 @@ let ``説明の文字を持つ立ち絵の列も独立した項目になる`` ()
     )
 
 [<Fact>]
+let ``データ行が1行だけの表の画像は立ち絵ではなく行の値に残る`` () =
+    // 立ち絵の列は縦に結合されたセルの展開で生まれるので、複製が1つも無ければ立ち絵ではない。
+    let icon = Elem.img [ Attr.src "https://example.com/icon.png"; Attr.alt "素材" ]
+
+    let html =
+        extract
+            [ Elem.table
+                  []
+                  [ Elem.tr [] [ Elem.th [] [ Text.raw "Lv" ]; Elem.th [] [ Text.raw "素材" ] ]
+                    Elem.tr [] [ Elem.td [] [ Text.raw "1-5" ]; Elem.td [] [ icon ] ] ] ]
+
+    Assert.Contains(
+        """<ul><li>Lv: 1-5, 素材: <img src="https://example.com/icon.png" alt="素材"></li></ul>""",
+        html
+    )
+
+[<Fact>]
 let ``表の途中の列名の行はそこから別の一覧として読む`` () =
     // 固有武器の表は限界突破の行の後に、Lvを列に並べたステータスの一覧が続く。
     let html =
