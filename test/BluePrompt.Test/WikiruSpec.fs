@@ -471,9 +471,10 @@ let ``unplayableSkillMarkdownの説明は登場人物として姓を補った名
 [<Fact>]
 let ``unplayableDisplayNameはフルネームが空欄ならページ名をそのまま使う`` () =
     // 連邦生徒会長のように作中で姓名が明かされていない人物でも書き出せる。
+    // 空欄のセルは項目に残らず、生成物ではキーだけの行になる。
     Assert.Equal(
         "連邦生徒会長",
-        BluePrompt.Wikiru.unplayableDisplayName "連邦生徒会長" (studentMarkdown " " "")
+        BluePrompt.Wikiru.unplayableDisplayName "連邦生徒会長" "## 基本情報\n\n- フルネーム\n"
     )
 
 [<Fact>]

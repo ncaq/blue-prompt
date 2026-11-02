@@ -193,7 +193,7 @@ let private renderItem (document: IDocument) (parts: Part list) : IElement =
 /// データ行のうちcolumnsの列を1つの項目にする。
 /// 文字を持つthはキーで、それ以外は列名の行のラベルを添えた値になる。
 /// キーも列名の行も無い表(ボイスのラベルとセリフのような2列)では、
-/// 先頭の文字を持つセルをキーとして読む。
+/// 先頭のセルが文字を持てばそれをキーとして読む。先頭が画像だけなら後ろは探さない。
 /// 中身のある部品が無い行は項目にしない。
 let private rowItem
     (document: IDocument)
