@@ -1,5 +1,6 @@
 module BluePrompt.Test.WikiruSpec
 
+open System.Threading.Tasks
 open Falco.Markup
 open Xunit
 open BluePrompt.Test.HtmlFixture
@@ -93,6 +94,32 @@ let ``読点だけになった行は取り除かれる`` () =
     // 続く要素が空行や空列の除去で消えると読点だけの行として孤立する。
     let markdown = "# h\n\n、\n\n本文\n"
     Assert.Equal("# h\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``項目の区切りのカンマの前に残った空白は詰められる`` () =
+    // 強調の中に末尾の空白を持つセルは、箇条書きにすると区切りのカンマの前に空白が残る。
+    let markdown = "# h\n\n- RANK: **～20合計** , 絆ランクボーナス: 最大HP+1700\n"
+
+    Assert.Equal(
+        "# h\n\n- RANK: **～20合計**, 絆ランクボーナス: 最大HP+1700\n",
+        BluePrompt.Wikiru.cleanupMarkdown markdown
+    )
+
+[<Fact>]
+let ``カンマの前の空白の詰めは行をまたがない`` () =
+    // 行末の空白と改行を巻き込むと、次の行の先頭のカンマへ前の行が繋がってしまう。
+    let markdown = "# h\n\n本文 \n, 続き\n"
+    Assert.Equal("# h\n\n本文 \n, 続き\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``立ち絵に添えられた全体画像の案内は読点ごと取り除かれる`` () =
+    // 縮小画像を包む全体画像へのリンクの説明で、リンクを外した後は辿る先が無い。
+    let markdown = "# h\n\n- 画像: ![a](https://example.com/a.png)、クリックで全体画像\n- 名前: ヒナ\n"
+
+    Assert.Equal(
+        "# h\n\n- 画像: ![a](https://example.com/a.png)\n- 名前: ヒナ\n",
+        BluePrompt.Wikiru.cleanupMarkdown markdown
+    )
 
 [<Fact>]
 let ``水平線の行は区切り文字の除去では消えない`` () =
@@ -230,6 +257,39 @@ let ``rolePlayContentQueryは取り消し線を中身ごと取り除き生徒ペ
     Assert.DoesNotContain("rgn-button", extracted)
 
 [<Fact>]
+let ``ネタバレ隠しのフォーム部品があってもプロフィールは箇条書きのまま姓を補える`` () : Task =
+    task {
+        // アキラの部活のセルはネタバレ隠しプラグインのinputとlabelを含む。
+        // フォーム部品が項目に残るとpandocがリスト全体を段落へ崩し、
+        // フルネームの項目が読めずに姓を補えないまま黙ってページ名へ戻ってしまう。
+        let spoiler =
+            Elem.span
+                [ Attr.class' "plugin-spoiler" ]
+                [ Elem.input [ Attr.class' "spoiler-check"; Attr.type' "checkbox" ]
+                  Elem.label [ Attr.class' "spoiler-overlay" ] []
+                  Text.raw "寮監隊" ]
+
+        let profile =
+            Elem.table
+                []
+                [ Elem.tr [] [ Elem.th [] [ Text.raw "名前" ]; Elem.td [] [ Text.raw "アキラ" ] ]
+                  Elem.tr
+                      []
+                      [ Elem.th [] [ Text.raw "フルネーム" ]; Elem.td [] [ Text.raw "清澄(きよすみ)アキラ" ] ]
+                  Elem.tr [] [ Elem.th [] [ Text.raw "部活" ]; Elem.td [] [ spoiler ] ] ]
+
+        let html =
+            renderDocument [ Elem.div [ Attr.id "body" ] [ Text.h2 "基本情報"; profile ] ]
+
+        let extracted = BluePrompt.Extract.contentHtml BluePrompt.Wikiru.contentQuery html
+        let! converted = BluePrompt.Pandoc.toMarkdown extracted
+        let markdown = BluePrompt.Wikiru.cleanupMarkdown converted
+
+        Assert.Contains("\n- 部活: 寮監隊\n", markdown)
+        Assert.Equal("清澄アキラ", BluePrompt.Wikiru.unplayableDisplayName "アキラ" markdown)
+    }
+
+[<Fact>]
 let ``structuredContentQueryはDOM構造を保ったままスクリプトとコメント欄を除く`` () =
     // Appellation.parseは脚注アンカーのhrefやrowspanを、
     // School.parseはカードのhrefやセル内のbrをDOMのまま読むため、
@@ -329,10 +389,10 @@ let ``trimGameplayDetailsは入手方法が無ければ何も変えない`` () =
     let markdown = "## 基本情報\n\n紹介文\n\n## ボイス\n\n| 獲得 | セリフ |\n"
     Assert.Equal(markdown, BluePrompt.Wikiru.trimGameplayDetails markdown)
 
-/// プロフィールの表のうち、フルネームの行だけを持つ最小のナレッジ本体。
-/// 縦に結合されたセルが複製されて先頭へ付く実際の形に合わせる。
+/// プロフィールの箇条書きのうち、フルネームの項目だけを持つ最小のナレッジ本体。
+/// 立ち絵の項目が先頭へ付く実際の形に合わせる。
 let private studentMarkdown (fullName: string) (sections: string) : string =
-    $"## 基本情報\n\n| クリックで全体画像 | フルネーム | %s{fullName} |\n%s{sections}"
+    $"## 基本情報\n\n- 画像: ![ユウカ.png](https://example.com/a.png)\n- フルネーム: %s{fullName}\n%s{sections}"
 
 [<Fact>]
 let ``studentSkillMarkdownはフロントマターと出典とナレッジを含む`` () =
@@ -400,10 +460,10 @@ let ``familyNamedPageNameはページ名と繋がらないフルネームで止�
 
 [<Fact>]
 let ``familyNamedPageNameはフルネームが空欄なら止まる`` () =
-    // 空欄のセルは空白だけが残るため、それを姓として繋げようとせず、無いものとして扱う。
+    // 空欄のセルは項目に残らずキーだけの行になるため、無いものとして扱う。
     let error =
         Assert.Throws<BluePrompt.Wikiru.StudentFullNameNotFound>(fun () ->
-            BluePrompt.Wikiru.familyNamedPageName "ユウカ" (studentMarkdown " " "") |> ignore)
+            BluePrompt.Wikiru.familyNamedPageName "ユウカ" "## 基本情報\n\n- フルネーム\n" |> ignore)
 
     Assert.Equal("ユウカ", error.pageName)
 
@@ -425,10 +485,8 @@ let ``unplayableSkillMarkdownの説明は登場人物として姓を補った名
 [<Fact>]
 let ``unplayableDisplayNameはフルネームが空欄ならページ名をそのまま使う`` () =
     // 連邦生徒会長のように作中で姓名が明かされていない人物でも書き出せる。
-    Assert.Equal(
-        "連邦生徒会長",
-        BluePrompt.Wikiru.unplayableDisplayName "連邦生徒会長" (studentMarkdown " " "")
-    )
+    // 空欄のセルは項目に残らず、生成物ではキーだけの行になる。
+    Assert.Equal("連邦生徒会長", BluePrompt.Wikiru.unplayableDisplayName "連邦生徒会長" "## 基本情報\n\n- フルネーム\n")
 
 [<Fact>]
 let ``unplayableDisplayNameはフルネームの行が無ければページ名をそのまま使う`` () =

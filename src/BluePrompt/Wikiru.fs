@@ -35,7 +35,12 @@ let private noiseSelectors =
       "script"
       "style"
       "noscript"
-      "template" ]
+      "template"
+      // フォーム部品。ネタバレ隠しプラグインが文字を隠すためのcheckboxとlabelを本文へ置く。
+      // 箇条書きの項目に残るとpandocがブロックとみなしてリスト全体を段落へ崩し、
+      // プロフィールのフルネームの項目が読めなくなる。
+      "input"
+      "label" ]
 
 /// wikiruの記事からナレッジとして使う部分を抜き出す設定。
 /// 本文(#body)と脚注(#note)を残し、サイトのヘッダ・サイドバー・フッタは含めない。
@@ -63,7 +68,10 @@ let contentQuery: Extract.ContentQuery =
       UnwrapInternalLinks = true
       // 画像は遅延読み込みのdata-srcから絶対URLを組み立てて残し、元の画像を辿れるようにする。
       ResolveImages = true
-      FlattenTables = true }
+      FlattenTables = true
+      // データの表は箇条書きにする。
+      // パイプテーブルは整形の空白で膨らみ、Knowledgeのチャンクの境界で列の意味を失うため。
+      TablesToLists = true }
 
 /// 生徒個別ページ用の抽出設定。
 /// 生徒ページでは絆ランクボーナスや絆ストーリー一覧やボイスといった本文が
@@ -107,7 +115,8 @@ let structuredContentQuery: Extract.ContentQuery =
       RemoveSelectors = noiseSelectors
       UnwrapInternalLinks = false
       ResolveImages = false
-      FlattenTables = false }
+      FlattenTables = false
+      TablesToLists = false }
 
 /// 生徒個別ページからナレッジとして残すセクションの見出し。
 /// ゲーム内外の事実を載せているセクションだけを列挙するホワイトリスト。
@@ -269,11 +278,12 @@ let private removeEmptyHeadings (markdown: string) : string =
 let private removeExternalLinkIcon (markdown: string) : string =
     Regex.Replace(markdown, @"[^\S\r\n]*🌐", "")
 
-/// 読点の前に残った空白を詰める。
+/// 読点とカンマの前に残った空白を詰める。
 /// セル内改行の結合で挟んだ読点の前に、元の空白テキストノード由来の空白が残ることがある。
+/// 表を箇条書きにした項目の区切りのカンマの前にも、強調の中の末尾の空白が残ることがある。
 /// 日本語では読点の前に空白を置かない。
 let private trimSpaceBeforeComma (markdown: string) : string =
-    Regex.Replace(markdown, @"[^\S\r\n]+(?=、)", "")
+    Regex.Replace(markdown, @"[^\S\r\n]+(?=[、,])", "")
 
 /// 区切り文字だけになった行を消す。
 /// リンクを「/」で並べたナビゲーションは、並べた要素が落ちると区切り文字だけの行になる。
@@ -289,6 +299,13 @@ let private removeSeparatorRemnant (markdown: string) : string =
 /// 否定の文字クラスは改行にも当たるため、行を跨いだ巻き込みを防ぐ。
 let private removeEditorNotice (markdown: string) : string =
     Regex.Replace(markdown, @"^[^\S\r\n]*[^。\r\n]*を書く欄です。[^\S\r\n]*$", "", RegexOptions.Multiline)
+
+/// 立ち絵に添えられた「クリックで全体画像」の案内を消す。
+/// 元のページでは縮小画像を包む全体画像へのリンクの説明で、
+/// リンクを外した後は辿る先の無い案内だけが画像の後ろに残る。
+/// セル内改行の結合で画像との間に挟まった読点ごと消す。
+let private removeFullImageCaption (markdown: string) : string =
+    markdown.Replace("、クリックで全体画像", "").Replace("クリックで全体画像", "")
 
 /// 空行と同じ意味しか持たない行を消す。
 /// 実体参照のままの&nbsp;と、中身の無い引用が対象になる。
@@ -316,6 +333,7 @@ let cleanupMarkdown (markdown: string) : string =
     |> trimSpaceBeforeComma
     |> removeSeparatorRemnant
     |> removeEditorNotice
+    |> removeFullImageCaption
     |> removeBlankLikeLine
     |> removeEmptyHeadings
     |> normalizeBlankLines
@@ -480,22 +498,22 @@ let fetchRolePlayMarkdown (pageName: string) : Task<string> =
 /// ナレッジ本体に節が1つも無かった時のページ名。
 exception StudentSectionNotFound of pageName: string
 
-/// プロフィールの表に「フルネーム」の行が無かった時のページ名。
+/// プロフィールに「フルネーム」の項目が無かった時のページ名。
 exception StudentFullNameNotFound of pageName: string
 
 /// フルネームがページ名と名前で繋がらなかった時のページ名とフルネーム。
 exception StudentFullNameMismatch of pageName: string * fullName: string
 
-/// プロフィールの表の「フルネーム」の見出しのセルと、その次のセルの値。
-/// 縦に結合されたセルが各行へ複製されて列の位置が揃わないため、
-/// 行頭からではなく見出しのセルを起点に読む。
-let private fullNamePattern = Regex @"\|[ ]*フルネーム[ ]*\|[ ]*([^|]+?)[ ]*\|"
+/// プロフィールの箇条書きの「フルネーム」の項目と、キーに続く値。
+/// 空欄のセルは項目に残らないため、値の無い「- フルネーム」だけの行にも一致させて空として読む。
+let private fullNamePattern =
+    Regex(@"^- フルネーム(?::[ ]*(.*?))?[ ]*$", RegexOptions.Multiline)
 
 /// フルネームに添えられたふりがなの括弧。
 let private rubyPattern = Regex @"\([^)]*\)"
 
-/// プロフィールの表のフルネームからふりがなを外したもの。
-/// 行が無いか、空欄で空白しか残らない時はNone。
+/// プロフィールのフルネームからふりがなを外したもの。
+/// 項目が無いか、空欄で空白しか残らない時はNone。
 let private tryFullName (markdown: string) : string option =
     let matched = fullNamePattern.Match markdown
 
@@ -522,7 +540,7 @@ let private prependFamilyName (pageName: string) (fullName: string) : string =
 /// wikiruのページ名は「アイリ」「アイリ（バンド）」のように姓を持たないが、
 /// スキルの説明は本文を読み込む前の一覧としてしか読まれないため、
 /// 姓が無いとそこだけでは誰のことなのかが決まらない。
-/// プロフィールの表のフルネームからふりがなを外し、
+/// プロフィールの項目のフルネームからふりがなを外し、
 /// ページ名の先頭と重なる部分より前を姓としてページ名の前へ置く。
 /// 衣装の接尾辞はページ名の側に残るので「アイリ（バンド）」は「栗村アイリ（バンド）」になり、
 /// 姓を持たない「ケイ」ではフルネーム全体が重なって何も足さない。
@@ -533,7 +551,7 @@ let familyNamedPageName (pageName: string) (markdown: string) : string =
 
 /// プレイアブルではない登場人物のページ名の前へ、分かっていれば姓を補う。
 /// 作中で姓が明かされていない人物や、アロナのように生徒ではない人物がいて、
-/// フルネームの行が無いか空欄のページがあるため、その時はページ名をそのまま使う。
+/// フルネームの項目が無いか空欄のページがあるため、その時はページ名をそのまま使う。
 /// フルネームがあるのにページ名と繋がらない時は、生徒と同じく別人の名前を作らないように止まる。
 let unplayableDisplayName (pageName: string) (markdown: string) : string =
     match tryFullName markdown with
@@ -596,7 +614,7 @@ user-invocable: false
 # データの構造
 
 - セクションは%s{sections}です
-- 縦に結合されたセルは各行に同じ内容が複製され、横に結合されたセルの残りは空になっています
+- 表は「列名: 値」の箇条書きに、表の題名はその下の見出しになっています
 - 別バージョン(衣装違い)の生徒は別のページなので、このデータには含まれません
 
 # 使う時の注意

@@ -46,7 +46,9 @@ let private fixtureQuery: BluePrompt.Extract.ContentQuery =
       RemoveSelectors = [ "#header"; "#menu"; "#footer" ]
       UnwrapInternalLinks = true
       ResolveImages = false
-      FlattenTables = true }
+      FlattenTables = true
+      // 平坦化の結果を表のまま検証するため、箇条書きへの置き換えはTableListSpecで別に見る。
+      TablesToLists = false }
 
 /// 本文だけを見る検証で使う、#contentへ絞ったクエリ。
 let private contentQuery =
