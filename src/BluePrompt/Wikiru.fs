@@ -35,7 +35,12 @@ let private noiseSelectors =
       "script"
       "style"
       "noscript"
-      "template" ]
+      "template"
+      // フォーム部品。ネタバレ隠しプラグインが文字を隠すためのcheckboxとlabelを本文へ置く。
+      // 箇条書きの項目に残るとpandocがブロックとみなしてリスト全体を段落へ崩し、
+      // プロフィールのフルネームの項目が読めなくなる。
+      "input"
+      "label" ]
 
 /// wikiruの記事からナレッジとして使う部分を抜き出す設定。
 /// 本文(#body)と脚注(#note)を残し、サイトのヘッダ・サイドバー・フッタは含めない。
