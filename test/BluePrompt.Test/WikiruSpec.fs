@@ -96,6 +96,18 @@ let ``読点だけになった行は取り除かれる`` () =
     Assert.Equal("# h\n\n本文\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
+let ``項目の区切りのカンマの前に残った空白は詰められる`` () =
+    // 強調の中に末尾の空白を持つセルは、箇条書きにすると区切りのカンマの前に空白が残る。
+    let markdown = "# h\n\n- RANK: **～20合計** , 絆ランクボーナス: 最大HP+1700\n"
+    Assert.Equal("# h\n\n- RANK: **～20合計**, 絆ランクボーナス: 最大HP+1700\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``カンマの前の空白の詰めは行をまたがない`` () =
+    // 行末の空白と改行を巻き込むと、次の行の先頭のカンマへ前の行が繋がってしまう。
+    let markdown = "# h\n\n本文 \n, 続き\n"
+    Assert.Equal("# h\n\n本文 \n, 続き\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
 let ``立ち絵に添えられた全体画像の案内は読点ごと取り除かれる`` () =
     // 縮小画像を包む全体画像へのリンクの説明で、リンクを外した後は辿る先が無い。
     let markdown = "# h\n\n- 画像: ![a](https://example.com/a.png)、クリックで全体画像\n- 名前: ヒナ\n"

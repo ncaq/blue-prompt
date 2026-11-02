@@ -275,6 +275,41 @@ let ``見出しを含む表はレイアウトなので置き換えない`` () =
     Assert.DoesNotContain("<ul", html)
 
 [<Fact>]
+let ``結合セルが残った表は平坦化を諦めた表なので置き換えない`` () =
+    // 格子の予算を超えた表は結合セルを残したままになる。
+    // 展開されていない格子を項目にすると列の対応が崩れるので、表のまま残す。
+    // 平坦化の予算は抽出の設定から変えられないため、
+    // 平坦化を通さずに結合セルを持つ表を直接TableListへ渡す。
+    let html =
+        renderContentDocument
+            [ Elem.table
+                  []
+                  [ Elem.tr
+                        []
+                        [ Elem.td [ Attr.rowspan "2" ] [ Text.raw "結合" ]
+                          Elem.td [] [ Text.raw "a" ] ]
+                    Elem.tr [] [ Elem.td [] [ Text.raw "b" ] ] ] ]
+
+    use parsed = AngleSharp.Html.Parser.HtmlParser().ParseDocument html
+    BluePrompt.TableList.convert parsed
+
+    Assert.Contains("<table", parsed.Body.InnerHtml)
+    Assert.DoesNotContain("<ul", parsed.Body.InnerHtml)
+
+[<Fact>]
+let ``題名行が2段ある表は題名を空白で繋いだ見出しになる`` () =
+    let html =
+        extract
+            [ Elem.table
+                  []
+                  [ Elem.tr [] [ Elem.td [] []; Elem.th [] [ Text.raw "上段" ] ]
+                    Elem.tr [] [ Elem.td [] []; Elem.th [] [ Text.raw "下段" ] ]
+                    Elem.tr [] [ Elem.th [] [ Text.raw "Lv" ]; Elem.th [] [ Text.raw "効果" ] ]
+                    Elem.tr [] [ Elem.td [] [ Text.raw "1" ]; Elem.td [] [ Text.raw "値" ] ] ] ]
+
+    Assert.Contains("<h2>上段 下段</h2><ul><li>Lv: 1, 効果: 値</li></ul>", html)
+
+[<Fact>]
 let ``題名の見出しは深さを使い切ると強調の段落になる`` () =
     let html =
         extract
