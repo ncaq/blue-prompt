@@ -99,7 +99,11 @@ let ``読点だけになった行は取り除かれる`` () =
 let ``項目の区切りのカンマの前に残った空白は詰められる`` () =
     // 強調の中に末尾の空白を持つセルは、箇条書きにすると区切りのカンマの前に空白が残る。
     let markdown = "# h\n\n- RANK: **～20合計** , 絆ランクボーナス: 最大HP+1700\n"
-    Assert.Equal("# h\n\n- RANK: **～20合計**, 絆ランクボーナス: 最大HP+1700\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+    Assert.Equal(
+        "# h\n\n- RANK: **～20合計**, 絆ランクボーナス: 最大HP+1700\n",
+        BluePrompt.Wikiru.cleanupMarkdown markdown
+    )
 
 [<Fact>]
 let ``カンマの前の空白の詰めは行をまたがない`` () =
@@ -265,19 +269,17 @@ let ``ネタバレ隠しのフォーム部品があってもプロフィール�
                   Elem.label [ Attr.class' "spoiler-overlay" ] []
                   Text.raw "寮監隊" ]
 
+        let profile =
+            Elem.table
+                []
+                [ Elem.tr [] [ Elem.th [] [ Text.raw "名前" ]; Elem.td [] [ Text.raw "アキラ" ] ]
+                  Elem.tr
+                      []
+                      [ Elem.th [] [ Text.raw "フルネーム" ]; Elem.td [] [ Text.raw "清澄(きよすみ)アキラ" ] ]
+                  Elem.tr [] [ Elem.th [] [ Text.raw "部活" ]; Elem.td [] [ spoiler ] ] ]
+
         let html =
-            renderDocument
-                [ Elem.div
-                      [ Attr.id "body" ]
-                      [ Text.h2 "基本情報"
-                        Elem.table
-                            []
-                            [ Elem.tr [] [ Elem.th [] [ Text.raw "名前" ]; Elem.td [] [ Text.raw "アキラ" ] ]
-                              Elem.tr
-                                  []
-                                  [ Elem.th [] [ Text.raw "フルネーム" ]
-                                    Elem.td [] [ Text.raw "清澄(きよすみ)アキラ" ] ]
-                              Elem.tr [] [ Elem.th [] [ Text.raw "部活" ]; Elem.td [] [ spoiler ] ] ] ] ]
+            renderDocument [ Elem.div [ Attr.id "body" ] [ Text.h2 "基本情報"; profile ] ]
 
         let extracted = BluePrompt.Extract.contentHtml BluePrompt.Wikiru.contentQuery html
         let! converted = BluePrompt.Pandoc.toMarkdown extracted
@@ -484,10 +486,7 @@ let ``unplayableSkillMarkdownの説明は登場人物として姓を補った名
 let ``unplayableDisplayNameはフルネームが空欄ならページ名をそのまま使う`` () =
     // 連邦生徒会長のように作中で姓名が明かされていない人物でも書き出せる。
     // 空欄のセルは項目に残らず、生成物ではキーだけの行になる。
-    Assert.Equal(
-        "連邦生徒会長",
-        BluePrompt.Wikiru.unplayableDisplayName "連邦生徒会長" "## 基本情報\n\n- フルネーム\n"
-    )
+    Assert.Equal("連邦生徒会長", BluePrompt.Wikiru.unplayableDisplayName "連邦生徒会長" "## 基本情報\n\n- フルネーム\n")
 
 [<Fact>]
 let ``unplayableDisplayNameはフルネームの行が無ければページ名をそのまま使う`` () =
