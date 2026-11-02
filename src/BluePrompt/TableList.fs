@@ -126,20 +126,19 @@ let private combinedTitleLabels
 /// 立ち絵のように、縦に結合された画像のセル1つで埋まっている列。
 /// 結合セルの展開は画像を先頭の行にだけ残し、続く行には文字だけの複製を置くため、
 /// 中身のあるセルのうち先頭だけが画像を持ち、残りが先頭と同じ文字で画像を持たない列がそれにあたる。
+/// 画像だけのセルの複製は文字も画像も持たない空のセルになるので、複製は空のセルも数える。
+/// 複製が1つも無ければ結合されていたセルではないので、
+/// データ行が1行だけの表の画像は立ち絵ではない。
 /// 行の項目へ混ぜると名前の値へ画像が割り込むため、列ごと取り出して独立した項目にする。
 /// 素材のアイコンのように文字の行と並ぶ画像は、その行の値として残る。
 let private liftedImageColumns (columnCount: int) (dataRows: Cell array list) : Set<int> =
     seq { 0 .. columnCount - 1 }
     |> Seq.filter (fun index ->
-        match
-            dataRows
-            |> List.choose (fun row -> tryCell row index)
-            |> List.filter (fun cell -> not (isBlank cell))
-        with
-        | origin :: copies ->
+        match dataRows |> List.choose (fun row -> tryCell row index) |> List.skipWhile isBlank with
+        | origin :: (_ :: _ as copies) ->
             origin.HasImage
             && copies |> List.forall (fun copy -> not copy.HasImage && copy.Text = origin.Text)
-        | [] -> false)
+        | _ -> false)
     |> Set.ofSeq
 
 /// 項目を組み立てる部品。見出しセルはキーで、それ以外は列名を添えた値。
