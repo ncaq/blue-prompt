@@ -287,7 +287,7 @@ user-invocable: false
 
 **イベント**
 
-- イベントボイスリンク1: 「It’s our Engine! ～183号を脱出せよ！～」
+- イベントボイスリンク1: 「It’s our Engine! ～183号を脱出せよ！～」、「Start Your Engines! ～183号よ永遠に！～」
 
 ## 小ネタ
 

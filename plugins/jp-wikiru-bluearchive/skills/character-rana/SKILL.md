@@ -296,7 +296,7 @@ user-invocable: false
 
 **イベント**
 
-- イベントボイスリンク1: 「\[\[イベント名\>イベント○○\_イベント名#生徒名Voices\]\]」
+- イベントボイスリンク1: 「Start Your Engines! ～183号よ永遠に！～」
 
 ## 小ネタ
 
@@ -321,6 +321,8 @@ user-invocable: false
 また、アラン・チューリングは暗号解読の傍らで防寒用の手袋を編んでいたという事実があり、絆ストーリーで手編みの手袋をくれるエピソードはそれを彷彿とさせる。 カフェの家具モーションでも編んでいる。
 
 ヤンキー座りをする生徒としては他にチアキ、ネル（制服）、コノカがいる。 ![ラナ_SD_2.png](https://bluearchive.wikiru.jp/attach2/E383A9E3838A_E383A9E3838A5F53445F322E706E67.png)
+
+![rana_secrethand.png](https://bluearchive.wikiru.jp/attach2/E383A9E3838A_72616E615F73656372657468616E642E706E67.png)
 
 ### 使用している銃の元ネタ
 
