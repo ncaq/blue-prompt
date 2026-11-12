@@ -177,6 +177,42 @@ let ``ResolveImagesは遅延読み込みの本物のURLを残し解決できな�
     Assert.DoesNotContain("相対", extracted)
 
 [<Fact>]
+let ``動画は再生できない環境向けの定型文を捨ててURLのリンクになる`` () =
+    // wikiruのメモリアルロビーの動画。中身はブラウザが再生できない時の定型文でしかない。
+    let html =
+        renderContentDocument
+            [ Elem.p
+                  []
+                  [ Elem.video
+                        [ Attr.src "https://example.com/a.mp4"
+                          Attr.title "a.mp4"
+                          Attr.create "controls" "" ]
+                        [ Text.raw "このブラウザは動画を再生できません。" ]
+                    Elem.video [] [ Elem.source [ Attr.src "https://example.com/b.mp4" ] ]
+                    // 文字列からパースした文書には基準のURLが無く、相対参照は解決できない。
+                    Elem.video [ Attr.src "c.mp4" ] [ Text.raw "相対" ] ] ]
+
+    let query =
+        { contentQuery with
+            ResolveImages = true }
+
+    let extracted = BluePrompt.Extract.contentHtml query html
+
+    Assert.Contains(
+        """<a href="https://example.com/a.mp4">https://example.com/a.mp4</a>""",
+        extracted
+    )
+
+    Assert.Contains(
+        """<a href="https://example.com/b.mp4">https://example.com/b.mp4</a>""",
+        extracted
+    )
+
+    Assert.DoesNotContain("<video", extracted)
+    Assert.DoesNotContain("再生できません", extracted)
+    Assert.DoesNotContain("相対", extracted)
+
+[<Fact>]
 let ``セル内のブロック要素は区切り文字を挟んで平坦化される`` () =
     // セル内にdivやpが残っているとpandocがパイプテーブルで表現できず、
     // テーブル全体を[TABLE]へ潰してしまう。
