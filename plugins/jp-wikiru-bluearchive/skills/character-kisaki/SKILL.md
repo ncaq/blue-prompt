@@ -231,7 +231,7 @@ user-invocable: false
 
 ![Screenshot_2024-09-25-20-42-56-9_0.jpg](https://bluearchive.wikiru.jp/attach2/E382ADE382B5E382AD_53637265656E73686F745F323032342D30392D32352D32302D34322D35362D395F302E6A7067.jpg)
 
-![](https://i.imgur.com/OTO93hR.jpg)
+<https://i.imgur.com/OTO93hR.mp4>
 
 - スタッフ: DoReMi, 役割: イラストレーター, コンテンツ: メモリアルロビー キサキ
 - スタッフ: Dodobird, 役割: アニメーター, コンテンツ: メモリアルロビー キサキ

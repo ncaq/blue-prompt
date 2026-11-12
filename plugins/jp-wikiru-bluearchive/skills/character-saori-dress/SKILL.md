@@ -231,7 +231,7 @@ user-invocable: false
 
 ![ドレスサッちゃん_メモロビ.PNG](https://bluearchive.wikiru.jp/attach2/E382B5E382AAE383AAEFBC88E38389E383ACE382B9EFBC89_E38388E38299E383ACE382B9E382B5E38383E381A1E38283E382935FE383A1E383A2E383ADE38392E382992E504E47.PNG)
 
-![](https://i.imgur.com/yx7dcqI.jpg)
+<https://i.imgur.com/yx7dcqI.mp4>
 
 ## ボイス
 

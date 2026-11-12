@@ -230,7 +230,7 @@ user-invocable: false
 
 ![チアキ_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E38381E382A2E382AD_E38381E382A2E382AD5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/VSE0sxq.jpg)
+<https://i.imgur.com/VSE0sxq.mp4>
 
 - スタッフ: dydldidl, 役割: イラストレーター, コンテンツ: メモリアルロビー チアキ
 - スタッフ: blackwon, 役割: アニメーター, コンテンツ: メモリアルロビー チアキ

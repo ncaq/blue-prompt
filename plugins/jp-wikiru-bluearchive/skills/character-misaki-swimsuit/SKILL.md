@@ -230,7 +230,7 @@ user-invocable: false
 
 ![ミサキ（水着）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E3839FE382B5E382ADEFBC88E6B0B4E79D80EFBC89_E3839FE382B5E382ADEFBC88E6B0B4E79D80EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/c2FTSSp.jpg)
+<https://i.imgur.com/c2FTSSp.mp4>
 
 ## ボイス
 

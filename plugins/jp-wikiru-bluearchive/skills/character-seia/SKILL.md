@@ -233,7 +233,7 @@ user-invocable: false
 
 ![セイア_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E382BBE382A4E382A2_E382BBE382A4E382A25FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/wJzyLzy.jpg)
+<https://i.imgur.com/wJzyLzy.mp4>
 
 - スタッフ: kokosando, 役割: イラストレーター, コンテンツ: メモリアルロビー セイア
 - スタッフ: Dodobird, 役割: アニメーター, コンテンツ: メモリアルロビー セイア

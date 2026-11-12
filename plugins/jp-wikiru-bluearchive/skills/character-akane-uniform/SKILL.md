@@ -231,7 +231,7 @@ user-invocable: false
 
 ![アカネ（制服）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E382A2E382ABE3838DEFBC88E588B6E69C8DEFBC89_E382A2E382ABE3838DEFBC88E588B6E69C8DEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/7eEqKLs.jpg)
+<https://i.imgur.com/7eEqKLs.mp4>
 
 - スタッフ: スタッフ不明, 役割: シナリオライター, コンテンツ: メモリアルロビー アカネ（制服）
 - スタッフ: ポップキュン, 役割: イラストレーター[^1], コンテンツ: メモリアルロビー アカネ（制服）

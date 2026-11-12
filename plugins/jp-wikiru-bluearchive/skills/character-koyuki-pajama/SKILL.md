@@ -229,7 +229,7 @@ user-invocable: false
 
 ![コユキ（パジャマ）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E382B3E383A6E382ADEFBC88E38391E382B8E383A3E3839EEFBC89_E382B3E383A6E382ADEFBC88E38391E382B8E383A3E3839EEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/iumi5hc.jpg)
+<https://i.imgur.com/iumi5hc.mp4>
 
 ## ボイス
 

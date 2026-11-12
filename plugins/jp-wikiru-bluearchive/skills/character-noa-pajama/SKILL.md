@@ -240,7 +240,7 @@ user-invocable: false
 
 ![ノア（パジャマ）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3838EE382A2EFBC88E38391E382B8E383A3E3839EEFBC89_E3838EE382A2EFBC88E38391E382B8E383A3E3839EEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/ym2AjXl.jpg)
+<https://i.imgur.com/ym2AjXl.mp4>
 
 - スタッフ: dydldidl, 役割: イラストレーター, コンテンツ: メモリアルロビー ノア（パジャマ）
 - スタッフ: Kujirah, 役割: アニメーター, コンテンツ: メモリアルロビー ノア（パジャマ）

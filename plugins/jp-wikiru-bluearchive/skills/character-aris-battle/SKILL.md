@@ -249,7 +249,7 @@ user-invocable: false
 
 ![アリス（臨戦）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E382A2E383AAE382B9EFBC88E887A8E688A6EFBC89_E382A2E383AAE382B9EFBC88E887A8E688A6EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/6qvUbjE.jpg)
+<https://i.imgur.com/6qvUbjE.mp4>
 
 - いつもの如く頭なでなでに加えて右手も少し追随して動く(アリスの顔のサイズくらいの範囲)ので、窓越しに互いに手を合わせているような挙動が出来る。（でも頭なでなでは直っぽい）
 

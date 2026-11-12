@@ -29,6 +29,8 @@ type ContentQuery =
         /// 遅延読み込みの画像はsrcにプレースホルダのdata URIしか持たず、
         /// 本物のURLはdata-srcにあるため、data-srcがあればそちらを使う。
         /// http/httpsの絶対URLへ解決できない画像は辿れないので取り除く。
+        /// 動画も同じく絶対URLへ解決し、URLを表示文字にしたリンクへ置き換える。
+        /// Markdownは動画を埋め込めず、videoの中身は再生できない環境向けの定型文でしかないため。
         /// falseの場合は何もしないので、画像を消したい時はRemoveSelectorsに"img"を入れる。
         ResolveImages: bool
         /// テーブルのrowspan/colspanを個別セルへ展開し、セル内の改行やブロック要素を1行へ繋ぐか。
@@ -125,6 +127,25 @@ let private resolveImageSources (document: IDocument) : unit =
             image.SetAttribute("src", uri.AbsoluteUri)
         | None -> image.Remove()
 
+/// videoをURLを表示文字にした動画へのリンクへ置き換える。
+/// srcが無ければ子のsourceのsrcを使い、http/httpsの絶対URLへ解決できない動画は取り除く。
+let private resolveVideoSources (document: IDocument) : unit =
+    for video in Seq.toArray (document.QuerySelectorAll "video") do
+        let reference =
+            video.GetAttribute "src"
+            :: (video.QuerySelectorAll "source"
+                |> Seq.map (fun source -> source.GetAttribute "src")
+                |> Seq.toList)
+            |> List.tryFind (String.IsNullOrWhiteSpace >> not)
+
+        match reference |> Option.bind (resolveWebUri document) with
+        | Some uri ->
+            let link = document.CreateElement "a"
+            link.SetAttribute("href", uri.AbsoluteUri)
+            link.TextContent <- uri.AbsoluteUri
+            video.Replace link
+        | None -> video.Remove()
+
 /// 見出しのテキストを、ページ内アンカー(†)と編集リンクを除いて取り出す。
 /// wikiruの見出しにはアンカーと編集リンクが同じ要素の中へ並んでいて、
 /// TextContentをそのまま読むと見出しの一部として混ざる。
@@ -155,6 +176,7 @@ let contentHtmlOfDocument (query: ContentQuery) (document: IDocument) : string =
 
     if query.ResolveImages then
         resolveImageSources document
+        resolveVideoSources document
 
     // 平坦化はセル内改行の結合で同じリンク先の折り返しを見分けるため、
     // リンクを外す前に行う。

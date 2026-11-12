@@ -232,7 +232,7 @@ user-invocable: false
 
 ![ホシノ（水着）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3839BE382B7E3838EEFBC88E6B0B4E79D80EFBC89_E3839BE382B7E3838EEFBC88E6B0B4E79D80EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/H12OeyU.jpg)
+<https://i.imgur.com/H12OeyU.mp4>
 
 - スタッフ: Prenguin, 役割: シナリオライター, コンテンツ: メモリアルロビー ホシノ（水着）
 - スタッフ: X19A, 役割: シナリオ演出, コンテンツ: メモリアルロビー ホシノ（水着）

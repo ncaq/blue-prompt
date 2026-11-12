@@ -230,7 +230,7 @@ user-invocable: false
 
 ![コトネ_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E382B3E38388E3838D_E382B3E38388E3838D5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/sso1myk.jpg)
+<https://i.imgur.com/sso1myk.mp4>
 
 ## ボイス
 

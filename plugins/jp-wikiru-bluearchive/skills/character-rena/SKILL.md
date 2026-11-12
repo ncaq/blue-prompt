@@ -229,7 +229,7 @@ user-invocable: false
 
 ![レナ_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E383ACE3838A_E383ACE3838A5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/TDwQO0E.jpg)
+<https://i.imgur.com/TDwQO0E.mp4>
 
 ## ボイス
 

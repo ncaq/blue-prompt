@@ -267,7 +267,7 @@ user-invocable: false
 
 ![シュン（幼女）_メモリアルロビー_v2.jpg](https://bluearchive.wikiru.jp/attach2/E382B7E383A5E383B3EFBC88E5B9BCE5A5B3EFBC89_E382B7E383A5E383B3EFBC88E5B9BCE5A5B3EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC5F76322E6A7067.jpg)
 
-![](https://i.imgur.com/Z5lUy5N.jpg)
+<https://i.imgur.com/Z5lUy5N.mp4>
 
 - スタッフ: POIst, 役割: シナリオライター, コンテンツ: メモリアルロビー シュン（幼女）
 - スタッフ: 9ml, 役割: イラストレーター, コンテンツ: メモリアルロビー シュン（幼女）

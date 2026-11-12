@@ -394,7 +394,7 @@ user-invocable: false
 
 ![ホシノ（臨戦）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3839BE382B7E3838EEFBC88E887A8E688A6EFBC89_E3839BE382B7E3838EEFBC88E887A8E688A6EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/M2E1wm3.jpg)
+<https://i.imgur.com/M2E1wm3.mp4>
 
 - スタッフ: GULIM, 役割: イラストレーター, コンテンツ: メモリアルロビー ホシノ（臨戦）
 - スタッフ: Dodobird, 役割: アニメーター, コンテンツ: メモリアルロビー ホシノ（臨戦）

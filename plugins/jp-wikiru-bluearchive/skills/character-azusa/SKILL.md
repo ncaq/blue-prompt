@@ -232,7 +232,7 @@ user-invocable: false
 
 ![アズサ_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E382A2E382BAE382B5_E382A2E382BAE382B55FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/T7KtzPJ.jpg)
+<https://i.imgur.com/T7KtzPJ.mp4>
 
 - スタッフ: isakusan, 役割: シナリオライター(共作), コンテンツ: メモリアルロビー アズサ
 - スタッフ: Prenguin, 役割: シナリオライター(共作), コンテンツ: メモリアルロビー アズサ

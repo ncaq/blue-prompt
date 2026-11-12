@@ -266,7 +266,7 @@ user-invocable: false
 
 ![ミモリ_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3839FE383A2E383AA_E3839FE383A2E383AA5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/npXrCu4.jpg)
+<https://i.imgur.com/npXrCu4.mp4>
 
 - スタッフ: Then-goon, 役割: シナリオライター, コンテンツ: メモリアルロビー ミモリ
 - スタッフ: YutokaMizu, 役割: イラストレーター, コンテンツ: メモリアルロビー ミモリ

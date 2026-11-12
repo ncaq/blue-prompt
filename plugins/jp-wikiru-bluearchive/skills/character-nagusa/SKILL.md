@@ -230,7 +230,7 @@ user-invocable: false
 
 ![ナグサ_メモリアルロビー_.png](https://bluearchive.wikiru.jp/attach2/E3838AE382B0E382B5_E3838AE382B0E382B55FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC5F2E706E67.png)
 
-![](https://i.imgur.com/OC3O6cm.jpg)
+<https://i.imgur.com/OC3O6cm.mp4>
 
 ## ボイス
 

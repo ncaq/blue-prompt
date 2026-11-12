@@ -231,7 +231,7 @@ user-invocable: false
 
 ![サっちゃん_メモロビ.jpeg](https://bluearchive.wikiru.jp/attach2/E382B5E382AAE383AAEFBC88E6B0B4E79D80EFBC89_E382B5E381A3E381A1E38283E382935FE383A1E383A2E383ADE383932E6A706567.jpeg)
 
-![](https://i.imgur.com/4TKBW4S.jpg)
+<https://i.imgur.com/4TKBW4S.mp4>
 
 - スタッフ: owa, 役割: イラストレーター, コンテンツ: メモリアルロビー サオリ（水着）
 - スタッフ: Dodobird, 役割: アニメーター, コンテンツ: メモリアルロビー サオリ（水着）

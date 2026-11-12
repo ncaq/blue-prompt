@@ -231,7 +231,7 @@ user-invocable: false
 
 ![ナギサ（水着）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3838AE382AEE382B5EFBC88E6B0B4E79D80EFBC89_E3838AE382AEE382B5EFBC88E6B0B4E79D80EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/XNxJouv.jpg)
+<https://i.imgur.com/XNxJouv.mp4>
 
 ## ボイス
 

@@ -230,7 +230,7 @@ user-invocable: false
 
 ![エリナ_メモリアルロビー2.png](https://bluearchive.wikiru.jp/attach2/E382A8E383AAE3838A_E382A8E383AAE3838A5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC322E706E67.png)
 
-![](https://i.imgur.com/eSN1GJR.jpg)
+<https://i.imgur.com/eSN1GJR.mp4>
 
 ## ボイス
 

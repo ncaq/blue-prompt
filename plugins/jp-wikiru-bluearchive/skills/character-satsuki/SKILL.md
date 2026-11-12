@@ -232,7 +232,7 @@ user-invocable: false
 
 ![サツキ_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E382B5E38384E382AD_E382B5E38384E382AD5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/ieCRKpR.jpg)
+<https://i.imgur.com/ieCRKpR.mp4>
 
 - スタッフ: nemoga, 役割: イラストレーター, コンテンツ: メモリアルロビー サツキ
 - スタッフ: LM5, 役割: アニメーター, コンテンツ: メモリアルロビー サツキ

@@ -230,7 +230,7 @@ user-invocable: false
 
 ![トモエ（チーパオ）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E38388E383A2E382A8EFBC88E38381E383BCE38391E382AAEFBC89_E38388E383A2E382A8EFBC88E38381E383BCE38391E382AAEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/GukR09Z.jpg)
+<https://i.imgur.com/GukR09Z.mp4>
 
 - スタッフ: GULIM, 役割: イラストレーター, コンテンツ: メモリアルロビー トモエ（チーパオ）
 - スタッフ: LM5, 役割: アニメーター, コンテンツ: メモリアルロビー トモエ（チーパオ）

@@ -286,7 +286,7 @@ user-invocable: false
 
 ![Screenshot_20240828-123832.jpg](https://bluearchive.wikiru.jp/attach2/E382B7E383ADE382B3_53637265656E73686F745F32303234303832382D3132333833322E6A7067.jpg)
 
-![](https://i.imgur.com/I0zhwrK.jpg)
+<https://i.imgur.com/I0zhwrK.mp4>
 
 ## ボイス
 

@@ -229,7 +229,7 @@ user-invocable: false
 
 ![カノエ_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E382ABE3838EE382A8_E382ABE3838EE382A85FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/CxfaoFw.jpg)
+<https://i.imgur.com/CxfaoFw.mp4>
 
 ## ボイス
 

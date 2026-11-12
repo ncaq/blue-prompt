@@ -230,7 +230,7 @@ user-invocable: false
 
 ![サクラコ（アイドル）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E382B5E382AFE383A9E382B3EFBC88E382A2E382A4E38389E383ABEFBC89_E382B5E382AFE383A9E382B3EFBC88E382A2E382A4E38389E383ABEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/tNy5OBr.jpg)
+<https://i.imgur.com/tNy5OBr.mp4>
 
 - スタッフ: nemoga, 役割: イラストレーター, コンテンツ: メモリアルロビー サクラコ（アイドル）
 - スタッフ: Dodobird, 役割: アニメーター, コンテンツ: メモリアルロビー サクラコ（アイドル）

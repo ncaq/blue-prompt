@@ -230,7 +230,7 @@ user-invocable: false
 
 ![エリカ_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E382A8E383AAE382AB_E382A8E383AAE382AB5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/9KUVYJr.jpg)
+<https://i.imgur.com/9KUVYJr.mp4>
 
 ## ボイス
 

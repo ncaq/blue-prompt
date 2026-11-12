@@ -229,7 +229,7 @@ user-invocable: false
 
 ![マリナ（チーパオ）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3839EE383AAE3838AEFBC88E38381E383BCE38391E382AAEFBC89_E3839EE383AAE3838AEFBC88E38381E383BCE38391E382AAEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/BuW70IO.jpg)
+<https://i.imgur.com/BuW70IO.mp4>
 
 - スタッフ: kokosando, 役割: イラストレーター, コンテンツ: メモリアルロビー マリナ（チーパオ）
 - スタッフ: Kujirah, 役割: アニメーター, コンテンツ: メモリアルロビー マリナ（チーパオ）

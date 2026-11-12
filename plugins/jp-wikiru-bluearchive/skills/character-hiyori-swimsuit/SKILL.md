@@ -229,7 +229,7 @@ user-invocable: false
 
 ![ヒヨリ（水着）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E38392E383A8E383AAEFBC88E6B0B4E79D80EFBC89_E38392E383A8E383AAEFBC88E6B0B4E79D80EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/kIX9UoL.jpg)
+<https://i.imgur.com/kIX9UoL.mp4>
 
 - スタッフ: Paruru, 役割: イラストレーター, コンテンツ: メモリアルロビー ヒヨリ（水着）
 - スタッフ: Dodobird, 役割: アニメーター, コンテンツ: メモリアルロビー ヒヨリ（水着）

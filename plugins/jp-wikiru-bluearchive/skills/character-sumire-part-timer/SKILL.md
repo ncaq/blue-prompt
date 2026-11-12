@@ -231,7 +231,7 @@ user-invocable: false
 
 ![スミレ_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E382B9E3839FE383ACEFBC88E382A2E383ABE38390E382A4E38388EFBC89_E382B9E3839FE383AC5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/DE9Xvbz.jpg)
+<https://i.imgur.com/DE9Xvbz.mp4>
 
 ## ボイス
 

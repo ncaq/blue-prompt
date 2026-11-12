@@ -241,7 +241,7 @@ user-invocable: false
 
 ![ネル（制服）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3838DE383ABEFBC88E588B6E69C8DEFBC89_E3838DE383ABEFBC88E588B6E69C8DEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/kO5I9b9.jpg)
+<https://i.imgur.com/kO5I9b9.mp4>
 
 - スタッフ: nemoga, 役割: イラストレーター, コンテンツ: メモリアルロビー ネル（制服）
 - スタッフ: LM5, 役割: アニメーター, コンテンツ: メモリアルロビー ネル（制服）

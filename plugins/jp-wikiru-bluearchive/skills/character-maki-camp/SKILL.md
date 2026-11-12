@@ -231,7 +231,7 @@ user-invocable: false
 
 ![マキ（キャンプ）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3839EE382ADEFBC88E382ADE383A3E383B3E38397EFBC89_E3839EE382ADEFBC88E382ADE383A3E383B3E38397EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/cdnkmL1.jpg)
+<https://i.imgur.com/cdnkmL1.mp4>
 
 - スタッフ: GULIM, 役割: イラストレーター, コンテンツ: メモリアルロビー マキ（キャンプ）
 - スタッフ: Kujirah, 役割: アニメーター, コンテンツ: メモリアルロビー マキ（キャンプ）

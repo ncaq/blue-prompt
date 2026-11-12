@@ -230,7 +230,7 @@ user-invocable: false
 
 ![カリン（制服）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E382ABE383AAE383B3EFBC88E588B6E69C8DEFBC89_E382ABE383AAE383B3EFBC88E588B6E69C8DEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/ydCoGoC.jpg)
+<https://i.imgur.com/ydCoGoC.mp4>
 
 - スタッフ: dydldidl, 役割: イラストレーター, コンテンツ: メモリアルロビー カリン（制服）
 - スタッフ: Kujirah, 役割: アニメーター, コンテンツ: メモリアルロビー カリン（制服）
