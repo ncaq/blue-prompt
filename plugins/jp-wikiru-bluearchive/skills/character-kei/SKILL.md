@@ -234,7 +234,7 @@ user-invocable: false
 
 ![ケイ_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E382B1E382A4_E382B1E382A45FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/YOwxeSi.jpg)
+<https://i.imgur.com/YOwxeSi.mp4>
 
 ## ボイス
 

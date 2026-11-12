@@ -229,7 +229,7 @@ user-invocable: false
 
 ![ノゾミ_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3838EE382BEE3839F_E3838EE382BEE3839F5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/wDuBKYj.jpg)
+<https://i.imgur.com/wDuBKYj.mp4>
 
 ## ボイス
 

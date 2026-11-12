@@ -229,7 +229,7 @@ user-invocable: false
 
 ![リオ_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E383AAE382AA_E383AAE382AA5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/8qj0Ycb.jpg)
+<https://i.imgur.com/8qj0Ycb.mp4>
 
 - スタッフ: koo3473, 役割: イラストレーター, コンテンツ: メモリアルロビー リオ
 - スタッフ: Kujirah, 役割: アニメーター, コンテンツ: メモリアルロビー リオ

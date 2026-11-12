@@ -230,7 +230,7 @@ user-invocable: false
 
 ![セナ（私服）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E382BBE3838AEFBC88E7A781E69C8DEFBC89_E382BBE3838AEFBC88E7A781E69C8DEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/H7qNsMi.jpg)
+<https://i.imgur.com/H7qNsMi.mp4>
 
 ## ボイス
 

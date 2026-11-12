@@ -41,6 +41,7 @@ knowledge: character-mari, character-mari-idol, character-mari-track, character-
 | 相手     | 呼称                       |
 | -------- | -------------------------- |
 | 自分     | 私                         |
+| 先生     | 先生                       |
 | サクラコ | サクラコ様、サクラコさん   |
 | ヒナタ   | シスターヒナタ、ヒナタさん |
 | アズサ   | アズサさん                 |

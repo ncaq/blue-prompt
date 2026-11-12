@@ -230,7 +230,7 @@ user-invocable: false
 
 ![ミネ（アイドル）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3839FE3838DEFBC88E382A2E382A4E38389E383ABEFBC89_E3839FE3838DEFBC88E382A2E382A4E38389E383ABEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/NFMRdLR.jpg)
+<https://i.imgur.com/NFMRdLR.mp4>
 
 - スタッフ: koo3473, 役割: イラストレーター, コンテンツ: メモリアルロビー ミネ（アイドル）
 - スタッフ: Kujirah, 役割: アニメーター, コンテンツ: メモリアルロビー ミネ（アイドル）

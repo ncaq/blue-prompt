@@ -233,7 +233,7 @@ user-invocable: false
 
 ![ユウカ（パジャマ）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E383A6E382A6E382ABEFBC88E38391E382B8E383A3E3839EEFBC89_E383A6E382A6E382ABEFBC88E38391E382B8E383A3E3839EEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/WlW4SWF.jpg)
+<https://i.imgur.com/WlW4SWF.mp4>
 
 - スタッフ: Paruru, 役割: イラストレーター, コンテンツ: メモリアルロビー ユウカ（パジャマ）
 - スタッフ: LM5, 役割: アニメーター, コンテンツ: メモリアルロビー ユウカ（パジャマ）

@@ -266,7 +266,7 @@ user-invocable: false
 
 ![ハナコ_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3838FE3838AE382B3_E3838FE3838AE382B35FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/hGA2e8E.jpg)
+<https://i.imgur.com/hGA2e8E.mp4>
 
 - スタッフ: isakusan, 役割: シナリオライター(共作), コンテンツ: メモリアルロビー ハナコ
 - スタッフ: Prenguin, 役割: シナリオライター(共作), コンテンツ: メモリアルロビー ハナコ

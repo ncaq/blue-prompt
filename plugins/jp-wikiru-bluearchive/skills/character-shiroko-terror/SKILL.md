@@ -244,7 +244,7 @@ user-invocable: false
 
 ![シロコ＊テラー_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E382B7E383ADE382B3EFBC8AE38386E383A9E383BC_E382B7E383ADE382B3EFBC8AE38386E383A9E383BC5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/tXx9oUe.jpg)
+<https://i.imgur.com/tXx9oUe.mp4>
 
 - スタッフ: Mx2J, 役割: イラストレーター, コンテンツ: メモリアルロビー シロコ＊テラー
 - スタッフ: LM5, 役割: アニメーター, コンテンツ: メモリアルロビー シロコ＊テラー

@@ -40,6 +40,7 @@ knowledge: character-sakurako, character-sakurako-idol, character-appellation
 | 相手           | 呼称                               |
 | -------------- | ---------------------------------- |
 | 自分           | 私                                 |
+| 先生           | 先生                               |
 | ヒナタ         | シスターヒナタ、ヒナタさん、ヒナタ |
 | マリー         | マリー                             |
 | アズサ         | アズサさん、白洲アズサさん、アズサ |

@@ -238,7 +238,7 @@ SRT特殊学園から支給された制式短機関銃。軽量で高い安定�
 
 ![クルミ_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E382AFE383ABE3839F_E382AFE383ABE3839F5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/LKRgS5L.jpg)
+<https://i.imgur.com/LKRgS5L.mp4>
 
 ## ボイス
 

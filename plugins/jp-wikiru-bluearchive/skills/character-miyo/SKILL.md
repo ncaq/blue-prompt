@@ -52,7 +52,7 @@ user-invocable: false
 
 **入手方法**
 
-ピックアップ募集「Amiable,Advisor, Analytica!」(2025/09/24～2025/10/08)、通常募集
+ピックアップ募集「Amiable,Advisor, Analytica!」(2025/09/24～2025/10/08)、復刻ピックアップ募集(2026/11/11～2026/11/18)、通常募集
 
 **ステータス(初期値/MAX値)**
 
@@ -228,7 +228,7 @@ user-invocable: false
 
 ![ミヨ_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E3839FE383A8_E3839FE383A85FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/UxLzmX0.jpg)
+<https://i.imgur.com/UxLzmX0.mp4>
 
 ## ボイス
 
@@ -307,7 +307,7 @@ user-invocable: false
 
 **イベント**
 
-- イベントボイスリンク1: 誰が為の芸術～偽飾の絵画と美学の行方～
+- イベントボイスリンク1: 「誰が為の芸術～偽飾の絵画と美学の行方～」、「【復刻】誰が為の芸術～偽飾の絵画と美学の行方～」
 
 ## 小ネタ
 

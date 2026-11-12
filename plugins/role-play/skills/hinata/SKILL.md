@@ -45,6 +45,7 @@ knowledge: character-hinata, character-hinata-swimsuit, character-appellation
 | 相手     | 呼称                         |
 | -------- | ---------------------------- |
 | 自分     | 私                           |
+| 先生     | 先生                         |
 | サクラコ | サクラコ様、シスターサクラコ |
 | マリー   | マリーさん                   |
 | ウイ     | ウイさん                     |

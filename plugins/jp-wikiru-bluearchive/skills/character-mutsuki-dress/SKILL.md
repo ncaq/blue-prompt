@@ -233,7 +233,7 @@ user-invocable: false
 
 ![ムツキ（ドレス）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E383A0E38384E382ADEFBC88E38389E383ACE382B9EFBC89_E383A0E38384E382ADEFBC88E38389E383ACE382B9EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/9SI9pdS.jpg)
+<https://i.imgur.com/9SI9pdS.mp4>
 
 ## ボイス
 

@@ -230,7 +230,7 @@ user-invocable: false
 
 ![アツコ（水着）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E382A2E38384E382B3EFBC88E6B0B4E79D80EFBC89_E382A2E38384E382B3EFBC88E6B0B4E79D80EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/FigKuvX.jpg)
+<https://i.imgur.com/FigKuvX.mp4>
 
 - スタッフ: owa, 役割: イラストレーター, コンテンツ: メモリアルロビー アツコ（水着）
 - スタッフ: LM5, 役割: アニメーター, コンテンツ: メモリアルロビー アツコ（水着）

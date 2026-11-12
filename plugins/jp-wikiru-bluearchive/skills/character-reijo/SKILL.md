@@ -230,7 +230,7 @@ user-invocable: false
 
 ![レイジョ_メモリアルロビー2.png](https://bluearchive.wikiru.jp/attach2/E383ACE382A4E382B8E383A7_E383ACE382A4E382B8E383A75FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC322E706E67.png)
 
-![](https://i.imgur.com/IfayQyH.jpg)
+<https://i.imgur.com/IfayQyH.mp4>
 
 - スタッフ: BILLBUNG, 役割: イラストレーター(共作), コンテンツ: メモリアルロビー レイジョ
 - スタッフ: kokosando, 役割: イラストレーター(共作), コンテンツ: メモリアルロビー レイジョ

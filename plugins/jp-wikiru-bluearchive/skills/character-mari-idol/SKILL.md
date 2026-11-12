@@ -233,7 +233,7 @@ user-invocable: false
 
 ![マリー（アイドル）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E3839EE383AAE383BCEFBC88E382A2E382A4E38389E383ABEFBC89_E3839EE383AAE383BCEFBC88E382A2E382A4E38389E383ABEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/XVncd9P.jpg)
+<https://i.imgur.com/XVncd9P.mp4>
 
 - スタッフ: 7peach, 役割: イラストレーター, コンテンツ: メモリアルロビー マリー（アイドル）
 - スタッフ: blackwon, 役割: アニメーター, コンテンツ: メモリアルロビー マリー（アイドル）

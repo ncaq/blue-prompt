@@ -227,7 +227,7 @@ user-invocable: false
 
 ![IMG_5353.png](https://bluearchive.wikiru.jp/attach2/E38384E383A0E382AE_494D475F353335332E706E67.png)
 
-![](https://i.imgur.com/gajQ2M4.jpg)
+<https://i.imgur.com/gajQ2M4.mp4>
 
 ## ボイス
 

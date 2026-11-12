@@ -231,7 +231,7 @@ user-invocable: false
 
 ![アスナ（制服）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E382A2E382B9E3838AEFBC88E588B6E69C8DEFBC89_E382A2E382B9E3838AEFBC88E588B6E69C8DEFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/dNXZeDF.jpg)
+<https://i.imgur.com/dNXZeDF.mp4>
 
 - スタッフ: koo3473, 役割: イラストレーター, コンテンツ: メモリアルロビー アスナ（制服）
 - スタッフ: blackwon, 役割: アニメーター, コンテンツ: メモリアルロビー アスナ（制服）

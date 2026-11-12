@@ -233,7 +233,7 @@ user-invocable: false
 
 ![トキ（臨戦）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E38388E382ADEFBC88E887A8E688A6EFBC89_E38388E382ADEFBC88E887A8E688A6EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/EPbTCND.jpg)
+<https://i.imgur.com/EPbTCND.mp4>
 
 ## ボイス
 

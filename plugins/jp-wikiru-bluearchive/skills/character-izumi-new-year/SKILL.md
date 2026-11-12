@@ -242,7 +242,7 @@ user-invocable: false
 
 ![イズミ（正月）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E382A4E382BAE3839FEFBC88E6ADA3E69C88EFBC89_E382A4E382BAE3839FEFBC88E6ADA3E69C88EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/HNw0q4b.jpg)
+<https://i.imgur.com/HNw0q4b.mp4>
 
 ## ボイス
 

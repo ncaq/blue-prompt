@@ -278,7 +278,7 @@ user-invocable: false
 
 **BGM：Shooting Stars**
 
-![](https://i.imgur.com/VJfft3E.jpg)
+<https://i.imgur.com/VJfft3E.mp4>
 
 ## ボイス
 

@@ -227,7 +227,7 @@ user-invocable: false
 
 ![ヒカリ_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E38392E382ABE383AA_E38392E382ABE383AA5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 
-![](https://i.imgur.com/05V925D.jpg)
+<https://i.imgur.com/05V925D.mp4>
 
 ## ボイス
 

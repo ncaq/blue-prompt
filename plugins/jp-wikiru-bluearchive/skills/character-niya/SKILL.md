@@ -230,7 +230,7 @@ user-invocable: false
 
 ![ニヤ_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E3838BE383A4_E3838BE383A45FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/WSK6X1t.jpg)
+<https://i.imgur.com/WSK6X1t.mp4>
 
 ## ボイス
 

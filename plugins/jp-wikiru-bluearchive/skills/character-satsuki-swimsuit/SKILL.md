@@ -230,7 +230,7 @@ user-invocable: false
 
 ![サツキ（水着）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E382B5E38384E382ADEFBC88E6B0B4E79D80EFBC89_E382B5E38384E382ADEFBC88E6B0B4E79D80EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/XpiYsOR.jpg)
+<https://i.imgur.com/XpiYsOR.mp4>
 
 ## ボイス
 

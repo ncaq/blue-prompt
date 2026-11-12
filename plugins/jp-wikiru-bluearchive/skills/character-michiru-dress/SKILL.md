@@ -229,7 +229,7 @@ user-invocable: false
 
 ![ミチル（ドレス）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E3839FE38381E383ABEFBC88E38389E383ACE382B9EFBC89_E3839FE38381E383ABEFBC88E38389E383ACE382B9EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/d7R4HAC.jpg)
+<https://i.imgur.com/d7R4HAC.mp4>
 
 ## ボイス
 

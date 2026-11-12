@@ -230,7 +230,7 @@ user-invocable: false
 
 ![レンゲ（水着）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E383ACE383B3E382B2EFBC88E6B0B4E79D80EFBC89_E383ACE383B3E382B2EFBC88E6B0B4E79D80EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
-![](https://i.imgur.com/LK2MRE9.jpg)
+<https://i.imgur.com/LK2MRE9.mp4>
 
 ## ボイス
 
