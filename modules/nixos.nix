@@ -133,6 +133,38 @@ in
         Type = "exec";
         RemainAfterExit = true;
         DynamicUser = true;
+        # 同期はOpen WebUIのAPIをHTTPで叩くだけで、
+        # 読むのはNix storeの生成物とcredentialだけ、書き込む先は無い。
+        # ネットワーク通信の他は要らないので閉じる。
+        #
+        # MemoryDenyWriteExecuteは設定しない。
+        # .NETのJITが実行可能なメモリを確保できず、ランタイムが起動に失敗する。
+        #
+        # 空リストはNixOSモジュールがディレクティブごと省略してしまうため、
+        # 空文字列でbounding setを空集合にリセットする。
+        CapabilityBoundingSet = "";
+        LockPersonality = true;
+        NoNewPrivileges = true;
+        PrivateDevices = true;
+        PrivateTmp = true;
+        ProtectClock = true;
+        ProtectControlGroups = true;
+        ProtectHome = true;
+        ProtectHostname = true;
+        ProtectKernelLogs = true;
+        ProtectKernelModules = true;
+        ProtectKernelTunables = true;
+        ProtectSystem = "strict";
+        RestrictAddressFamilies = [
+          "AF_INET"
+          "AF_INET6"
+          "AF_UNIX"
+        ];
+        RestrictNamespaces = true;
+        RestrictRealtime = true;
+        RestrictSUIDSGID = true;
+        SystemCallArchitectures = "native";
+        SystemCallFilter = [ "@system-service" ];
         # ExecStartはシェルを経由しないため、
         # エスケープにはsystemdの構文に合わせたescapeSystemdExecArgsを使う。
         # credentialのパスはsystemdが実行時に環境変数として展開する必要があり、
