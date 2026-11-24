@@ -126,6 +126,8 @@ module WikiruCommand =
         | School of ParseResults<MarkdownJsonOutput.Args>
         | Student_Skill of ParseResults<PageOutput.Args>
         | Unplayable_Skill of ParseResults<PageOutput.Args>
+        // 引数を取らないため、明示しないとサブコマンドではなくスイッチとして扱われる。
+        | [<SubCommand>] Check_Manifest
         | Html of ParseResults<PageOutput.Args>
         | Student_Html of ParseResults<PageOutput.Args>
 
@@ -139,6 +141,7 @@ module WikiruCommand =
                 | School _ -> "学校別キャラクター一覧を構造化し、学校ごとの一覧のreference.mdと機械読み出し用のJSONを書き出す。"
                 | Student_Skill _ -> "生徒個別ページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
                 | Unplayable_Skill _ -> "プレイアブルではない登場人物のページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
+                | Check_Manifest -> "wikiruのキャラクター一覧と学校別キャラクター一覧をマニフェストと突き合わせ、漏れているページを表示する。"
                 | Html _ -> "記事から抽出した本文をMarkdown化せずHTMLのまま書き出す。抽出設定の確認用。"
                 | Student_Html _ -> "生徒個別ページの抽出設定で本文をHTMLのまま書き出す。抽出設定の確認用。"
 
@@ -197,6 +200,33 @@ let private run (work: Task<unit>) : int =
     work.GetAwaiter().GetResult()
     0
 
+/// マニフェストとwikiruの一覧の食い違いを種類ごとに並べる。空の種類は出さない。
+/// 直すべき食い違いと、知らせるだけの実装前の生徒は、読み分けられるように見出しを分ける。
+let coverageReport (coverage: Manifest.Coverage) : string list =
+    [ "キャラクター一覧にあるがstudentsに無いページ", coverage.MissingStudents
+      "学校別キャラクター一覧でNPCだがunplayablesに無いページ", coverage.MissingUnplayables
+      "studentsにあるがキャラクター一覧に無いページ", coverage.UnknownStudents
+      "unplayablesにあるが学校別キャラクター一覧でNPCではないページ", coverage.UnknownUnplayables
+      "参考: 学校別キャラクター一覧にだけある実装前の生徒のページ", coverage.Upcoming ]
+    |> List.collect (fun (title, pages) ->
+        match pages with
+        | [] -> []
+        | pages -> $"%s{title}:" :: List.map (fun page -> $"- %s{page}") pages)
+
+/// マニフェストの漏れを調べて表示し、直すべき食い違いがあれば非0にする。
+/// 求めた通りの結果なので、食い違いも標準出力へ出す。
+let private runCheckManifest () : int =
+    let coverage = (Manifest.checkCoverage ()).GetAwaiter().GetResult()
+
+    for line in coverageReport coverage do
+        printfn $"%s{line}"
+
+    if Manifest.hasGap coverage then
+        1
+    else
+        printfn "マニフェストに漏れはありません"
+        0
+
 let private runWikiru (args: ParseResults<WikiruCommand.Args>) : int =
     /// wikiruのページ名と出力先だけを取るコマンドの共通の取り出し。
     let pageOutput (sub: ParseResults<PageOutput.Args>) =
@@ -219,6 +249,7 @@ let private runWikiru (args: ParseResults<WikiruCommand.Args>) : int =
     | WikiruCommand.School sub -> create (Target.School(markdownJsonOutput sub))
     | WikiruCommand.Student_Skill sub -> create (Target.StudentSkill(pageOutput sub))
     | WikiruCommand.Unplayable_Skill sub -> create (Target.UnplayableSkill(pageOutput sub))
+    | WikiruCommand.Check_Manifest -> runCheckManifest ()
     | WikiruCommand.Html sub -> run (pageOutput sub ||> Wikiru.writeContentHtml Wikiru.contentQuery)
     | WikiruCommand.Student_Html sub ->
         run (pageOutput sub ||> Wikiru.writeContentHtml Wikiru.studentContentQuery)

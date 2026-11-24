@@ -706,13 +706,26 @@ let writeAppellation
         return [ markdownPath; jsonPath ]
     }
 
+/// wikiruの学校別キャラクター一覧ページを取得して、所属のレコードの列へパースする。
+let fetchSchoolEntries (pageName: string) : Task<School.Entry list> =
+    task {
+        let! html = Page.fetchContentHtml (pageUri pageName) structuredContentQuery
+        return School.parseHtml html
+    }
+
+/// wikiruのキャラクター一覧ページを取得して、並んでいる生徒個別ページのページ名を返す。
+let fetchCharacterListPages (pageName: string) : Task<string list> =
+    task {
+        let! html = Page.fetchContentHtml (pageUri pageName) structuredContentQuery
+        return CharacterList.parseHtml html
+    }
+
 /// wikiruの学校別キャラクター一覧ページを構造化データへパースし、
 /// LLM参照用のreference.mdと機械読み出し用のJSONを書き出す。
 /// 整形は掛けず、書き出したパスを返す。
 let writeSchool (pageName: string) (markdownPath: string) (jsonPath: string) : Task<string list> =
     task {
-        let! html = Page.fetchContentHtml (pageUri pageName) structuredContentQuery
-        let entries = School.parseHtml html
+        let! entries = fetchSchoolEntries pageName
         do! writeFile markdownPath (knowledgeHeader pageName + School.toReferenceMarkdown entries)
 
         let document: School.Document =
