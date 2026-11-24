@@ -826,6 +826,9 @@ let students: Student list =
       { Page = "ヨシミ（バンド）"
         Base = "yoshimi"
         Costume = Some "band" }
+      { Page = "ラナ"
+        Base = "rana"
+        Costume = None }
       { Page = "ラブ"
         Base = "love"
         Costume = None }
@@ -950,7 +953,6 @@ let unplayables: Unplayable list =
       { Page = "ユキノ"; Slug = "yukino" }
       { Page = "ユメ"; Slug = "yume" }
       { Page = "ヨウコ"; Slug = "youko" }
-      { Page = "ラナ"; Slug = "rana" }
       { Page = "リン"; Slug = "rin" }
       { Page = "連邦生徒会長"
         Slug = "student-council-president" }

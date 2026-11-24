@@ -1,10 +1,10 @@
 ---
 name: character-rana
-description: Facts about Blue Archive character 古畑ラナ.
+description: Facts about Blue Archive student 古畑ラナ.
 user-invocable: false
 ---
 
-『ブルーアーカイブ』の登場人物「ラナ」のゲーム内外の事実を調べるためのスキルです。
+『ブルーアーカイブ』の生徒「ラナ」のゲーム内外の事実を調べるためのスキルです。
 
 # データの構造
 
