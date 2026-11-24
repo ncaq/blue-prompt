@@ -32,9 +32,8 @@ let
   # フロントマターのnameをディレクトリ名と同じ展開名へ書き換えたスキル一式を構築する。
   # 展開名がスキル名のままのスキルでは書き換えは何も変えないが、
   # 分岐を持ち込むほどのコストではないため一律に通す。
-  # home-managerはスキルの値の種類をpathIsDirectoryで判別していて、
-  # storeパスに対しては評価時ビルド(IFD)になるため、
-  # スキルごとのderivationに分けず1つへまとめてビルドを1回で済ませる。
+  # 接続は一式をまとめて1つのリンクで行うため、
+  # スキルごとのderivationには分けず1つへまとめる。
   #
   # 実際に書き換えるのは各スキルのSKILL.md 1ファイルだけなので、
   # 他のファイルはsymlinkでstoreの実体を指して複製を避ける。
@@ -59,6 +58,12 @@ let
       '') skills
     )}
   '';
+
+  opencodeSkillNameConflicts =
+    let
+      otherSkills = config.programs.opencode.skills;
+    in
+    lib.optionals (lib.isAttrs otherSkills) (lib.attrNames (lib.intersectAttrs otherSkills skills));
 in
 {
   options.blue-prompt = {
@@ -80,6 +85,16 @@ in
           assertion = cfg.opencode.enable -> config.programs.opencode.enable;
           message = "blue-prompt.opencode.enableには`programs.opencode.enable = true`が必要です";
         }
+        {
+          # OpenCodeはフロントマターのnameでスキルを登録するため、
+          # 置き場所が違っても同じ名前のスキルは衝突する。
+          # `programs.opencode.skills`へ登録していた時はオプションの定義の衝突として検出できていたが、
+          # 自前でリンクを張るとその検出から外れるので、
+          # 他のモジュールが登録したスキルとの名前の重複をここで検出する。
+          # ディレクトリのパスで渡された時は中身が評価時には分からないため検査しない。
+          assertion = cfg.opencode.enable -> opencodeSkillNameConflicts == [ ];
+          message = "blue-promptのスキルとprograms.opencode.skillsのスキルの名前が衝突しています: ${toString opencodeSkillNameConflicts}";
+        }
       ];
     }
     (lib.mkIf cfg.claude-code.enable {
@@ -92,10 +107,24 @@ in
     (lib.mkIf cfg.opencode.enable {
       # OpenCodeはプラグインの単位を持たないため、
       # プラグインを跨いでフラットに展開したスキルを接続する。
-      # スキルは`~/.config/opencode/skills/<展開名>/`へそれぞれsymlinkされる。
-      programs.opencode.skills = lib.mapAttrs (
-        flatName: _skillDir: "${opencodeSkills}/${flatName}"
-      ) skills;
+      # スキル一式は`~/.config/opencode/skills/blue-prompt/`へまとめてsymlinkされ、
+      # 個々のスキルはその下の`<展開名>/`に並ぶ。
+      #
+      # `programs.opencode.skills`へスキルを1つずつ登録すると、
+      # home-managerがスキルごとに値の種類をpathIsDirectoryで調べてファイルのエントリを作り、
+      # 数百のスキルの分だけ評価のたびに時間とメモリを使う。
+      # storeパスに対するpathIsDirectoryは評価時ビルド(IFD)にもなる。
+      # 自前でリンクを1つ張れば、スキルがいくつあってもエントリは1つで、IFDも起きない。
+      # ref https://github.com/ncaq/blue-prompt/issues/252
+      #
+      # `programs.opencode.skills`へディレクトリのパスとして渡す方法は、
+      # 他のモジュールが同じオプションへ属性セットでスキルを足せなくなるため採らない。
+      #
+      # OpenCodeは`skills/`の下を再帰的に探してSKILL.mdを拾い、
+      # 途中のディレクトリがsymlinkでも辿るため、
+      # 1段深い場所に置いてもフロントマターのnameでそのまま登録される。
+      # OpenCode 2.3.0で実測して確認している。
+      xdg.configFile."opencode/skills/blue-prompt".source = opencodeSkills;
     })
   ];
 }
