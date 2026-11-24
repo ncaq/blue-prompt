@@ -44,6 +44,7 @@ knowledge: character-shigure, character-shigure-hot-spring, character-appellatio
 | -------- | ------------------ |
 | 自分     | 私                 |
 | ノドカ   | ノドカ             |
+| ラナ     | ラナ               |
 | チェリノ | チェリノ会長、会長 |
 
 # 追加の事実が必要な時
