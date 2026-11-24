@@ -36,6 +36,7 @@ let private commands =
       [| "wikiru"; "student-skill"; "--page"; "ページ"; "--output"; "SKILL.md" |]
       "wikiru unplayable-skill",
       [| "wikiru"; "unplayable-skill"; "--page"; "ページ"; "--output"; "SKILL.md" |]
+      "wikiru check-manifest", [| "wikiru"; "check-manifest" |]
       "wikiru html", [| "wikiru"; "html"; "--page"; "ページ"; "--output"; "out.html" |]
       "wikiru student-html", [| "wikiru"; "student-html"; "--page"; "ページ"; "--output"; "out.html" |]
       "roleplay all", [| "roleplay"; "all"; "--root"; "." |]
@@ -80,6 +81,7 @@ let private parsedName (argv: string array) : string =
         | Program.WikiruCommand.School _ -> "wikiru school"
         | Program.WikiruCommand.Student_Skill _ -> "wikiru student-skill"
         | Program.WikiruCommand.Unplayable_Skill _ -> "wikiru unplayable-skill"
+        | Program.WikiruCommand.Check_Manifest -> "wikiru check-manifest"
         | Program.WikiruCommand.Html _ -> "wikiru html"
         | Program.WikiruCommand.Student_Html _ -> "wikiru student-html"
     | Program.RootCommand.Roleplay sub ->
@@ -118,8 +120,11 @@ let ``展開した使い方には全ての末端のサブコマンドが宣言�
     let usage = Program.expandedUsage parser |> String.concat "\n"
 
     // ケースを足してもヘルプへ出ていなければ、ここで引けない。
+    // 引数を取らないコマンドは自分の使い方を持たず、グループの一覧の1行にしかならないため、
+    // 使い方の見出しで探すこの検査からは外す。
     let positions =
         commands
+        |> List.filter (fun (_, argv) -> 2 < argv.Length)
         |> List.map (fun (name, _) ->
             let index = usage.IndexOf($"blue-prompt %s{name}", StringComparison.Ordinal)
             Assert.True(0 <= index, $"%s{name}が使い方に出ていません")
@@ -132,6 +137,33 @@ let ``展開した使い方には全ての末端のサブコマンドが宣言�
 let ``コマンド名は判別共用体のケースへ対応する`` () =
     for name, argv in commands do
         Assert.Equal(name, parsedName argv)
+
+[<Fact>]
+let ``引数を取らないコマンドもグループの使い方に出る`` () =
+    let parser =
+        ArgumentParser.Create<Program.RootCommand.Args>(programName = "blue-prompt")
+
+    let usage = Program.expandedUsage parser |> String.concat "\n"
+    Assert.Contains("check-manifest", usage)
+
+[<Fact>]
+let ``マニフェストの食い違いは種類ごとの見出しの下へ並び空の種類は出ない`` () =
+    let report =
+        Program.coverageReport
+            { MissingStudents = [ "アズサ（レーシング）"; "ラナ" ]
+              MissingUnplayables = []
+              UnknownStudents = []
+              UnknownUnplayables = [ "ラナ" ]
+              Upcoming = [] }
+
+    Assert.Equal<string list>(
+        [ "キャラクター一覧にあるがstudentsに無いページ:"
+          "- アズサ（レーシング）"
+          "- ラナ"
+          "unplayablesにあるが学校別キャラクター一覧でNPCではないページ:"
+          "- ラナ" ],
+        report
+    )
 
 [<Fact>]
 let ``未知のサブコマンドでは非0を返す`` () =

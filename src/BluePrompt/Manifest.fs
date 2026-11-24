@@ -88,6 +88,9 @@ let students: Student list =
       { Page = "アズサ"
         Base = "azusa"
         Costume = None }
+      { Page = "アズサ（レーシング）"
+        Base = "azusa"
+        Costume = Some "racing" }
       { Page = "アズサ（水着）"
         Base = "azusa"
         Costume = Some "swimsuit" }
@@ -622,6 +625,9 @@ let students: Student list =
       { Page = "ヒフミ"
         Base = "hifumi"
         Costume = None }
+      { Page = "ヒフミ（レーシング）"
+        Base = "hifumi"
+        Costume = Some "racing" }
       { Page = "ヒフミ（水着）"
         Base = "hifumi"
         Costume = Some "swimsuit" }
@@ -820,6 +826,9 @@ let students: Student list =
       { Page = "ヨシミ（バンド）"
         Base = "yoshimi"
         Costume = Some "band" }
+      { Page = "ラナ"
+        Base = "rana"
+        Costume = None }
       { Page = "ラブ"
         Base = "love"
         Costume = None }
@@ -944,7 +953,6 @@ let unplayables: Unplayable list =
       { Page = "ユキノ"; Slug = "yukino" }
       { Page = "ユメ"; Slug = "yume" }
       { Page = "ヨウコ"; Slug = "youko" }
-      { Page = "ラナ"; Slug = "rana" }
       { Page = "リン"; Slug = "rin" }
       { Page = "連邦生徒会長"
         Slug = "student-council-president" }
@@ -952,6 +960,13 @@ let unplayables: Unplayable list =
       // 連邦生徒会長のページの立ち絵に添えられた(False)の表記に揃える。
       { Page = "連邦生徒会長（金髪）"
         Slug = "student-council-president-false" } ]
+
+/// 学校別キャラクター一覧のページ名。
+/// 生成の対象であり、プレイアブルではない登場人物の漏れを調べる出典でもあるため共有する。
+let private schoolPage = "学校別"
+
+/// キャラクター一覧のページ名。生徒の漏れを調べる出典。
+let private characterListPage = "キャラクター一覧"
 
 /// wikiruから取り込む対象。パスはリポジトリのルートからの相対。
 let wikiruTargets: Target.WikiruTarget list =
@@ -961,7 +976,7 @@ let wikiruTargets: Target.WikiruTarget list =
           appellationJson
       )
       Target.School(
-          "学校別",
+          schoolPage,
           "plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md",
           "plugins/jp-wikiru-bluearchive/skills/character-index-by-group/school.json"
       ) ]
@@ -993,6 +1008,81 @@ let rolePlaySkills: Target.RolePlaySkill list =
           Template = "plugins/role-play"
           Appellation = appellationJson
           Output = $"plugins/role-play/skills/%s{student.Base}" })
+
+/// wikiruの一覧とマニフェストを突き合わせた結果。どれもwikiruのページ名の列。
+/// 前の4つはマニフェストを直すべき食い違いで、Upcomingだけは知らせるだけの情報。
+type Coverage =
+    {
+        /// キャラクター一覧にあるのにstudentsに無いページ。足し忘れた生徒と衣装違い。
+        MissingStudents: string list
+        /// 学校別キャラクター一覧でNPCとされているのにunplayablesに無いページ。
+        MissingUnplayables: string list
+        /// studentsにあるのにキャラクター一覧に無いページ。改名されたか綴りを間違えている。
+        UnknownStudents: string list
+        /// unplayablesにあるのに学校別キャラクター一覧でNPCとされていないページ。
+        /// 実装されて生徒になったか、改名されたか綴りを間違えている。
+        UnknownUnplayables: string list
+        /// 学校別キャラクター一覧では生徒とされているのに、キャラクター一覧にもstudentsにも無いページ。
+        /// 実装が告知されただけの生徒で、個別ページはプロフィールもボイスも雛形のことが多い。
+        /// キャラクター一覧へ載ればMissingStudentsとして現れるため、ここでは漏れとして扱わない。
+        Upcoming: string list
+    }
+
+/// マニフェストを直すべき食い違いがあるかどうか。
+let hasGap (coverage: Coverage) : bool =
+    [ coverage.MissingStudents
+      coverage.MissingUnplayables
+      coverage.UnknownStudents
+      coverage.UnknownUnplayables ]
+    |> List.exists (List.isEmpty >> not)
+
+/// マニフェストのページ名と、wikiruの一覧から読んだページ名を突き合わせる。
+/// 生徒はキャラクター一覧を、プレイアブルではない登場人物は学校別キャラクター一覧を出典にする。
+/// 学校別キャラクター一覧は衣装違いを持たず、キャラクター一覧はプレイアブルではない登場人物を持たないため、
+/// 片方だけでは全体を確かめられない。
+/// 結果の並びは、wikiru側から来るものは一覧の順、マニフェスト側から来るものはマニフェストの順。
+/// 取得と切り離してあるので、wikiruへ取りに行かずに検証できる。
+let coverageOf
+    (studentPages: string list)
+    (unplayablePages: string list)
+    (characterList: string list)
+    (school: School.Entry list)
+    : Coverage =
+    let isUnplayable (entry: School.Entry) = entry.Rarity = School.unplayableRarity
+
+    // カイテンジャーの5人は同じページを指すため、ページ名にすると重複する。
+    let pagesWhere (predicate: School.Entry -> bool) =
+        school |> List.filter predicate |> List.map School.entryPage |> List.distinct
+
+    let listed = List.distinct characterList
+    let schoolUnplayables = pagesWhere isUnplayable
+
+    let without (known: string list) (pages: string list) =
+        let known = Set.ofList known
+        pages |> List.filter (fun page -> not (Set.contains page known))
+
+    { MissingStudents = listed |> without studentPages
+      MissingUnplayables = schoolUnplayables |> without unplayablePages
+      UnknownStudents = studentPages |> without listed
+      UnknownUnplayables = unplayablePages |> without schoolUnplayables
+      Upcoming = pagesWhere (isUnplayable >> not) |> without (listed @ studentPages) }
+
+/// wikiruの2つの一覧を取得して、マニフェストとの食い違いを調べる。
+/// リポジトリのファイルは読まず、何も書き出さない。
+let checkCoverage () : Task<Coverage> =
+    task {
+        let characterList = Wikiru.fetchCharacterListPages characterListPage
+        let school = Wikiru.fetchSchoolEntries schoolPage
+        let! characterList = characterList
+        let! school = school
+
+        return
+            coverageOf
+                (students |> List.map _.Page)
+                (unplayables |> List.map _.Page)
+                characterList
+                school
+    }
 
 /// 同時に進める対象の数。
 /// wikiru側の負荷は1台のPCから送る量では誤差だが、

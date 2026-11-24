@@ -247,6 +247,82 @@ let ``実在しないナレッジの名前はcharacter.mdごとに集まる`` ()
         missing
     )
 
+/// 学校別キャラクター一覧の1件。突き合わせが見るのはレアリティと名前とページ名だけ。
+let private schoolEntry (rarity: string) (name: string) (page: string option) : School.Entry =
+    { School = "学校"
+      Club = None
+      Rarity = rarity
+      Name = name
+      Page = page }
+
+[<Fact>]
+let ``一覧とマニフェストが揃っていれば食い違いは無い`` () =
+    let coverage =
+        Manifest.coverageOf
+            [ "アズサ"; "アズサ（水着）" ]
+            [ "ユメ" ]
+            [ "アズサ"; "アズサ（水着）" ]
+            [ schoolEntry "★3" "アズサ" None; schoolEntry "NPC" "ユメ" None ]
+
+    Assert.False(Manifest.hasGap coverage)
+    Assert.Empty coverage.Upcoming
+
+[<Fact>]
+let ``キャラクター一覧にだけある衣装違いは生徒の漏れになる`` () =
+    // 衣装違いは学校別キャラクター一覧に現れないため、キャラクター一覧からしか見つけられない。
+    let coverage =
+        Manifest.coverageOf [ "アズサ" ] [] [ "アズサ"; "アズサ（レーシング）" ] [ schoolEntry "★3" "アズサ" None ]
+
+    Assert.Equal<string list>([ "アズサ（レーシング）" ], coverage.MissingStudents)
+    Assert.True(Manifest.hasGap coverage)
+
+[<Fact>]
+let ``実装された登場人物は生徒の漏れとunplayablesの外し忘れの両方に現れる`` () =
+    let coverage =
+        Manifest.coverageOf [] [ "ラナ" ] [ "ラナ" ] [ schoolEntry "★1" "ラナ" None ]
+
+    Assert.Equal<string list>([ "ラナ" ], coverage.MissingStudents)
+    Assert.Equal<string list>([ "ラナ" ], coverage.UnknownUnplayables)
+    // キャラクター一覧に載っているので、実装前としては数えない。
+    Assert.Empty coverage.Upcoming
+
+[<Fact>]
+let ``名前と食い違うページ名を持つ登場人物はページ名で突き合わせる`` () =
+    // カイテンジャーの5人は同じページを指すので、1つのページとして数える。
+    let coverage =
+        Manifest.coverageOf
+            []
+            []
+            []
+            [ schoolEntry "NPC" "カイテンレッド" (Some "カイテンジャー")
+              schoolEntry "NPC" "カイテンブラック" (Some "カイテンジャー") ]
+
+    Assert.Equal<string list>([ "カイテンジャー" ], coverage.MissingUnplayables)
+
+[<Fact>]
+let ``一覧に無いマニフェストのページは食い違いになる`` () =
+    let coverage =
+        Manifest.coverageOf
+            [ "アズサ"; "アズザ" ]
+            [ "ユメ"; "ユヌ" ]
+            [ "アズサ" ]
+            [ schoolEntry "NPC" "ユメ" None ]
+
+    Assert.Equal<string list>([ "アズザ" ], coverage.UnknownStudents)
+    Assert.Equal<string list>([ "ユヌ" ], coverage.UnknownUnplayables)
+
+[<Fact>]
+let ``学校別キャラクター一覧にだけある生徒は実装前として扱い漏れにしない`` () =
+    let coverage =
+        Manifest.coverageOf
+            [ "エリ" ]
+            []
+            [ "エリ" ]
+            [ schoolEntry "★3" "エリ" None; schoolEntry "★3" "マナミ" None ]
+
+    Assert.Equal<string list>([ "マナミ" ], coverage.Upcoming)
+    Assert.False(Manifest.hasGap coverage)
+
 [<Fact>]
 let ``対象のパスはルートからの相対として解決される`` () =
     let root = Path.Combine("repo", "root")

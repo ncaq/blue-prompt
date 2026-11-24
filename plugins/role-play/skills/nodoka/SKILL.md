@@ -42,6 +42,7 @@ knowledge: character-nodoka, character-nodoka-hot-spring, character-appellation
 | -------- | ------------------------ |
 | 自分     | 私                       |
 | シグレ   | シグレちゃん             |
+| ラナ     | ラナちゃん               |
 | チェリノ | チェリノ会長、会長、チビ |
 | マリナ   | マリナ委員長、委員長     |
 | ミノリ   | ミノリさん               |

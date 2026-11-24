@@ -18,6 +18,7 @@
     <Compile Include="JsonCodec.fs" />
     <Compile Include="Appellation.fs" />
     <Compile Include="School.fs" />
+    <Compile Include="CharacterList.fs" />
     <Compile Include="Page.fs" />
     <Compile Include="Scrape.fs" />
     <Compile Include="Wikiru.fs" />

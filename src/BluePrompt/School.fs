@@ -97,32 +97,42 @@ let private parseCell (cell: IElement) : string * string =
 
     rarity, name
 
-/// セルのリンク先からwikiruのページ名を取り出す。
-/// カードのリンクは「./?<パーセントエンコードされたページ名>」の相対リンクで、
+/// リンクの先のwikiruのページ名を取り出す。
+/// ページへのリンクは「./?<パーセントエンコードされたページ名>」の相対リンクで、
 /// 節へのリンクは末尾へ「#<節のid>」が付く。
 /// 他のページの記法で書かれたリンクはページ名を復元できないのでNoneにする。
 /// 未作成ページへの編集リンクはページ名ではなく編集フォームを指すので読まない。
+/// キャラクター一覧もリンクの書き方が同じなので、CharacterListからも使う。
+let linkedPageName (anchor: IElement) : string option =
+    match anchor.GetAttribute "href" with
+    | _ when isEditLink anchor -> None
+    | null -> None
+    | href when href.StartsWith("./?", StringComparison.Ordinal) ->
+        let query = href.Substring 3
+
+        // ページ名の中の`%23`がデコードで`#`へ戻ってから切られると、
+        // ページ名がそこで欠けるため、節はデコードより先に落とす。
+        let encoded =
+            match query.IndexOf('#') with
+            | -1 -> query
+            | index -> query.Substring(0, index)
+
+        // ページ名が空のリンクは「名前(ページ名: )」という壊れた表記になるので読まない。
+        match Uri.UnescapeDataString encoded with
+        | Str.NullOrEmpty -> None
+        | Str.NonEmpty page -> Some page
+    | _ -> None
+
+/// セルのリンク先からwikiruのページ名を取り出す。
 let private pageName (cell: IElement) : string option =
-    cell.QuerySelectorAll "a"
-    |> Seq.tryPick (fun anchor ->
-        match anchor.GetAttribute "href" with
-        | _ when isEditLink anchor -> None
-        | null -> None
-        | href when href.StartsWith("./?", StringComparison.Ordinal) ->
-            let query = href.Substring 3
+    cell.QuerySelectorAll "a" |> Seq.tryPick linkedPageName
 
-            // ページ名の中の`%23`がデコードで`#`へ戻ってから切られると、
-            // ページ名がそこで欠けるため、節はデコードより先に落とす。
-            let encoded =
-                match query.IndexOf('#') with
-                | -1 -> query
-                | index -> query.Substring(0, index)
+/// プレイアブルではない生徒を表すレアリティ。
+let unplayableRarity = "NPC"
 
-            // ページ名が空のリンクは「名前(ページ名: )」という壊れた表記になるので読まない。
-            match Uri.UnescapeDataString encoded with
-            | Str.NullOrEmpty -> None
-            | Str.NonEmpty page -> Some page
-        | _ -> None)
+/// 個別ページを引く時のページ名。名前と食い違うページ名があればそちらを採る。
+let entryPage (entry: Entry) : string =
+    Option.defaultValue entry.Name entry.Page
 
 /// パース済みDOMから一覧の全レコードを取り出す。
 /// 本文の見出し(h2学校 > h3部活)を状態として辿り、
