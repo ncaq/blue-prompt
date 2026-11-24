@@ -626,24 +626,33 @@
                 # どちらで接続されても中身を取り出せるようにリストへ揃える。
                 pluginPathList =
                   if lib.isList claudeCodePlugins then claudeCodePlugins else lib.attrValues claudeCodePlugins;
-                inherit (homeConfiguration.config.programs.opencode) skills;
+                # スキル一式は1つのディレクトリにまとめて接続されるため、
+                # 個々のスキルの場所はその下の展開名のディレクトリとして組み立てる。
+                opencodeSkillsFile = homeConfiguration.config.xdg.configFile."opencode/skills/blue-prompt" or null;
+                opencodeSkillDirs = map (flatName: "${opencodeSkillsFile.source}/${flatName}") (
+                  lib.attrNames skillPaths
+                );
               in
               # Claude Code本体はunfreeでビルドにライセンス許諾の設定が必要なため、
               # 構成全体(activationPackage)ではなく接続先の実体だけをビルド時に検証する。
               assert lib.assertMsg (
                 pluginPathList != [ ]
               ) "blue-promptのプラグインがprograms.claude-code.pluginsへ接続されていません";
+              assert lib.assertMsg (opencodeSkillsFile != null) "blue-promptのスキルがOpenCodeの設定ディレクトリへ接続されていません";
+              # スキルを1つずつ登録する形へ戻ると評価のコストがスキルの数に比例するため、
+              # home-managerのオプションへは何も足していないことを確かめる。
+              # ref https://github.com/ncaq/blue-prompt/issues/252
               assert lib.assertMsg (
-                skills ? role-play-kotori
-              ) "blue-promptのスキルがprograms.opencode.skillsへ展開されていません";
-              assert lib.assertMsg (
-                skills ? character-kotori
-              ) "prefix無しのスキルが素の名前でprograms.opencode.skillsへ展開されていません";
+                homeConfiguration.config.programs.opencode.skills == { }
+              ) "blue-promptのスキルがprograms.opencode.skillsへ1つずつ登録されています";
               pkgs.runCommand "home-manager-module" { } ''
                 # Claude Code側: 接続されたプラグインがマニフェストを持つ実体である。
                 ${lib.concatMapStrings (pluginPath: ''
                   test -f ${pluginPath}/.claude-plugin/plugin.json
                 '') pluginPathList}
+                # OpenCode側: prefixの有無それぞれの展開名でスキルが置かれている。
+                test -f ${opencodeSkillsFile.source}/role-play-kotori/SKILL.md
+                test -f ${opencodeSkillsFile.source}/character-kotori/SKILL.md
                 # OpenCode側: 全スキルでディレクトリ名とフロントマターのnameが一致している。
                 # OpenCodeはフロントマターのnameでスキルを登録するため、
                 # prefix付きのプラグインでは書き換えが効いたことを、
@@ -651,7 +660,7 @@
                 # スキルが増えても検証が追随する形でまとめて確かめる。
                 ${lib.concatMapStrings (skillPath: ''
                   sed -n '1,/^---$/p' ${skillPath}/SKILL.md | grep -qx "name: $(basename ${skillPath})"
-                '') (lib.attrValues skills)}
+                '') opencodeSkillDirs}
                 # 生成の入力や別の届け先向けの本文が、どちらへも混ざっていない。
                 ${
                   let
@@ -664,7 +673,7 @@
                       fi
                     '';
                   in
-                  lib.concatMapStrings assertClean (pluginPathList ++ lib.attrValues skills)
+                  lib.concatMapStrings assertClean (pluginPathList ++ [ opencodeSkillsFile.source ])
                 }
                 touch $out
               '';
