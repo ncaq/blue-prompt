@@ -145,7 +145,7 @@ let
     })
   ];
 
-  initialKnowledge = knowledgeDirectory "initial-knowledge" {
+  initialCollections = {
     character-appellation = {
       description = "呼称表";
       files = appellationFiles 35;
@@ -176,7 +176,7 @@ let
     })
   ];
 
-  improvedKnowledge = knowledgeDirectory "improved-knowledge" {
+  improvedCollections = {
     character-appellation = {
       description = "呼称表";
       files = appellationFiles 34 // {
@@ -195,24 +195,16 @@ let
   ragTemplate = builtins.readFile ../modules/open-webui-rag-template.txt;
   ragTemplateFile = pkgs.writeText "rag-template" ragTemplate;
 
-  # 同期した後の登録先が持つべき内容。テストのスクリプトへJSONとして渡す。
+  initialKnowledge = knowledgeDirectory "initial-knowledge" initialCollections;
+  improvedKnowledge = knowledgeDirectory "improved-knowledge" improvedCollections;
+
+  # 同期した後の登録先が持つべきファイル。テストのスクリプトへJSONとして渡す。
+  # 生成物へ渡したのと同じ値から導いて、期待値を二重に書かない。
+  filesOf = lib.mapAttrs (_: collection: collection.files);
+
   expected = {
-    initial = {
-      character-appellation = appellationFiles 35;
-      character-yuuka = {
-        "a.md" = "ユウカA";
-        "b.md" = "ユウカB";
-      };
-    };
-    improved = {
-      character-appellation = appellationFiles 34 // {
-        "file00.md" = "書き換えた呼称0";
-      };
-      character-yuuka = {
-        "a.md" = "ユウカA";
-        "b.md" = "ユウカB";
-      };
-    };
+    initial = filesOf initialCollections;
+    improved = filesOf improvedCollections;
   };
 in
 {
