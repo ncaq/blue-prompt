@@ -1,10 +1,13 @@
 module BluePrompt.Test.PageSpec
 
 open System
+open System.IO
 open System.Net
 open System.Net.Sockets
 open System.Text
 open System.Threading.Tasks
+open AngleSharp.Dom
+open AngleSharp.Html.Dom
 open Falco.Markup
 open WireMock.RequestBuilders
 open WireMock.ResponseBuilders
@@ -242,6 +245,65 @@ let ``リダイレクトを追跡して最終ページを取得する`` () : Tas
         let! fetched = BluePrompt.Page.fetchHtml (baseUri server)
 
         Assert.Contains("redirected body", fetched)
+    }
+
+[<Fact>]
+let ``読み込みキャッシュがあれば2回目は取得しに行かず同じDOMになる`` () : Task =
+    task {
+        // 変換の作りを直す間に同じページを何度も取りに行かないためのキャッシュ。
+        // キャッシュから作ったDOMでも、相対URLが取得元を基準に解決されて文字も化けないことを固定する。
+        let directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+
+        let settings: BluePrompt.Page.Settings =
+            { RetryDelays = []
+              CacheDirectory = Some directory }
+
+        use server =
+            serveHtml (renderDocument [ Elem.a [ Attr.href "./?other" ] [ Text.raw "日本語のリンク" ] ])
+
+        let url = baseUri server
+
+        let read (document: IDocument) : string * string =
+            let anchor = document.QuerySelector "a" :?> IHtmlAnchorElement
+            anchor.TextContent, anchor.Href
+
+        try
+            let! first = BluePrompt.Page.fetchWith settings url read
+            let! second = BluePrompt.Page.fetchWith settings url read
+
+            Assert.Equal<string * string>(("日本語のリンク", Uri(url, "./?other").AbsoluteUri), first)
+            Assert.Equal<string * string>(first, second)
+            Assert.Equal(1, Seq.length server.LogEntries)
+        finally
+            if Directory.Exists directory then
+                Directory.Delete(directory, true)
+    }
+
+[<Fact>]
+let ``読み込みキャッシュを使っても取得の失敗は保存されない`` () : Task =
+    task {
+        // 失敗した応答を保存すると、以後はキャッシュから空のページを読み続けてしまう。
+        let directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+
+        let settings: BluePrompt.Page.Settings =
+            { RetryDelays = []
+              CacheDirectory = Some directory }
+
+        use server = serve (statusResponse 404 "not found")
+
+        try
+            do!
+                Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                    BluePrompt.Page.fetchWith settings (baseUri server) ignore :> Task)
+                :> Task
+
+            Assert.True(
+                not (Directory.Exists directory)
+                || Seq.isEmpty (Directory.EnumerateFiles directory)
+            )
+        finally
+            if Directory.Exists directory then
+                Directory.Delete(directory, true)
     }
 
 /// 取得と抽出の結合の検証用HTML。
