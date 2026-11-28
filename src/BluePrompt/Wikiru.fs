@@ -372,6 +372,7 @@ let private writeFile (outputPath: string) (content: string) : Task<unit> =
 /// wikiruのページを取得し、ノイズを除いたDOMをactionへ渡してその結果を返す。
 let private fetchPage (noise: string list) (pageName: string) (action: IDocument -> 'T) : Task<'T> =
     Page.fetch (pageUri pageName) (fun document ->
+        WikiruDom.resolveEditLinks document
         WikiruDom.removeNoise noise document
         action document)
 

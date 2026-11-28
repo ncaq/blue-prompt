@@ -129,6 +129,33 @@ let ``タブはラベルを小見出しにして中身を順に並べる`` () =
     )
 
 [<Fact>]
+let ``未作成ページの名前は残り編集のボタンは取り除かれる`` () =
+    // wikiruは個別ページがまだ無い名前を、編集フォームへのリンクとして表示する。
+    let edit (content: XmlNode list) : XmlNode =
+        Elem.a [ Attr.href "./?cmd=edit&amp;page=X" ] content
+
+    let pencil = Elem.img [ Attr.src "https://example.com/edit.png" ]
+
+    let document =
+        parseBody
+            [ Text.h2 "小ネタ"
+              Elem.p
+                  []
+                  [ Text.raw "原画は"
+                    edit [ Text.raw "Hwansang" ]
+                    Text.raw "と"
+                    Text.raw "キョウコ"
+                    edit [ Text.raw "?" ]
+                    edit [ Text.raw "EDIT"; pencil ] ] ]
+
+    BluePrompt.WikiruDom.resolveEditLinks document
+
+    Assert.Equal(
+        "## 小ネタ\n\n原画はHwansangとキョウコ\n",
+        document |> BluePrompt.Wikiru.readArticle |> BluePrompt.Wikiru.render
+    )
+
+[<Fact>]
 let ``脚注は参照と定義として読まれる`` () =
     let note (label: string) : XmlNode =
         Elem.a [ Attr.class' "note_super"; Attr.href "#notefoot" ] [ Text.raw $"*%s{label}" ]

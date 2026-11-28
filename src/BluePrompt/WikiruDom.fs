@@ -55,9 +55,6 @@ let articleNoise: string list =
       // ジャンプできないMarkdownではどちらも要らない。
       // 折りたたみに本文が入っている生徒個別ページはcharacterNoiseで扱う。
       collapsibleSelector
-      // 表内などに埋め込まれた他ページの編集リンク。
-      // リンクを外した後に「EDIT」という文字列だけが残ってノイズになる。
-      "a[href*='cmd=edit']"
       // includeプラグインが差し込むinclude元ページへのリンク。
       // リンクを外した後にページ名だけの行が残り、直前の表の一部と誤読される。
       ".permalink" ]
@@ -107,6 +104,25 @@ let isEditLink (element: IElement) : bool =
     match element.GetAttribute "href" with
     | null -> false
     | href -> href.Contains "cmd=edit"
+
+/// 編集フォームへのリンクを片付ける。どの経路でも、DOMを読む前に掛ける。
+/// 編集フォームへのリンクには2つの種類があり、リンクの中身で見分ける。
+///
+/// - 編集のボタン。鉛筆の画像を持つリンクと、未作成ページの名前の後ろへ添えられる「?」だけのリンク。
+///   本文ではないのでリンクごと取り除く
+/// - 未作成ページの名前そのもの。wikiruは個別ページがまだ無い名前を、編集フォームへのリンクとして表示する。
+///   リンクの先は要らないが名前は本文なので、リンクだけを外して文字を残す
+///
+/// 編集フォームへのリンクを一律に取り除くと、ページが作られるまでの間、その名前が本文から消える。
+let resolveEditLinks (document: IDocument) : unit =
+    for anchor in Seq.toArray (document.QuerySelectorAll "a[href*='cmd=edit']") do
+        let isButton =
+            not (isNull (anchor.QuerySelector "img")) || anchor.TextContent.Trim() = "?"
+
+        if isButton then
+            anchor.Remove()
+        else
+            anchor.Replace(Seq.toArray anchor.ChildNodes)
 
 /// リンクの先のwikiruのページ名を取り出す。
 /// ページへのリンクは「./?<パーセントエンコードされたページ名>」の相対リンクで、
