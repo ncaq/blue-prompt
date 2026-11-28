@@ -82,9 +82,20 @@ let ``一段目の見出しを持つ参照ファイルはReferenceHeadingError�
 
 [<Fact>]
 let ``二段目以降の見出しは参照ファイルとして受け付ける`` () =
-    // `## `は2文字目が`#`なので一段目の見出しには一致しない。
     // 現に全ての参照ファイルが基本情報やボイスの二段目の見出しを持つ。
     Assert.Equal("ユウカ", (parseReference "normal.md" (reference "ユウカ")).PageName)
+
+[<Fact>]
+let ``コードフェンスの中の一段目の見出しに見える行は受け付ける`` () =
+    // フェンスの中の`# `の行はコードで、節の切れ目を消す見出しではない。
+    let markdown = reference "ユウカ" + "\n```console\n# コメント\n```\n"
+    Assert.Equal("ユウカ", (parseReference "normal.md" markdown).PageName)
+
+[<Fact>]
+let ``出典のリンクの表示名が空でもページ名を読める`` () =
+    // ページ名はリンクのURLから読むので、表示名には頼らない。
+    let url = "https://bluearchive.wikiru.jp/?" + Uri.EscapeDataString "ユウカ"
+    Assert.Equal("ユウカ", (parseReference "normal.md" $"出典: [](%s{url})\n").PageName)
 
 [<Fact>]
 let ``toCostumeMarkdownは出典のページ名の見出しへ中身を収める`` () =

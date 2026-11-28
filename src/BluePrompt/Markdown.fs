@@ -6,13 +6,26 @@
 /// 検索でヒットする単位と読ませたい単位を揃える。
 module BluePrompt.Markdown
 
+open System
 open System.Text
-open System.Text.RegularExpressions
+open XParsec
+open XParsec.Parsers
+open XParsec.CharParsers
 
 /// GFMのパイプテーブルのセルとして安全なように縦棒をエスケープする。
 /// wikiの本文由来の文字列をテーブルへ組み立てる箇所が複数あり、
 /// エスケープの規則がその一箇所だけで直されて他が崩れるのを防ぐためここへ置く。
 let escapeTableCell (text: string) : string = text.Replace("|", "\\|")
+
+/// インラインリンク(「[表示名](参照先)」)。参照先を返す。
+/// 表示名は空でもよく、参照先は1文字以上を求める。
+/// リンクを読む箇所が複数あるので、形の定義をここ1つにする。
+let inlineLink: Parse.TextParser<string> =
+    pchar '['
+    >>. skipManySatisfies (fun c -> c <> ']')
+    >>. pstring "]("
+    >>. many1Chars (satisfy (fun c -> c <> ')'))
+    .>> pchar ')'
 
 /// 見出しで区切った節の木。
 /// ルートは文書全体を表し、見出しを持たない。
@@ -40,93 +53,106 @@ type Fragment =
         Text: string
     }
 
-/// ATX見出しの行。setext見出し(下線形式)はこのリポジトリの生成物に現れないため扱わない。
-let private headingPattern = Regex @"^(#{1,6})\s+(.*\S)\s*$"
+/// Markdownの見出しの最も深いレベル。
+let private maxHeadingDepth: int = 6
 
-/// コードブロックのフェンス行。
+/// ATX見出しの先頭の`#`の並び。数を見出しの深さとして返す。
+/// maxHeadingDepthより長い並びは見出しではない。
+/// setext見出し(下線形式)はこのリポジトリの生成物に現れないため扱わない。
+let private headingMarker: Parse.TextParser<int> =
+    many1Chars (pchar '#')
+    >>= fun hashes ->
+        if hashes.Length <= maxHeadingDepth then
+            preturn hashes.Length
+        else
+            pzero
+
+/// 行をATX見出しとして読み、深さと、`#`と前後の空白を落とした文字列を返す。
+/// 文字列が空白しか残らない行は見出しとして扱わない。
+let private tryHeading (line: string) : (int * string) option =
+    Parse.tryPrefix (headingMarker .>> Parse.inlineSpaces1 .>>. Parse.restOfLine) line
+    |> Option.bind (fun struct (level, rest) ->
+        match rest.Trim() with
+        | Str.NullOrEmpty -> None
+        | Str.NonEmpty text -> Some(level, text))
+
+/// コードブロックのフェンス行の先頭。フェンスの文字の並びを返す。
+/// 字下げは3つまでで、それより深い行はフェンスではない。
 /// 閉じフェンスは開いたものと同じ文字で同じ以上の長さである必要があるため、
-/// 文字と長さを取り出す。
-let private fencePattern = Regex @"^\s{0,3}(`{3,}|~{3,})"
+/// 文字と長さが分かるように並びをそのまま返す。
+let private fence: Parse.TextParser<string> =
+    /// フェンスになる長さの、同じ文字の並び。
+    let run (mark: char) : Parse.TextParser<string> =
+        many1Chars (pchar mark)
+        >>= fun marks -> if 3 <= marks.Length then preturn marks else pzero
 
-/// 行を見出しと本文へ分類した中間表現。
-type private Line =
-    /// 見出しの深さと、`#`と前後の空白を落とした文字列。
-    /// フィールドへ名前を付けるとパターンマッチで参照されず未使用の宣言になるため、
-    /// 意味はこのコメントで補う。
-    | HeadingLine of int * string
-    /// 見出しではない行をそのまま持つ。
-    | TextLine of string
+    manyChars (satisfy Char.IsWhiteSpace)
+    >>= fun indent -> if indent.Length <= 3 then run '`' <|> run '~' else pzero
 
-/// 本文をコードフェンスの内外を見分けながら行の並びへ分解する。
-/// フェンスの中の`#`で始まる行は見出しではなくコードなので、本文として扱う。
-/// 開いているフェンスは行から行へ持ち回る状態なので、mapFoldの状態として畳み込む。
-let private toLines (markdown: string) : Line list =
-    markdown.Replace("\r\n", "\n").Split '\n'
-    |> Array.toList
-    |> List.mapFold
-        (fun (openFence: string option) line ->
-            match openFence, fencePattern.Match line with
-            | None, fence when fence.Success -> TextLine line, Some fence.Groups[1].Value
-            | Some opened, fence when
-                fence.Success
-                && fence.Groups[1].Value[0] = opened[0]
-                && opened.Length <= fence.Groups[1].Value.Length
-                ->
-                TextLine line, None
-            | None, _ ->
-                let parsed =
-                    match headingPattern.Match line with
-                    | heading when heading.Success ->
-                        HeadingLine(heading.Groups[1].Value.Length, heading.Groups[2].Value)
-                    | _ -> TextLine line
+/// コードフェンスで囲まれたブロックの行。
+/// 開いたフェンスの行から、同じ文字で同じ以上の長さの閉じフェンスの行までを読む。
+/// 閉じられていなければ文書の末尾までがブロックになる。
+/// 中の`#`で始まる行は見出しではなくコードなので、見出しより先にこちらで読む。
+let private fencedBlock: Parse.TextParser<string list> =
+    let fenceOf (line: string) : string option = Parse.tryPrefix fence line
 
-                parsed, None
-            | Some _, _ -> TextLine line, openFence)
-        None
-    |> fst
+    Parse.lineChoose (fun line -> fenceOf line |> Option.map (fun opening -> line, opening))
+    >>= fun (openingLine, opening) ->
+        let closes (line: string) : bool =
+            match fenceOf line with
+            | Some closing -> closing[0] = opening[0] && opening.Length <= closing.Length
+            | None -> false
 
-/// 先頭に続く本文行を取り出す。
-let private takeText (lines: Line list) : string list * Line list =
-    let body =
-        lines
-        |> List.takeWhile (fun line ->
-            match line with
-            | TextLine _ -> true
-            | HeadingLine _ -> false)
-        |> List.map (fun line ->
-            match line with
-            | TextLine text -> text
-            | HeadingLine _ -> "")
+        many (Parse.lineChoose (fun line -> if closes line then None else Some line))
+        .>>. opt Parse.anyLine
+        |>> fun struct (inner, closingLine) ->
+            openingLine :: List.ofSeq inner @ ValueOption.toList closingLine
 
-    body, List.skip body.Length lines
+/// 見出しではない行の並び。
+let private body: Parse.TextParser<string list> =
+    let textLine: Parse.TextParser<string list> =
+        Parse.lineChoose (fun line ->
+            if Option.isSome (tryHeading line) then
+                None
+            else
+                Some [ line ])
 
-/// 親より深い見出しを子の節として、同じ深さの見出しを兄弟として集める。
-let rec private takeSections (parentLevel: int) (lines: Line list) : Section list * Line list =
-    match lines with
-    | HeadingLine(level, text) :: rest when parentLevel < level ->
-        let body, afterBody = takeText rest
-        let children, afterChildren = takeSections level afterBody
+    many (fencedBlock <|> textLine) |>> (Seq.concat >> List.ofSeq)
 
-        let section =
+/// 見出しに続く本文と、parentLevelより深い見出しの節の並び。
+/// 同じ深さ以下の見出しは読まずに残すので、兄弟や親の兄弟として読まれる。
+let rec private contents
+    (parentLevel: int)
+    : Parse.TextParser<struct (string list * Section list)> =
+    fun reader -> (body .>>. (many (section parentLevel) |>> List.ofSeq)) reader
+
+/// parentLevelより深い見出しの節1つ。
+and private section (parentLevel: int) : Parse.TextParser<Section> =
+    Parse.lineChoose (fun line ->
+        tryHeading line |> Option.filter (fun (level, _) -> parentLevel < level))
+    >>= fun (level, text) ->
+        contents level
+        |>> fun struct (body, children) ->
             { Level = level
               Heading = Some text
               Body = body
               Children = children }
 
-        let siblings, remaining = takeSections parentLevel afterChildren
-        section :: siblings, remaining
-    | _ -> [], lines
-
 /// Markdownを見出しの木へ読み解く。
 let parseSections (markdown: string) : Section =
-    let body, afterBody = takeText (toLines markdown)
-    // 見出しはどの深さでもルートの子孫になるため、残りは常に空になる。
-    let children, _ = takeSections 0 afterBody
+    match contents 0 (Reader.ofString (markdown.Replace("\r\n", "\n")) ()) with
+    | Ok struct (body, children) ->
+        { Level = 0
+          Heading = None
+          Body = body
+          Children = children }
+    // 本文も節も0個から読め、見出しはどの深さでもルートの子孫になるため、失敗しない。
+    | Error _ -> invalidOp "Markdownを節へ読み解けませんでした"
 
-    { Level = 0
-      Heading = None
-      Body = body
-      Children = children }
+/// 子孫の節のうちkeepが偽を返したものを、その子孫ごと落とす。
+let rec filterDescendants (keep: Section -> bool) (section: Section) : Section =
+    { section with
+        Children = section.Children |> List.filter keep |> List.map (filterDescendants keep) }
 
 /// 節の見出し行を組み立てる。ルートは見出しを持たないため空になる。
 let private headingLines (section: Section) : string list =
@@ -139,6 +165,12 @@ let rec private renderSection (section: Section) : string list =
     headingLines section
     @ section.Body
     @ List.collect renderSection section.Children
+
+/// 節の木をMarkdownへ戻す。見出し行は`#`と空白1つと文字列の形へ揃う。
+/// 読む時に落とした末尾の改行と、`\n`へ揃えた改行コードは元へ戻らないので、
+/// 文書の終わり方は呼び出し側で整える。
+let toMarkdown (section: Section) : string =
+    renderSection section |> String.concat "\n"
 
 /// 祖先の見出し行を前置して断片の本文を組み立てる。
 /// 祖先の本文は他の断片にも現れて重複するため、見出しだけを持ち回る。
@@ -176,7 +208,7 @@ let rec private collect
         // 子へ降りる時、この節自身の本文はどの子にも属さないため独立した断片にする。
         // 空白だけの本文は断片にしても検索の役に立たないので落とす。
         let own =
-            if List.forall System.String.IsNullOrWhiteSpace section.Body then
+            if List.forall String.IsNullOrWhiteSpace section.Body then
                 []
             else
                 [ { Headings = headingsOf ancestors section

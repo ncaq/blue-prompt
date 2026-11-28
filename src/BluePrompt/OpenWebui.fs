@@ -14,8 +14,10 @@ open System.Text.Json
 open System.Text.Json.Nodes
 open System.Text.Json.Serialization
 open System.Text.Encodings.Web
-open System.Text.RegularExpressions
 open System.Threading.Tasks
+open XParsec
+open XParsec.Parsers
+open XParsec.CharParsers
 
 /// SKILL.mdがOpen WebUIへ変換できる形式ではなかった時の対象パスと理由。
 exception SkillFormatError of path: string * message: string
@@ -100,8 +102,26 @@ type Frontmatter =
 /// フロントマターの区切り行。
 let private delimiter = "---"
 
-/// フロントマターのkey: value行。
-let private fieldPattern = Regex @"^([A-Za-z_-]+):\s*(.*)$"
+/// フロントマターの区切りだけの行。
+let private delimiterLine: Parse.TextParser<unit> =
+    Parse.lineChoose (fun line -> if line = delimiter then Some() else None)
+
+/// 区切り行に挟まれたフロントマターの行の並びと、その後ろの本文。
+/// 閉じの区切り行が無ければ読めない。
+/// フロントマターを落とすだけのOpenWebuiKnowledgeも同じ形を読むため公開している。
+let frontmatterBlock: Parse.TextParser<struct (string list * string)> =
+    let fieldLines: Parse.TextParser<string list> =
+        many (Parse.lineChoose (fun line -> if line = delimiter then None else Some line))
+        |>> List.ofSeq
+
+    delimiterLine >>. fieldLines .>> delimiterLine .>>. Parse.restOfInput
+
+/// フロントマターのkey: value行。キーと、先頭の空白を落とした値を返す。
+let private field: Parse.TextParser<struct (string * string)> =
+    many1Chars (satisfy (fun c -> isAsciiLetter c || c = '_' || c = '-'))
+    .>> pchar ':'
+    .>> Parse.whitespaces
+    .>>. Parse.restOfLine
 
 /// SKILL.mdの本文からフロントマターの要素と、その後ろの本文を取り出す。
 /// 必須の要素が欠けているなど形式が想定と異なる場合は、
@@ -113,50 +133,47 @@ let private fieldPattern = Regex @"^([A-Za-z_-]+):\s*(.*)$"
 let parseFrontmatter (path: string) (content: string) : Frontmatter =
     let fail message = raise (SkillFormatError(path, message))
 
-    match content.Replace("\r\n", "\n").Split '\n' |> Array.toList with
-    | first :: rest when first = delimiter ->
-        match List.tryFindIndex (fun line -> line = delimiter) rest with
-        | None -> fail "フロントマターの閉じ---がありません"
-        | Some closeIndex ->
-            let fields =
-                rest
-                |> List.take closeIndex
-                |> List.choose (fun line ->
-                    match fieldPattern.Match line with
-                    | m when m.Success -> Some(m.Groups[1].Value, m.Groups[2].Value)
-                    | _ -> None)
-                |> Map.ofList
+    let normalized = content.Replace("\r\n", "\n")
 
-            let field key =
-                match Map.tryFind key fields with
-                | Some value when value <> "" -> value
-                | _ -> fail $"フロントマターに%s{key}がありません"
+    match Parse.tryPrefix frontmatterBlock normalized with
+    | None when Parse.startsWith delimiterLine normalized -> fail "フロントマターの閉じ---がありません"
+    | None -> fail "フロントマターの開始---がありません"
+    | Some struct (lines, body) ->
+        let fields =
+            lines
+            |> List.choose (Parse.tryPrefix field)
+            |> List.map (fun struct (key, value) -> key, value)
+            |> Map.ofList
 
-            // knowledge:は紐付けの無いスキルでは書かないため、
-            // 欠けていることを失敗とせず空の一覧として扱う。
-            let knowledge =
-                match Map.tryFind "knowledge" fields with
-                | None -> []
-                | Some value ->
-                    value.Split ','
-                    |> Array.toList
-                    |> List.choose (fun name ->
-                        match name.Trim() with
-                        | Str.NullOrEmpty -> None
-                        | Str.NonEmpty trimmed -> Some trimmed)
+        let required key =
+            match Map.tryFind key fields with
+            | Some value when value <> "" -> value
+            | _ -> fail $"フロントマターに%s{key}がありません"
 
-            { Name = field "name"
-              Description = field "description"
-              Knowledge = knowledge
-              Body = rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim()
-              Raw = String.concat "\n" (first :: List.take (closeIndex + 1) rest) }
-    | _ -> fail "フロントマターの開始---がありません"
+        // knowledge:は紐付けの無いスキルでは書かないため、
+        // 欠けていることを失敗とせず空の一覧として扱う。
+        let knowledge =
+            match Map.tryFind "knowledge" fields with
+            | None -> []
+            | Some value ->
+                value.Split ','
+                |> Array.toList
+                |> List.choose (fun name ->
+                    match name.Trim() with
+                    | Str.NullOrEmpty -> None
+                    | Str.NonEmpty trimmed -> Some trimmed)
 
-/// Markdownのインラインリンクの参照先。
-let private linkPattern = Regex @"\[[^\]]*\]\(([^)]+)\)"
+        { Name = required "name"
+          Description = required "description"
+          Knowledge = knowledge
+          Body = body.Trim()
+          Raw = String.concat "\n" (delimiter :: lines @ [ delimiter ]) }
 
 /// URLのスキーム。`https:`のような形で参照ファイルのパスと区別する。
-let private schemePattern = Regex @"^[A-Za-z][A-Za-z0-9+.-]*:"
+let private scheme: Parse.TextParser<char> =
+    asciiLetter
+    >>. skipManySatisfies (fun c -> isAsciiLetter c || isDigit c || c = '+' || c = '.' || c = '-')
+    >>. pchar ':'
 
 /// 本文中で明示的にリンクされている参照ファイルの相対パスを、
 /// 登場順の重複なしで列挙する。
@@ -164,9 +181,10 @@ let private schemePattern = Regex @"^[A-Za-z][A-Za-z0-9+.-]*:"
 /// それ以外のリンクは黙って無視せず全て参照ファイルとして扱う。
 /// 表記ゆれの`./`は落として`./`有りと無しが同じファイルへまとまるようにする。
 let localLinkTargets (body: string) : string list =
-    linkPattern.Matches body
-    |> Seq.map (fun m -> m.Groups[1].Value)
-    |> Seq.filter (fun target -> not (target.StartsWith '#') && not (schemePattern.IsMatch target))
+    Parse.findAll Markdown.inlineLink body
+    |> Seq.map _.Value
+    |> Seq.filter (fun target ->
+        not (target.StartsWith '#') && not (Parse.startsWith scheme target))
     |> Seq.map (fun target ->
         if target.StartsWith("./", StringComparison.Ordinal) then
             target.Substring 2

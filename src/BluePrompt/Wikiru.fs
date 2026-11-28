@@ -3,8 +3,10 @@ module BluePrompt.Wikiru
 
 open System
 open System.IO
-open System.Text.RegularExpressions
 open System.Threading.Tasks
+open XParsec
+open XParsec.Parsers
+open XParsec.CharParsers
 
 /// wikiruのページ名から記事URLを組み立てる。
 let pageUri (pageName: string) : Uri =
@@ -146,159 +148,145 @@ let unplayableSectionTitles: string list =
     studentSectionTitles
     @ [ "ボイス集"; "カイテンレッド"; "カイテンブラック"; "カイテングリーン"; "カイテンイエロー"; "カイテンピンク" ]
 
-/// 最初の見出しより前を切り落とす。
-/// wikiruの記事は本文が最初の見出しから始まり、
-/// それより前は関連ページへのナビゲーションや注意書きで、ナレッジには要らない。
-/// 見出しが無いMarkdownはそのまま返す。
-let private trimPreamble (markdown: string) : string =
-    match Regex.Match(markdown, @"^#{1,6} ", RegexOptions.Multiline) with
-    | m when m.Success -> markdown[m.Index ..]
-    | _ -> markdown
+/// wikiruの脚注の参照。リンクを外した後に「\*1」の形で残る。番号を返す。
+let private wikiFootnoteMark: Parse.TextParser<string> =
+    pstring "\\*" >>. Parse.digits
 
-/// GFMの脚注定義行(「[^1]: 本文」)への一致。
-let private footnoteDefinitionPattern = Regex @"^\[\^(\d+)\]: "
+/// GFMの脚注の参照(「[^1]」)。番号を返す。
+let private footnoteReference: Parse.TextParser<string> =
+    pstring "[^" >>. Parse.digits .>> pchar ']'
+
+/// GFMの脚注定義行(「[^1]: 本文」)の先頭。番号を返す。
+let private footnoteDefinition: Parse.TextParser<string> =
+    footnoteReference .>> pstring ": "
 
 /// wikiruの脚注をGFMの脚注文法へ変換する。
 /// 本文中の参照はリンクを外した後に「\*1」の形で残り、
 /// 末尾の#note由来の定義は「\*1 本文」の行になっているので、
 /// 定義行を「[^1]: 本文」へ、残った参照を「[^1]」へ書き換える。
-/// Multiline下の\sは改行にもマッチして後続の段落を巻き込むため、
-/// 空白は行内のものだけに限定して定義のマッチを1行へ閉じ込める。
+/// 番号と本文の間の空白は行内のものだけを読み、
+/// 定義を1行へ閉じ込めて後続の段落を巻き込まないようにする。
 let private convertFootnotes (markdown: string) : string =
-    let withDefinitions =
-        Regex.Replace(
-            markdown,
-            @"^\\\*(\d+)[^\S\r\n]+(.*?)[^\S\r\n]*$",
-            "[^$1]: $2",
-            RegexOptions.Multiline
-        )
+    let definition: Parse.TextParser<string> =
+        Parse.lineStart >>. wikiFootnoteMark .>> Parse.inlineSpaces1
+        .>>. Parse.restOfLine
+        |>> fun struct (number, text) -> $"[^%s{number}]: %s{Parse.trimInlineEnd text}"
 
-    Regex.Replace(withDefinitions, @"\\\*(\d+)", "[^$1]")
+    let reference: Parse.TextParser<string> =
+        wikiFootnoteMark |>> fun number -> $"[^%s{number}]"
+
+    markdown |> Parse.replace definition |> Parse.replace reference
 
 /// 連続する空行を1つへ潰し、前後の空白を落として末尾を改行1つで終える。
 /// 行の削除を伴う整形の共通の仕上げ。
 let private normalizeBlankLines (markdown: string) : string =
-    Regex.Replace(markdown, @"\n{3,}", "\n\n").Trim() + "\n"
+    /// 改行の並び。3つ以上続いていれば空行1つ分の2つへ縮める。
+    let newlines: Parse.TextParser<string> =
+        many1Chars (pchar '\n') |>> fun run -> if 3 <= run.Length then "\n\n" else run
 
-/// Markdownの見出しの最も深いレベル。
-let private maxHeadingDepth = 6
+    (Parse.replace newlines markdown).Trim() + "\n"
 
-/// 見出し行の先頭。#の並びを見出しの深さとして捕捉する。
-/// 上限をmaxHeadingDepthから組み立てて出どころを1つにする。
-/// removeEmptyHeadingsは捕捉した深さを配列の添字にそのまま使うため、
-/// 上限が定数とずれると実行時に範囲外で落ちる。
-let private headingPrefixPattern = @"^(#{1," + string<int> maxHeadingDepth + @"}) "
+/// 脚注の定義行を本文から除けて、定義行の並びと残りの本文に分ける。
+/// 定義はページの末尾に置かれて最後の節へ紛れ込むため、
+/// 節を落としたり中身の有無を見たりする前に除けておく。
+/// コードフェンスの中かどうかは見ないので、フェンスの中の定義に見える行も除ける。
+/// wikiruから作るMarkdownにフェンスは現れず、読み飛ばす実装を足すほどの価値が無い。
+let private splitFootnoteDefinitions (markdown: string) : string list * string =
+    let definitions, body =
+        markdown.Split '\n'
+        |> Array.toList
+        |> List.partition (Parse.startsWith footnoteDefinition)
 
-/// 見出し行への一致。#の数を見出しの深さとして捕捉する。
-let private headingDepthPattern = Regex headingPrefixPattern
+    definitions, String.concat "\n" body
 
-/// コメント欄の見出し行への一致。#の数を見出しの深さとして捕捉する。
-let private commentHeadingPattern =
-    Regex(headingPrefixPattern + @"コメント(フォーム)?[^\S\r\n]*$")
+/// 除けておいた脚注の定義行を文書の末尾へ戻して、空行を整える。
+let private appendFootnoteDefinitions (definitions: string list) (body: string) : string =
+    normalizeBlankLines (body + "\n\n" + String.concat "\n" definitions)
 
-/// コメント欄の節を丸ごと落とす。
+/// 本文を節の木として書き換える。
+let private editSections (edit: Markdown.Section -> Markdown.Section) (body: string) : string =
+    body |> Markdown.parseSections |> edit |> Markdown.toMarkdown
+
+/// 最初の見出しより前を切り落とす。
+/// wikiruの記事は本文が最初の見出しから始まり、
+/// それより前は関連ページへのナビゲーションや注意書きで、ナレッジには要らない。
+/// 見出しが無い文書はそのまま返す。
+let private dropPreamble (root: Markdown.Section) : Markdown.Section =
+    if List.isEmpty root.Children then
+        root
+    else
+        { root with Body = [] }
+
+/// コメント欄の節を小見出しごと落とす。
 /// コメントそのものは後から読み込まれるので取得したHTMLには残らないが、
 /// 投稿のルールを畳んで置いているページがあり、
 /// 見出しだけを消すとルールの本文が直前の節の続きとして残ってしまう。
-/// 節の終わりは同じ深さ以下の見出しで、そこから先はまた残す。
-/// 節の中に同じ見出しが入れ子で現れた時は浅い方の深さを保つ。
-/// 内側の深さで数えると外側の節が終わる前に除去が止まり、続きが残ってしまう。
-/// 脚注の定義はページの末尾に置かれてこの節へ紛れ込むため、
-/// 本文への参照ごと落ちてしまわないように残す。
-let private removeCommentSection (markdown: string) : string =
-    let step (kept: string list, dropping: int option) (line: string) =
-        match commentHeadingPattern.Match line with
-        | m when m.Success ->
-            let depth = m.Groups[1].Value.Length
+let private dropCommentSections (root: Markdown.Section) : Markdown.Section =
+    root
+    |> Markdown.filterDescendants (fun section ->
+        section.Heading <> Some "コメント" && section.Heading <> Some "コメントフォーム")
 
-            kept,
-            Some(
-                match dropping with
-                | Some outer -> min outer depth
-                | None -> depth
-            )
-        | _ ->
-            match dropping with
-            | None -> line :: kept, None
-            | Some depth ->
-                match headingDepthPattern.Match line with
-                | m when m.Success && m.Groups[1].Value.Length <= depth -> line :: kept, None
-                | _ when footnoteDefinitionPattern.IsMatch line -> line :: kept, dropping
-                | _ -> kept, dropping
-
-    markdown.Split '\n'
-    |> Array.fold step ([], None)
-    |> fst
-    |> List.rev
-    |> String.concat "\n"
-
-/// どの深さの見出しから見ても中身があることを表す状態。
-/// 本文の行はどの深さの見出しにとっても中身になるので行ごとに同じ値が要るが、
-/// 中身は常に同じで書き換えもしないため1つを使い回す。
-let private allDepthsHaveContent = Array.create (maxHeadingDepth + 1) true
-
-/// 中身を持たない見出しを消す。
+/// 中身を持たない節を落とす。
 /// 節の中身が抽出や後始末で全て落ちると、見出しだけが残る。
-/// 見出しから次の見出しまでに本文が1行も無ければ、その見出しはもう何も指していない。
-/// 小見出しが全て落ちて空になった上位の見出しも同じ判断で落ちるように、
-/// 文書の末尾から見ていき、見出しの深さごとに中身の有無を持つ。
-/// 添字を見出しの深さへそのまま合わせるため、配列の0番は使わない。
-let private removeEmptyHeadings (markdown: string) : string =
-    let step (line: string) (kept: string list, hasContent: bool array) =
-        match headingDepthPattern.Match line with
-        | m when m.Success ->
-            let depth = m.Groups[1].Value.Length
-            let keep = hasContent[depth]
+/// 本文が空白だけで小見出しも残っていない節は、もう何も指していない。
+/// 小見出しが全て落ちて空になった上位の節も落ちるように、深い方から先に見る。
+let rec private dropEmptySections (section: Markdown.Section) : Markdown.Section =
+    let hasContent (child: Markdown.Section) : bool =
+        not (List.forall String.IsNullOrWhiteSpace child.Body)
+        || not (List.isEmpty child.Children)
 
-            // この見出しで自身と同じ深さ以下の区間が終わるため、そこまでの中身は消化済みになる。
-            // 残す場合はこの見出し自体が、より浅い見出しから見た中身になる。
-            let next =
-                Array.init hasContent.Length (fun index ->
-                    if index >= depth then false
-                    elif keep then true
-                    else hasContent[index])
+    { section with
+        Children = section.Children |> List.map dropEmptySections |> List.filter hasContent }
 
-            (if keep then line :: kept else kept), next
-        | _ ->
-            let next =
-                if String.IsNullOrWhiteSpace line then
-                    hasContent
-                else
-                    allDepthsHaveContent
+/// 節の単位での後始末をして、空行を整える。
+/// 脚注の定義は節の採否に関わらず全て残して、文書の末尾へ集める。
+let private pruneSections (markdown: string) : string =
+    let definitions, body = splitFootnoteDefinitions markdown
 
-            line :: kept, next
-
-    let initial = ([], Array.create (maxHeadingDepth + 1) false)
-
-    Array.foldBack step (markdown.Split '\n') initial |> fst |> String.concat "\n"
+    body
+    |> editSections (dropPreamble >> dropCommentSections >> dropEmptySections)
+    |> appendFootnoteDefinitions definitions
 
 /// 外部リンクの跡として残った🌐アイコンを消す。
 /// wikiのJavaScriptが外部リンクの中へ付け足すアイコンは、
 /// リンク外しの後にただの文字として残る。
 let private removeExternalLinkIcon (markdown: string) : string =
-    Regex.Replace(markdown, @"[^\S\r\n]*🌐", "")
+    Parse.remove (Parse.inlineSpaces >>. pstring "🌐") markdown
 
 /// 読点とカンマの前に残った空白を詰める。
 /// セル内改行の結合で挟んだ読点の前に、元の空白テキストノード由来の空白が残ることがある。
 /// 表を箇条書きにした項目の区切りのカンマの前にも、強調の中の末尾の空白が残ることがある。
 /// 日本語では読点の前に空白を置かない。
 let private trimSpaceBeforeComma (markdown: string) : string =
-    Regex.Replace(markdown, @"[^\S\r\n]+(?=[、,])", "")
+    Parse.remove (Parse.inlineSpaces1 .>> lookAhead (anyOf "、,")) markdown
 
 /// 区切り文字だけになった行を消す。
 /// リンクを「/」で並べたナビゲーションは、並べた要素が落ちると区切り文字だけの行になる。
 /// セル内改行の結合で挟んだ読点も、続く要素が空行や空列の除去で消えると孤立する。
 /// 空白は行内のものだけに限定して、行を跨いだ巻き込みを防ぐ。
 let private removeSeparatorRemnant (markdown: string) : string =
-    Regex.Replace(markdown, @"^[^\S\r\n]*([/、][^\S\r\n]*)+$", "", RegexOptions.Multiline)
+    Parse.remove
+        (Parse.lineStart
+         >>. Parse.inlineSpaces
+         >>. skipMany1 (anyOf "/、" >>. Parse.inlineSpaces)
+         .>> Parse.lineEnd)
+        markdown
 
 /// 編集者向けの欄の案内を消す。
 /// ページのテンプレートが置いていく「〜を書く欄です。」は、
 /// 記事を書く人へ向けた欄の案内で、生徒についての事実ではない。
 /// 行全体が案内であることを求めるため、手前に別の文を持つ行は残す。
-/// 否定の文字クラスは改行にも当たるため、行を跨いだ巻き込みを防ぐ。
+/// 案内より前は句点も改行も含まない並びに限って、手前の文や行を巻き込まないようにする。
 let private removeEditorNotice (markdown: string) : string =
-    Regex.Replace(markdown, @"^[^\S\r\n]*[^。\r\n]*を書く欄です。[^\S\r\n]*$", "", RegexOptions.Multiline)
+    /// 案内の文の中の1文字。句点で文が、改行で行が切れる。
+    let withinSentence: Parse.TextParser<char> =
+        satisfy (fun c -> c <> '。' && c <> '\r' && c <> '\n')
+
+    Parse.remove
+        (Parse.lineStart >>. manyCharsTill withinSentence (pstring "を書く欄です。")
+         .>> Parse.inlineSpaces
+         .>> Parse.lineEnd)
+        markdown
 
 /// 立ち絵に添えられた「クリックで全体画像」の案内を消す。
 /// 元のページでは縮小画像を包む全体画像へのリンクの説明で、
@@ -311,35 +299,36 @@ let private removeFullImageCaption (markdown: string) : string =
 /// 実体参照のままの&nbsp;と、中身の無い引用が対象になる。
 /// 残すと見出しが中身を持つかの判断で本文として数えられてしまう。
 let private removeBlankLikeLine (markdown: string) : string =
-    Regex.Replace(markdown, @"^[^\S\r\n]*(&nbsp;|>)[^\S\r\n]*$", "", RegexOptions.Multiline)
+    Parse.remove
+        (Parse.lineStart >>. Parse.inlineSpaces >>. (pstring "&nbsp;" <|> pstring ">")
+         .>> Parse.inlineSpaces
+         .>> Parse.lineEnd)
+        markdown
 
 /// 変換後Markdownの後始末。
 /// wikiruのページ由来のノイズを落として、ナレッジとして読める形へ整える。
 /// 何をどの順で施すかは以下のパイプラインがそのまま示していて、
 /// 個々の段が何を落とすのかはそれぞれの関数に書いてある。
-/// 順序に意味があるのは以下の3箇所だけで、残りは互いに影響しない。
+/// 順序に意味があるのは以下の2箇所だけで、残りは互いに影響しない。
 ///
-/// - 脚注の変換はコメント欄の節を落とすより先。
-///   節から脚注の定義だけを拾い出す判定を、変換後の1つの表記だけで書けるようにするため
-/// - 中身を失った見出しの除去は、行を落とす段を全て終えた後。
-///   途中で見ると、後の段で空になる見出しを取りこぼすため
-/// - 空行を潰す仕上げは最後。行を落とした跡が空行として残るため
+/// - 脚注の変換は節の単位での後始末より先。
+///   節から脚注の定義を除けておく判定を、変換後の1つの表記だけで書けるようにするため
+/// - 節の単位での後始末は最後。
+///   中身を失った節は、行を落とす段を全て終えてからでないと取りこぼすため。
+///   行を落とした跡の空行もここで潰す
 let cleanupMarkdown (markdown: string) : string =
     markdown
-    |> trimPreamble
     |> convertFootnotes
-    |> removeCommentSection
     |> removeExternalLinkIcon
     |> trimSpaceBeforeComma
     |> removeSeparatorRemnant
     |> removeEditorNotice
     |> removeFullImageCaption
     |> removeBlankLikeLine
-    |> removeEmptyHeadings
-    |> normalizeBlankLines
+    |> pruneSections
 
-/// h2見出し行への一致。見出しのテキストを捕捉する。
-let private sectionHeadingPattern = Regex @"^## +(.*?)\s*$"
+/// 節を分けている見出しの深さ。wikiruの記事はh2で節を分ける。
+let private sectionLevel = 2
 
 /// h2見出しのホワイトリストでMarkdownのセクションを選別する。
 /// h2の見出しがtitlesに載っているセクションだけを、h3以下の小見出しごと残す。
@@ -348,48 +337,27 @@ let private sectionHeadingPattern = Regex @"^## +(.*?)\s*$"
 /// 残った本文から参照されているものだけを文書末尾へ集める。
 /// 選別で参照ごと落ちた定義を残すと宙に浮いた脚注になるため。
 let filterSections (titles: string list) (markdown: string) : string =
-    let lines = markdown.Split '\n'
+    let definitions, body = splitFootnoteDefinitions markdown
 
-    let definitions, bodyLines =
-        Array.partition (fun (line: string) -> footnoteDefinitionPattern.IsMatch line) lines
-
-    // h2見出しの行で残すかどうかの状態が切り替わり、行の採否は常にその状態に従う。
     let filtered =
-        bodyLines
-        |> Array.fold
-            (fun (kept, keeping) line ->
-                let keeping =
-                    match sectionHeadingPattern.Match line with
-                    | m when m.Success -> List.contains m.Groups[1].Value titles
-                    | _ -> keeping
-
-                (if keeping then line :: kept else kept), keeping)
-            ([], true)
-        |> fst
-        |> List.rev
-
-    let body = String.concat "\n" filtered
+        body
+        |> editSections (
+            Markdown.filterDescendants (fun section ->
+                section.Level <> sectionLevel
+                || Option.exists (fun title -> List.contains title titles) section.Heading)
+        )
 
     // 参照番号の集合を本文から一度だけ作り、定義側は集合参照で絞り込む。
     let referencedNumbers =
-        Regex.Matches(body, @"\[\^(\d+)\]")
-        |> Seq.map (fun m -> m.Groups[1].Value)
-        |> Set.ofSeq
+        Parse.findAll footnoteReference filtered |> List.map _.Value |> Set.ofList
 
     let referencedDefinitions =
         definitions
-        |> Array.filter (fun definition ->
-            Set.contains
-                (footnoteDefinitionPattern.Match(definition).Groups[1].Value)
-                referencedNumbers)
+        |> List.filter (fun definition ->
+            Parse.tryPrefix footnoteDefinition definition
+            |> Option.exists (fun number -> Set.contains number referencedNumbers))
 
-    let withDefinitions =
-        if Array.isEmpty referencedDefinitions then
-            body
-        else
-            body.TrimEnd() + "\n\n" + String.concat "\n" referencedDefinitions
-
-    normalizeBlankLines withDefinitions
+    appendFootnoteDefinitions referencedDefinitions filtered
 
 /// wikiruの記事ページをナレッジ用Markdownへ変換する。
 /// pandocArgumentsでpandocの変換オプションを調整できる。
@@ -416,6 +384,10 @@ let sourceHeader (source: Uri) : string =
         | Str.NonEmpty query -> Uri.UnescapeDataString query
 
     $"出典: [%s{pageName} - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{source.AbsoluteUri})\n\n"
+
+/// sourceHeaderが組み立てる出典の行。リンクのURLを返す。
+/// 生成したファイルから出典を読み戻す側が、書く側と同じ場所で形を知るためにここへ置く。
+let sourceLine: Parse.TextParser<string> = pstring "出典: " >>. Markdown.inlineLink
 
 /// ページ名からナレッジファイル先頭に付ける出典の表記を組み立てる。
 let knowledgeHeader (pageName: string) : string = sourceHeader (pageUri pageName)
@@ -483,8 +455,14 @@ let fetchUnplayableMarkdown (pageName: string) : Task<string> =
 /// 性能データはrole-playには使わないため。
 /// 「入手方法」は見出しプラグイン由来の太字行で、h3以下の見出しにはならない。
 let trimGameplayDetails (markdown: string) : string =
+    /// 切り落とす範囲の終わり。次のh2見出しの行頭か文書の末尾で、入力は読み進めない。
+    let sectionEnd: Parse.TextParser<unit> =
+        lookAhead (Parse.lineStart >>. pstring "## " >>% ()) <|> eof
+
     normalizeBlankLines (
-        Regex.Replace(markdown, @"^\*\*入手方法\*\*[\s\S]*?(?=^## |\z)", "", RegexOptions.Multiline)
+        Parse.remove
+            (Parse.lineStart >>. pstring "**入手方法**" >>. skipManyTill anyChar sectionEnd)
+            markdown
     )
 
 /// wikiruの生徒個別ページをrole-playスキルの参照用Markdownへ変換する。
@@ -504,25 +482,30 @@ exception StudentFullNameNotFound of pageName: string
 /// フルネームがページ名と名前で繋がらなかった時のページ名とフルネーム。
 exception StudentFullNameMismatch of pageName: string * fullName: string
 
-/// プロフィールの箇条書きの「フルネーム」の項目と、キーに続く値。
-/// 空欄のセルは項目に残らないため、値の無い「- フルネーム」だけの行にも一致させて空として読む。
-let private fullNamePattern =
-    Regex(@"^- フルネーム(?::[ ]*(.*?))?[ ]*$", RegexOptions.Multiline)
+/// プロフィールの箇条書きの「フルネーム」の項目。キーに続く値を返す。
+/// 空欄のセルは項目に残らないため、値の無い「- フルネーム」だけの行も空として読む。
+let private fullNameItem: Parse.TextParser<string> =
+    let spaces: Parse.TextParser<unit> = skipMany (pchar ' ')
+
+    let value: Parse.TextParser<string> =
+        pchar ':' >>. spaces >>. Parse.restOfLine |>> _.TrimEnd(' ')
+
+    Parse.lineStart >>. pstring "- フルネーム" >>. (value <|>% "")
+    .>> spaces
+    .>> Parse.lineEnd
 
 /// フルネームに添えられたふりがなの括弧。
-let private rubyPattern = Regex @"\([^)]*\)"
+let private ruby: Parse.TextParser<char> =
+    pchar '(' >>. skipManySatisfies (fun c -> c <> ')') >>. pchar ')'
 
 /// プロフィールのフルネームからふりがなを外したもの。
 /// 項目が無いか、空欄で空白しか残らない時はNone。
 let private tryFullName (markdown: string) : string option =
-    let matched = fullNamePattern.Match markdown
-
-    if matched.Success then
-        match rubyPattern.Replace(matched.Groups[1].Value, "").Trim() with
+    Parse.tryFind fullNameItem markdown
+    |> Option.bind (fun found ->
+        match (Parse.remove ruby found.Value).Trim() with
         | Str.NullOrEmpty -> None
-        | Str.NonEmpty fullName -> Some fullName
-    else
-        None
+        | Str.NonEmpty fullName -> Some fullName)
 
 /// フルネームのうちページ名の先頭と重なる部分より前を姓として、ページ名の前へ置く。
 /// 重なる部分が無ければ、別人の名前を作らないように止まる。
@@ -567,13 +550,14 @@ let unplayableDisplayName (pageName: string) (markdown: string) : string =
 /// filterSectionsは同じ見出しが2回現れてもどちらも残すが、
 /// これは何が載っているかを述べるための一覧なので、重複は現れる順を保ったまま潰す。
 let sectionTitles (markdown: string) : string list =
-    markdown.Split '\n'
-    |> Array.choose (fun line ->
-        match sectionHeadingPattern.Match line with
-        | m when m.Success -> Some m.Groups[1].Value
-        | _ -> None)
-    |> List.ofArray
-    |> List.distinct
+    let rec titles (section: Markdown.Section) : string list =
+        (if section.Level = sectionLevel then
+             Option.toList section.Heading
+         else
+             [])
+        @ List.collect titles section.Children
+
+    markdown |> Markdown.parseSections |> titles |> List.distinct
 
 /// 生徒個別のスキルとプレイアブルではない登場人物のスキルのSKILL.md全体を組み立てる。
 /// 1人分のナレッジは別ファイルへ分けるほどの量にならないため、

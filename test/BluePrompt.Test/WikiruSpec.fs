@@ -140,9 +140,15 @@ let ``2桁の脚注も変換される`` () =
 
 [<Fact>]
 let ``連続する脚注定義はそれぞれ変換される`` () =
-    let markdown = "# h\n\n\\*1 初対面時  \n\\*2 変装中  \n"
+    let markdown = "# h\n\n本文\n\n\\*1 初対面時  \n\\*2 変装中  \n"
 
-    Assert.Equal("# h\n\n[^1]: 初対面時\n[^2]: 変装中\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+    Assert.Equal("# h\n\n本文\n\n[^1]: 初対面時\n[^2]: 変装中\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``脚注の定義しか持たない節は中身が無いものとして落ちる`` () =
+    // 脚注の定義はページの末尾に置かれて最後の節へ紛れ込むだけで、その節の中身ではない。
+    let markdown = "## 小ネタ\n\n本文\\*1\n\n## 脚注\n\n\\*1 注釈\n"
+    Assert.Equal("## 小ネタ\n\n本文[^1]\n\n[^1]: 注釈\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
 let ``エスケープされていないアスタリスクは変換されない`` () =
@@ -378,6 +384,31 @@ let ``trimGameplayDetailsは入手方法から次のh2までを切り落とす``
         "## 基本情報\n\n| 名前 | ユウカ |\n\n**基本情報**\n\n紹介文\n\n## ボイス\n\n| 獲得 | セリフ |\n",
         BluePrompt.Wikiru.trimGameplayDetails markdown
     )
+
+[<Fact>]
+let ``trimGameplayDetailsはh2ではない見出しに見える行を越えて次のh2まで切り落とす`` () =
+    // 小見出しや`##x`の行は範囲の終わりではない。
+    // 終わりの判定が途中まで読んで失敗した時に、読み位置を戻して先へ進めることを固定する。
+    let markdown =
+        "## 基本情報\n\n紹介文\n\n**入手方法**\n\n### 装備\n\n内容\n\n##x\n\n## ボイス\n\nセリフ\n"
+
+    Assert.Equal(
+        "## 基本情報\n\n紹介文\n\n## ボイス\n\nセリフ\n",
+        BluePrompt.Wikiru.trimGameplayDetails markdown
+    )
+
+[<Fact>]
+let ``コードフェンスの中のh2に見える行は節の見出しとして扱わない`` () =
+    let markdown = "## 基本情報\n\n```\n## 運用考察\n```\n\n名前\n"
+
+    Assert.Equal(markdown, BluePrompt.Wikiru.filterSections [ "基本情報" ] markdown)
+    Assert.Equal<string list>([ "基本情報" ], BluePrompt.Wikiru.sectionTitles markdown)
+
+[<Fact>]
+let ``filterSectionsは落としたh2の後ろのh1を残す`` () =
+    // h1はh2の節に属さないので、手前のh2が落ちても巻き込まれない。
+    let markdown = "## 運用考察\n\n考察\n\n# 別の文書\n\n本文\n"
+    Assert.Equal("# 別の文書\n\n本文\n", BluePrompt.Wikiru.filterSections [ "基本情報" ] markdown)
 
 [<Fact>]
 let ``trimGameplayDetailsは続くh2が無ければ末尾まで切り落とす`` () =

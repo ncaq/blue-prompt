@@ -7,6 +7,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Str.fs" />
+    <Compile Include="Parse.fs" />
     <Compile Include="SkillFile.fs" />
     <Compile Include="Fmt.fs" />
     <Compile Include="Pandoc.fs" />
@@ -34,5 +35,6 @@
     <PackageReference Include="AngleSharp" Version="1.11.0" />
     <PackageReference Include="Argu" Version="6.2.5" />
     <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
+    <PackageReference Include="XParsec" Version="1.0.0" />
   </ItemGroup>
 </Project>

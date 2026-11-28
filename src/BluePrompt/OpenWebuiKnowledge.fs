@@ -16,8 +16,8 @@ open System.IO
 open System.Text.Json
 open System.Text.Json.Serialization
 open System.Text.Encodings.Web
-open System.Text.RegularExpressions
 open System.Threading.Tasks
+open XParsec
 
 /// Open WebUIのKnowledgeコレクションの作成フォーム。
 /// backend/open_webui/models/knowledge.pyのKnowledgeFormに対応する。
@@ -41,8 +41,9 @@ type Knowledge =
 /// 呼称表であれば学校や部活の単位に落ち着く。
 let maxFragmentBytes = 8192
 
-/// ファイル名に使えない文字と、階層の区切りに使うため名前の中では避けたい文字。
-let private unsafeFileNamePattern = Regex @"[\\/:*?""<>|#\s]+"
+/// ファイル名に使えない文字と、階層の区切りに使うため名前の中では避けたい文字の並び。
+let private unsafeFileNameChars: Parse.TextParser<unit> =
+    skipMany1Satisfies (fun c -> Char.IsWhiteSpace c || "\\/:*?\"<>|#".Contains c)
 
 /// 見出しの並びからファイル名の本体を組み立てる。
 /// Open WebUIのUIにはファイル名がそのまま並ぶため、
@@ -52,7 +53,7 @@ let private unsafeFileNamePattern = Regex @"[\\/:*?""<>|#\s]+"
 /// 見出しと同じく区切り文字を含み得るため、同じサニタイズを通す。
 let private toFileNameBase (stem: string) (headings: string list) : string =
     let sanitize (text: string) =
-        unsafeFileNamePattern.Replace(text, "-").Trim '-'
+        (Parse.replace (unsafeFileNameChars >>% "-") text).Trim '-'
 
     stem :: headings
     |> List.choose (fun part ->
@@ -129,17 +130,16 @@ let private assignFileNames
         Set.empty
     |> fst
 
-/// wikiruから生成した文書が持つ出典の行。
-/// `sourceHeader`が組み立てる「出典: [記事名](URL)」の形をそのまま拾う。
-let private sourcePattern =
-    Regex(@"^出典: \[[^\]]+\]\([^)]+\)$", RegexOptions.Multiline)
-
 /// 本文から出典の行を抜き出し、その行を落とした本文と組にして返す。
+/// wikiruから生成した文書が持つ、
+/// `Wikiru.sourceHeader`が組み立てる「出典: [記事名](URL)」だけの行を拾う。
 /// 見つからない手書きの文書では本文をそのまま返す。
 let private takeSourceLine (content: string) : string option * string =
-    match sourcePattern.Match content with
-    | m when m.Success -> Some m.Value, content.Remove(m.Index, m.Length)
-    | _ -> None, content
+    match Parse.tryFind (Parse.lineStart >>. Wikiru.sourceLine .>> Parse.lineEnd) content with
+    | Some found ->
+        Some(content.Substring(found.Index, found.Length)),
+        content.Remove(found.Index, found.Length)
+    | None -> None, content
 
 /// Markdownファイル1つを分割して、名前を与えたファイル群にする。
 ///
@@ -177,12 +177,9 @@ let private splitFile
 let private stripFrontmatter (content: string) : string =
     let normalized = content.Replace("\r\n", "\n")
 
-    match normalized.Split '\n' |> Array.toList with
-    | first :: rest when first = "---" ->
-        match List.tryFindIndex (fun line -> line = "---") rest with
-        | Some closeIndex -> rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim()
-        | None -> normalized
-    | _ -> normalized
+    match Parse.tryPrefix OpenWebui.frontmatterBlock normalized with
+    | Some struct (_, body) -> body.Trim()
+    | None -> normalized
 
 /// スキルディレクトリからKnowledgeコレクションの定義を組み立てる。
 ///

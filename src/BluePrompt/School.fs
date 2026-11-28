@@ -10,6 +10,9 @@ module BluePrompt.School
 open System
 open AngleSharp.Dom
 open AngleSharp.Html.Parser
+open XParsec
+open XParsec.Parsers
+open XParsec.CharParsers
 
 /// 生徒1人分の所属。
 type Entry =
@@ -104,24 +107,20 @@ let private parseCell (cell: IElement) : string * string =
 /// 未作成ページへの編集リンクはページ名ではなく編集フォームを指すので読まない。
 /// キャラクター一覧もリンクの書き方が同じなので、CharacterListからも使う。
 let linkedPageName (anchor: IElement) : string option =
+    /// ページへの相対リンク。パーセントエンコードされたままのページ名を返す。
+    /// ページ名の中の`%23`がデコードで`#`へ戻ってから切られると、
+    /// ページ名がそこで欠けるため、節の手前まででデコードより先に読み終える。
+    let pageLink: Parse.TextParser<string> =
+        pstring "./?" >>. manyChars (satisfy (fun c -> c <> '#'))
+
     match anchor.GetAttribute "href" with
     | _ when isEditLink anchor -> None
     | null -> None
-    | href when href.StartsWith("./?", StringComparison.Ordinal) ->
-        let query = href.Substring 3
-
-        // ページ名の中の`%23`がデコードで`#`へ戻ってから切られると、
-        // ページ名がそこで欠けるため、節はデコードより先に落とす。
-        let encoded =
-            match query.IndexOf('#') with
-            | -1 -> query
-            | index -> query.Substring(0, index)
-
+    | href ->
         // ページ名が空のリンクは「名前(ページ名: )」という壊れた表記になるので読まない。
-        match Uri.UnescapeDataString encoded with
-        | Str.NullOrEmpty -> None
-        | Str.NonEmpty page -> Some page
-    | _ -> None
+        match Parse.tryPrefix pageLink href |> Option.map Uri.UnescapeDataString with
+        | Some(Str.NonEmpty page) -> Some page
+        | _ -> None
 
 /// セルのリンク先からwikiruのページ名を取り出す。
 let private pageName (cell: IElement) : string option =
