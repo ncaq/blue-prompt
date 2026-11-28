@@ -2,12 +2,11 @@
 module BluePrompt.Pandoc
 
 open System
-open System.Diagnostics
-open System.IO
-open System.Runtime.ExceptionServices
 open System.Text
 open System.Threading
 open System.Threading.Tasks
+open CliWrap
+open CliWrap.Buffered
 
 /// pandocが異常終了した時のexit codeとstderr。
 exception PandocError of exitCode: int * stderr: string
@@ -31,115 +30,33 @@ let resolvePath () : string =
 /// 指定したパスのpandocを指定した引数で起動してHTML文字列をMarkdownへ変換する。
 /// pandocが非0終了した場合はPandocErrorを、
 /// 打ち切り時間を超えた場合はTimeoutExceptionを送出する。
-/// 標準入力への書き込みが失敗した場合は終了状態で判断する。
-/// 非0終了ならPandocErrorを優先し、
-/// 0終了なら出力が完全である保証が無いため書き込み失敗のIOExceptionを送出する。
 let toMarkdownWith (pandocPath: string) (arguments: string list) (html: string) : Task<string> =
     task {
-        let startInfo =
-            ProcessStartInfo(
-                FileName = pandocPath,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                // Encoding.UTF8はBOM付きで、ProcessはBOMをプロセス起動直後に書き込む。
-                // 起動直後に終了したプロセスへのBOM書き込みはbroken pipeとなり、
-                // Start自体がIOExceptionで失敗する競合になるため、BOMなしを明示する。
-                // pandocへの入力に余計なBOMが混ざることも防ぐ。
-                StandardInputEncoding = UTF8Encoding false,
-                StandardOutputEncoding = Encoding.UTF8,
-                StandardErrorEncoding = Encoding.UTF8
-            )
-
-        for argument in arguments do
-            startInfo.ArgumentList.Add argument
-
         use cancellation = new CancellationTokenSource(timeout)
 
-        use pandoc =
-            match Process.Start startInfo with
-            | null ->
-                // PANDOC_PATHの設定ミスやdevShell外での実行を切り分けられるようにパスを含める。
-                failwith $"pandocを起動できませんでした: %s{startInfo.FileName}"
-            | started -> started
-        // 標準入力の書き込み中にパイプバッファが満杯になるとpandocと相互待ちになるため、
-        // 標準出力と標準エラーの読み取りを書き込みより先に開始しておく。
-        let stdoutTask = pandoc.StandardOutput.ReadToEndAsync()
-        let stderrTask = pandoc.StandardError.ReadToEndAsync()
-
-        // broken pipeを、終了を待った後の報告のために持ち帰る。
-        let! writeError =
+        let! result =
             task {
                 try
-                    // プロセスが入力を読み切る前に終了するとbroken pipeで書き込みが失敗する。
-                    // その場で送出せず結果の値として受け取り、終了状態を見てから報告方法を決める。
-                    let! written =
-                        task {
-                            try
-                                do!
-                                    pandoc.StandardInput.WriteAsync(
-                                        html.AsMemory(),
-                                        cancellation.Token
-                                    )
-
-                                return Ok()
-                            with error ->
-                                return Error error
-                        }
-
-                    // Closeを飛ばすとEOFが送られず、プロセスが生きている場合に終了待ちが打ち切りまでブロックする。
-                    // 書き込みが失敗した後でも必ず呼ぶ。
-                    // Close自体の失敗(フラッシュのbroken pipe)も入力が完全に渡っていない兆候として扱う。
-                    let closed =
-                        try
-                            pandoc.StandardInput.Close()
-                            Ok()
-                        with error ->
-                            Error error
-
-                    // 書き込みとCloseで最初に起きた失敗だけを見る。
-                    // broken pipeは終了状態を見てから報告するため持ち帰り、
-                    // 打ち切りのような他の失敗はここで送出して下の回収へ渡す。
-                    let firstError =
-                        [ written; closed ]
-                        |> List.tryPick (function
-                            | Ok() -> None
-                            | Error error -> Some error)
-
-                    let writeError =
-                        match firstError with
-                        | Some(:? IOException as error) -> Some error
-                        // `raise`はStackTraceを切り捨てるため、
-                        // 想定外の失敗が起きた元の位置を残したまま投げ直す。
-                        // `with`ブロックの外なので`reraise`は使えない。
-                        | Some error ->
-                            ExceptionDispatchInfo.Capture(error).Throw()
-                            None
-                        | None -> None
-
-                    do! pandoc.WaitForExitAsync cancellation.Token
-                    return writeError
+                    return!
+                        Cli
+                            .Wrap(pandocPath)
+                            .WithArguments(arguments)
+                            // Encoding.UTF8で符号化するとpandocへの入力に余計なBOMが混ざるため、BOMなしを明示する。
+                            .WithStandardInputPipe(PipeSource.FromString(html, UTF8Encoding false))
+                            // 終了コードはPandocErrorとして自分で報告するため、CliWrapの検査は使わない。
+                            .WithValidation(CommandResultValidation.None)
+                            .ExecuteBufferedAsync(Encoding.UTF8, cancellation.Token)
+                            .Task
+                // 打ち切ったプロセスはCliWrapが終了させる。
                 with :? OperationCanceledException ->
-                    // 打ち切り時はプロセスを回収しないとパイプごとリークする。
-                    pandoc.Kill(entireProcessTree = true)
-
                     return
                         raise (TimeoutException $"pandocが%.0f{timeout.TotalSeconds}秒以内に終了しませんでした")
             }
 
-        let! markdown = stdoutTask
-        let! stderr = stderrTask
+        if result.ExitCode <> 0 then
+            raise (PandocError(exitCode = result.ExitCode, stderr = result.StandardError))
 
-        if pandoc.ExitCode <> 0 then
-            raise (PandocError(exitCode = pandoc.ExitCode, stderr = stderr))
-
-        // 正常終了していても入力を書き切れていないなら、出力は途中までの変換かもしれない。
-        // 成功として返すと不完全なナレッジが静かに書き出されるため、書き込みの失敗を報告する。
-        match writeError with
-        | Some error -> raise error
-        | None -> ()
-
-        return markdown
+        return result.StandardOutput
     }
 
 /// resolvePathで解決したpandocを指定した引数で起動してHTML文字列をMarkdownへ変換する。
