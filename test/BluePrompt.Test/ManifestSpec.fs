@@ -24,7 +24,7 @@ let ``runBoundedは同時に進める数をdegreeに収める`` () =
                 if maxInFlight.Value < current then
                     maxInFlight.Value <- current)
 
-        let work () =
+        let work (index: int) () =
             task {
                 let current = Interlocked.Increment inFlight
                 record current
@@ -34,11 +34,11 @@ let ``runBoundedは同時に進める数をdegreeに収める`` () =
 
                 do! release.Task
                 Interlocked.Decrement inFlight |> ignore
-                return current
+                return index
             }
 
         let running =
-            Manifest.runBounded degree (List.init 5 (fun index -> $"work%d{index}", work))
+            Manifest.runBounded degree (List.init 5 (fun index -> $"work%d{index}", work index))
 
         // 直列化する方向へ退行するとdegreeに到達せず永久に待つため、上限を付けてハングではなく失敗にする。
         // xUnitはFactに既定のタイムアウトを持たない。
@@ -50,88 +50,25 @@ let ``runBoundedは同時に進める数をdegreeに収める`` () =
         let! results = running
 
         Assert.Equal(degree, maxInFlight.Value)
-        Assert.Equal<string list>(List.init 5 (fun index -> $"work%d{index}"), List.map fst results)
+        // 結果は終わった順ではなく入力の並びで返る。
+        Assert.Equal<int list>(List.init 5 id, results)
     }
 
 [<Fact>]
-let ``runBoundedは1件の失敗で他を打ち切らず全件の結果を名前付きで返す`` () =
+let ``runBoundedは失敗した処理の名前を添えてGenerationFailedを送出する`` () =
     task {
+        let error = InvalidOperationException "失敗"
+
         let works =
-            [ "ok1", (fun () -> Task.FromResult 1)
-              "failed", (fun () -> Task.FromException<int>(InvalidOperationException "失敗"))
-              "ok2", (fun () -> Task.FromResult 2) ]
-
-        let! results = Manifest.runBounded 16 works
-
-        match results with
-        | [ "ok1", Ok 1; "failed", Error(:? InvalidOperationException as error); "ok2", Ok 2 ] ->
-            Assert.Equal("失敗", error.Message)
-        | other -> failwith $"想定外の結果: %A{other}"
-    }
-
-/// 整形の呼び出しを記録するスタブ。呼ばれた回数とパスを後から検査する。
-let private recordingFormat (calls: ResizeArray<string list>) (paths: string list) : Task<unit> =
-    calls.Add paths
-    Task.FromResult()
-
-[<Fact>]
-let ``finishは全成功ならrole-playも書き出して1回でまとめて整形する`` () =
-    task {
-        let calls = ResizeArray()
-
-        do!
-            Manifest.finish
-                (recordingFormat calls)
-                (fun () -> Task.FromResult [ "SKILL.md" ])
-                [ "a", Ok [ "a.md" ]; "b", Ok [ "b.md"; "b.json" ] ]
-
-        Assert.Equal<string list list>(
-            [ [ "a.md"; "b.md"; "b.json"; "SKILL.md" ] ],
-            List.ofSeq calls
-        )
-    }
-
-[<Fact>]
-let ``finishは失敗があれば成功分だけ整形しrole-playは書き出さずGenerationFailedを送出する`` () =
-    task {
-        let calls = ResizeArray()
-        let rolePlayWritten = ref false
-        let error: exn = InvalidOperationException "取得に失敗"
+            [ "ok", (fun () -> Task.FromResult 1)
+              "failed", (fun () -> Task.FromException<int> error) ]
 
         let! raised =
             Assert.ThrowsAsync<Manifest.GenerationFailed>(fun () ->
-                Manifest.finish
-                    (recordingFormat calls)
-                    (fun () ->
-                        rolePlayWritten.Value <- true
-                        Task.FromResult [])
-                    [ "a", Ok [ "a.md" ]; "b", Error error ])
+                Manifest.runBounded 16 works :> Task)
 
-        Assert.Equal<(string * exn) list>([ "b", error ], raised.failures)
-        Assert.Equal<string list list>([ [ "a.md" ] ], List.ofSeq calls)
-        Assert.False rolePlayWritten.Value
-    }
-
-[<Fact>]
-let ``finishは失敗の報告で整形が落ちても取得の失敗の理由を失わない`` () =
-    task {
-        let fetchError = InvalidOperationException "取得に失敗"
-        let formatError = InvalidOperationException "整形に失敗"
-
-        let! raised =
-            Assert.ThrowsAsync<Manifest.GenerationFailed>(fun () ->
-                Manifest.finish
-                    (fun _ -> Task.FromException<unit> formatError)
-                    (fun () -> Task.FromResult [])
-                    [ "a", Ok [ "a.md" ]; "b", Error fetchError ])
-
-        // 取得の失敗が先頭に残り、整形の失敗もその後ろに並ぶ。
-        match raised.failures with
-        | [ "b", (:? InvalidOperationException as first)
-            _, (:? InvalidOperationException as second) ] ->
-            Assert.Equal("取得に失敗", first.Message)
-            Assert.Equal("整形に失敗", second.Message)
-        | other -> failwith $"想定外の失敗の一覧: %A{other}"
+        Assert.Equal("failed", raised.name)
+        Assert.Same(error, raised.error)
     }
 
 /// マニフェストのwikiru対象が書き出すパスの一覧。

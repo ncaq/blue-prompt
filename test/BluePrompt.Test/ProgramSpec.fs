@@ -248,8 +248,8 @@ let ``実在しないナレッジを挙げたcharacter.mdは名前を並べて�
     Assert.Contains("character-nobody", message)
 
 [<Fact>]
-let ``character.mdを読めない対象は全件が理由付きで並ぶ`` () =
-    // 1件目で打ち切ると残りの対象の理由が消えるので、全ての呼び名が出ることまで見る。
+let ``character.mdを読めない対象は呼び名と理由を表示して非0を返す`` () =
+    // 読み込みの例外をそのまま通すと、未処理の例外としてスタックトレースが出て落ちる。
     let root = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
     Directory.CreateDirectory root |> ignore
 
@@ -264,9 +264,10 @@ let ``character.mdを読めない対象は全件が理由付きで並ぶ`` () =
         Directory.Delete(root, true)
 
     let message = captured.ToString()
-
-    for skill in Manifest.rolePlaySkills do
-        Assert.Contains(Target.rolePlayName skill, message)
+    // 最初の対象で止まり、その呼び名と読めなかったファイルが理由に残る。
+    let first = List.head Manifest.rolePlaySkills
+    Assert.Contains($"%s{Target.rolePlayName first}: ", message)
+    Assert.Contains(SkillFile.character, message)
 
 [<Fact>]
 let ``コマンドライン引数から接続情報を組み立てられる`` () =

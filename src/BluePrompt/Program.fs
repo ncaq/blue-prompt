@@ -304,11 +304,9 @@ let main argv =
     | OpenWebuiSync.SyncError message ->
         eprintfn $"%s{message}"
         1
-    // 一括更新の失敗は対象ごとの理由を並べて表示する。
-    | Manifest.GenerationFailed failures ->
-        for name, error in failures do
-            eprintfn $"%s{name}: %s{error.Message}"
-
+    // 一括更新の失敗は、どの対象で落ちたのかを理由に添えて表示する。
+    | Manifest.GenerationFailed(name, error) ->
+        eprintfn $"%s{name}: %s{error.Message}"
         1
     // 節を1つも読み取れなかった時も、どのページなのかを表示する。
     // 単体の生成ではこの経路しか無く、一括更新でも既定のメッセージにはページ名が乗らない。
