@@ -332,6 +332,26 @@ let ``renderSkillはフロントマターと差し込んだ本文を並べる`` 
     )
 
 [<Fact>]
+let ``renderSkillは呼称表に行が無い生徒でも表が無いことを書いて生成する`` () =
+    // 実装されたばかりの生徒は、wikiruの呼称表へ行が足されるまでレコードを持たない。
+    let skill =
+        renderSkill
+            { Caller = "ユウカ"
+              TemplatePath = "SKILL.template.md"
+              Template = template
+              CharacterPath = "character.md"
+              Character =
+                BluePrompt.OpenWebui.parseFrontmatter
+                    "character.md"
+                    "---\nname: yuuka\ndescription: d\nknowledge: character-yuuka\n---\n\n位置付け。\n"
+              References = [ parseReference "normal.md" (reference "ユウカ") ]
+              Quotes = []
+              Appellation = document "ノア" }
+
+    Assert.Contains("呼称表にはまだユウカの行がありません。", skill)
+    Assert.DoesNotContain("| 相手 | 呼称 |", skill)
+
+[<Fact>]
 let ``本文の無いcharacter.mdはCharacterBodyNotFoundになる`` () =
     // 参照ファイルとナレッジは0件で止まるのに本文だけ素通りすると、
     // その生徒の位置付けが黙って落ちた本文が生成される。

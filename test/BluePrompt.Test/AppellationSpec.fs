@@ -440,18 +440,13 @@ let ``toCallerMarkdownは指定キャラクターだけを相手と呼称の2列
             Note = None } ]
 
     Assert.Equal(
-        "| 相手 | 呼称 |\n" + "| --- | --- |\n" + "| ノノミ | ノノミちゃん、十六夜ノノミさん(初対面時) |\n",
+        Some("| 相手 | 呼称 |\n" + "| --- | --- |\n" + "| ノノミ | ノノミちゃん、十六夜ノノミさん(初対面時) |\n"),
         toCallerMarkdown "ホシノ" entries
     )
 
 [<Fact>]
-let ``toCallerMarkdownは該当キャラクターが無いとCallerNotFoundになる`` () =
-    let error =
-        Assert.Throws<CallerNotFound>(fun () -> toCallerMarkdown "ユウカ" [] |> ignore)
-
-    match error :> exn with
-    | CallerNotFound caller -> Assert.Equal("ユウカ", caller)
-    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+let ``toCallerMarkdownは該当キャラクターが無いとNoneになる`` () =
+    Assert.Equal(None, toCallerMarkdown "ユウカ" [])
 
 [<Fact>]
 let ``ofJsonはtoJsonの出力を同じDocumentへ読み戻す`` () =

@@ -39,10 +39,6 @@ exception EntryNotFound
 /// 呼称表の行のセル数が想定の3列でなかった時の、その時点のキャラクター名とセル数。
 exception RowShapeError of character: string * cellCount: int
 
-/// 指定した呼ぶ側のキャラクターのレコードが1件も無かった時のキャラクター名。
-/// 名前の打ち間違いで空のデータを黙って出力するのを防ぐ。
-exception CallerNotFound of caller: string
-
 /// 脚注アンカーのidから注釈本文への対応表を#noteから組み立てる。
 /// wikiruの脚注定義は「アンカー、本文のspan、brの繰り返し」の並びなので、
 /// アンカーから次のbrまでの兄弟ノードのテキストを本文として集める。
@@ -286,16 +282,18 @@ let toReferenceMarkdown (entries: Entry list) : string =
 /// 指定した呼ぶ側のキャラクター1人分の呼称を、
 /// role-playスキルへの埋め込みのようなLLM参照用のMarkdownテーブルへ組み立てる。
 /// 呼ぶ側は指定した時点で自明なため、テーブルは相手と呼称の2列にする。
-/// 該当するレコードが1件も無い場合はCallerNotFoundを送出する。
-let toCallerMarkdown (caller: string) (entries: Entry list) : string =
+/// 該当するレコードが1件も無い場合はNoneを返す。
+/// 実装されたばかりの生徒は、wikiruの呼称表へ行が足されるまでレコードを持たない。
+/// 名前の打ち間違いは、マニフェストの漏れの確認がキャラクター一覧と突き合わせて見つける。
+let toCallerMarkdown (caller: string) (entries: Entry list) : string option =
     match entries |> List.filter (fun entry -> entry.Caller = caller) with
-    | [] -> raise (CallerNotFound caller)
+    | [] -> None
     | callerEntries ->
         let rows =
             rowCells callerEntries
             |> List.map (fun (calleeCell, namesCell) -> $"| %s{calleeCell} | %s{namesCell} |")
 
-        [ "| 相手 | 呼称 |"; "| --- | --- |" ] @ rows @ [ "" ] |> String.concat "\n"
+        Some([ "| 相手 | 呼称 |"; "| --- | --- |" ] @ rows @ [ "" ] |> String.concat "\n")
 
 /// レコードの列を機械読み出し用のJSON文字列へ直列化する。
 let toJson (document: Document) : string = JsonCodec.serialize document
