@@ -1,15 +1,21 @@
 module BluePrompt.Test.PageSpec
 
 open System
-open System.Collections.Concurrent
 open System.Net
 open System.Net.Sockets
 open System.Text
 open System.Threading.Tasks
 open Falco.Markup
+open WireMock.RequestBuilders
+open WireMock.ResponseBuilders
+open WireMock.Server
 open Xunit
 open BluePrompt.Test.HtmlFixture
-open BluePrompt.Test.LocalServer
+open BluePrompt.Test.MockServer
+
+/// 指定したステータスでHTMLを返す応答。
+let private statusResponse (status: int) (text: string) : IResponseBuilder =
+    (htmlResponse (renderDocument [ Text.raw text ])).WithStatusCode(status)
 
 [<Fact>]
 let ``ローカルサーバのHTMLを取得できる`` () : Task =
@@ -22,7 +28,8 @@ let ``ローカルサーバのHTMLを取得できる`` () : Task =
                       Elem.body [] [ Text.raw "body text" ] ]
             )
 
-        let! fetched = withServedHtml html (fun url -> BluePrompt.Page.fetchHtml url)
+        use server = serveHtml html
+        let! fetched = BluePrompt.Page.fetchHtml (baseUri server)
         Assert.Contains("<title>Served Page</title>", fetched)
         Assert.Contains("body text", fetched)
     }
@@ -39,23 +46,18 @@ let ``example.comのHTMLを取得できる`` () : Task =
 let ``成功以外のHTTPステータスはFetchErrorになる`` () : Task =
     task {
         // ローダー差し替えで最も壊れやすいステータス検査を固定する。
-        do!
-            withServer
-                (fun _ ->
-                    { htmlResponse (renderDocument [ Text.raw "not found" ]) with
-                        Status = "404 Not Found" })
-                (fun url ->
-                    task {
-                        let! error =
-                            Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
-                                BluePrompt.Page.fetchHtml url :> Task)
+        use server = serve (statusResponse 404 "not found")
+        let url = baseUri server
 
-                        match error :> exn with
-                        | BluePrompt.Page.FetchError(failedUrl, status) ->
-                            Assert.Equal(url, failedUrl)
-                            Assert.Equal(404, status)
-                        | unexpected -> raise unexpected
-                    })
+        let! error =
+            Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                BluePrompt.Page.fetchHtml url :> Task)
+
+        match error :> exn with
+        | BluePrompt.Page.FetchError(failedUrl, status) ->
+            Assert.Equal(url, failedUrl)
+            Assert.Equal(404, status)
+        | unexpected -> raise unexpected
     }
 
 [<Fact>]
@@ -63,24 +65,18 @@ let ``本文が空のエラー応答は本来のステータスで報告され�
     task {
         // 空ドキュメント検知が先に働くと、ボディ無しの404が接続失敗と同じstatus=0へ潰れて、
         // 原因調査時に「サーバへ繋がらなかった」と誤読させる。
-        do!
-            withServer
-                (fun _ ->
-                    { htmlResponse "" with
-                        Status = "404 Not Found"
-                        Body = [||] })
-                (fun url ->
-                    task {
-                        let! error =
-                            Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
-                                BluePrompt.Page.fetchHtml url :> Task)
+        use server = serve (Response.Create().WithStatusCode 404)
+        let url = baseUri server
 
-                        match error :> exn with
-                        | BluePrompt.Page.FetchError(failedUrl, status) ->
-                            Assert.Equal(url, failedUrl)
-                            Assert.Equal(404, status)
-                        | unexpected -> raise unexpected
-                    })
+        let! error =
+            Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                BluePrompt.Page.fetchHtml url :> Task)
+
+        match error :> exn with
+        | BluePrompt.Page.FetchError(failedUrl, status) ->
+            Assert.Equal(url, failedUrl)
+            Assert.Equal(404, status)
+        | unexpected -> raise unexpected
     }
 
 [<Fact>]
@@ -111,79 +107,62 @@ let ``接続できない場合はFetchErrorになる`` () : Task =
 let ``一時的な失敗はリトライして回復する`` () : Task =
     task {
         // サーバの一時的な不調を模して、最初の2回だけ500を返し3回目で成功させる。
-        // LocalServerの接続処理は直列なので、単純な参照セルで数えて競合しない。
-        let requestCount = ref 0
+        use server = WireMockServer.Start()
 
-        let respond (_: string) : Response =
-            requestCount.Value <- requestCount.Value + 1
+        server
+            .Given(anyRequest ())
+            .InScenario("一時的な不調")
+            .WillSetStateTo("回復", 2)
+            .RespondWith(statusResponse 500 "server error")
+        |> ignore
 
-            if requestCount.Value <= 2 then
-                { htmlResponse (renderDocument [ Text.raw "server error" ]) with
-                    Status = "500 Internal Server Error" }
-            else
-                htmlResponse (renderDocument [ Text.raw "recovered body" ])
+        server
+            .Given(anyRequest ())
+            .InScenario("一時的な不調")
+            .WhenStateIs("回復")
+            .RespondWith(htmlResponse (renderDocument [ Text.raw "recovered body" ]))
+        |> ignore
 
         // テストを待たせないため間隔は0にして、回数の消化だけを検証する。
         let! fetched =
-            withServer respond (fun url ->
-                BluePrompt.Page.fetchHtmlWith [ TimeSpan.Zero; TimeSpan.Zero ] url)
+            BluePrompt.Page.fetchHtmlWith [ TimeSpan.Zero; TimeSpan.Zero ] (baseUri server)
 
         Assert.Contains("recovered body", fetched)
-        Assert.Equal(3, requestCount.Value)
+        Assert.Equal(3, Seq.length server.LogEntries)
     }
 
 [<Fact>]
 let ``リトライが尽きたら失敗がそのまま届く`` () : Task =
     task {
-        let requestCount = ref 0
+        use server = serve (statusResponse 503 "unavailable")
 
-        let respond (_: string) : Response =
-            requestCount.Value <- requestCount.Value + 1
+        let! error =
+            Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                BluePrompt.Page.fetchHtmlWith [ TimeSpan.Zero ] (baseUri server) :> Task)
 
-            { htmlResponse (renderDocument [ Text.raw "unavailable" ]) with
-                Status = "503 Service Unavailable" }
+        match error :> exn with
+        | BluePrompt.Page.FetchError(_, status) -> Assert.Equal(503, status)
+        | unexpected -> raise unexpected
 
-        do!
-            withServer respond (fun url ->
-                task {
-                    let! error =
-                        Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
-                            BluePrompt.Page.fetchHtmlWith [ TimeSpan.Zero ] url :> Task)
-
-                    match error :> exn with
-                    | BluePrompt.Page.FetchError(_, status) -> Assert.Equal(503, status)
-                    | unexpected -> raise unexpected
-
-                    // 最初の1回とリトライの1回で、リクエストは2回になる。
-                    Assert.Equal(2, requestCount.Value)
-                })
+        // 最初の1回とリトライの1回で、リクエストは2回になる。
+        Assert.Equal(2, Seq.length server.LogEntries)
     }
 
 [<Fact>]
 let ``一時的でない失敗はリトライしない`` () : Task =
     task {
         // 404はやり直しても結果が変わらないため、リトライ間隔が残っていても1回で諦める。
-        let requestCount = ref 0
+        use server = serve (statusResponse 404 "not found")
 
-        let respond (_: string) : Response =
-            requestCount.Value <- requestCount.Value + 1
+        let! error =
+            Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                BluePrompt.Page.fetchHtmlWith [ TimeSpan.Zero ] (baseUri server) :> Task)
 
-            { htmlResponse (renderDocument [ Text.raw "not found" ]) with
-                Status = "404 Not Found" }
+        match error :> exn with
+        | BluePrompt.Page.FetchError(_, status) -> Assert.Equal(404, status)
+        | unexpected -> raise unexpected
 
-        do!
-            withServer respond (fun url ->
-                task {
-                    let! error =
-                        Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
-                            BluePrompt.Page.fetchHtmlWith [ TimeSpan.Zero ] url :> Task)
-
-                    match error :> exn with
-                    | BluePrompt.Page.FetchError(_, status) -> Assert.Equal(404, status)
-                    | unexpected -> raise unexpected
-
-                    Assert.Equal(1, requestCount.Value)
-                })
+        Assert.Equal(1, Seq.length server.LogEntries)
     }
 
 [<Fact>]
@@ -203,13 +182,18 @@ let ``Content-Typeのcharsetに従って文字コードが判定される`` () :
         // EUC-JPは.NETの組み込みではないため、テスト側でプロバイダを登録する。
         Encoding.RegisterProvider CodePagesEncodingProvider.Instance
 
-        let response =
-            { Status = "200 OK"
-              ContentType = "text/html; charset=euc-jp"
-              Body = (Encoding.GetEncoding "euc-jp").GetBytes(renderDocument [ Text.raw "日本語本文" ])
-              ExtraHeaders = [] }
+        use server =
+            serve (
+                Response
+                    .Create()
+                    .WithHeader("Content-Type", "text/html; charset=euc-jp")
+                    .WithBody(
+                        (Encoding.GetEncoding "euc-jp")
+                            .GetBytes(renderDocument [ Text.raw "日本語本文" ])
+                    )
+            )
 
-        let! fetched = withServer (fun _ -> response) (fun url -> BluePrompt.Page.fetchHtml url)
+        let! fetched = BluePrompt.Page.fetchHtml (baseUri server)
 
         Assert.Contains("日本語本文", fetched)
     }
@@ -219,19 +203,15 @@ let ``ページ内のリソースは追加取得されない`` () : Task =
     task {
         // IsResourceLoadingEnabled = falseはAngleSharpの既定値の変化への防御なので、
         // 設定が効かなくなった時に検知できるようにテストで固定する。
-        let requestedPaths = ConcurrentQueue<string>()
-
-        let respond (path: string) : Response =
-            requestedPaths.Enqueue path
-
-            htmlResponse (
+        use server =
+            serveHtml (
                 renderDocument [ Elem.img [ Attr.src "/image.png" ]; Text.p "resource test" ]
             )
 
-        let! fetched = withServer respond (fun url -> BluePrompt.Page.fetchHtml url)
+        let! fetched = BluePrompt.Page.fetchHtml (baseUri server)
 
         Assert.Contains("resource test", fetched)
-        Assert.DoesNotContain("/image.png", requestedPaths)
+        Assert.DoesNotContain("/image.png", requestedPaths server)
     }
 
 [<Fact>]
@@ -241,30 +221,33 @@ let ``別スキームへのリダイレクトは追跡されずFetchErrorにな�
         // DefaultHttpRequesterがhttpとhttpsしか扱わないこと。
         // requester構成の変更でこの担保が崩れた時に検知できるように固定する。
         // この失敗はstatus=0でリトライの対象になるため、空のリトライ間隔で待たずに検証する。
-        let respond (_: string) : Response =
-            { htmlResponse "" with
-                Status = "302 Found"
-                ExtraHeaders = [ "Location: file:///etc/passwd" ] }
+        use server =
+            serve (
+                Response.Create().WithStatusCode(302).WithHeader("Location", "file:///etc/passwd")
+            )
 
         do!
-            withServer respond (fun url ->
-                Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
-                    BluePrompt.Page.fetchHtmlWith [] url :> Task))
+            Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
+                BluePrompt.Page.fetchHtmlWith [] (baseUri server) :> Task)
             :> Task
     }
 
 [<Fact>]
 let ``リダイレクトを追跡して最終ページを取得する`` () : Task =
     task {
-        let respond (path: string) : Response =
-            if path = "/moved" then
-                htmlResponse (renderDocument [ Text.raw "redirected body" ])
-            else
-                { htmlResponse "" with
-                    Status = "302 Found"
-                    ExtraHeaders = [ "Location: /moved" ] }
+        use server = WireMockServer.Start()
 
-        let! fetched = withServer respond (fun url -> BluePrompt.Page.fetchHtml url)
+        server
+            .Given(Request.Create().WithPath("/"))
+            .RespondWith(Response.Create().WithStatusCode(302).WithHeader("Location", "/moved"))
+        |> ignore
+
+        server
+            .Given(Request.Create().WithPath("/moved"))
+            .RespondWith(htmlResponse (renderDocument [ Text.raw "redirected body" ]))
+        |> ignore
+
+        let! fetched = BluePrompt.Page.fetchHtml (baseUri server)
 
         Assert.Contains("redirected body", fetched)
     }
@@ -290,9 +273,8 @@ let private fixtureQuery: BluePrompt.Extract.ContentQuery =
 [<Fact>]
 let ``fetchContentHtmlは取得したDOMへ抽出を適用する`` () : Task =
     task {
-        let! html =
-            withServedHtml fixtureHtml (fun url ->
-                BluePrompt.Page.fetchContentHtml url fixtureQuery)
+        use server = serveHtml fixtureHtml
+        let! html = BluePrompt.Page.fetchContentHtml (baseUri server) fixtureQuery
 
         Assert.Contains("Fixture", html)
         Assert.DoesNotContain("site header", html)
@@ -325,25 +307,20 @@ let ``fetchContentHtmlは取得元のURLを基準にリンクと画像を解決�
             { fixtureQuery with
                 ResolveImages = true }
 
-        do!
-            withServedHtml html (fun url ->
-                task {
-                    let! extracted = BluePrompt.Page.fetchContentHtml url query
+        use server = serveHtml html
+        let url = baseUri server
+        let! extracted = BluePrompt.Page.fetchContentHtml url query
 
-                    // 取得元と同じホストへのリンクは外れる。
-                    Assert.DoesNotContain("other", extracted)
-                    Assert.Contains("internal text", extracted)
+        // 取得元と同じホストへのリンクは外れる。
+        Assert.DoesNotContain("other", extracted)
+        Assert.Contains("internal text", extracted)
 
-                    Assert.Contains(
-                        """<a href="https://example.com/post">external text</a>""",
-                        extracted
-                    )
-                    // 画像はdata-srcを取得元のURLで解決し、srcとaltだけを持つ。
-                    Assert.Contains(
-                        $"""<img alt="素材名" src="%s{Uri(url, "attach2/icon.png").AbsoluteUri}">""",
-                        extracted
-                    )
-                })
+        Assert.Contains("""<a href="https://example.com/post">external text</a>""", extracted)
+        // 画像はdata-srcを取得元のURLで解決し、srcとaltだけを持つ。
+        Assert.Contains(
+            $"""<img alt="素材名" src="%s{Uri(url, "attach2/icon.png").AbsoluteUri}">""",
+            extracted
+        )
     }
 
 [<Fact>]
@@ -357,17 +334,16 @@ let ``抽出が全滅した場合は取得元URL付きのContentNotFoundにな�
             { fixtureQuery with
                 ContentSelectors = selectors }
 
-        do!
-            withServedHtml fixtureHtml (fun url ->
-                task {
-                    let! error =
-                        Assert.ThrowsAsync<BluePrompt.Page.ContentNotFound>(fun () ->
-                            BluePrompt.Page.fetchContentHtml url query :> Task)
+        use server = serveHtml fixtureHtml
+        let url = baseUri server
 
-                    match error :> exn with
-                    | BluePrompt.Page.ContentNotFound(failedUrl, failedSelectors) ->
-                        Assert.Equal(url, failedUrl)
-                        Assert.Equal<string list>(selectors, failedSelectors)
-                    | unexpected -> raise unexpected
-                })
+        let! error =
+            Assert.ThrowsAsync<BluePrompt.Page.ContentNotFound>(fun () ->
+                BluePrompt.Page.fetchContentHtml url query :> Task)
+
+        match error :> exn with
+        | BluePrompt.Page.ContentNotFound(failedUrl, failedSelectors) ->
+            Assert.Equal(url, failedUrl)
+            Assert.Equal<string list>(selectors, failedSelectors)
+        | unexpected -> raise unexpected
     }

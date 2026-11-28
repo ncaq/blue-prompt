@@ -7,14 +7,18 @@
 /// 決まった応答を返すだけのサーバを相手に確かめる。
 module BluePrompt.Test.OpenWebuiSyncSpec
 
-open System.Collections.Generic
+open System
 open System.IO
-open System.Text
+open System.Net
+open System.Net.Http
+open System.Text.Json
 open System.Threading.Tasks
+open WireMock.RequestBuilders
+open WireMock.ResponseBuilders
+open WireMock.Server
 open Xunit
 open BluePrompt
 open BluePrompt.OpenWebuiSync
-open BluePrompt.Test.LocalServer
 
 /// 受け取ったリクエスト1つ分の、テストが確かめる内容。
 type private ReceivedRequest =
@@ -29,6 +33,8 @@ type private FixedServer =
         Url: string
         /// ここまでに受け取ったリクエスト。
         Received: unit -> ReceivedRequest list
+        /// 表では書けない、回数で変わる応答を足すためのWireMockのサーバ。
+        Mock: WireMockServer
     }
 
     /// メソッドとパスが一致したリクエストの数。
@@ -38,36 +44,49 @@ type private FixedServer =
         |> List.length
 
 /// メソッドとパスごとに決まった応答を返すサーバを立てて、testへ渡す。
-/// クエリ文字列は見ず、表に無いリクエストには404を返す。
-/// 状態を持たないので、受け取ったリクエストを記録して後から確かめる。
+/// クエリ文字列は見ず、表に無いリクエストにはWireMockの既定の404を返す。
+/// 表の応答は状態を持たず、回数で変わる応答はテスト側がMockへ足す。
+/// 受け取ったリクエストはWireMockの記録から後で確かめる。
 let private withFixedServer
     (routes: Map<string * string, int * string>)
     (test: FixedServer -> Task<unit>)
     : Task =
-    let received = List<ReceivedRequest>()
+    task {
+        use server = WireMockServer.Start()
 
-    let respond (request: Request) : Response =
-        lock received (fun () ->
-            received.Add
+        for KeyValue((method, path), (status, body)) in routes do
+            server
+                .Given(Request.Create().UsingMethod(method).WithPath(path))
+                .RespondWith(
+                    Response
+                        .Create()
+                        .WithStatusCode(status)
+                        .WithHeader("Content-Type", "application/json")
+                        .WithBody(body)
+                )
+            |> ignore
+
+        let received () =
+            server.LogEntries
+            |> Seq.map (fun entry ->
+                let request = entry.RequestMessage
+
+                let authorization =
+                    match request.Headers.TryGetValue "Authorization" with
+                    | true, values -> Seq.tryHead values
+                    | false, _ -> None
+
                 { Method = request.Method
                   Path = request.Path
-                  Authorization = Map.tryFind "authorization" request.Headers })
+                  Authorization = authorization })
+            |> List.ofSeq
 
-        let status, body =
-            routes
-            |> Map.tryFind (request.Method, request.Path)
-            |> Option.defaultValue (404, """{"detail":"unknown"}""")
-
-        // 同期はステータスコードしか見ないので、理由句は固定の文字列で済ませる。
-        { Status = $"%d{status} Fixed"
-          ContentType = "application/json"
-          Body = Encoding.UTF8.GetBytes(body: string)
-          ExtraHeaders = [] }
-
-    withRequestServer respond (fun url ->
-        test
-            { Url = url.ToString().TrimEnd '/'
-              Received = fun () -> lock received (fun () -> List.ofSeq received) })
+        do!
+            test
+                { Url = server.Url.TrimEnd '/'
+                  Received = received
+                  Mock = server }
+    }
 
 /// 起動を待ってサインインするまでの応答。
 let private signedIn =
@@ -202,6 +221,34 @@ let ``ベースURLの末尾スラッシュはどの経路で組み立てても�
         })
 
 [<Fact>]
+let ``起動の確認が成功するまでやり直してから同期する`` () : Task =
+    // 起動の途中のインスタンスは、前段のプロキシなどから成功以外の応答を返す。
+    // やり直しの待ちの2秒を1回だけ消費する。
+    withFixedServer (Map.remove ("GET", "/health") modelRoutes) (fun server ->
+        task {
+            let health = Request.Create().UsingGet().WithPath("/health")
+
+            server.Mock
+                .Given(health)
+                .InScenario("起動")
+                .WillSetStateTo("起動済み")
+                .RespondWith(Response.Create().WithStatusCode(503))
+            |> ignore
+
+            server.Mock
+                .Given(health)
+                .InScenario("起動")
+                .WhenStateIs("起動済み")
+                .RespondWith(Response.Create().WithStatusCode(200))
+            |> ignore
+
+            do! sync (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
+
+            Assert.Equal(2, server.CountOf("GET", "/health"))
+            Assert.Equal(1, server.CountOf("POST", "/api/v1/models/create"))
+        })
+
+[<Fact>]
 let ``APIキーのファイルを指定するとBearerヘッダとして送られる`` () : Task =
     withFixedServer modelRoutes (fun server ->
         task {
@@ -241,7 +288,7 @@ let ``APIキーを指定しないとサインインしたトークンがBearer�
         })
 
 [<Fact>]
-let ``サインインに失敗するとSyncErrorで止まり書き込みへ進まない`` () : Task =
+let ``サインインに失敗すると止まり書き込みへ進まない`` () : Task =
     // 認証を有効にしたインスタンスでは固定の資格情報が通らない。
     let routes =
         modelRoutes
@@ -249,28 +296,30 @@ let ``サインインに失敗するとSyncErrorで止まり書き込みへ進�
 
     withFixedServer routes (fun server ->
         task {
-            // APIキーの指定が要ることに気付けるようにステータスが含まれる。
-            do!
-                assertSyncError
-                    [ "サインイン"; "400" ]
-                    (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
+            let! error =
+                Assert.ThrowsAsync<HttpRequestException>(fun () ->
+                    sync (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ])) :> Task)
 
+            Assert.Equal(Nullable HttpStatusCode.BadRequest, error.StatusCode)
             Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
         })
 
 [<Fact>]
-let ``サインインの応答にtokenが無いとSyncErrorで止まる`` () : Task =
+let ``サインインの応答にtokenが無いと止まる`` () : Task =
     let routes =
         modelRoutes
         |> Map.add ("POST", "/api/v1/auths/signin") (200, """{"detail":"ok"}""")
 
     withFixedServer routes (fun server ->
         task {
-            do!
-                assertSyncError
-                    [ "/api/v1/auths/signinの応答を解釈できません"; "token" ]
-                    (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
+            let! error =
+                Assert.ThrowsAsync<JsonException>(fun () ->
+                    sync (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ])) :> Task)
 
+            // 何が足りないのか分かるようにフィールドの名前が含まれる。
+            Assert.Contains("token", error.Message)
+            // 別の応答の読み込みで止まっても上の確かめは通るので、サインインまで進んだことを見る。
+            Assert.Equal(1, server.CountOf("POST", "/api/v1/auths/signin"))
             Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
         })
 
@@ -356,10 +405,9 @@ let ``紐付け先のKnowledgeが同期の対象に無いとSyncErrorで止ま�
         })
 
 [<Fact>]
-let ``アップロードの応答にidが無いとSyncErrorで止まる`` () : Task =
+let ``アップロードの応答にidが無いと止まる`` () : Task =
     // 応答の形が変わった状況を模す。
-    // idのキーが無い応答は読み込みの時点で止まり、
-    // どのURLの応答にどのフィールドが無かったのかが理由に残る。
+    // idのキーが無い応答は読み込みの時点でJsonExceptionで止まる。
     // キーがあって値が空の応答は読み込みを通ってしまうので、別のテストが受け持つ。
     let routes =
         knowledgeRoutes
@@ -371,10 +419,13 @@ let ``アップロードの応答にidが無いとSyncErrorで止まる`` () : T
                 { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
                     KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
+            let! error = Assert.ThrowsAsync<JsonException>(fun () -> sync options :> Task)
+
             // 何が足りないのか分かるようにフィールドの名前が含まれる。
-            // 読み込みで止まったことは、読み込みの失敗にしか出ない文言で確かめる。
-            // URLとidだけでは、空のidで止める側の理由にも一致してしまう。
-            do! assertSyncError [ "/api/v1/files/の応答を解釈できません"; "id" ] options
+            Assert.Contains("id", error.Message)
+            // `id`は`invalid`のようなJSONの一般的なエラーメッセージにも含まれる。
+            // アップロードより前の応答で止まっても上の確かめは通るので、アップロードまで進んだことを見る。
+            Assert.Equal(1, server.CountOf("POST", "/api/v1/files/"))
             Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
         })
 
@@ -421,7 +472,7 @@ let ``アップロードの応答のidが空だとSyncErrorで止まる`` () : T
 /// 空のidで組み立てたURLはパスの形が崩れるので、末尾だけで数える。
 let private filesRequestCount (server: FixedServer) : int =
     server.Received()
-    |> List.filter (fun request -> request.Path.EndsWith("/files", System.StringComparison.Ordinal))
+    |> List.filter (fun request -> request.Path.EndsWith("/files", StringComparison.Ordinal))
     |> List.length
 
 [<Fact>]

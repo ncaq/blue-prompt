@@ -2,10 +2,13 @@
 module BluePrompt.Page
 
 open System
+open System.Threading
 open System.Threading.Tasks
 open AngleSharp
 open AngleSharp.Dom
 open AngleSharp.Io
+open Polly
+open Polly.Retry
 
 /// HTTPステータスが成功以外だった時のURLとステータスコード。
 /// 接続拒否やDNS解決失敗などでレスポンス自体を得られなかった取得失敗は、
@@ -24,20 +27,28 @@ exception ContentNotFound of url: Uri * selectors: string list
 let private isTransientStatus (status: int) : bool =
     status = 0 || status = 408 || status = 429 || 500 <= status
 
-/// fetchを実行し、一時的な取得失敗ならdelaysの先頭の時間だけ待ってやり直す。
+/// 一時的な取得失敗を、delaysを前から順に待ちながらやり直すパイプライン。
 /// delaysの長さがやり直し回数の上限で、尽きた後の失敗はそのまま呼び出し元へ届く。
-/// 再帰関数をtaskの中へ置くとステートマシンを静的にコンパイルできなくなるため、モジュールの直下に置く。
-let rec private retryTransient (delays: TimeSpan list) (fetch: unit -> Task<'T>) : Task<'T> =
-    task {
-        match delays with
-        | [] -> return! fetch ()
-        | delay :: rest ->
-            try
-                return! fetch ()
-            with FetchError(_, status) when isTransientStatus status ->
-                do! Task.Delay delay
-                return! retryTransient rest fetch
-    }
+/// Pollyのやり直しは1回以上を求めるため、delaysが空ならやり直さないパイプラインにする。
+let private retryPipeline (delays: TimeSpan list) : ResiliencePipeline =
+    match Array.ofList delays with
+    | [||] -> ResiliencePipeline.Empty
+    | delays ->
+        ResiliencePipelineBuilder()
+            .AddRetry(
+                RetryStrategyOptions(
+                    ShouldHandle =
+                        (fun arguments ->
+                            match arguments.Outcome.Exception with
+                            | FetchError(_, status) -> ValueTask<bool>(isTransientStatus status)
+                            | _ -> ValueTask<bool> false),
+                    MaxRetryAttempts = delays.Length,
+                    DelayGenerator =
+                        fun arguments ->
+                            ValueTask<Nullable<TimeSpan>>(Nullable delays[arguments.AttemptNumber])
+                )
+            )
+            .Build()
 
 /// 一時的な取得失敗をやり直すまでの待ち時間の既定値。
 /// 前から順に使う指数バックオフで、長さの3回が既定のやり直し回数の上限。
@@ -103,7 +114,10 @@ let private withDocument (delays: TimeSpan list) (url: Uri) (action: IDocument -
         if url.Scheme <> Uri.UriSchemeHttp && url.Scheme <> Uri.UriSchemeHttps then
             raise (ArgumentException($"http/https以外のスキームは扱えません: %O{url}", nameof url))
 
-        return! retryTransient delays (fun () -> openDocument url action)
+        return!
+            (retryPipeline delays)
+                .ExecuteAsync(fun (_: CancellationToken) -> ValueTask<'T>(openDocument url action))
+                .AsTask()
     }
 
 /// URLを取得し、パース済みDOM全体をHTML文字列で返す。

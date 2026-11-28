@@ -8,6 +8,8 @@ module BluePrompt.Markdown
 
 open System
 open System.Text
+open Markdig.Syntax
+open Markdig.Syntax.Inlines
 open XParsec
 open XParsec.Parsers
 open XParsec.CharParsers
@@ -17,9 +19,30 @@ open XParsec.CharParsers
 /// エスケープの規則がその一箇所だけで直されて他が崩れるのを防ぐためここへ置く。
 let escapeTableCell (text: string) : string = text.Replace("|", "\\|")
 
+/// リンクを拾うためのMarkdigの解釈の設定。
+/// wikiruから作る生成物はGFMの脚注を使う。
+/// 脚注の拡張が無いと`[^1]: 本文`をリンク参照の定義として読み、
+/// 本文中の`[^1]`が脚注の本文を参照先に持つリンクになってしまう。
+/// `Markdig`を開くとこのモジュールと同じ名前の型が見えるようになるため、拡張メソッドは静的に呼ぶ。
+let private linkPipeline =
+    Markdig.MarkdownExtensions.UseFootnotes(Markdig.MarkdownPipelineBuilder()).Build()
+
+/// 文書の中のリンクと画像の参照先を、登場順に列挙する。
+/// 解釈はMarkdigに任せるので、コードの中の`[x](y)`をリンクとして拾わず、
+/// 表示名の中の括弧やtitle付きの参照先も読み違えない。
+/// 参照先が空のリンクは何も指さないので含めない。
+let linkUrls (markdown: string) : string list =
+    (Markdig.Markdown.Parse(markdown, linkPipeline)).Descendants<LinkInline>()
+    |> Seq.choose (fun link ->
+        match link.Url with
+        | Str.NullOrEmpty -> None
+        | Str.NonEmpty url -> Some url)
+    |> List.ofSeq
+
 /// インラインリンク(「[表示名](参照先)」)。参照先を返す。
 /// 表示名は空でもよく、参照先は1文字以上を求める。
-/// リンクを読む箇所が複数あるので、形の定義をここ1つにする。
+/// 出典の行のように決まった位置にあるリンクを、他のパーサと繋いで読むために使う。
+/// 文書全体からリンクを拾う時は、Markdownとして解釈するlinkUrlsを使う。
 let inlineLink: Parse.TextParser<string> =
     pchar '['
     >>. skipManySatisfies (fun c -> c <> ']')

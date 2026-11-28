@@ -6,12 +6,11 @@
 module BluePrompt.Manifest
 
 open System.IO
-open System.Threading
 open System.Threading.Tasks
 
 /// 一括更新で失敗した対象の表示名と原因。
-/// 1件の失敗で他の対象を巻き添えにせず、全ての失敗をまとめて報告する。
-exception GenerationFailed of failures: (string * exn) list
+/// 原因の例外だけではどの対象で落ちたのか分からないことがあるため、表示名を添える。
+exception GenerationFailed of name: string * error: exn
 
 /// キャラ呼称表の生成物。role-playスキルの生成も読むため、パスを共有する。
 let private appellationJson =
@@ -1089,56 +1088,35 @@ let checkCoverage () : Task<Coverage> =
 /// 無駄に並べても利益が無く、1対象ごとにpandocのプロセスも立つため、常識的な数に収める。
 let degreeOfParallelism: int = 16
 
-/// 名前付きの処理を同時実行数を絞って並列に走らせ、結果を名前ごとのResultで返す。
-/// 1件の失敗で他を打ち切らず全件を走らせ切り、
-/// 失敗をまとめて報告できるようにParallel.ForEachAsyncではなくこの形にする。
-/// 結果の並びは入力の並びと同じ。
-let runBounded
-    (degree: int)
-    (works: (string * (unit -> Task<'T>)) list)
-    : Task<(string * Result<'T, exn>) list> =
+/// 名前付きの処理を同時実行数を絞って並列に走らせ、結果を入力の並びで返す。
+/// 失敗した処理があれば新しい処理を始めず、走っている処理を待ってから、
+/// 失敗した処理の名前を添えたGenerationFailedを送出する。
+/// 複数が失敗した時に報告するのはそのうち1つだけになる。
+let runBounded (degree: int) (works: (string * (unit -> Task<'T>)) list) : Task<'T list> =
     task {
-        use gate = new SemaphoreSlim(degree)
+        let works = Array.ofList works
+        let results = Array.zeroCreate works.Length
 
-        let! results =
-            works
-            |> List.map (fun (name, work) ->
-                task {
-                    do! gate.WaitAsync()
+        do!
+            Parallel.ForEachAsync(
+                seq { 0 .. works.Length - 1 },
+                ParallelOptions(MaxDegreeOfParallelism = degree),
+                fun index _ ->
+                    let name, work = works[index]
 
-                    try
-                        try
-                            let! result = work ()
-                            return name, Ok result
-                        with error ->
-                            return name, Error error
-                    finally
-                        gate.Release() |> ignore
-                })
-            |> Task.WhenAll
+                    ValueTask(
+                        task {
+                            try
+                                let! result = work ()
+                                results[index] <- result
+                            with error ->
+                                return raise (GenerationFailed(name, error))
+                        }
+                    )
+            )
 
         return List.ofArray results
     }
-
-/// 成功した結果のパスを集め、失敗があればそれらを束ねて返す。
-let private partition
-    (results: (string * Result<string list, exn>) list)
-    : string list * (string * exn) list =
-    let paths =
-        results
-        |> List.collect (fun (_, result) ->
-            match result with
-            | Ok paths -> paths
-            | Error _ -> [])
-
-    let failures =
-        results
-        |> List.choose (fun (name, result) ->
-            match result with
-            | Ok _ -> None
-            | Error error -> Some(name, error))
-
-    paths, failures
 
 /// character.mdが挙げるナレッジのうち実在しなかった名前を、character.mdのパスごとに並べたもの。
 exception KnowledgeSkillMissing of failures: (string * string list) list
@@ -1180,19 +1158,10 @@ let missingKnowledgeSkills
 /// wikiruTargetsとrolePlaySkillsの両方を知っているのはここだけなので、この検査もここが持つ。
 ///
 /// character.mdが無い場合やフロントマターが壊れている場合は、
-/// 書き出しの中で起きた時と同じく対象ごとの理由として報告したいので、
-/// 1件の失敗で他の対象の読み込みを打ち切らずGenerationFailedへ束ねる。
-///
-/// ただし1件でも読めなければ書き出しは1つも行わない。
-/// 書き出しの失敗は対象ごとに独立しているが、
-/// 手書きの部分を読めない状態はマニフェストか作業の途中を疑うべき状況で、
-/// 半分だけ更新された生成物を残すより、全て止めて直してもらうほうが分かりやすいため。
+/// 書き出しの中で起きた時と同じく、対象の名前を添えたGenerationFailedを送出する。
 let private checkKnowledgeSkills (root: string) : Task<unit> =
     task {
         let declared = ResizeArray()
-        // 読み取れなかった失敗と、読み取れた上で実在しなかった名前は、
-        // 束ねる型も送出する例外も違うので名前で区別する。
-        let readFailures = ResizeArray()
 
         for skill in rolePlaySkills do
             let path = Path.Combine(root, skill.Output, SkillFile.character)
@@ -1201,10 +1170,7 @@ let private checkKnowledgeSkills (root: string) : Task<unit> =
                 let! content = File.ReadAllTextAsync path
                 declared.Add(path, (OpenWebui.parseFrontmatter path content).Knowledge)
             with error ->
-                readFailures.Add(Target.rolePlayName skill, error)
-
-        if 0 < readFailures.Count then
-            return raise (GenerationFailed(List.ofSeq readFailures))
+                return raise (GenerationFailed(Target.rolePlayName skill, error))
 
         match missingKnowledgeSkills (characterSkillNames wikiruTargets) (List.ofSeq declared) with
         | [] -> ()
@@ -1212,7 +1178,7 @@ let private checkKnowledgeSkills (root: string) : Task<unit> =
     }
 
 /// role-playスキルのSKILL.mdを全て並列に書き出し、書いたパスを返す。整形は掛けない。
-/// 失敗があればGenerationFailedを送出する。
+/// 失敗した時の扱いはrunBoundedのとおり。
 let writeRolePlaySkills (root: string) : Task<string list> =
     task {
         // ナレッジの検査が効くのはこの一括の経路だけで、roleplay skillの単体の生成は素通りする。
@@ -1220,16 +1186,14 @@ let writeRolePlaySkills (root: string) : Task<string list> =
         // どちらにせよManifestへ足した後の一括更新で落ちるので、ここ1箇所に留める。
         do! checkKnowledgeSkills root
 
-        let! results =
+        let! paths =
             rolePlaySkills
             |> List.map (fun skill ->
                 Target.rolePlayName skill,
                 (fun () -> Target.writeRolePlay (Target.resolveRolePlay root skill)))
             |> runBounded degreeOfParallelism
 
-        match partition results with
-        | paths, [] -> return paths
-        | _, failures -> return raise (GenerationFailed failures)
+        return List.concat paths
     }
 
 /// role-playスキルを全て生成し直してから、まとめてnix fmtを掛ける。
@@ -1240,58 +1204,26 @@ let createRolePlaySkills (root: string) : Task<unit> =
         do! Fmt.formatFiles paths
     }
 
-/// wikiruの取得の結果を受けて、role-playスキルの生成と整形と失敗の報告を決める。
-/// 全て成功していればrole-playスキルを書き出し、
-/// wikiruとrole-playのパスをまとめてformatFilesの1回で整形する。
-/// 失敗があれば成功した分だけを整形して途中まで更新された状態を整えた上で、
-/// GenerationFailedを送出する。
-/// その整形が落ちた場合も取得の失敗の理由は失わず、整形の失敗を一覧へ足して送出する。
-/// role-playスキルは呼称表と衣装別の参照ファイルを読むため、
-/// それらが古いままかもしれない失敗時には生成し直さない。
-/// 整形とrole-playの書き出しは引数で受け取り、
-/// wikiruへ取りに行かずにこの分岐を検証できるようにする。
-let finish
-    (formatFiles: string list -> Task<unit>)
-    (writeRolePlay: unit -> Task<string list>)
-    (results: (string * Result<string list, exn>) list)
-    : Task<unit> =
-    task {
-        match partition results with
-        | wikiruPaths, [] ->
-            let! rolePlayPaths = writeRolePlay ()
-            do! formatFiles (wikiruPaths @ rolePlayPaths)
-        | wikiruPaths, failures ->
-            // 整形が落ちても取得の失敗の理由は報告したいので、
-            // 整形の失敗は失敗の一覧の末尾へ加えてまとめて送出する。
-            let! formatFailure =
-                task {
-                    try
-                        do! formatFiles wikiruPaths
-                        return []
-                    with error ->
-                        return [ "nix fmt", error ]
-                }
-
-            return raise (GenerationFailed(failures @ formatFailure))
-    }
-
 /// wikiruの対象を全て並列に取得して書き出し、
 /// 続けてrole-playスキルを生成し直してから、まとめてnix fmtを1回だけ掛ける。
-/// 失敗時の扱いはfinishのとおり。
+/// 失敗した時の扱いはrunBoundedのとおりで、整形もrole-playスキルの生成もしない。
+/// role-playスキルは呼称表と衣装別の参照ファイルを読むため、
+/// それらが古いままかもしれない時には生成し直さない。
 let createAll (root: string) : Task<unit> =
     task {
         // ナレッジの検査はwikiruへアクセスせず手元のファイルだけで結果が決まるので、
         // 取得より先に掛ける。
         // 後段のwriteRolePlaySkillsでも走るが、そこまで進むと綴りの間違い1つで全ページの取得を待たされる上に、
-        // finishの成功側は書き出しが落ちると整形へ到達せず、未整形の生成物がディスクへ残る。
+        // 書き出したwikiruの生成物が整形されないままディスクへ残る。
         do! checkKnowledgeSkills root
 
-        let! results =
+        let! wikiruPaths =
             wikiruTargets
             |> List.map (fun target ->
                 Target.wikiruName target,
                 (fun () -> Target.writeWikiru (Target.resolveWikiru root target)))
             |> runBounded degreeOfParallelism
 
-        do! finish Fmt.formatFiles (fun () -> writeRolePlaySkills root) results
+        let! rolePlayPaths = writeRolePlaySkills root
+        do! Fmt.formatFiles (List.concat wikiruPaths @ rolePlayPaths)
     }

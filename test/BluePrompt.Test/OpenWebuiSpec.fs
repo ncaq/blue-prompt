@@ -84,6 +84,23 @@ let ``ドットスラッシュ無しの相対リンクも参照ファイルと�
         localLinkTargets "[a](reference.md) [b](./reference.md)"
     )
 
+[<Fact>]
+let ``コードの中のリンクの形は参照ファイルとして扱われない`` () =
+    // リンクの書き方を説明する本文が、存在しない参照ファイルとして止まらないようにする。
+    Assert.Empty(localLinkTargets "`[x](inline.md)`\n\n```\n[y](block.md)\n```\n")
+
+[<Fact>]
+let ``脚注は参照ファイルとして扱われない`` () =
+    // 脚注の定義をリンク参照の定義として読むと、脚注の本文が参照先になる。
+    Assert.Empty(localLinkTargets "本文[^1]。\n\n[^1]: 注釈\n")
+
+[<Fact>]
+let ``表示名の括弧やtitleがあっても参照先を読み違えない`` () =
+    Assert.Equal<string list>(
+        [ "nested.md"; "titled.md" ],
+        localLinkTargets """[a [b] c](nested.md) [t](titled.md "題名")"""
+    )
+
 /// 参照ファイルの解決をスキルディレクトリの上で試す。
 /// 解決はKnowledgeの組み立てが使うもので、Modelの本文はリンクを持たない。
 let private resolve (files: (string * string) list) (body: string) : (string * string) list =
@@ -138,6 +155,23 @@ let ``Rawはフロントマターを解釈せずそのまま返す`` () =
     )
 
     Assert.Equal("本文", frontmatter.Body)
+
+[<Fact>]
+let ``フロントマターの値はYAMLとして読まれる`` () =
+    // 引用符で囲めば、区切りのコロンや先頭の記号も値として書ける。
+    let content =
+        "---\nname: yuuka\ndescription: \"Role-play: [Yuuka]\"\nuser-invocable: false\n---\n\n本文\n"
+
+    let frontmatter = parseFrontmatter "character.md" content
+
+    Assert.Equal("Role-play: [Yuuka]", frontmatter.Description)
+
+[<Fact>]
+let ``YAMLとして読めないフロントマターはSkillFormatErrorになる`` () =
+    Assert.Throws<SkillFormatError>(fun () ->
+        parseFrontmatter "character.md" "---\nname: [yuuka\ndescription: desc\n---\n\n本文\n"
+        |> ignore)
+    |> ignore
 
 [<Fact>]
 let ``閉じの区切り行が無いとSkillFormatErrorになる`` () =

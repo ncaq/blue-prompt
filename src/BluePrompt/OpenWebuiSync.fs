@@ -12,11 +12,13 @@ open System.IO
 open System.Net
 open System.Net.Http
 open System.Net.Http.Headers
-open System.Text
-open System.Text.Json
+open System.Net.Http.Json
 open System.Text.Json.Serialization
 open System.Threading
 open System.Threading.Tasks
+open Polly
+open Polly.Retry
+open Polly.Timeout
 
 /// 同期先のインスタンスに依存していてこちらからは知り得ない接続情報。
 type Options =
@@ -27,42 +29,63 @@ type Options =
       KnowledgeDirectory: string option
       RagTemplateFile: string option }
 
-/// 同期先との通信や生成物の読み込みに失敗した時の理由。
+/// 同期の前提が崩れて止めた時の理由。
+/// 生成物の欠けやidの重複、紐付け先の欠落、応答の空のid、
+/// 起動待ちの打ち切り、Modelの存在確認の想定外のステータスがこれで届く。
+/// HTTPの成功以外のステータスと読めない応答は、
+/// これに包まずHttpRequestExceptionとJsonExceptionのまま届く。
 exception SyncError of message: string
+
+/// インスタンスの起動を待つ間の、1回の確認の結果をやり直すパイプライン。
+/// 接続エラーと確認の打ち切りと成功以外のステータスを、2秒おきに最初の1回を含めて30回まで試す。
+/// 接続が確立しない環境ではHttpClientの既定タイムアウト(100秒)まで1回の確認がブロックし得るため、
+/// やり直しの内側で確認ごとに5秒で打ち切る。
+let private healthPipeline: ResiliencePipeline<bool> =
+    ResiliencePipelineBuilder<bool>()
+        .AddRetry(
+            RetryStrategyOptions<bool>(
+                ShouldHandle =
+                    (fun arguments ->
+                        match arguments.Outcome.Exception with
+                        | null -> ValueTask<bool>(not arguments.Outcome.Result)
+                        | :? HttpRequestException
+                        | :? TimeoutRejectedException -> ValueTask<bool> true
+                        | _ -> ValueTask<bool> false),
+                MaxRetryAttempts = 29,
+                Delay = TimeSpan.FromSeconds 2.0,
+                BackoffType = DelayBackoffType.Constant
+            )
+        )
+        .AddTimeout(TimeSpan.FromSeconds 5.0)
+        .Build()
 
 /// socket activationで初回アクセス時に起動する構成でも同期できるように、
 /// 接続エラーも含めてリトライしながらインスタンスの起動を待つ。
 let private waitForHealth (client: HttpClient) (url: string) : Task<unit> =
-    let maxAttempts = 30
+    task {
+        let! healthy =
+            task {
+                try
+                    return!
+                        healthPipeline
+                            .ExecuteAsync(fun (token: CancellationToken) ->
+                                ValueTask<bool>(
+                                    task {
+                                        // 応答は読まずに捨てるため、接続をすぐプールへ返せるように破棄する。
+                                        use! response = client.GetAsync($"%s{url}/health", token)
+                                        return response.IsSuccessStatusCode
+                                    }
+                                ))
+                            .AsTask()
+                // やり直しが尽きた時は、最後の確認の失敗がそのまま届く。
+                with
+                | :? HttpRequestException
+                | :? TimeoutRejectedException -> return false
+            }
 
-    let rec attemptFrom (attempt: int) : Task<unit> =
-        task {
-            let! healthy =
-                task {
-                    // 接続が確立しない環境ではHttpClientの既定タイムアウト(100秒)まで、
-                    // 1試行がブロックし得るため、試行ごとに短い打ち切りを設ける。
-                    use timeout = new CancellationTokenSource(TimeSpan.FromSeconds 5.0)
-
-                    try
-                        // 応答は読まずに捨てるため、接続をすぐプールへ返せるように破棄する。
-                        use! response = client.GetAsync($"%s{url}/health", timeout.Token)
-                        return response.IsSuccessStatusCode
-                    with
-                    | :? HttpRequestException -> return false
-                    // 打ち切りはTaskCanceledExceptionとして届くためリトライ対象へ含める。
-                    | :? OperationCanceledException -> return false
-                }
-
-            if healthy then
-                return ()
-            elif maxAttempts <= attempt then
-                return raise (SyncError $"%s{url}の起動を待ちましたが応答がありません")
-            else
-                do! Task.Delay(TimeSpan.FromSeconds 2.0)
-                return! attemptFrom (attempt + 1)
-        }
-
-    attemptFrom 1
+        if not healthy then
+            raise (SyncError $"%s{url}の起動を待ちましたが応答がありません")
+    }
 
 /// サインインのボディ。
 type private SignInForm = { Email: string; Password: string }
@@ -112,14 +135,6 @@ let private noAuthCredentials =
     { Email = "admin@localhost"
       Password = "admin" }
 
-/// 応答のJSONを読む。
-/// 読めなければ、どのURLの応答がどう読めなかったのか分かる形でSyncErrorにする。
-let private parseResponse (url: string) (body: string) : 'Response =
-    try
-        OpenWebuiJson.deserialize<'Response> body
-    with :? JsonException as error ->
-        raise (SyncError $"%s{url}の応答を解釈できません: %s{error.Message} %s{body}")
-
 /// 応答から読んだidを、空でないことを確かめてから返す。
 /// キーが無ければ読み込みで失敗するが、`"id": ""`は通ってしまう。
 /// 空のまま進むとURLの組み立てやPOSTのボディが壊れた形になり、
@@ -129,71 +144,42 @@ let private requireId (url: string) (id: string) : string =
     | Str.NullOrEmpty -> raise (SyncError $"%s{url}の応答のidが空です")
     | Str.NonEmpty id -> id
 
-/// 値をJSONのボディにする。
-let private jsonContent (body: 'Body) : HttpContent =
-    new StringContent(OpenWebuiJson.serialize body, Encoding.UTF8, "application/json")
-
-/// 認証を無効化したインスタンスのadminとしてサインインし、Bearerトークンを得る。
-/// `WEBUI_AUTH`を無効にしてもAPIはトークンを要求するため、
-/// APIキーを渡さない運用ではUIが裏で行っているのと同じサインインを自分で行う。
-let private signIn (client: HttpClient) (url: string) : Task<string> =
-    task {
-        let signInUrl = $"%s{url}/api/v1/auths/signin"
-        use content = jsonContent noAuthCredentials
-        use! response = client.PostAsync(signInUrl, content)
-        let! body = response.Content.ReadAsStringAsync()
-
-        if not response.IsSuccessStatusCode then
-            // 認証を有効にしたインスタンスではこの資格情報が通らないため、
-            // APIキーの指定が要ることに気付けるようにステータスと本文を残す。
-            raise (SyncError $"%s{url}へのサインインに失敗しました: %d{int response.StatusCode} %s{body}")
-
-        let signedIn: SignInResponse = parseResponse signInUrl body
-        return signedIn.Token
-    }
-
-/// 要求を送って応答の本文を返す。
-/// 失敗した時はどのURLがどう失敗したのか分かる形でSyncErrorにする。
-let private send (client: HttpClient) (request: HttpRequestMessage) : Task<string> =
-    task {
-        let url = request.RequestUri
-        use! response = client.SendAsync request
-        let! body = response.Content.ReadAsStringAsync()
-
-        if not response.IsSuccessStatusCode then
-            raise (SyncError $"%O{url}への要求が失敗しました: %d{int response.StatusCode} %s{body}")
-
-        return body
-    }
-
 /// JSONを返すAPIをGETで呼んで、応答を読む。
+/// 成功以外のステータスはHttpRequestExceptionに、読めない応答はJsonExceptionになる。
 let private getJson (client: HttpClient) (url: string) : Task<'Response> =
-    task {
-        use request = new HttpRequestMessage(HttpMethod.Get, url)
-        let! body = send client request
-        return parseResponse url body
-    }
+    client.GetFromJsonAsync<'Response>(url, OpenWebuiJson.readOptions)
 
-/// JSONのボディをPOSTして、応答の本文を返す。
-let private post (client: HttpClient) (url: string) (body: 'Body) : Task<string> =
+/// JSONのボディをPOSTして、成功以外のステータスなら失敗させる。
+let private post (client: HttpClient) (url: string) (body: 'Body) : Task<HttpResponseMessage> =
     task {
-        use request = new HttpRequestMessage(HttpMethod.Post, url)
-        request.Content <- jsonContent body
-        return! send client request
+        let! response = client.PostAsJsonAsync(url, body, OpenWebuiJson.writeOptions)
+        return response.EnsureSuccessStatusCode()
     }
 
 /// JSONのボディをPOSTして、応答を読む。
 let private postJson (client: HttpClient) (url: string) (body: 'Body) : Task<'Response> =
     task {
-        let! response = post client url body
-        return parseResponse url response
+        use! response = post client url body
+        return! response.Content.ReadFromJsonAsync<'Response> OpenWebuiJson.readOptions
     }
 
 /// JSONのボディをPOSTする。応答は読まない。
 let private postOnly (client: HttpClient) (url: string) (body: 'Body) : Task<unit> =
     task {
-        let! _ = post client url body
+        use! _ = post client url body
         return ()
+    }
+
+/// 認証を無効化したインスタンスのadminとしてサインインし、Bearerトークンを得る。
+/// `WEBUI_AUTH`を無効にしてもAPIはトークンを要求するため、
+/// APIキーを渡さない運用ではUIが裏で行っているのと同じサインインを自分で行う。
+/// 認証を有効にしたインスタンスではこの資格情報が通らず、HttpRequestExceptionになる。
+let private signIn (client: HttpClient) (url: string) : Task<string> =
+    task {
+        let! (signedIn: SignInResponse) =
+            postJson client $"%s{url}/api/v1/auths/signin" noAuthCredentials
+
+        return signedIn.Token
     }
 
 /// Knowledgeコレクション1つ分の、同期したい内容。
@@ -272,22 +258,17 @@ let private uploadFile
     (content: byte array)
     : Task<string> =
     task {
-        use request =
-            new HttpRequestMessage(
-                HttpMethod.Post,
-                $"%s{url}/api/v1/files/?process_in_background=false"
-            )
-
-        let form = new MultipartFormDataContent()
+        use form = new MultipartFormDataContent()
         let file = new ByteArrayContent(content)
         file.Headers.ContentType <- MediaTypeHeaderValue "text/markdown"
         form.Add(file, "file", fileName)
-        request.Content <- form
 
-        let! response = send client request
-        let uploadUrl = $"%s{url}/api/v1/files/"
-        let uploaded: UploadedFile = parseResponse uploadUrl response
-        return requireId uploadUrl uploaded.Id
+        use! response = client.PostAsync($"%s{url}/api/v1/files/?process_in_background=false", form)
+
+        let! (uploaded: UploadedFile) =
+            response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync OpenWebuiJson.readOptions
+
+        return requireId $"%s{url}/api/v1/files/" uploaded.Id
     }
 
 /// Knowledgeコレクション1つを同期して、そのidを返す。
@@ -499,10 +480,10 @@ let private syncModel
             client.GetAsync $"%s{options.Url}/api/v1/models/model?id=%s{Uri.EscapeDataString id}"
 
         if response.IsSuccessStatusCode then
-            let! body = response.Content.ReadAsStringAsync()
-
-            // 応答を管理対象のフィールドだけへ正規化して比較する。
-            let current = OpenWebui.ofJson id body
+            // ModelFormに無いフィールドは読み捨てられるので、
+            // 応答は管理対象のフィールドだけへ正規化されて比較できる。
+            let! (current: OpenWebui.ModelForm) =
+                response.Content.ReadFromJsonAsync OpenWebuiJson.readOptions
 
             // base-model-idを指定しない運用では、
             // 登録後にUIで選ばれた上流モデルを上書きせず保持する。
