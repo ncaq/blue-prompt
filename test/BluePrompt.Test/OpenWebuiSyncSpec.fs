@@ -7,14 +7,14 @@
 /// 決まった応答を返すだけのサーバを相手に確かめる。
 module BluePrompt.Test.OpenWebuiSyncSpec
 
-open System.Collections.Generic
 open System.IO
-open System.Text
 open System.Threading.Tasks
+open WireMock.RequestBuilders
+open WireMock.ResponseBuilders
+open WireMock.Server
 open Xunit
 open BluePrompt
 open BluePrompt.OpenWebuiSync
-open BluePrompt.Test.LocalServer
 
 /// 受け取ったリクエスト1つ分の、テストが確かめる内容。
 type private ReceivedRequest =
@@ -38,36 +38,47 @@ type private FixedServer =
         |> List.length
 
 /// メソッドとパスごとに決まった応答を返すサーバを立てて、testへ渡す。
-/// クエリ文字列は見ず、表に無いリクエストには404を返す。
-/// 状態を持たないので、受け取ったリクエストを記録して後から確かめる。
+/// クエリ文字列は見ず、表に無いリクエストにはWireMockの既定の404を返す。
+/// 状態を持たないので、受け取ったリクエストはWireMockの記録から後で確かめる。
 let private withFixedServer
     (routes: Map<string * string, int * string>)
     (test: FixedServer -> Task<unit>)
     : Task =
-    let received = List<ReceivedRequest>()
+    task {
+        use server = WireMockServer.Start()
 
-    let respond (request: Request) : Response =
-        lock received (fun () ->
-            received.Add
+        for KeyValue((method, path), (status, body)) in routes do
+            server
+                .Given(Request.Create().UsingMethod(method).WithPath(path))
+                .RespondWith(
+                    Response
+                        .Create()
+                        .WithStatusCode(status)
+                        .WithHeader("Content-Type", "application/json")
+                        .WithBody(body)
+                )
+            |> ignore
+
+        let received () =
+            server.LogEntries
+            |> Seq.map (fun entry ->
+                let request = entry.RequestMessage
+
+                let authorization =
+                    match request.Headers.TryGetValue "Authorization" with
+                    | true, values -> Seq.tryHead values
+                    | false, _ -> None
+
                 { Method = request.Method
                   Path = request.Path
-                  Authorization = Map.tryFind "authorization" request.Headers })
+                  Authorization = authorization })
+            |> List.ofSeq
 
-        let status, body =
-            routes
-            |> Map.tryFind (request.Method, request.Path)
-            |> Option.defaultValue (404, """{"detail":"unknown"}""")
-
-        // 同期はステータスコードしか見ないので、理由句は固定の文字列で済ませる。
-        { Status = $"%d{status} Fixed"
-          ContentType = "application/json"
-          Body = Encoding.UTF8.GetBytes(body: string)
-          ExtraHeaders = [] }
-
-    withRequestServer respond (fun url ->
-        test
-            { Url = url.ToString().TrimEnd '/'
-              Received = fun () -> lock received (fun () -> List.ofSeq received) })
+        do!
+            test
+                { Url = server.Url.TrimEnd '/'
+                  Received = received }
+    }
 
 /// 起動を待ってサインインするまでの応答。
 let private signedIn =
