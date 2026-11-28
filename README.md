@@ -161,7 +161,7 @@ nix build .#claude-ai-skill
 [Open WebUI](https://github.com/open-webui/open-webui)には、
 Claude Codeのスキルのような指示書と参照ファイルの組をオンデマンドで読み込む仕組みがありません。
 そのため、
-MODEL.md(無ければSKILL.md)の本文を、
+SKILL.mdの本文を、
 システムプロンプトへ焼き込んだワークスペースModelの作成フォームJSONへ変換します。
 読ませたい参照データは本文が節として持っている前提なので、
 変換の側では参照ファイルを解決しません。

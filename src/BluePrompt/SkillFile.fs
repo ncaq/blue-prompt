@@ -8,15 +8,8 @@
 /// どちらかの名前を変える時はもう片方も直す。
 module BluePrompt.SkillFile
 
-/// スキル本体。Claude CodeとOpenCodeが読む。
+/// スキル本体。Claude CodeとOpenCodeが読み、Open WebUIのModelのシステムプロンプトにもなる。
 let skill: string = "SKILL.md"
-
-/// Open WebUIのModel向けの本文。
-/// スキル本体と同じ内容を、
-/// ナレッジが紐付けから自動で渡される前提の書き方で持つ。
-/// open-webui modelはこれがあればスキル本体より優先する。
-/// 配布するスキルのディレクトリには置かず、ビルド時にroleplay modelで生成する。
-let model: string = "MODEL.md"
 
 /// 生徒に固有の手書きの部分を書くファイル。
 /// 本文を生成するための入力で、フロントマターと本文を持つ。
@@ -31,6 +24,3 @@ let quote: string = "quote"
 
 /// スキル本体の骨格になる、全生徒で共通のテンプレート。
 let skillTemplate: string = "SKILL.template.md"
-
-/// Open WebUIのModel向けの本文の骨格になる、全生徒で共通のテンプレート。
-let modelTemplate: string = "MODEL.template.md"

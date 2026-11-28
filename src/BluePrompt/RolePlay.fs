@@ -1,6 +1,4 @@
 /// role-playスキルの本文の組み立て。
-/// 届け先はClaude Code向けのSKILL.mdとOpen WebUIのModel向けのMODEL.mdの2つで、
-/// どちらを組み立てるかは渡されたテンプレートが決める。
 /// 本文の骨格は全生徒で共通のテンプレート1つが持ち、
 /// その決まった位置へ、
 /// 生徒に固有の手書きの部分と、
@@ -314,17 +312,20 @@ let renderSkill (input: SkillInput) : string =
     + "\n\n"
     + Template.renderOrFail input.TemplatePath values input.Template
 
-/// 全生徒で共通のテンプレートと、スキルのディレクトリに併置された生成物から、本文を1つ書き出す。
+/// 全生徒で共通のテンプレートと、スキルのディレクトリに併置された生成物から、SKILL.mdを書き出す。
 /// 生徒に固有の手書きの部分と衣装別の参照ファイルと代表的な発言は、スキルのディレクトリから読む。
+/// テンプレートも出力もファイル名が決まっているため、受け取るのはそれぞれのディレクトリになる。
 /// 整形は掛けず、書き出したパスを返す。
-let private writeBody
-    (templatePath: string)
-    (outputPath: string)
+/// 整形の呼び出しは一括生成で1回にまとめられるように書き出しと分けてTargetが持つ。
+let writeSkill
     (caller: string)
+    (templateDirectory: string)
     (jsonPath: string)
     (skillDirectory: string)
     : Task<string list> =
     task {
+        let templatePath = Path.Combine(templateDirectory, SkillFile.skillTemplate)
+        let outputPath = Path.Combine(skillDirectory, SkillFile.skill)
         let characterPath = Path.Combine(skillDirectory, SkillFile.character)
         let! character = File.ReadAllTextAsync characterPath
         let! references = readReferences skillDirectory
@@ -346,41 +347,3 @@ let private writeBody
         do! File.WriteAllTextAsync(outputPath, body)
         return [ outputPath ]
     }
-
-/// Claude Code向けのSKILL.mdをスキルのディレクトリへ書き出す。
-/// テンプレートも出力もファイル名が決まっているため、受け取るのはそれぞれのディレクトリになる。
-/// 整形は掛けず、書き出したパスを返す。
-/// 整形の呼び出しは一括生成で1回にまとめられるように書き出しと分けてTargetが持つ。
-let writeSkill
-    (caller: string)
-    (templateDirectory: string)
-    (jsonPath: string)
-    (skillDirectory: string)
-    : Task<string list> =
-    writeBody
-        (Path.Combine(templateDirectory, SkillFile.skillTemplate))
-        (Path.Combine(skillDirectory, SkillFile.skill))
-        caller
-        jsonPath
-        skillDirectory
-
-/// Open WebUIのModel向けのMODEL.mdを出力先のディレクトリへ書き出す。
-/// SKILL.mdと同じ入力から組み立てられるビルド成果物なので、リポジトリへは置かない。
-/// スキルのディレクトリはそのまま配布されるので、
-/// そこへ置くと人格の指示が二重に置かれた状態になるため。
-/// Open WebUIのシステムプロンプトになるだけで人が読むものではないため、整形も掛けない。
-let writeModel
-    (caller: string)
-    (templateDirectory: string)
-    (jsonPath: string)
-    (skillDirectory: string)
-    (outputDirectory: string)
-    : Task<string list> =
-    Directory.CreateDirectory outputDirectory |> ignore
-
-    writeBody
-        (Path.Combine(templateDirectory, SkillFile.modelTemplate))
-        (Path.Combine(outputDirectory, SkillFile.model))
-        caller
-        jsonPath
-        skillDirectory

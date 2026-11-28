@@ -83,18 +83,6 @@ module RolePlaySkill =
                 | Appellation _ -> "生成済みのappellation.jsonのパス。"
                 | Output _ -> "SKILL.mdを書き出すスキルのディレクトリ。"
 
-/// マニフェストの対象をまとめて扱い、リポジトリの外へ書き出すコマンドの引数。
-module RootOutput =
-    type Args =
-        | [<ExactlyOnce>] Root of directory: string
-        | [<ExactlyOnce>] Output of directory: string
-
-        interface IArgParserTemplate with
-            member this.Usage =
-                match this with
-                | Root _ -> "マニフェストの相対パスの基準にするリポジトリのルート。"
-                | Output _ -> "書き出す先のディレクトリ。"
-
 module Sync =
     type Args =
         | [<ExactlyOnce>] Model of directory: string
@@ -149,14 +137,12 @@ module RolePlayCommand =
     [<CliPrefix(CliPrefix.None); HelpFlags("--help", "-h", "help")>]
     type Args =
         | All of ParseResults<Root.Args>
-        | Model of ParseResults<RootOutput.Args>
         | Skill of ParseResults<RolePlaySkill.Args>
 
         interface IArgParserTemplate with
             member this.Usage =
                 match this with
                 | All _ -> "マニフェストのrole-playスキルを全て生成し直してから、まとめてnix fmtを掛ける。"
-                | Model _ -> "マニフェストのrole-playスキルのOpen WebUI向けのMODEL.mdを、出力先の下のスキル名のディレクトリへ書き出す。"
                 | Skill _ -> "テンプレートへcharacter.mdと衣装別の参照データと呼称表を流し込んでSKILL.mdを書き出す。"
 
 module OpenWebuiCommand =
@@ -170,7 +156,7 @@ module OpenWebuiCommand =
             member this.Usage =
                 match this with
                 | Knowledge _ -> "SKILL.mdとリンクされた参照ファイルを見出しの単位へ分割してKnowledgeの定義を書き出す。"
-                | Model _ -> "MODEL.mdの本文をシステムプロンプトへ焼き込んだModelFormのJSONを書き出す。"
+                | Model _ -> "SKILL.mdの本文をシステムプロンプトへ焼き込んだModelFormのJSONを書き出す。"
                 | Sync _ -> "生成したModelとKnowledgeをインスタンスへ同期する。差分が無ければ書き込まない。"
 
 module RootCommand =
@@ -257,12 +243,6 @@ let private runWikiru (args: ParseResults<WikiruCommand.Args>) : int =
 let private runRolePlay (args: ParseResults<RolePlayCommand.Args>) : int =
     match args.GetSubCommand() with
     | RolePlayCommand.All sub -> run (Manifest.createRolePlaySkills (sub.GetResult Root.Root))
-    | RolePlayCommand.Model sub ->
-        run (
-            Manifest.createRolePlayModels
-                (sub.GetResult RootOutput.Root)
-                (sub.GetResult RootOutput.Output)
-        )
     | RolePlayCommand.Skill sub ->
         run (
             Target.createRolePlay
