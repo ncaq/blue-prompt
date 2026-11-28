@@ -31,8 +31,6 @@ user-invocable: false
 - デザイン: MISOM150
 - イラスト: MISOM150
 
-**登場シナリオ**
-
 ## 小ネタ
 
 連邦生徒会の一員。

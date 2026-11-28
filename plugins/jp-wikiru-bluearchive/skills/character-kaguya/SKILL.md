@@ -33,8 +33,6 @@ user-invocable: false
 - イラスト: nemoga
 - CV
 
-**登場シナリオ**
-
 ## 小ネタ
 
 山海経高級中学校、京劇部の部長。

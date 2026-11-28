@@ -303,7 +303,9 @@ let selectSections (titles: string list) (article: Article) : Article =
 /// 「入手方法」はプロフィールの表を横断する見出しセルの行で、節の見出しにはならない。
 /// 次の節の見出しまでを落とす。
 /// 基本情報をタブで切り替えるページでは、それぞれのタブの中身で同じように切り落とす。
-let trimGameplayDetails (article: Article) : Article =
+/// 基本情報を専用の型で読めたページでは型の上で落とすので、
+/// これは汎用の木のまま持っている節のための規則である。
+let private trimGameplayBlocks (blocks: Block list) : Block list =
     let isAcquisition (block: Block) : bool =
         match block with
         | Caption content -> (plainText content).Trim() = "入手方法"
@@ -332,8 +334,34 @@ let trimGameplayDetails (article: Article) : Article =
         |> fst
         |> List.rev
 
+    trim blocks
+
+/// 記事の全体へtrimGameplayBlocksを掛ける。
+let trimGameplayDetails (article: Article) : Article =
     { article with
-        Blocks = trim article.Blocks }
+        Blocks = trimGameplayBlocks article.Blocks }
+
+/// 生徒個別ページから、role-playの参照に要る部分だけを残す。
+/// 基本情報はプロフィールと紹介文までを残し、入手方法以降の性能データを落とす。
+let rolePlayCharacter (character: Character.Character) : Character.Character =
+    { character with
+        Sections =
+            character.Sections
+            |> List.map (fun section ->
+                match section.Content with
+                | Character.Basic basic ->
+                    { section with
+                        Content =
+                            Character.Basic
+                                { basic with
+                                    Acquisition = []
+                                    Status = []
+                                    Equipment = []
+                                    Supplement = [] } }
+                | Character.Other(blocks, reason) ->
+                    { section with
+                        Content = Character.Other(trimGameplayBlocks blocks, reason) }
+                | _ -> section) }
 
 /// 記事をMarkdownへ書き出す。残った本文から参照されている脚注の定義だけを末尾に置く。
 let render (article: Article) : string =
@@ -410,32 +438,56 @@ let writeArticleJson (pageName: string) (outputPath: string) : Task<unit> =
         do! writeFile outputPath (JsonCodec.serialize article)
     }
 
-/// wikiruの生徒個別ページを取得し、指定した見出しの節だけの記事の木として読む。
-let private fetchCharacterSections
+/// wikiruの生徒個別ページを取得し、指定した見出しの節だけを生徒個別ページの型として読む。
+/// 専用の型で読もうとして読めなかった節は、ページ名と節と理由を標準エラーへ出す。
+/// その節も汎用の木のまま書き出されるので生成は止めないが、
+/// 型を緩めるか汎用のままにするかを決められるように知らせる。
+/// wiki側の表が崩れているページでは、直されるまで出続ける。
+/// 例えば`ミチル（ドレス）`のステータスの表は、1行に3つの項目が入っている。
+let fetchCharacter
     (noise: string list)
     (titles: string list)
     (pageName: string)
-    : Task<Article> =
+    : Task<Character.Character> =
     task {
         let! article = fetchArticle noise pageName
-        return selectSections titles article
+        let character = CharacterReader.read (selectSections titles article)
+
+        for section, reason in Character.unreadSections character do
+            eprintfn $"専用の型で読めなかった節があります: %s{pageName}の%s{section}: %s{reason}"
+
+        return character
     }
 
 /// wikiruの生徒個別ページを読む。事実を載せているセクションだけへ選別する。
 let fetchStudentArticle (pageName: string) : Task<Article> =
-    fetchCharacterSections WikiruDom.characterNoise studentSectionTitles pageName
+    task {
+        let! character = fetchCharacter WikiruDom.characterNoise studentSectionTitles pageName
+        return CharacterWriter.toArticle character
+    }
 
 /// wikiruのプレイアブルではない登場人物のページを読む。
 /// 生徒個別ページと同じ読み方で、事実を載せているセクションだけへ選別する。
 let fetchUnplayableArticle (pageName: string) : Task<Article> =
-    fetchCharacterSections WikiruDom.characterNoise unplayableSectionTitles pageName
+    task {
+        let! character = fetchCharacter WikiruDom.characterNoise unplayableSectionTitles pageName
+        return CharacterWriter.toArticle character
+    }
 
 /// wikiruの生徒個別ページをrole-playスキルの参照用に読む。
 /// プロフィールと紹介文とボイスと小ネタだけを残す。
 let fetchRolePlayArticle (pageName: string) : Task<Article> =
     task {
-        let! article = fetchCharacterSections WikiruDom.rolePlayNoise rolePlaySectionTitles pageName
-        return trimGameplayDetails article
+        let! character = fetchCharacter WikiruDom.rolePlayNoise rolePlaySectionTitles pageName
+        return CharacterWriter.toArticle (rolePlayCharacter character)
+    }
+
+/// wikiruの生徒個別ページを生徒個別ページの型として読み、その構造をJSONで書き出す。
+/// 節が専用の型に入っているかを確認するための入口。
+let writeCharacterJson (pageName: string) (outputPath: string) : Task<unit> =
+    task {
+        let! character = fetchCharacter WikiruDom.characterNoise studentSectionTitles pageName
+        do! writeFile outputPath (JsonCodec.serialize character)
     }
 
 /// ナレッジ本体に節が1つも無かった時のページ名。

@@ -467,7 +467,7 @@ devShellが置く`blue-prompt`コマンドを使います。
 `plugins/role-play/`配下のスキルの参照ファイルと本文は生成物なので、
 手で編集せずこれらのコマンドで生成し直してください。
 `wikiru`と`roleplay`の生成コマンドは、
-読んだ構造を確認する`wikiru article`を除いて、
+読んだ構造を確認する`wikiru article`と`wikiru character`を除いて、
 書き出した直後に`nix fmt`まで実行するので、
 生成コマンドだけで内容が確定します。
 
@@ -576,6 +576,18 @@ blue-prompt roleplay skill --character '<キャラクター名>' \
 ```console
 blue-prompt wikiru article --page '<ページ名>' --output <出力ファイル>
 ```
+
+生徒個別ページは、記事の構造をさらに節ごとの専用の型として読んでいます。
+以下でその構造をJSONで確認できます。
+`content`の`Case`が`Other`の節は、専用の型で読まずに汎用の構造のまま持っている節です。
+
+```console
+blue-prompt wikiru character --page '<生徒のページ名>' --output <出力ファイル>
+```
+
+専用の型で読もうとして読めなかった節があると、
+生成コマンドはページ名と節と理由を標準エラーへ出します。
+その節も汎用の構造のまま書き出されるので、生成物の中身が欠けることはありません。
 
 読み方を直す間に同じページを何度も取りに行かないように、
 環境変数`BLUE_PROMPT_HTML_CACHE`へディレクトリを指定すると、

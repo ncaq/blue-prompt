@@ -122,6 +122,7 @@ module WikiruCommand =
         // 引数を取らないため、明示しないとサブコマンドではなくスイッチとして扱われる。
         | [<SubCommand>] Check_Manifest
         | Article of ParseResults<PageOutput.Args>
+        | Character of ParseResults<PageOutput.Args>
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -135,6 +136,7 @@ module WikiruCommand =
                 | Unplayable_Skill _ -> "プレイアブルではない登場人物のページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
                 | Check_Manifest -> "wikiruのキャラクター一覧と学校別キャラクター一覧をマニフェストと突き合わせ、漏れているページを表示する。"
                 | Article _ -> "記事を読んだ構造をMarkdownにせずJSONのまま書き出す。読み方の確認用。"
+                | Character _ -> "生徒個別ページを専用の型として読んだ構造をJSONのまま書き出す。読み方の確認用。"
 
 module RolePlayCommand =
     [<CliPrefix(CliPrefix.None); HelpFlags("--help", "-h", "help")>]
@@ -240,6 +242,7 @@ let private runWikiru (args: ParseResults<WikiruCommand.Args>) : int =
     | WikiruCommand.Unplayable_Skill sub -> create (Target.UnplayableSkill(pageOutput sub))
     | WikiruCommand.Check_Manifest -> runCheckManifest ()
     | WikiruCommand.Article sub -> run (pageOutput sub ||> Wikiru.writeArticleJson)
+    | WikiruCommand.Character sub -> run (pageOutput sub ||> Wikiru.writeCharacterJson)
 
 let private runRolePlay (args: ParseResults<RolePlayCommand.Args>) : int =
     match args.GetSubCommand() with
