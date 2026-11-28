@@ -236,6 +236,8 @@ in
       knowledge = initialKnowledge;
     };
 
+    # テストのスクリプトはホスト側のドライバで動き、コンテナの中のポートへは直接届かない。
+    # 準備と確かめのためにAPIを叩くのは、コンテナの中のコマンドとして行う。
     environment.systemPackages = [ pkgs.curl ];
   };
 

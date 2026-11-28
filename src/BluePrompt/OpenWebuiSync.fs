@@ -1,6 +1,7 @@
-/// スキルから生成したModelFormのJSON群をOpen WebUIのインスタンスへ同期する。
-/// Open WebUIのModelはDBに保存される状態なので、
-/// APIで登録済みのModelと突き合わせて、
+/// スキルから生成したModelとKnowledgeコレクションの定義と、
+/// RAGのプロンプトテンプレートをOpen WebUIのインスタンスへ同期する。
+/// Open WebUIのModelやKnowledgeはDBに保存される状態なので、
+/// APIで登録済みのものと突き合わせて、
 /// 無ければ作成し、スキルの改良などで差分があれば上書きし、
 /// 差分が無ければ書き込まない。
 /// 繰り返し実行しても結果は同じになる。
@@ -534,7 +535,8 @@ let private syncModel
             raise (SyncError $"%s{id}の存在確認に失敗しました: %d{int response.StatusCode} %s{body}")
     }
 
-/// ディレクトリ内の全ModelFormのJSONを同期する。
+/// Modelの定義のディレクトリにある全てのModelFormと、
+/// 指定されていればKnowledgeコレクションの定義とRAGテンプレートを同期する。
 let sync (options: Options) : Task<unit> =
     task {
         // パスは文字列の連結で組み立てるため、末尾スラッシュが残ると`//health`になる。
