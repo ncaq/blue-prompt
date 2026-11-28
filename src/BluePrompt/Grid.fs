@@ -104,9 +104,6 @@ let joinLines (isHeader: bool) (lines: Inline list list) : Inline list =
                     | Some separator -> joined @ Text separator :: next)
             first
 
-/// 並びの中の改行を、表のセルと同じ規則で1行へ繋ぐ。
-let joinBreaks (inlines: Inline list) : Inline list = joinLines false (splitLines inlines)
-
 /// セルの中身を、1行へ繋いだ文字と入れ子のブロックへ分ける。
 /// 段落の切れ目も改行も行の境界として同じ規則で繋ぐ。
 /// セルの中の改行は表示幅のための折り返しで、文の途中にも入るためである。
