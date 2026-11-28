@@ -181,6 +181,37 @@ let private dropNoiseLines (inlines: Inline list) : Inline list =
     | [] -> []
     | kept -> List.reduce (fun upper lower -> upper @ LineBreak :: lower) kept
 
+/// 段落を、2つ以上続いた改行の所で分ける。
+/// wikiruの本文は段落の要素を使わず、改行1つで行を、改行2つで段落を区切って書かれている。
+/// 1つだけの改行は行の区切りとして段落の中へ残す。
+/// 表のセルの中の改行は表示幅のための折り返しなので、ここへ来る前に読点の規則で繋がれている。
+let private splitParagraphs (blocks: Block list) : Block list =
+    /// 改行の連なりで区切った行のまとまり。それぞれが1つの段落になる。
+    let split (inlines: Inline list) : Inline list list =
+        let paragraphs, current, _ =
+            inlines
+            |> List.fold
+                (fun (paragraphs, current, breaks) inlineNode ->
+                    match inlineNode with
+                    | LineBreak -> paragraphs, current, breaks + 1
+                    | _ when breaks >= 2 -> List.rev current :: paragraphs, [ inlineNode ], 0
+                    | _ when breaks = 1 && not (List.isEmpty current) ->
+                        paragraphs, inlineNode :: LineBreak :: current, 0
+                    | _ -> paragraphs, inlineNode :: current, 0)
+                ([], [], 0)
+
+        List.rev (List.rev current :: paragraphs)
+
+    blocks
+    |> collectBlocks (fun block ->
+        match block with
+        | Paragraph inlines ->
+            split inlines
+            |> List.filter (fun line ->
+                not (isBlank line) || not (Set.isEmpty (footnoteLabels [ Paragraph line ])))
+            |> List.map Paragraph
+        | _ -> [ block ])
+
 /// 節の見出しの文字。
 let private titleText (section: Section) : string = (plainText section.Title).Trim()
 
@@ -205,9 +236,7 @@ let prepare (article: Article) : Article =
         article.Blocks
         |> mapInlines dropNoiseLines
         |> Listing.analyze
-        // 段落の中の改行を、表のセルと同じ読点の規則で1行へ繋ぐ。
-        // Pandocを使っていた頃の出力と揃えるための変換で、載せ替えの確認が済んだら外す。
-        |> mapInlines Grid.joinBreaks
+        |> splitParagraphs
         |> outline
 
     let kept =

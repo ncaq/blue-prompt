@@ -90,6 +90,20 @@ let ``中身の無いリンクはURLが表示文字になる`` () =
     Assert.Equal("## 小ネタ\n\n> <https://twitter.com/a/status/1>\n", markdown content)
 
 [<Fact>]
+let ``本文の改行は1つなら行を2つ続けば段落を区切る`` () =
+    // wikiruの本文は段落の要素を使わず、改行の数で行と段落を書き分けている。
+    let content =
+        [ Text.h2 "小ネタ"
+          Text.raw "1行目"
+          Elem.br []
+          Text.raw "2行目"
+          Elem.br []
+          Elem.br []
+          Text.raw "次の段落" ]
+
+    Assert.Equal("## 小ネタ\n\n1行目\n2行目\n\n次の段落\n", markdown content)
+
+[<Fact>]
 let ``脚注は参照と定義として読まれる`` () =
     let note (label: string) : XmlNode =
         Elem.a [ Attr.class' "note_super"; Attr.href "#notefoot" ] [ Text.raw $"*%s{label}" ]
