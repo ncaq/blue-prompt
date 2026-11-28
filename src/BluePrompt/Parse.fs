@@ -94,30 +94,33 @@ let startsWith (p: TextParser<'a>) (text: string) : bool = Option.isSome (tryPre
 /// 一致した箇所1つ。開始位置と長さと、パーサが返した値。
 type Found<'a> = { Index: int; Length: int; Value: 'a }
 
-/// 文字列を先頭から走査して、パーサが読めた箇所を重ならないように列挙する。
+/// 文字列を先頭から走査して、パーサが読めた箇所を重ならないように順に列挙する。
 /// 読めなかった位置は1文字進めてやり直す。
 /// 何も読み進めない成功は、同じ位置で止まり続けないように一致として扱わない。
-let findAll (p: TextParser<'a>) (text: string) : Found<'a> list =
-    let reader = Reader.ofString text ()
-    let found = ResizeArray()
+/// 列挙は求められた分だけ進むので、最初の一致だけが要る時は文書の残りを走査しない。
+let private findSeq (p: TextParser<'a>) (text: string) : Found<'a> seq =
+    seq {
+        let reader = Reader.ofString text ()
 
-    while not reader.AtEnd do
-        let start = reader.Index
+        while not reader.AtEnd do
+            let start = reader.Index
 
-        match p reader with
-        | Ok value when start < reader.Index ->
-            found.Add
-                { Index = start
-                  Length = reader.Index - start
-                  Value = value }
-        | _ ->
-            reader.Index <- start
-            reader.Skip()
+            match p reader with
+            | Ok value when start < reader.Index ->
+                yield
+                    { Index = start
+                      Length = reader.Index - start
+                      Value = value }
+            | _ ->
+                reader.Index <- start
+                reader.Skip()
+    }
 
-    List.ofSeq found
+/// パーサが読めた箇所を全て、重ならないように列挙する。
+let findAll (p: TextParser<'a>) (text: string) : Found<'a> list = List.ofSeq (findSeq p text)
 
-/// パーサが読めた最初の箇所。
-let tryFind (p: TextParser<'a>) (text: string) : Found<'a> option = List.tryHead (findAll p text)
+/// パーサが読めた最初の箇所。見つけた時点で走査を止める。
+let tryFind (p: TextParser<'a>) (text: string) : Found<'a> option = Seq.tryHead (findSeq p text)
 
 /// パーサが読めた箇所を、パーサが返した文字列へ置き換える。
 /// 走査するのは元の文字列だけなので、置き換えた後の文字列がもう一度読まれることは無い。
