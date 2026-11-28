@@ -469,7 +469,8 @@ devShellが置く`blue-prompt`コマンドを使います。
 `plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジと、
 `plugins/role-play/`配下のスキルの参照ファイルと本文は生成物なので、
 手で編集せずこれらのコマンドで生成し直してください。
-中間HTMLを確認する`wikiru html`と`wikiru student-html`以外の生成コマンドは、
+`wikiru`と`roleplay`の生成コマンドは、
+中間HTMLを確認する`wikiru html`と`wikiru student-html`を除いて、
 書き出した直後に`nix fmt`まで実行するので、
 生成コマンドだけで内容が確定します。
 
