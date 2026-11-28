@@ -386,6 +386,31 @@ let ``trimGameplayDetailsは入手方法から次のh2までを切り落とす``
     )
 
 [<Fact>]
+let ``trimGameplayDetailsはh2ではない見出しに見える行を越えて次のh2まで切り落とす`` () =
+    // 小見出しや`##x`の行は範囲の終わりではない。
+    // 終わりの判定が途中まで読んで失敗した時に、読み位置を戻して先へ進めることを固定する。
+    let markdown =
+        "## 基本情報\n\n紹介文\n\n**入手方法**\n\n### 装備\n\n内容\n\n##x\n\n## ボイス\n\nセリフ\n"
+
+    Assert.Equal(
+        "## 基本情報\n\n紹介文\n\n## ボイス\n\nセリフ\n",
+        BluePrompt.Wikiru.trimGameplayDetails markdown
+    )
+
+[<Fact>]
+let ``コードフェンスの中のh2に見える行は節の見出しとして扱わない`` () =
+    let markdown = "## 基本情報\n\n```\n## 運用考察\n```\n\n名前\n"
+
+    Assert.Equal(markdown, BluePrompt.Wikiru.filterSections [ "基本情報" ] markdown)
+    Assert.Equal<string list>([ "基本情報" ], BluePrompt.Wikiru.sectionTitles markdown)
+
+[<Fact>]
+let ``filterSectionsは落としたh2の後ろのh1を残す`` () =
+    // h1はh2の節に属さないので、手前のh2が落ちても巻き込まれない。
+    let markdown = "## 運用考察\n\n考察\n\n# 別の文書\n\n本文\n"
+    Assert.Equal("# 別の文書\n\n本文\n", BluePrompt.Wikiru.filterSections [ "基本情報" ] markdown)
+
+[<Fact>]
 let ``trimGameplayDetailsは続くh2が無ければ末尾まで切り落とす`` () =
     let markdown = "## 基本情報\n\n紹介文\n\n**入手方法**\n\n通常募集\n"
     Assert.Equal("## 基本情報\n\n紹介文\n", BluePrompt.Wikiru.trimGameplayDetails markdown)

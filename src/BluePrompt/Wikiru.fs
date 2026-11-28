@@ -189,6 +189,8 @@ let private normalizeBlankLines (markdown: string) : string =
 /// 脚注の定義行を本文から除けて、定義行の並びと残りの本文に分ける。
 /// 定義はページの末尾に置かれて最後の節へ紛れ込むため、
 /// 節を落としたり中身の有無を見たりする前に除けておく。
+/// コードフェンスの中かどうかは見ないので、フェンスの中の定義に見える行も除ける。
+/// wikiruから作るMarkdownにフェンスは現れず、読み飛ばす実装を足すほどの価値が無い。
 let private splitFootnoteDefinitions (markdown: string) : string list * string =
     let definitions, body =
         markdown.Split '\n'
