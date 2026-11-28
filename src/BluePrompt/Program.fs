@@ -121,8 +121,7 @@ module WikiruCommand =
         | Unplayable_Skill of ParseResults<PageOutput.Args>
         // 引数を取らないため、明示しないとサブコマンドではなくスイッチとして扱われる。
         | [<SubCommand>] Check_Manifest
-        | Html of ParseResults<PageOutput.Args>
-        | Student_Html of ParseResults<PageOutput.Args>
+        | Article of ParseResults<PageOutput.Args>
 
         interface IArgParserTemplate with
             member this.Usage =
@@ -135,8 +134,7 @@ module WikiruCommand =
                 | Student_Skill _ -> "生徒個別ページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
                 | Unplayable_Skill _ -> "プレイアブルではない登場人物のページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
                 | Check_Manifest -> "wikiruのキャラクター一覧と学校別キャラクター一覧をマニフェストと突き合わせ、漏れているページを表示する。"
-                | Html _ -> "記事から抽出した本文をMarkdown化せずHTMLのまま書き出す。抽出設定の確認用。"
-                | Student_Html _ -> "生徒個別ページの抽出設定で本文をHTMLのまま書き出す。抽出設定の確認用。"
+                | Article _ -> "記事を読んだ構造をMarkdownにせずJSONのまま書き出す。読み方の確認用。"
 
 module RolePlayCommand =
     [<CliPrefix(CliPrefix.None); HelpFlags("--help", "-h", "help")>]
@@ -241,9 +239,7 @@ let private runWikiru (args: ParseResults<WikiruCommand.Args>) : int =
     | WikiruCommand.Student_Skill sub -> create (Target.StudentSkill(pageOutput sub))
     | WikiruCommand.Unplayable_Skill sub -> create (Target.UnplayableSkill(pageOutput sub))
     | WikiruCommand.Check_Manifest -> runCheckManifest ()
-    | WikiruCommand.Html sub -> run (pageOutput sub ||> Wikiru.writeContentHtml Wikiru.contentQuery)
-    | WikiruCommand.Student_Html sub ->
-        run (pageOutput sub ||> Wikiru.writeContentHtml Wikiru.studentContentQuery)
+    | WikiruCommand.Article sub -> run (pageOutput sub ||> Wikiru.writeArticleJson)
 
 let private runRolePlay (args: ParseResults<RolePlayCommand.Args>) : int =
     match args.GetSubCommand() with

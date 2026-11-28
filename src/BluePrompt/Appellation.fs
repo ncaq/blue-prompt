@@ -196,16 +196,19 @@ let parse (document: IDocument) : Entry list =
         |> Seq.fold
             (fun (tableEntries, (school, club, character)) element ->
                 match element.LocalName with
-                | "h2" -> tableEntries, (Some(Extract.headingText element), None, None)
-                | "h3" -> tableEntries, (school, Some(Extract.headingText element), None)
-                | "h4" -> tableEntries, (school, club, Some(Extract.headingText element))
+                | "h2" -> tableEntries, (Some(WikiruDom.headingText element), None, None)
+                | "h3" -> tableEntries, (school, Some(WikiruDom.headingText element), None)
+                | "h4" -> tableEntries, (school, club, Some(WikiruDom.headingText element))
                 | _ when
                     (match element.ParentElement with
                      | null -> false
-                     | parent -> not (isNull (parent.Closest "table")))
+                     | parent -> not (isNull (parent.Closest "#body table")))
                     ->
                     // 他のテーブルの内側にあるテーブルは外側の行のセルの一部なので、
                     // 独立したテーブルとしては読まない。
+                    // 祖先を探す範囲は#bodyの中に限る。
+                    // wikiruは#bodyごとページ全体を組むレイアウトのテーブルのセルへ入れているため、
+                    // 限らないと全てのテーブルが内側と判定されて読み飛ばされる。
                     tableEntries, (school, club, character)
                 | _ ->
                     match school, character with

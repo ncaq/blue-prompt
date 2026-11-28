@@ -29,7 +29,7 @@ let parse (document: IDocument) : string list =
     let pages =
         document.QuerySelectorAll "#body tr"
         |> Seq.filter isStudentRow
-        |> Seq.choose (fun row -> row.QuerySelectorAll "a" |> Seq.tryPick School.linkedPageName)
+        |> Seq.choose (fun row -> row.QuerySelectorAll "a" |> Seq.tryPick WikiruDom.linkedPageName)
         |> List.ofSeq
 
     if List.isEmpty pages then

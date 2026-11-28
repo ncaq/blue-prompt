@@ -2,17 +2,14 @@
 /// 「どの学校のどの部活に誰が居るか」をレコードの列へパースし、
 /// LLM向けのMarkdownと機械読み出し用のJSONの両方をそこから生成する。
 /// このページは生徒1人を1つのテーブルとして並べたカードの敷き詰めで、
-/// pandocへそのまま流すと1行1列のテーブルが人数分並ぶだけの読めない一覧になるため、
-/// pandocを通さずDOMから直接読む。
+/// 記事として読むと1行1列のテーブルが人数分並ぶだけの読めない一覧になるため、
+/// 記事の木を通さずDOMから直接レコードへ読む。
 /// パースはHTML文字列だけで完結するため、ネットワークを使わずに単体テストで検証できる。
 module BluePrompt.School
 
 open System
 open AngleSharp.Dom
 open AngleSharp.Html.Parser
-open XParsec
-open XParsec.Parsers
-open XParsec.CharParsers
 
 /// 生徒1人分の所属。
 type Entry =
@@ -48,24 +45,13 @@ exception EntryNotFound
 /// 生徒のセルからレアリティと名前の組を読めなかった時のセルのテキスト。
 exception CellShapeError of text: string
 
-/// 未作成ページへの編集リンクかどうか。
-/// wikiruは個別ページがまだ無いキャラクターを、
-/// 名前の後ろへ編集リンクの「?」を添えた形で表示する。
-/// 「?」は名前の一部ではなく、リンク先もページ名ではなく編集フォームなので、
-/// 名前からもページ名からも除く。
-/// 新しいキャラクターのページが未作成の間だけ現れる一過性の状態だが、
-/// 生成のたびに踏み得る。
-let private isEditLink (element: IElement) : bool =
-    match element.GetAttribute "href" with
-    | null -> false
-    | href -> href.Contains "cmd=edit"
-
 /// ノードのテキストを、未作成ページへの編集リンクを除いて集める。
+/// 未作成ページは新しいキャラクターのページが作られるまでの一過性の状態だが、生成のたびに踏み得る。
 /// TextContentは子孫のテキストを全て繋いでしまうため、
 /// 編集リンクが名前を包む要素の中にあっても落とせるように、子を自分で辿る。
 let rec private nodeText (node: INode) : string =
     match node with
-    | :? IElement as element when isEditLink element -> ""
+    | :? IElement as element when WikiruDom.isEditLink element -> ""
     | node when node.HasChildNodes -> node.ChildNodes |> Seq.map nodeText |> String.concat ""
     | node -> node.TextContent
 
@@ -100,31 +86,9 @@ let private parseCell (cell: IElement) : string * string =
 
     rarity, name
 
-/// リンクの先のwikiruのページ名を取り出す。
-/// ページへのリンクは「./?<パーセントエンコードされたページ名>」の相対リンクで、
-/// 節へのリンクは末尾へ「#<節のid>」が付く。
-/// 他のページの記法で書かれたリンクはページ名を復元できないのでNoneにする。
-/// 未作成ページへの編集リンクはページ名ではなく編集フォームを指すので読まない。
-/// キャラクター一覧もリンクの書き方が同じなので、CharacterListからも使う。
-let linkedPageName (anchor: IElement) : string option =
-    /// ページへの相対リンク。パーセントエンコードされたままのページ名を返す。
-    /// ページ名の中の`%23`がデコードで`#`へ戻ってから切られると、
-    /// ページ名がそこで欠けるため、節の手前まででデコードより先に読み終える。
-    let pageLink: Parse.TextParser<string> =
-        pstring "./?" >>. manyChars (satisfy (fun c -> c <> '#'))
-
-    match anchor.GetAttribute "href" with
-    | _ when isEditLink anchor -> None
-    | null -> None
-    | href ->
-        // ページ名が空のリンクは「名前(ページ名: )」という壊れた表記になるので読まない。
-        match Parse.tryPrefix pageLink href |> Option.map Uri.UnescapeDataString with
-        | Some(Str.NonEmpty page) -> Some page
-        | _ -> None
-
 /// セルのリンク先からwikiruのページ名を取り出す。
 let private pageName (cell: IElement) : string option =
-    cell.QuerySelectorAll "a" |> Seq.tryPick linkedPageName
+    cell.QuerySelectorAll "a" |> Seq.tryPick WikiruDom.linkedPageName
 
 /// プレイアブルではない生徒を表すレアリティ。
 let unplayableRarity = "NPC"
@@ -152,8 +116,8 @@ let parse (document: IDocument) : Entry list =
         |> Seq.fold
             (fun (entries, (school, club)) element ->
                 match element.LocalName with
-                | "h2" -> entries, (Some(Extract.headingText element), None)
-                | "h3" -> entries, (school, Some(Extract.headingText element))
+                | "h2" -> entries, (Some(WikiruDom.headingText element), None)
+                | "h3" -> entries, (school, Some(WikiruDom.headingText element))
                 | _ when not (isNull (element.QuerySelector "table")) ->
                     // 中に別のテーブルを含むセルは、カード自体ではなくカードを並べる外枠なので読まない。
                     // 外枠まで読むと同じカードが二重に入り、

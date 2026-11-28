@@ -37,8 +37,7 @@ let private commands =
       "wikiru unplayable-skill",
       [| "wikiru"; "unplayable-skill"; "--page"; "ページ"; "--output"; "SKILL.md" |]
       "wikiru check-manifest", [| "wikiru"; "check-manifest" |]
-      "wikiru html", [| "wikiru"; "html"; "--page"; "ページ"; "--output"; "out.html" |]
-      "wikiru student-html", [| "wikiru"; "student-html"; "--page"; "ページ"; "--output"; "out.html" |]
+      "wikiru article", [| "wikiru"; "article"; "--page"; "ページ"; "--output"; "out.json" |]
       "roleplay all", [| "roleplay"; "all"; "--root"; "." |]
       "roleplay skill",
       [| "roleplay"
@@ -81,8 +80,7 @@ let private parsedName (argv: string array) : string =
         | Program.WikiruCommand.Student_Skill _ -> "wikiru student-skill"
         | Program.WikiruCommand.Unplayable_Skill _ -> "wikiru unplayable-skill"
         | Program.WikiruCommand.Check_Manifest -> "wikiru check-manifest"
-        | Program.WikiruCommand.Html _ -> "wikiru html"
-        | Program.WikiruCommand.Student_Html _ -> "wikiru student-html"
+        | Program.WikiruCommand.Article _ -> "wikiru article"
     | Program.RootCommand.Roleplay sub ->
         match sub.GetSubCommand() with
         | Program.RolePlayCommand.All _ -> "roleplay all"

@@ -467,7 +467,7 @@ devShellが置く`blue-prompt`コマンドを使います。
 `plugins/role-play/`配下のスキルの参照ファイルと本文は生成物なので、
 手で編集せずこれらのコマンドで生成し直してください。
 `wikiru`と`roleplay`の生成コマンドは、
-中間HTMLを確認する`wikiru html`と`wikiru student-html`を除いて、
+読んだ構造を確認する`wikiru article`を除いて、
 書き出した直後に`nix fmt`まで実行するので、
 生成コマンドだけで内容が確定します。
 
@@ -569,14 +569,21 @@ blue-prompt roleplay skill --character '<キャラクター名>' \
   --output <スキルのディレクトリ>
 ```
 
-抽出設定を調整する時は、
-以下でpandoc変換前の中間HTMLを確認できます。
-生徒個別ページは抽出設定が異なるので`student-html`を使います。
-どちらも`nix fmt`を実行しません。
+ページの読み方を調整する時は、
+以下でMarkdownへ書き出す前の記事の構造をJSONで確認できます。
+`nix fmt`は実行しません。
 
 ```console
-blue-prompt wikiru html --page '<ページ名>' --output <出力ファイル>
-blue-prompt wikiru student-html --page '<生徒のページ名>' --output <出力ファイル>
+blue-prompt wikiru article --page '<ページ名>' --output <出力ファイル>
+```
+
+読み方を直す間に同じページを何度も取りに行かないように、
+環境変数`BLUE_PROMPT_HTML_CACHE`へディレクトリを指定すると、
+取得したHTMLをそこへ保存して2回目以降はそこから読みます。
+wikiの更新を取り込む時は指定しないでください。
+
+```console
+BLUE_PROMPT_HTML_CACHE=<キャッシュのディレクトリ> blue-prompt wikiru all --root .
 ```
 
 ### Open WebUI向けの生成と同期

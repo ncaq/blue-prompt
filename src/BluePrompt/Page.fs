@@ -21,10 +21,6 @@ open Polly.Retry
 /// 空ドキュメントの検知で写像したstatus=0として現れる。
 exception FetchError of url: Uri * status: int
 
-/// コンテンツ抽出でどのセレクタも要素に一致しなかった時の取得元URLとセレクタ一覧。
-/// Extract.ContentNotFoundへ取得の文脈である取得元URLを付け足した例外。
-exception ContentNotFound of url: Uri * selectors: string list
-
 /// リトライで解決しうる一時的な失敗かどうか。
 /// status=0はレスポンス自体を得られなかった接続失敗で、
 /// 一瞬のネットワーク断やDNSの不調なら時間を置くと成功しうる。
@@ -233,43 +229,3 @@ let fetchWith (settings: Settings) (url: Uri) (action: IDocument -> 'T) : Task<'
 /// fetchWithを既定の取得のしかたで呼ぶ。
 let fetch (url: Uri) (action: IDocument -> 'T) : Task<'T> =
     fetchWith (defaultSettings ()) url action
-
-/// URLを取得し、パース済みDOM全体をHTML文字列で返す。
-/// 一時的な取得失敗はdelaysの間隔でリトライする。
-/// 失敗条件はfetchWithと同じ。
-let fetchHtmlWith (delays: TimeSpan list) (url: Uri) : Task<string> =
-    fetchWith
-        { defaultSettings () with
-            RetryDelays = delays }
-        url
-        (fun document -> document.ToHtml())
-
-/// fetchHtmlWithを既定のリトライ間隔で呼ぶ。
-let fetchHtml (url: Uri) : Task<string> = fetchHtmlWith defaultRetryDelays url
-
-/// URLを取得し、queryに従って本文だけをHTML文字列として抜き出す。
-/// 一時的な取得失敗はdelaysの間隔でリトライする。
-/// ローダーが構築したDOMをそのままExtractへ渡すため、直列化と再パースは行わない。
-/// 抽出の挙動はExtract.contentHtmlOfDocumentと同じ。
-/// 取得の失敗条件はfetchWithと同じ。
-/// 抽出が全滅した場合はExtract.ContentNotFoundを取得元URL付きのContentNotFoundへ包み直す。
-let fetchContentHtmlWith
-    (delays: TimeSpan list)
-    (url: Uri)
-    (query: Extract.ContentQuery)
-    : Task<string> =
-    task {
-        try
-            return!
-                fetchWith
-                    { defaultSettings () with
-                        RetryDelays = delays }
-                    url
-                    (Extract.contentHtmlOfDocument query)
-        with Extract.ContentNotFound selectors ->
-            return raise (ContentNotFound(url = url, selectors = selectors))
-    }
-
-/// fetchContentHtmlWithを既定のリトライ間隔で呼ぶ。
-let fetchContentHtml (url: Uri) (query: Extract.ContentQuery) : Task<string> =
-    fetchContentHtmlWith defaultRetryDelays url query
