@@ -233,6 +233,9 @@ let knowledgeSkillsMarkdown (path: string) (knowledge: string list) : string =
 /// フィールド名の先頭を小文字にした名前が、テンプレートに書く`{{名前}}`の穴になる。
 /// テンプレートはここの穴を全て使う必要があり、
 /// 過不足があると差し込むはずの内容が黙って落ちないようにTemplate.renderOrFailが止める。
+///
+/// フィールド名はテンプレートとの約束なので、名前を変える時はテンプレートの穴も直す。
+/// 穴へは文字列をそのまま差し込むため、フィールドは全てstringにする。
 type TemplateValues =
     {
         /// 演じる生徒の呼び名。
@@ -255,11 +258,16 @@ type TemplateValues =
 
 /// テンプレートの穴の名前から差し込む値への対応にする。
 /// 穴の名前はTemplateValuesのフィールド名から導いて、名前を書く場所を1つにする。
+/// string以外のフィールドを足すとコンパイルは通ってしまうため、
+/// 実行時にどのフィールドなのかを添えて止める。
 let private templateValueMap (values: TemplateValues) : Map<string, string> =
     FSharpType.GetRecordFields typeof<TemplateValues>
     |> Array.map (fun field ->
         let name = Char.ToLowerInvariant field.Name[0] |> string<char>
-        name + field.Name.Substring 1, field.GetValue values :?> string)
+
+        match field.GetValue values with
+        | :? string as value -> name + field.Name.Substring 1, value
+        | _ -> invalidOp $"TemplateValuesの%s{field.Name}がstringではありません")
     |> Map.ofArray
 
 /// 本文を組み立てるのに要る、ファイルから読み終えた入力一式。
