@@ -317,9 +317,12 @@ let renderSkill (input: SkillInput) : string =
     if String.IsNullOrEmpty input.Character.Body then
         raise (CharacterBodyNotFound input.CharacterPath)
 
+    // 呼称表に行が無い生徒でも、テンプレートの「表に無い相手」の指示がそのまま効くので、
+    // 表が無いことだけを書いて止めずに生成する。
     let appellation =
         Wikiru.sourceHeader (Uri input.Appellation.Source)
-        + Appellation.toCallerMarkdown input.Caller input.Appellation.Entries
+        + (Appellation.toCallerMarkdown input.Caller input.Appellation.Entries
+           |> Option.defaultValue $"呼称表にはまだ%s{input.Caller}の行がありません。\n")
 
     let values =
         { Caller = input.Caller
