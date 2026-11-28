@@ -56,7 +56,7 @@ exception ReferenceNotFound of directory: string
 /// 衣装の節は一段目の見出しを立てた下へ中身をそのまま収めるので、
 /// 中身に一段目の見出しが現れると節の切れ目が消えて、
 /// 以降の内容が別の衣装の兄弟として並ぶ。
-/// 抽出設定を変えた時にしか起きないが、生成物を目で追わない限り気付けない壊れ方なので、
+/// ページの読み方を変えた時にしか起きないが、生成物を目で追わない限り気付けない壊れ方なので、
 /// 見出しから始まらない発言をQuoteShapeErrorで弾くのと同じく、読んだ時点で止める。
 let parseReference (path: string) (markdown: string) : Reference =
     let missing name =

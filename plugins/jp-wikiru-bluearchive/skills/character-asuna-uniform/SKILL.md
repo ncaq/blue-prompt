@@ -179,16 +179,11 @@ user-invocable: false
 
 ### 必要素材
 
-- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![ミステリーストーンの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D79737465727953746F6E655F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 1-5, 素材: x2(10), x10(50), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![ミステリーストーンの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D79737465727953746F6E655F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: x2(10), x15(75), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![ミステリーストーンの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D79737465727953746F6E655F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: x2(10), x20(100), クレジットポイント: 100,000(500,000)
-- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![壊れたミステリーストーン](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D79737465727953746F6E655F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 16-20, 素材: x4(20), x6(30), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![壊れたミステリーストーン](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D79737465727953746F6E655F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: x4(20), x8(40), クレジットポイント: 200,000(1,000,000)
+- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![ミステリーストーンの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D79737465727953746F6E655F302E706E67.png) x10(50), クレジットポイント: 100,000(500,000)
+- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![ミステリーストーンの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D79737465727953746F6E655F302E706E67.png) x15(75), クレジットポイント: 100,000(500,000)
+- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![ミステリーストーンの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D79737465727953746F6E655F302E706E67.png) x20(100), クレジットポイント: 100,000(500,000)
+- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![壊れたミステリーストーン](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D79737465727953746F6E655F312E706E67.png) x6(30), クレジットポイント: 200,000(1,000,000)
+- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![壊れたミステリーストーン](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D79737465727953746F6E655F312E706E67.png) x8(40), クレジットポイント: 200,000(1,000,000)
 
 ※括弧内は5Lv分合計
 
@@ -319,4 +314,6 @@ user-invocable: false
 
 ## 小ネタ
 
-学生らしく制服に着替えたアスナ。 時計仕掛けの花のパヴァーヌ2章でゲヘナ学園の調査任務をしていた時の他、4周年イベント「Code:Box」にてトリニティ生を案内するガイドの役割をする時に身に着けた。 普段はメイドらしく先生の事を『ご主人様』と呼んでいるが、この格好の時はメインストーリー初登場の時同様に『先生』と呼んでいる。
+学生らしく制服に着替えたアスナ。
+時計仕掛けの花のパヴァーヌ2章でゲヘナ学園の調査任務をしていた時の他、4周年イベント「Code:Box」にてトリニティ生を案内するガイドの役割をする時に身に着けた。
+普段はメイドらしく先生の事を『ご主人様』と呼んでいるが、この格好の時はメインストーリー初登場の時同様に『先生』と呼んでいる。

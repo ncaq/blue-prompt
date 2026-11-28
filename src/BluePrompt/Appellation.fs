@@ -1,7 +1,8 @@
 /// wikiruのキャラ呼称表の構造化。
 /// 「誰が誰をどう呼ぶか」をレコードの列へパースし、
 /// LLM向けのMarkdownと機械読み出し用のJSONの両方をそこから生成する。
-/// パースはHTML文字列だけで完結するため、ネットワークを使わずに単体テストで検証できる。
+/// パースは渡されたDOMを読むだけで自分では取得しないため、
+/// HTML文字列から組んだDOMを渡せば、ネットワークを使わずに単体テストで検証できる。
 module BluePrompt.Appellation
 
 open System
@@ -83,7 +84,6 @@ let private noteOfReference (notes: Map<string, string>) (reference: IElement) :
 /// セルの中身を「名前と注釈の組」の列へ分解する。
 /// 名前の区切りはbr要素と読点「、」の両方が使われているため、どちらでも区切る。
 /// 脚注アンカーは直前の名前への注釈として付ける。
-/// 存在しないページへの編集リンク(「?」の表示になる)は名前の一部ではないため無視する。
 let private parseCell
     (notes: Map<string, string>)
     (cell: IElement)
@@ -114,12 +114,6 @@ let private parseCell
                     | None -> segments, (text, noteTexts)
                 | :? IElement as element when element.LocalName = "br" ->
                     finalize (text, noteTexts) segments, ("", [])
-                | :? IElement as element when
-                    (match element.GetAttribute "href" with
-                     | null -> false
-                     | href -> href.Contains "cmd=edit")
-                    ->
-                    segments, (text, noteTexts)
                 | node ->
                     match node.TextContent.Split '、' |> Array.toList with
                     | [] -> segments, (text, noteTexts)
@@ -186,6 +180,9 @@ let private parseTable
 /// コメント欄のように呼称表を持たないセクションは自然に読み飛ばされる。
 /// wiki側の編集ミスで同じ行が2度書かれることがあるため、完全一致のレコードは1件へまとめる。
 /// 1件も得られなかった場合はEntryNotFoundを送出する。
+/// 編集フォームへのリンクはWikiruDom.resolveEditLinksで片付けたDOMを受ける。
+/// 個別ページがまだ無い相手の名前は編集フォームへのリンクになっていて、
+/// 片付けた後は名前の文字だけが残るので、他の名前と同じに読める。
 let parse (document: IDocument) : Entry list =
     let notes = noteMap document
 
@@ -196,16 +193,19 @@ let parse (document: IDocument) : Entry list =
         |> Seq.fold
             (fun (tableEntries, (school, club, character)) element ->
                 match element.LocalName with
-                | "h2" -> tableEntries, (Some(Extract.headingText element), None, None)
-                | "h3" -> tableEntries, (school, Some(Extract.headingText element), None)
-                | "h4" -> tableEntries, (school, club, Some(Extract.headingText element))
+                | "h2" -> tableEntries, (Some(WikiruDom.headingText element), None, None)
+                | "h3" -> tableEntries, (school, Some(WikiruDom.headingText element), None)
+                | "h4" -> tableEntries, (school, club, Some(WikiruDom.headingText element))
                 | _ when
                     (match element.ParentElement with
                      | null -> false
-                     | parent -> not (isNull (parent.Closest "table")))
+                     | parent -> not (isNull (parent.Closest "#body table")))
                     ->
                     // 他のテーブルの内側にあるテーブルは外側の行のセルの一部なので、
                     // 独立したテーブルとしては読まない。
+                    // 祖先を探す範囲は#bodyの中に限る。
+                    // wikiruは#bodyごとページ全体を組むレイアウトのテーブルのセルへ入れているため、
+                    // 限らないと全てのテーブルが内側と判定されて読み飛ばされる。
                     tableEntries, (school, club, character)
                 | _ ->
                     match school, character with
@@ -225,9 +225,11 @@ let parse (document: IDocument) : Entry list =
     entries
 
 /// HTML文字列から呼称表の全レコードを取り出す。
-/// パースしてparseへ委譲する。挙動と失敗条件はそちらと同じ。
+/// パースして、取得した時と同じく編集フォームへのリンクを片付けてから、parseへ委譲する。
+/// 挙動と失敗条件はそちらと同じ。
 let parseHtml (html: string) : Entry list =
     use document = HtmlParser().ParseDocument html
+    WikiruDom.resolveEditLinks document
     parse document
 
 /// 名前に注釈があれば半角括弧で後ろへ添える。

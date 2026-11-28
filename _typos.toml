@@ -1,21 +1,20 @@
+[files]
+# plugins以下は綴りの検査から外す。
+# 中身の大半はwikiruの記事から生成したファイルで、
+# typosが英単語の綴り違いと判定した固有の表記を書き換えると、書かれている事実が変わってしまう。
+# 実際にセーブデータの名前の「kei.sav」が「kei.save」に、
+# 銃の拡張の規格の「M-LOK」が「M-LOOK」に書き換わっていた。
+# 手で書くファイルも混ざっているが、生成物だけを選り分けると指定が込み入るので、ディレクトリごと外す。
+extend-exclude = ["/plugins/"]
+
 [default.extend-words]
 # Part of "RGBa" (Pillow's pre-multiplied alpha RGB mode)
 Ba = "Ba"
 # HSA is something AMD uses for their GPUs
 HSA = "HSA"
-# ブルーアーカイブの登場人物「アリス」のwikiruの画像のファイル名alis-reload.pngの一部。
-alis = "alis"
 # 社名。分割で認識されなくなります。
 Hashi = "Hashi"
 # Immediately Invoked Function Expression (IIFE)の略語。camelCase分割で"IIF"をtypoと判定する。
 IIF = "IIF"
-# ブルーアーカイブのBGM名「U mak3 m3 smil3」のleetspeak表記。数字での分割で"mak"をtypoと判定する。
-mak = "mak"
 # ブルーアーカイブの登場人物「リン」のスキル名character-rinの一部。
 rin = "rin"
-# 「**S**uper」のように頭文字だけを強調した表記。強調の記号での分割で"uper"をtypoと判定する。
-uper = "uper"
-
-[default.extend-identifiers]
-# ブルーアーカイブのメモリアルロビー制作スタッフ名。camelCase分割で"Ist"をtypoと判定する。
-POIst = "POIst"

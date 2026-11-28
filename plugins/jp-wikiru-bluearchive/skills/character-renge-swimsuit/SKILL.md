@@ -178,16 +178,11 @@ user-invocable: false
 
 ### 必要素材
 
-- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![中空十二面体の欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F446F64656361686564726F6E5F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 1-5, 素材: x2(10), x10(50), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![中空十二面体の欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F446F64656361686564726F6E5F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: x2(10), x15(75), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![中空十二面体の欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F446F64656361686564726F6E5F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: x2(10), x20(100), クレジットポイント: 100,000(500,000)
-- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![壊れた中空十二面体](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F446F64656361686564726F6E5F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 16-20, 素材: x4(20), x6(30), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![壊れた中空十二面体](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F446F64656361686564726F6E5F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: x4(20), x8(40), クレジットポイント: 200,000(1,000,000)
+- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![中空十二面体の欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F446F64656361686564726F6E5F302E706E67.png) x10(50), クレジットポイント: 100,000(500,000)
+- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![中空十二面体の欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F446F64656361686564726F6E5F302E706E67.png) x15(75), クレジットポイント: 100,000(500,000)
+- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![中空十二面体の欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F446F64656361686564726F6E5F302E706E67.png) x20(100), クレジットポイント: 100,000(500,000)
+- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![壊れた中空十二面体](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F446F64656361686564726F6E5F312E706E67.png) x6(30), クレジットポイント: 200,000(1,000,000)
+- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![壊れた中空十二面体](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F446F64656361686564726F6E5F312E706E67.png) x8(40), クレジットポイント: 200,000(1,000,000)
 
 ※括弧内は5Lv分合計
 
@@ -313,4 +308,6 @@ user-invocable: false
 
 ## 小ネタ
 
-百ヨリ出ズル一輪ノ 〜いざ尋常に、水上勝負〜で披露された水着姿のレンゲ。 ★2の生徒としては2023年8月23日のモミジ以来久しぶりの実装(約22か月ぶり)となり、通常版が★3生徒の衣装違いとしては初めての事例となる。 また、幼馴染という間柄からかピックアップ募集もキキョウ（水着）と共同となる。
+百ヨリ出ズル一輪ノ 〜いざ尋常に、水上勝負〜で披露された水着姿のレンゲ。
+★2の生徒としては2023年8月23日のモミジ以来久しぶりの実装(約22か月ぶり)となり、通常版が★3生徒の衣装違いとしては初めての事例となる。
+また、幼馴染という間柄からかピックアップ募集もキキョウ（水着）と共同となる。

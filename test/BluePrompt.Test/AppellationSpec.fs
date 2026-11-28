@@ -290,6 +290,33 @@ let ``セル内に入れ子のテーブルがあっても外側の行だけが�
     Assert.Equal("シロコちゃん", (List.exactlyOne (parseHtml html)).Name)
 
 [<Fact>]
+let ``本文がレイアウトのテーブルのセルの中にあっても呼称表は読まれる`` () =
+    // wikiruは#bodyごと、ページ全体を組むレイアウトのテーブルのセルへ入れている。
+    // 入れ子のテーブルの判定が#bodyの外の祖先まで見ると、全ての呼称表を内側と判定して読み飛ばす。
+    let body =
+        characterBody "ホシノ" [ appellationRow "ホシノ" [ Text.raw "自分" ] [ Text.raw "おじさん" ] ]
+
+    let html =
+        renderNode (
+            Elem.table [] [ Elem.tr [] [ Elem.td [] [ Text.raw "サイドバー" ]; Elem.td [] [ body ] ] ]
+        )
+
+    Assert.Equal("おじさん", (List.exactlyOne (parseHtml html)).Name)
+
+[<Fact>]
+let ``名前が編集リンクになっている未作成ページの相手は名前が残る`` () =
+    // 実際のwikiruは、個別ページがまだ無い相手の名前そのものを編集フォームへのリンクにする。
+    let name =
+        Elem.span
+            [ Attr.class' "noexists" ]
+            [ Elem.a [ Attr.href "./?cmd=edit&amp;page=X&amp;refer=Y" ] [ Text.raw "キョウコ" ] ]
+
+    let html =
+        renderCharacterPage "コノカ" [ appellationRow "コノカ" [ name ] [ Text.raw "キョウコちゃん" ] ]
+
+    Assert.Equal("キョウコ", (List.exactlyOne (parseHtml html)).Callee)
+
+[<Fact>]
 let ``完全に同じ内容の行はレコードとしては1件になる`` () =
     // wiki側の編集ミスで同じ行が丸ごと2度書かれることがあり、
     // そのまま残すとJSONにもMarkdownにも同じ呼称が重複して出る。

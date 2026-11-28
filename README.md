@@ -401,6 +401,11 @@ NEXON Games Co., Ltd. および Yostar, Inc. に帰属します。
 nix fmt
 ```
 
+このうち綴りの検査(typos)は、`plugins`以下を対象から外しています。
+中身の大半がwikiruの記事から生成したファイルで、
+「M-LOOK」のような固有の表記を英単語の綴り違いとして書き換えてしまうためです。
+`plugins`以下の手で書くファイルの綴りも検査されないので、自分で確かめてください。
+
 統合チェックは以下で実行できます。
 
 ```console
@@ -467,7 +472,7 @@ devShellが置く`blue-prompt`コマンドを使います。
 `plugins/role-play/`配下のスキルの参照ファイルと本文は生成物なので、
 手で編集せずこれらのコマンドで生成し直してください。
 `wikiru`と`roleplay`の生成コマンドは、
-中間HTMLを確認する`wikiru html`と`wikiru student-html`を除いて、
+読んだ構造を確認する`wikiru article`と`wikiru character`を除いて、
 書き出した直後に`nix fmt`まで実行するので、
 生成コマンドだけで内容が確定します。
 
@@ -569,14 +574,33 @@ blue-prompt roleplay skill --character '<キャラクター名>' \
   --output <スキルのディレクトリ>
 ```
 
-抽出設定を調整する時は、
-以下でpandoc変換前の中間HTMLを確認できます。
-生徒個別ページは抽出設定が異なるので`student-html`を使います。
-どちらも`nix fmt`を実行しません。
+ページの読み方を調整する時は、
+以下でMarkdownへ書き出す前の記事の構造をJSONで確認できます。
+`nix fmt`は実行しません。
 
 ```console
-blue-prompt wikiru html --page '<ページ名>' --output <出力ファイル>
-blue-prompt wikiru student-html --page '<生徒のページ名>' --output <出力ファイル>
+blue-prompt wikiru article --page '<ページ名>' --output <出力ファイル>
+```
+
+生徒個別ページは、記事の構造をさらに節ごとの専用の型として読んでいます。
+以下でその構造をJSONで確認できます。
+`content`の`Case`が`Other`の節は、専用の型で読まずに汎用の構造のまま持っている節です。
+
+```console
+blue-prompt wikiru character --page '<生徒のページ名>' --output <出力ファイル>
+```
+
+専用の型で読もうとして読めなかった節があると、
+生成コマンドはページ名と節と理由を標準エラーへ出します。
+その節も汎用の構造のまま書き出されるので、生成物の中身が欠けることはありません。
+
+読み方を直す間に同じページを何度も取りに行かないように、
+環境変数`BLUE_PROMPT_HTML_CACHE`へディレクトリを指定すると、
+取得したHTMLをそこへ保存して2回目以降はそこから読みます。
+wikiの更新を取り込む時は指定しないでください。
+
+```console
+BLUE_PROMPT_HTML_CACHE=<キャッシュのディレクトリ> blue-prompt wikiru all --root .
 ```
 
 ### Open WebUI向けの生成と同期

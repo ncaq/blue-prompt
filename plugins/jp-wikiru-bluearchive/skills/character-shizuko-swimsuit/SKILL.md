@@ -179,16 +179,11 @@ user-invocable: false
 
 ### 必要素材
 
-- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![断片的なヴォイニッチ手稿のコピー](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F566F796E6963685F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 1-5, 素材: x2(10), x10(50), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![断片的なヴォイニッチ手稿のコピー](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F566F796E6963685F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: x2(10), x15(75), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![断片的なヴォイニッチ手稿のコピー](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F566F796E6963685F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: x2(10), x20(100), クレジットポイント: 100,000(500,000)
-- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![傷んだヴォイニッチ手稿のコピー](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F566F796E6963685F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 16-20, 素材: x4(20), x6(30), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![傷んだヴォイニッチ手稿のコピー](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F566F796E6963685F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: x4(20), x8(40), クレジットポイント: 200,000(1,000,000)
+- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![断片的なヴォイニッチ手稿のコピー](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F566F796E6963685F302E706E67.png) x10(50), クレジットポイント: 100,000(500,000)
+- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![断片的なヴォイニッチ手稿のコピー](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F566F796E6963685F302E706E67.png) x15(75), クレジットポイント: 100,000(500,000)
+- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![断片的なヴォイニッチ手稿のコピー](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F566F796E6963685F302E706E67.png) x20(100), クレジットポイント: 100,000(500,000)
+- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![傷んだヴォイニッチ手稿のコピー](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F566F796E6963685F312E706E67.png) x6(30), クレジットポイント: 200,000(1,000,000)
+- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![傷んだヴォイニッチ手稿のコピー](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F566F796E6963685F312E706E67.png) x8(40), クレジットポイント: 200,000(1,000,000)
 
 ※括弧内は5Lv分合計
 
@@ -294,7 +289,8 @@ user-invocable: false
 
 ## 小ネタ
 
-百夜堂の海の家支店の経営に熱を上げる水着姿の看板娘。 先生にいいところを見せたいとやや暴走気味。
+百夜堂の海の家支店の経営に熱を上げる水着姿の看板娘。
+先生にいいところを見せたいとやや暴走気味。
 
 一部表情差分に色気があるという感想を抱く先生も…。
 
@@ -314,4 +310,5 @@ user-invocable: false
 
 ![表情差分8.jpg](https://bluearchive.wikiru.jp/attach2/E382B7E382BAE382B3EFBC88E6B0B4E79D80EFBC89_E8A1A8E68385E5B7AEE58886382E6A7067.jpg)
 
-彼女の着ている水着はフリルでかわいらしく見えるが、実はかなり際どいのでは？と一部で囁かれていたが、 2025/6/19に公開された【あおはるレコード】第113話([公式Xリンク](https://x.com/Blue_ArchiveJP/status/1935533059601993874))において後姿が確認され、先生達に衝撃が走った。
+彼女の着ている水着はフリルでかわいらしく見えるが、実はかなり際どいのでは？と一部で囁かれていたが、
+2025/6/19に公開された【あおはるレコード】第113話([公式Xリンク](https://x.com/Blue_ArchiveJP/status/1935533059601993874))において後姿が確認され、先生達に衝撃が走った。

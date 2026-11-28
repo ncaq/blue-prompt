@@ -2,7 +2,8 @@
 /// 実装済みの生徒を衣装違いも含めて1行ずつ並べた表で、
 /// 学校別キャラクター一覧には現れない衣装違いのページ名をここから得る。
 /// マニフェストの生徒の一覧に漏れが無いかを確かめるために使う。
-/// パースはHTML文字列だけで完結するため、ネットワークを使わずに単体テストで検証できる。
+/// パースは渡されたDOMを読むだけで自分では取得しないため、
+/// HTML文字列から組んだDOMを渡せば、ネットワークを使わずに単体テストで検証できる。
 module BluePrompt.CharacterList
 
 open System
@@ -24,12 +25,13 @@ let private isStudentRow (row: IElement) : bool =
 /// パース済みDOMから、一覧に並ぶ生徒個別ページのページ名を表の順に取り出す。
 /// 行の中で最初に現れるページへのリンクが、アイコンに張られた生徒個別ページへのリンクになる。
 /// 行の末尾の表の編集リンクは相対リンクではないので読まれない。
+/// 編集フォームへのリンクはWikiruDom.resolveEditLinksで片付けたDOMを受ける。
 /// 1件も得られなかった場合はEntryNotFoundを送出する。
 let parse (document: IDocument) : string list =
     let pages =
         document.QuerySelectorAll "#body tr"
         |> Seq.filter isStudentRow
-        |> Seq.choose (fun row -> row.QuerySelectorAll "a" |> Seq.tryPick School.linkedPageName)
+        |> Seq.choose (fun row -> row.QuerySelectorAll "a" |> Seq.tryPick WikiruDom.linkedPageName)
         |> List.ofSeq
 
     if List.isEmpty pages then
@@ -38,7 +40,9 @@ let parse (document: IDocument) : string list =
     pages
 
 /// HTML文字列から生徒個別ページのページ名を取り出す。
-/// パースしてparseへ委譲する。挙動と失敗条件はそちらと同じ。
+/// パースして、取得した時と同じく編集フォームへのリンクを片付けてから、parseへ委譲する。
+/// 挙動と失敗条件はそちらと同じ。
 let parseHtml (html: string) : string list =
     use document = HtmlParser().ParseDocument html
+    WikiruDom.resolveEditLinks document
     parse document

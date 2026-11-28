@@ -199,16 +199,11 @@ user-invocable: false
 
 ### 必要素材
 
-- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![髪伸び人形の破片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4861697247726F77696E67446F6C6C5F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 1-5, 素材: x2(10), x10(50), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![髪伸び人形の破片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4861697247726F77696E67446F6C6C5F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: x2(10), x15(75), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![髪伸び人形の破片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4861697247726F77696E67446F6C6C5F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: x2(10), x20(100), クレジットポイント: 100,000(500,000)
-- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![破損した髪伸び人形](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4861697247726F77696E67446F6C6C5F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 16-20, 素材: x4(20), x6(30), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![破損した髪伸び人形](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4861697247726F77696E67446F6C6C5F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: x4(20), x8(40), クレジットポイント: 200,000(1,000,000)
+- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![髪伸び人形の破片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4861697247726F77696E67446F6C6C5F302E706E67.png) x10(50), クレジットポイント: 100,000(500,000)
+- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![髪伸び人形の破片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4861697247726F77696E67446F6C6C5F302E706E67.png) x15(75), クレジットポイント: 100,000(500,000)
+- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![髪伸び人形の破片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4861697247726F77696E67446F6C6C5F302E706E67.png) x20(100), クレジットポイント: 100,000(500,000)
+- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![破損した髪伸び人形](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4861697247726F77696E67446F6C6C5F312E706E67.png) x6(30), クレジットポイント: 200,000(1,000,000)
+- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![破損した髪伸び人形](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4861697247726F77696E67446F6C6C5F312E706E67.png) x8(40), クレジットポイント: 200,000(1,000,000)
 
 ※括弧内は5Lv分合計
 
@@ -313,13 +308,20 @@ user-invocable: false
 
 ## 小ネタ
 
-もはや不朽のSFシリーズ「スター・ウォーズ」に登場する「スピーダー・バイク」を連想させるような浮遊式の屋外用車椅子を引っ提げて登場したヒマリ。 臨戦状態になったことで、超天才清楚系病弱**万能**美少女ハッカーへと進化(?)した。~~相変わらず長い肩書・・・~~ 「バイク」と称すると「**車椅子です**」と強めに釘を刺される。　~~ほな、車椅子か・・・~~ EXスキルではバイクの定番アクションと化した「AKIRA（1988年）」の「金田スライドブレーキ（Akira Slide）」を披露している。 （足は不自由なので、地面にはついていない）
+もはや不朽のSFシリーズ「スター・ウォーズ」に登場する「スピーダー・バイク」を連想させるような浮遊式の屋外用車椅子を引っ提げて登場したヒマリ。
+臨戦状態になったことで、超天才清楚系病弱**万能**美少女ハッカーへと進化(?)した。~~相変わらず長い肩書・・・~~
+「バイク」と称すると「**車椅子です**」と強めに釘を刺される。　~~ほな、車椅子か・・・~~
+EXスキルではバイクの定番アクションと化した「AKIRA（1988年）」の「金田スライドブレーキ（Akira Slide）」を披露している。
+（足は不自由なので、地面にはついていない）
 
-リミッター全解除時の車椅子は0-100km/hを0.956秒で叩き出すとのことだが、 この数値は現実においてスイスのチューリッヒ工科大とルツェルン応用科学芸術大学が共同で作ったEV「mythen」が更新したギネスの加速世界記録と全く同じである。
+リミッター全解除時の車椅子は0-100km/hを0.956秒で叩き出すとのことだが、
+この数値は現実においてスイスのチューリッヒ工科大とルツェルン応用科学芸術大学が共同で作ったEV「mythen」が更新したギネスの加速世界記録と全く同じである。
 
-ちびキャラつまみモーション、 ![ヒマリSD2.png](https://bluearchive.wikiru.jp/attach2/E38392E3839EE383AAEFBC88E887A8E688A6EFBC89_E38392E3839EE383AA5344322E706E67.png)![ヒマリSD3.png](https://bluearchive.wikiru.jp/attach2/E38392E3839EE383AAEFBC88E887A8E688A6EFBC89_E38392E3839EE383AA5344332E706E67.png)
+ちびキャラつまみモーション
+![ヒマリSD2.png](https://bluearchive.wikiru.jp/attach2/E38392E3839EE383AAEFBC88E887A8E688A6EFBC89_E38392E3839EE383AA5344322E706E67.png)![ヒマリSD3.png](https://bluearchive.wikiru.jp/attach2/E38392E3839EE383AAEFBC88E887A8E688A6EFBC89_E38392E3839EE383AA5344332E706E67.png)
 
-ちびキャラ(通常車椅子)、 ![ヒマリSD4.png](https://bluearchive.wikiru.jp/attach2/E38392E3839EE383AAEFBC88E887A8E688A6EFBC89_E38392E3839EE383AA5344342E706E67.png)
+ちびキャラ(通常車椅子)
+![ヒマリSD4.png](https://bluearchive.wikiru.jp/attach2/E38392E3839EE383AAEFBC88E887A8E688A6EFBC89_E38392E3839EE383AA5344342E706E67.png)
 
 ### 立ち絵バリエーション
 

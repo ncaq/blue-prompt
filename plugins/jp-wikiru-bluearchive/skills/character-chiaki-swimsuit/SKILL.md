@@ -179,16 +179,11 @@ user-invocable: false
 
 ### 必要素材
 
-- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![黄金の糸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 1-5, 素材: x2(10), x10(50), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![黄金の糸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: x2(10), x15(75), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![黄金の糸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: x2(10), x20(100), クレジットポイント: 100,000(500,000)
-- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![黄金の巻糸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 16-20, 素材: x4(20), x6(30), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![黄金の巻糸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: x4(20), x8(40), クレジットポイント: 200,000(1,000,000)
+- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![黄金の糸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F302E706E67.png) x10(50), クレジットポイント: 100,000(500,000)
+- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![黄金の糸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F302E706E67.png) x15(75), クレジットポイント: 100,000(500,000)
+- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![黄金の糸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F302E706E67.png) x20(100), クレジットポイント: 100,000(500,000)
+- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![黄金の巻糸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F312E706E67.png) x6(30), クレジットポイント: 200,000(1,000,000)
+- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![黄金の巻糸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F312E706E67.png) x8(40), クレジットポイント: 200,000(1,000,000)
 
 ※括弧内は5Lv分合計
 
@@ -223,7 +218,7 @@ user-invocable: false
 - EP: 1, タイトル: バカンスが始まると……, 解放絆RANK: 2, 報酬: 青輝石x20
 - EP: 2, タイトル: ある書記によると, 解放絆RANK: 3, 報酬: 青輝石x40
 - EP: 3, タイトル: 最近の調査によると, 解放絆RANK: 5, 報酬: 青輝石x60
-- EP: 4, タイトル: NC、AND。, 解放絆RANK: 6, 報酬: 青輝石x80,メモリアルロビー解禁
+- EP: 4, タイトル: NC、ND。, 解放絆RANK: 6, 報酬: 青輝石x80,メモリアルロビー解禁
 
 ### メモリアルロビー
 
@@ -292,9 +287,12 @@ user-invocable: false
 
 ## 小ネタ
 
-水着に着替えたチアキ。 長い髪は、今回はお団子状にしている。カメラも夏仕様。 水着の上に涼しげな上着を着ており、衣装の組み合わせや上着の形状はコトネと似ている。
+水着に着替えたチアキ。
+長い髪は、今回はお団子状にしている。カメラも夏仕様。
+水着の上に涼しげな上着を着ており、衣装の組み合わせや上着の形状はコトネと似ている。
 
-ちびキャラ/別ポーズ、 ![チアキ_水着_SD_2.png](https://bluearchive.wikiru.jp/attach2/E38381E382A2E382ADEFBC88E6B0B4E79D80EFBC89_E38381E382A2E382AD5FE6B0B4E79D805F53445F322E706E67.png)
+ちびキャラ/別ポーズ
+![チアキ_水着_SD_2.png](https://bluearchive.wikiru.jp/attach2/E38381E382A2E382ADEFBC88E6B0B4E79D80EFBC89_E38381E382A2E382AD5FE6B0B4E79D805F53445F322E706E67.png)
 
 ### 立ち絵バリエーション
 

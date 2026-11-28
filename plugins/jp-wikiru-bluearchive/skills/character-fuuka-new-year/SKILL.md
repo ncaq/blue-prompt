@@ -179,16 +179,11 @@ user-invocable: false
 
 ### 必要素材
 
-- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![ネブラディスクの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4E656272615F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 1-5, 素材: x2(10), x10(50), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![ネブラディスクの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4E656272615F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: x2(10), x15(75), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![ネブラディスクの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4E656272615F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: x2(10), x20(100), クレジットポイント: 100,000(500,000)
-- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![壊れたネブラディスク](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4E656272615F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 16-20, 素材: x4(20), x6(30), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![壊れたネブラディスク](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4E656272615F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: x4(20), x8(40), クレジットポイント: 200,000(1,000,000)
+- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![ネブラディスクの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4E656272615F302E706E67.png) x10(50), クレジットポイント: 100,000(500,000)
+- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![ネブラディスクの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4E656272615F302E706E67.png) x15(75), クレジットポイント: 100,000(500,000)
+- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![ネブラディスクの欠片](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4E656272615F302E706E67.png) x20(100), クレジットポイント: 100,000(500,000)
+- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![壊れたネブラディスク](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4E656272615F312E706E67.png) x6(30), クレジットポイント: 200,000(1,000,000)
+- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![壊れたネブラディスク](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4E656272615F312E706E67.png) x8(40), クレジットポイント: 200,000(1,000,000)
 
 ※括弧内は5Lv分合計
 
@@ -295,7 +290,9 @@ user-invocable: false
 
 ## 小ネタ
 
-**「給食部の特製おせちです！」**、 着物姿の給食部部長。装いを新たにしても、トラブルに巻き込まれるのは変わらない。（主に美食研究会のせいで）、 通常衣装の際に見せた呆れ顔も健在。눈\_눈
+**「給食部の特製おせちです！」**
+着物姿の給食部部長。装いを新たにしても、トラブルに巻き込まれるのは変わらない。（主に美食研究会のせいで）
+通常衣装の際に見せた呆れ顔も健在。눈\_눈
 
 キヴォトスの免許制度については不明だがバイクに乗ることができるらしく、EXスキルのモーションではおせちを届けた後にバイクで走り去っていく。
 

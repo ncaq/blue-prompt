@@ -179,16 +179,11 @@ user-invocable: false
 
 ### 必要素材
 
-- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![古代ロケットの残骸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F416E6369656E74526F636B65745F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 1-5, 素材: x2(10), x10(50), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![古代ロケットの残骸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F416E6369656E74526F636B65745F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 6-10, 素材: x2(10), x15(75), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![古代ロケットの残骸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F416E6369656E74526F636B65745F302E706E67.png), クレジットポイント: 100,000(500,000)
-- Lv: 11-15, 素材: x2(10), x20(100), クレジットポイント: 100,000(500,000)
-- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![壊れた古代ロケット](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F416E6369656E74526F636B65745F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 16-20, 素材: x4(20), x6(30), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png), ![壊れた古代ロケット](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F416E6369656E74526F636B65745F312E706E67.png), クレジットポイント: 200,000(1,000,000)
-- Lv: 21-25, 素材: x4(20), x8(40), クレジットポイント: 200,000(1,000,000)
+- Lv: 1-5, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![古代ロケットの残骸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F416E6369656E74526F636B65745F302E706E67.png) x10(50), クレジットポイント: 100,000(500,000)
+- Lv: 6-10, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![古代ロケットの残骸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F416E6369656E74526F636B65745F302E706E67.png) x15(75), クレジットポイント: 100,000(500,000)
+- Lv: 11-15, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x2(10), ![古代ロケットの残骸](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F416E6369656E74526F636B65745F302E706E67.png) x20(100), クレジットポイント: 100,000(500,000)
+- Lv: 16-20, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![壊れた古代ロケット](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F416E6369656E74526F636B65745F312E706E67.png) x6(30), クレジットポイント: 200,000(1,000,000)
+- Lv: 21-25, 素材: ![応用WB](https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png) x4(20), ![壊れた古代ロケット](https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F416E6369656E74526F636B65745F312E706E67.png) x8(40), クレジットポイント: 200,000(1,000,000)
 
 ※括弧内は5Lv分合計
 
@@ -227,7 +222,7 @@ user-invocable: false
 
 ### メモリアルロビー
 
-**BGM：Popping' Memories**
+**BGM：Poppin' Memories**
 
 ![ツクヨ（ドレス）_メモリアルロビー.png](https://bluearchive.wikiru.jp/attach2/E38384E382AFE383A8EFBC88E38389E383ACE382B9EFBC89_E38384E382AFE383A8EFBC88E38389E383ACE382B9EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png)
 
@@ -314,4 +309,6 @@ user-invocable: false
 
 ## 小ネタ
 
-不忍ノ道～ファッションショー警護任務！の巻～でドレスを纏う事になったツクヨ。 当初はニヤが手配していたドレスのサイズが合わず制服で警備員をすることになったが登板するファッションモデルが人事不省により急遽代役としてファッションモデルを務めることになる。 本人のコンプレックスである180cmの長身も好意的に話題を呼び一気に時の人として駆け上がろうとするが……
+不忍ノ道～ファッションショー警護任務！の巻～でドレスを纏う事になったツクヨ。
+当初はニヤが手配していたドレスのサイズが合わず制服で警備員をすることになったが登板するファッションモデルが人事不省により急遽代役としてファッションモデルを務めることになる。
+本人のコンプレックスである180cmの長身も好意的に話題を呼び一気に時の人として駆け上がろうとするが……

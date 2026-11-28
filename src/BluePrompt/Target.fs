@@ -10,7 +10,7 @@ open System.IO
 open System.Threading.Tasks
 
 /// wikiruから取り込む対象。wikiruの個別コマンドの種別と1対1に対応する。
-/// 確認用のhtmlとstudent-htmlは生成物を作らないため含めない。
+/// 確認用のarticleとcharacterは生成物を作らないため含めない。
 type WikiruTarget =
     | Appellation of page: string * markdownOutput: string * jsonOutput: string
     | Knowledge of page: string * output: string

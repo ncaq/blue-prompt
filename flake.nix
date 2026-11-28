@@ -278,11 +278,7 @@
             dotnet-sdk = pkgs.dotnet-sdk_10;
             dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
             doCheck = true;
-            # HTML→Markdown変換のテストがpandocを起動するため、check環境に含める。
-            nativeCheckInputs = [
-              pkgs.pandoc
-              fsharp-analyzers
-            ];
+            nativeCheckInputs = [ fsharp-analyzers ];
             # F#アナライザーによるリントもテストに続けて実行する。
             # nix-fast-buildの統合チェックにリンターを含めるため。
             # -warnaserrorで警告も失敗へ昇格して違反を検出する。
@@ -301,12 +297,6 @@
                 -p:BluePromptLintRestore=false
             '';
             executables = [ "BluePrompt" ];
-            # nix runで単体実行できるようにpandocのパスをラッパーに焼き込む。
-            makeWrapperArgs = [
-              "--set-default"
-              "PANDOC_PATH"
-              (lib.getExe pkgs.pandoc)
-            ];
             meta.mainProgram = "BluePrompt";
           };
 
@@ -764,16 +754,11 @@
               fsautocomplete
               fsharp-analyzers
               blue-prompt-dev
-
-              # HTML→Markdown変換。
-              pandoc
             ];
             env = {
               DOTNET_ROOT = "${pkgs.dotnet-sdk_10}/share/dotnet";
               # 初回実行時のウェルカムバナーやロゴ出力を抑止してコマンド出力を綺麗に保つ。
               DOTNET_NOLOGO = "1";
-              # HTML→Markdown変換に使うpandocをnixpkgsのもので固定する。
-              PANDOC_PATH = lib.getExe pkgs.pandoc;
             };
           };
         };

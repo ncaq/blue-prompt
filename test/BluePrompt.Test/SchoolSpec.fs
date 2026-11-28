@@ -115,6 +115,25 @@ let ``未作成ページの編集リンクは名前にもページ名にも入�
     Assert.Equal(None, entry.Page)
 
 [<Fact>]
+let ``名前が編集リンクになっている未作成ページの生徒は名前だけを持つ`` () =
+    // 実際のwikiruは、個別ページがまだ無い生徒の名前そのものを編集フォームへのリンクにする。
+    // リンクごと読み飛ばすと名前が空になって、カードとして読めずに止まる。
+    let page = Uri.EscapeDataString "キョウコ"
+    let refer = Uri.EscapeDataString "学校別"
+    let editHref = $"./?cmd=edit&amp;page=%s{page}&amp;refer=%s{refer}"
+
+    let name =
+        Elem.span [ Attr.class' "noexists" ] [ Elem.a [ Attr.href editHref ] [ Text.raw "キョウコ" ] ]
+
+    let html =
+        renderBody [ Text.h2 "学校"; Text.h3 "部活"; cardFrame [ Text.raw "NPC"; Elem.br []; name ] ]
+
+    let entry = List.exactlyOne (parseHtml html)
+    Assert.Equal("キョウコ", entry.Name)
+    // 編集フォームはページではないので、ページ名としては読まない。
+    Assert.Equal(None, entry.Page)
+
+[<Fact>]
 let ``名前と同じページ名はPageに入らない`` () =
     let html = renderBody [ Text.h2 "連邦生徒会"; card "NPC" "スモモ" "スモモ" ]
     Assert.Equal(None, (List.exactlyOne (parseHtml html)).Page)
