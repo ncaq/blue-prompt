@@ -69,15 +69,26 @@ let anyLine: TextParser<string> =
 /// 次の1行をchooseが受け付けた時だけ読み進めて、chooseの結果を返す。
 /// 受け付けなければ読み進めずに失敗する。
 let lineChoose (choose: string -> 'a option) : TextParser<'a> =
-    lookAhead anyLine
-    >>= fun line ->
-        match choose line with
-        | Some value -> anyLine >>% value
-        | None -> pzero
+    fun reader ->
+        let start = reader.Index
+
+        match anyLine reader with
+        | Ok line ->
+            match choose line with
+            | Some value -> preturn value reader
+            | None ->
+                reader.Index <- start
+                pzero reader
+        | Error error -> Error error
 
 /// 末尾の行内の空白を落とす。
 let trimInlineEnd (text: string) : string =
-    text.Substring(0, text.Length - (text |> Seq.rev |> Seq.takeWhile isInlineSpace |> Seq.length))
+    let mutable length = text.Length
+
+    while 0 < length && isInlineSpace text[length - 1] do
+        length <- length - 1
+
+    text.Substring(0, length)
 
 /// 文字列の先頭からパーサを適用する。後ろに続きが残っていてもよい。
 let tryPrefix (p: TextParser<'a>) (text: string) : 'a option =
