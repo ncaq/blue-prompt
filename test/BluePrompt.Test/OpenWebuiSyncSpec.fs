@@ -170,13 +170,17 @@ let private makeOptions (server: FixedServer) (directory: string) : Options =
       KnowledgeDirectory = None
       RagTemplateFile = None }
 
-/// 同期がSyncErrorで止まることと、その理由に手掛かりが含まれることを確かめる。
-let private assertSyncError (clue: string) (options: Options) : Task<unit> =
+/// 同期がSyncErrorで止まることと、その理由に手掛かりが全て含まれることを確かめる。
+/// 短い手掛かりは別の失敗の理由にも一致し得るので、
+/// どこで止まったのかが分かるように止まった先のURLなども並べる。
+let private assertSyncError (clues: string list) (options: Options) : Task<unit> =
     task {
         let! error = Assert.ThrowsAsync<SyncError>(fun () -> sync options :> Task)
 
         match error :> exn with
-        | SyncError message -> Assert.Contains(clue, message)
+        | SyncError message ->
+            for clue in clues do
+                Assert.Contains(clue, message)
         | unexpected -> failwith unexpected.Message
     }
 
@@ -248,7 +252,7 @@ let ``サインインに失敗するとSyncErrorで止まり書き込みへ進�
             // APIキーの指定が要ることに気付けるようにステータスが含まれる。
             do!
                 assertSyncError
-                    "400"
+                    [ "サインイン"; "400" ]
                     (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
 
             Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
@@ -264,7 +268,7 @@ let ``サインインの応答にtokenが無いとSyncErrorで止まる`` () : T
         task {
             do!
                 assertSyncError
-                    "token"
+                    [ "/api/v1/auths/signin"; "token" ]
                     (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
 
             Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
@@ -282,7 +286,7 @@ let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり�
             // 失敗の理由が調査できるようにステータスコードが含まれる。
             do!
                 assertSyncError
-                    "500"
+                    [ "yuukaの存在確認に失敗"; "500" ]
                     (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
 
             Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
@@ -300,7 +304,7 @@ let ``同じidのModel定義が複数あるとSyncErrorで止まる`` () : Task 
             )
 
             // どの定義が衝突したのか調査できるようにidが含まれる。
-            do! assertSyncError "yuuka" (makeOptions server directory)
+            do! assertSyncError [ "Modelのidが重複"; "yuuka" ] (makeOptions server directory)
             // 後勝ちの上書きが起きないように、登録先へ触れる前に止まる。
             Assert.Empty(server.Received())
         })
@@ -331,7 +335,7 @@ let ``同じ名前のKnowledgeコレクションが複数あるとSyncErrorで�
                 { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
                     KnowledgeDirectory = Some directory }
 
-            do! assertSyncError "character-appellation" options
+            do! assertSyncError [ "名前が重複"; "character-appellation" ] options
             Assert.Empty(server.Received())
         })
 
@@ -346,7 +350,7 @@ let ``紐付け先のKnowledgeが同期の対象に無いとSyncErrorで止ま�
                     KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
             // 綴りの誤りに気付けるように参照先の名前が含まれる。
-            do! assertSyncError "typo-name" options
+            do! assertSyncError [ "同期の対象にありません"; "typo-name" ] options
             // 参照が外れたModelを黙って登録しない。
             Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
         })
@@ -367,7 +371,7 @@ let ``アップロードの応答にidが無いとSyncErrorで止まる`` () : T
                     KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
             // 何が足りないのか分かるようにフィールドの名前が含まれる。
-            do! assertSyncError "id" options
+            do! assertSyncError [ "/api/v1/files/"; "id" ] options
             Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
         })
 
@@ -406,7 +410,7 @@ let ``アップロードの応答のidが空だとSyncErrorで止まる`` () : T
                 { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
                     KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
-            do! assertSyncError "/api/v1/files/の応答のidが空です" options
+            do! assertSyncError [ "/api/v1/files/の応答のidが空です" ] options
             Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
         })
 
@@ -432,7 +436,7 @@ let ``コレクションの作成の応答のidが空だとSyncErrorで止まる
                 { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
                     KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
-            do! assertSyncError "/api/v1/knowledge/createの応答のidが空です" options
+            do! assertSyncError [ "/api/v1/knowledge/createの応答のidが空です" ] options
             Assert.Equal(0, filesRequestCount server)
         })
 
@@ -450,6 +454,6 @@ let ``登録済みのコレクションのidが空だとSyncErrorで止まる`` 
                 { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
                     KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
-            do! assertSyncError "/api/v1/knowledge/の応答のidが空です" options
+            do! assertSyncError [ "/api/v1/knowledge/の応答のidが空です" ] options
             Assert.Equal(0, filesRequestCount server)
         })
