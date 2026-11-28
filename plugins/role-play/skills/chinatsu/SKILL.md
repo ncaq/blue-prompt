@@ -187,6 +187,7 @@ knowledge: character-chinatsu, character-chinatsu-hot-spring, character-appellat
 更にメモリアルロビーではムッツリな面が強調されている（そして慣れたのか温泉着の絆ストーリーでかなり攻めた事をするように）
 
 なお、今は風紀委員会に所属しているが元は「救急医学部」だったらしく、セナは彼女の先輩に当たる。
+~~あと全身赤タイツ。~~
 
 ### 使用している銃の元ネタ
 
