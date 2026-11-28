@@ -114,6 +114,24 @@ let ``toCostumeMarkdownは出典のページ名の見出しへ中身を収める
         toCostumeMarkdown costumes
     )
 
+[<Fact>]
+let ``toCostumeMarkdownは脚注のラベルを衣装ごとに分ける`` () =
+    // 参照ファイルはどれも脚注を`[^1]`から数えるので、
+    // そのまま連結すると定義が重なって後の衣装の脚注が捨てられる。
+    let withFootnote (pageName: string) (note: string) =
+        reference pageName + $"\n- CV: 声優[^1]\n\n[^1]: %s{note}\n"
+
+    let markdown =
+        toCostumeMarkdown
+            [ parseReference "normal.md" (withFootnote "ユウカ" "通常の注")
+              parseReference "track.md" (withFootnote "ユウカ（体操服）" "体操服の注") ]
+
+    Assert.Contains("声優[^normal-1]", markdown)
+    Assert.Contains("[^normal-1]: 通常の注", markdown)
+    Assert.Contains("声優[^track-1]", markdown)
+    Assert.Contains("[^track-1]: 体操服の注", markdown)
+    Assert.DoesNotContain("[^1]", markdown)
+
 /// 参照ファイルを並べた一時ディレクトリを作る。
 let private makeDirectory (files: (string * string) list) : string =
     let directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())

@@ -35,6 +35,10 @@ type Reference =
     {
         /// 出典のwikiruのページ名。衣装の区別はこの名前が担う。
         PageName: string
+        /// 参照ファイルの拡張子を除いた名前。
+        /// 同じディレクトリの中で一意かつASCIIなので、
+        /// 衣装を連結する時に脚注のラベルを衣装ごとに分ける接頭辞に使う。
+        Key: string
         /// 参照ファイルの中身。出典の行を含む全体を、前後の空白だけ落として持つ。
         Body: string
     }
@@ -88,7 +92,9 @@ let parseReference (path: string) (markdown: string) : Reference =
     then
         raise (ReferenceHeadingError path)
 
-    { PageName = pageName; Body = body }
+    { PageName = pageName
+      Key = Path.GetFileNameWithoutExtension path
+      Body = body }
 
 /// 衣装の節の見出しの前置き。
 /// 参照ファイルの見出しは基本情報から始まる二段目なので、
@@ -100,10 +106,16 @@ let private costumeHeadingPrefix: string = "# 衣装: "
 /// 参照ファイルへのリンクは残さない。
 /// 中身が本文にある以上リンクは同じものを指す重複でしかなく、
 /// Open WebUIのModelにはそもそも開く手段が無いため。
+///
+/// 参照ファイルはそれぞれ別のページから作るので、どれも脚注を`[^1]`から数える。
+/// そのまま連結すると同じラベルの定義が重なり、
+/// GFMでは後の衣装の脚注が捨てられて、参照が前の衣装の脚注を指してしまう。
+/// 衣装ごとに参照ファイルの名前をラベルへ前置して分ける。
 let toCostumeMarkdown (references: Reference list) : string =
     references
     |> List.map (fun reference ->
-        $"%s{costumeHeadingPrefix}%s{reference.PageName}\n\n%s{reference.Body}")
+        let body = Markdown.prefixFootnoteLabels reference.Key reference.Body
+        $"%s{costumeHeadingPrefix}%s{reference.PageName}\n\n%s{body}")
     |> String.concat "\n\n"
 
 /// スキルのディレクトリから衣装別の参照ファイルを読む。
