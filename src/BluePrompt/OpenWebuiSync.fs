@@ -293,14 +293,11 @@ let private uploadFile
 /// 登録済みのファイルとは名前で対応付け、
 /// 中身が変わっていないファイルには触らない。
 ///
-/// 説明の更新へ送るボディはKnowledgeFormのnameとdescriptionだけで、
-/// Modelの更新と違ってaccess_grantsを載せる必要はない。
+/// 説明の更新へ送るボディはKnowledgeFormのnameとdescriptionだけで、access_grantsは載せない。
 /// KnowledgeFormのaccess_grantsは`Optional[list[dict]] = None`で、
 /// backend/open_webui/models/knowledge.pyのupdate_knowledge_by_idが、
 /// `if form_data.access_grants is not None`の時だけ書き込むため、
 /// 省けば登録済みの権限の設定はそのまま残る。
-/// 更新のルータもフォームを組み直さないので、
-/// Modelの更新で踏んだ検証の失敗も起きない。
 let private syncKnowledge
     (client: HttpClient)
     (url: string)
