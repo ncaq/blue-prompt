@@ -119,6 +119,15 @@ let private parseResponse (url: string) (body: string) : 'Response =
     with :? JsonException as error ->
         raise (SyncError $"%s{url}の応答を解釈できません: %s{error.Message} %s{body}")
 
+/// 応答から読んだidを、空でないことを確かめてから返す。
+/// キーが無ければ読み込みで失敗するが、`"id": ""`は通ってしまう。
+/// 空のまま進むとURLの組み立てやPOSTのボディが壊れた形になり、
+/// 原因から遠い場所で失敗するため、応答を読んだ時点で止める。
+let private requireId (url: string) (id: string) : string =
+    match id with
+    | Str.NullOrEmpty -> raise (SyncError $"%s{url}の応答のidが空です")
+    | Str.NonEmpty id -> id
+
 /// 値をJSONのボディにする。
 let private jsonContent (body: 'Body) : HttpContent =
     new StringContent(OpenWebuiJson.serialize body, Encoding.UTF8, "application/json")
@@ -275,8 +284,9 @@ let private uploadFile
         request.Content <- form
 
         let! response = send client request
-        let uploaded: UploadedFile = parseResponse $"%s{url}/api/v1/files/" response
-        return uploaded.Id
+        let uploadUrl = $"%s{url}/api/v1/files/"
+        let uploaded: UploadedFile = parseResponse uploadUrl response
+        return requireId uploadUrl uploaded.Id
     }
 
 /// Knowledgeコレクション1つを同期して、そのidを返す。
@@ -304,22 +314,18 @@ let private syncKnowledge
             task {
                 match existing with
                 | Some collection ->
-                    if collection.Description <> desired.Form.Description then
-                        do!
-                            postOnly
-                                client
-                                $"%s{url}/api/v1/knowledge/%s{collection.Id}/update"
-                                desired.Form
+                    let id = requireId $"%s{url}/api/v1/knowledge/" collection.Id
 
+                    if collection.Description <> desired.Form.Description then
+                        do! postOnly client $"%s{url}/api/v1/knowledge/%s{id}/update" desired.Form
                         printfn $"%s{name}: 説明を更新"
 
-                    return collection.Id
+                    return id
                 | None ->
-                    let! (created: Collection) =
-                        postJson client $"%s{url}/api/v1/knowledge/create" desired.Form
-
+                    let createUrl = $"%s{url}/api/v1/knowledge/create"
+                    let! (created: Collection) = postJson client createUrl desired.Form
                     printfn $"%s{name}: 作成"
-                    return created.Id
+                    return requireId createUrl created.Id
             }
 
         // コレクション単体を取るAPIのfilesはnullで返るため、
