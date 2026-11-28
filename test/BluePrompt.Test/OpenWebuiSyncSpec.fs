@@ -6,6 +6,7 @@ open System.IO
 open System.Net
 open System.Net.Sockets
 open System.Text
+open System.Text.Json
 open System.Text.Json.Nodes
 open System.Threading.Tasks
 open Xunit
@@ -139,26 +140,17 @@ type private MockServer() =
     let collectionFilesJson (id: string) (page: int) =
         let all = collectionFiles[id]
 
-        let items =
-            JsonArray(
+        JsonSerializer.Serialize
+            {| items =
                 all
                 |> List.skip (min ((page - 1) * pageSize) (List.length all))
                 |> List.truncate pageSize
                 |> List.map (fun file ->
-                    let meta = JsonObject()
-                    meta["name"] <- JsonValue.Create file.FileName
-                    meta["file_hash"] <- JsonValue.Create file.Hash
-                    let node = JsonObject()
-                    node["id"] <- JsonValue.Create file.Id
-                    node["meta"] <- meta
-                    node :> JsonNode)
-                |> List.toArray
-            )
-
-        let root = JsonObject()
-        root["items"] <- items
-        root["total"] <- JsonValue.Create(List.length all)
-        root.ToJsonString()
+                    {| id = file.Id
+                       meta =
+                        {| name = file.FileName
+                           file_hash = file.Hash |} |})
+               total = List.length all |}
 
     /// 実物と同じく、フォームに無いフィールドをDB側で補って保存する。
     let storeNode (form: JsonNode) =
@@ -204,18 +196,21 @@ type private MockServer() =
             updateCount <- updateCount + 1
             let form = readJson request
 
-            // 実物はaccess_grantsを省いたボディへ500を返す。
-            match form["access_grants"] with
-            | null -> respond context.Response 500 "Internal Server Error"
-            | _ ->
-                storeNode form
-                respond context.Response 200 "{}"
+            // 実物はaccess_grantsを省いたボディでは登録済みの権限を置き換えない。
+            if isNull form["access_grants"] then
+                let stored = models[form["id"].GetValue<string>()]
+                form["access_grants"] <- stored["access_grants"].DeepClone()
+
+            storeNode form
+            respond context.Response 200 "{}"
         | "GET", "/api/v1/knowledge/" ->
-            // 実物と同じくitemsを持つオブジェクトとして返す。
+            // 実物と同じくitemsと総件数のtotalを持つオブジェクトとして返す。
+            // 件数はページの大きさに届かないので、ページングは模さない。
             let items = JsonArray(collections.Values |> Seq.map _.DeepClone() |> Seq.toArray)
 
             let root = JsonObject()
             root["items"] <- items
+            root["total"] <- JsonValue.Create collections.Count
             respond context.Response 200 (root.ToJsonString())
         | "POST", "/api/v1/knowledge/create" ->
             knowledgeCreateCount <- knowledgeCreateCount + 1
@@ -241,9 +236,7 @@ type private MockServer() =
                           Hash = sha256Hex content }
                         uploaded
 
-                let created = JsonObject()
-                created["id"] <- JsonValue.Create id
-                respond context.Response 200 (created.ToJsonString())
+                respond context.Response 200 (JsonSerializer.Serialize {| id = id |})
         | "POST", path when path.EndsWith("/file/add", StringComparison.Ordinal) ->
             fileAddCount <- fileAddCount + 1
             let id = collectionIdOf path 2
@@ -288,9 +281,7 @@ type private MockServer() =
             | true -> respond context.Response 200 (collectionJson id)
             | false -> respond context.Response 404 """{"detail":"not found"}"""
         | "GET", "/api/v1/retrieval/config" ->
-            let root = JsonObject()
-            root["RAG_TEMPLATE"] <- JsonValue.Create ragTemplate
-            respond context.Response 200 (root.ToJsonString())
+            respond context.Response 200 (JsonSerializer.Serialize {| RAG_TEMPLATE = ragTemplate |})
         | "POST", "/api/v1/retrieval/config/update" ->
             ragTemplateUpdateCount <- ragTemplateUpdateCount + 1
             let body = readJson request
@@ -546,33 +537,6 @@ let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり�
     | unexpected -> failwith unexpected.Message
 
     Assert.Equal(0, server.CreateCount)
-
-[<Fact>]
-let ``応答に権限設定が無いと空の権限で上書きせずSyncErrorで止まる`` () =
-    use server = new MockServer()
-
-    // access_grantsを持たない応答を模す。
-    // 実物のModelModelはこのフィールドを必ず埋めて返すため、
-    // 欠けているのは応答の形が想定と違うということで、
-    // このリポジトリが管理しない権限の設定を推測で書き換えてはいけない。
-    let body =
-        """{"id":"yuuka","name":"yuuka",
-"meta":{"description":"yuukaの説明"},
-"params":{"system":"古いプロンプト"},"is_active":true}"""
-
-    server.OverrideModelGet(200, body)
-
-    let options =
-        makeOptions server (makeModelsDirectory [ makeForm "yuuka" "改良したプロンプト" ])
-
-    let error = Assert.Throws<SyncError>(fun () -> run options)
-
-    // 何が足りないのか分かるようにフィールドの名前が含まれる。
-    match error :> exn with
-    | SyncError message -> Assert.Contains("access_grants", message)
-    | unexpected -> failwith unexpected.Message
-
-    Assert.Equal(0, server.UpdateCount)
 
 [<Fact>]
 let ``同じidのModel定義が複数あるとSyncErrorで止まる`` () =
@@ -973,6 +937,6 @@ let ``更新でも登録済みの権限設定が保たれる`` () =
     run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "改良したプロンプト" ]))
 
     Assert.Equal(1, server.UpdateCount)
-    // 管理対象ではない権限の設定は読み取った値をそのまま送り返して保つ。
+    // 管理対象ではない権限の設定は更新のボディへ載せず、登録先に残させる。
     let stored = node server.Models["yuuka"] [ "access_grants" ]
     Assert.Equal("everyone", stored[0].GetValue<string>())

@@ -135,6 +135,24 @@ XParsecのパーサは正規表現と違って後戻りをしません。
 繰り返しは取れるだけ取ってから先へ進むので、
 繰り返しの文字の集合と直後の区切りが重ならないように組み立てます。
 
+## JSON
+
+JSONは[FSharp.SystemTextJson](https://github.com/Tarmil/FSharp.SystemTextJson)で、
+F#のレコードとの対応として読み書きします。
+`JsonNode`で木を組み立てたり、キーの道を辿って値を読んだりはしません。
+APIの応答も、読む欄だけを持つレコードで受けます。
+
+Open WebUIとやり取りするJSONの設定は`src/BluePrompt/OpenWebuiJson.fs`に、
+wikiruから構造化したレコードの設定は`src/BluePrompt/JsonCodec.fs`にあります。
+Open WebUI向けは、書く時はNoneもnullとして書き、
+読む時は欠けたフィールドもnullもNoneとして読みます。
+登録済みのModelには、
+このリポジトリが後から管理対象へ足したフィールドがまだ無いことがあるためです。
+
+テストのモックサーバは、
+実物がフォームに無いフィールドをDB側で補う様子を模すため、
+登録済みの状態だけは`JsonNode`で持っています。
+
 ## リンター
 
 F#のリンターとして[fsharp-analyzers](https://github.com/ionide/FSharp.Analyzers.SDK)を使っています。

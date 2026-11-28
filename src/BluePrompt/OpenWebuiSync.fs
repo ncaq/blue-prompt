@@ -12,7 +12,8 @@ open System.Net
 open System.Net.Http
 open System.Net.Http.Headers
 open System.Text
-open System.Text.Json.Nodes
+open System.Text.Json
+open System.Text.Json.Serialization
 open System.Threading
 open System.Threading.Tasks
 
@@ -62,20 +63,74 @@ let private waitForHealth (client: HttpClient) (url: string) : Task<unit> =
 
     attemptFrom 1
 
+/// サインインのボディ。
+type private SignInForm = { Email: string; Password: string }
+
+/// サインインの応答。使うのはBearerトークンだけ。
+type private SignInResponse = { Token: string }
+
+/// 一覧のAPIの応答の1ページ。
+/// backend/open_webui/routers/knowledge.pyの一覧のAPIは、
+/// コレクションの一覧もファイルの一覧も、itemsと総件数のtotalを持つオブジェクトを返す。
+type private Page<'Item> = { Items: 'Item list; Total: int }
+
+/// 登録済みのKnowledgeコレクション。
+/// 引き当ては名前で行い、書き込むかどうかは説明だけで決める。
+type private Collection =
+    { Id: string
+      Name: string
+      Description: string }
+
+/// 登録済みのファイルのmeta。
+/// FileMetaのnameは省略可能で、
+/// file_hashはextra=allowで入る追加のフィールドなので、どちらも無いことがある。
+type private FileMeta =
+    { Name: string option
+      FileHash: string option }
+
+/// コレクションに登録済みのファイル。
+/// FileModelResponseのmetaもNoneになり得る。
+type private RegisteredFile = { Id: string; Meta: FileMeta option }
+
+/// アップロードしたファイル。使うのは採番されたidだけ。
+type private UploadedFile = { Id: string }
+
+/// コレクションへファイルを足し引きする時のボディ。
+type private FileIdForm = { FileId: string }
+
+/// RAGの設定のうち、このリポジトリが管理するテンプレートだけ。
+/// キーは他の設定と同じく大文字の定数名なので、snake_caseの命名規則から外れる。
+type private RagConfig =
+    { [<JsonPropertyName("RAG_TEMPLATE")>]
+      RagTemplate: string }
+
 /// 認証を無効化したインスタンスがadminへ割り当てる資格情報。
 /// backend/open_webui/routers/auths.pyのsigninが`WEBUI_AUTH`無効時に使う定数で、
 /// 秘密ではなくOpen WebUIのソースに書かれているものをそのまま持ってきている。
-let private noAuthCredentials = """{"email":"admin@localhost","password":"admin"}"""
+let private noAuthCredentials =
+    { Email = "admin@localhost"
+      Password = "admin" }
+
+/// 応答のJSONを読む。
+/// 読めなければ、どのURLの応答がどう読めなかったのか分かる形でSyncErrorにする。
+let private parseResponse (url: string) (body: string) : 'Response =
+    try
+        OpenWebuiJson.deserialize<'Response> body
+    with :? JsonException as error ->
+        raise (SyncError $"%s{url}の応答を解釈できません: %s{error.Message} %s{body}")
+
+/// 値をJSONのボディにする。
+let private jsonContent (body: 'Body) : HttpContent =
+    new StringContent(OpenWebuiJson.serialize body, Encoding.UTF8, "application/json")
 
 /// 認証を無効化したインスタンスのadminとしてサインインし、Bearerトークンを得る。
 /// `WEBUI_AUTH`を無効にしてもAPIはトークンを要求するため、
 /// APIキーを渡さない運用ではUIが裏で行っているのと同じサインインを自分で行う。
 let private signIn (client: HttpClient) (url: string) : Task<string> =
     task {
-        use content =
-            new StringContent(noAuthCredentials, Encoding.UTF8, "application/json")
-
-        use! response = client.PostAsync($"%s{url}/api/v1/auths/signin", content)
+        let signInUrl = $"%s{url}/api/v1/auths/signin"
+        use content = jsonContent noAuthCredentials
+        use! response = client.PostAsync(signInUrl, content)
         let! body = response.Content.ReadAsStringAsync()
 
         if not response.IsSuccessStatusCode then
@@ -83,17 +138,13 @@ let private signIn (client: HttpClient) (url: string) : Task<string> =
             // APIキーの指定が要ることに気付けるようにステータスと本文を残す。
             raise (SyncError $"%s{url}へのサインインに失敗しました: %d{int response.StatusCode} %s{body}")
 
-        match JsonNode.Parse body with
-        | null -> return raise (SyncError $"サインインの応答を解釈できません: %s{body}")
-        | root ->
-            match root["token"] with
-            | null -> return raise (SyncError $"サインインの応答にtokenがありません: %s{body}")
-            | token -> return token.GetValue<string>()
+        let signedIn: SignInResponse = parseResponse signInUrl body
+        return signedIn.Token
     }
 
-/// 要求を送って応答のJSONを返す。
+/// 要求を送って応答の本文を返す。
 /// 失敗した時はどのURLがどう失敗したのか分かる形でSyncErrorにする。
-let private send (client: HttpClient) (request: HttpRequestMessage) : Task<JsonNode> =
+let private send (client: HttpClient) (request: HttpRequestMessage) : Task<string> =
     task {
         let url = request.RequestUri
         use! response = client.SendAsync request
@@ -102,43 +153,37 @@ let private send (client: HttpClient) (request: HttpRequestMessage) : Task<JsonN
         if not response.IsSuccessStatusCode then
             raise (SyncError $"%O{url}への要求が失敗しました: %d{int response.StatusCode} %s{body}")
 
-        match JsonNode.Parse body with
-        | null -> return raise (SyncError $"%O{url}の応答を解釈できません: %s{body}")
-        | root -> return root
+        return body
     }
 
-/// JSONを返すAPIをGETで呼ぶ。
-let private getJson (client: HttpClient) (url: string) : Task<JsonNode> =
+/// JSONを返すAPIをGETで呼んで、応答を読む。
+let private getJson (client: HttpClient) (url: string) : Task<'Response> =
     task {
         use request = new HttpRequestMessage(HttpMethod.Get, url)
-        return! send client request
+        let! body = send client request
+        return parseResponse url body
     }
 
-/// JSONのボディをPOSTする。
-let private postJson (client: HttpClient) (url: string) (body: JsonNode) : Task<JsonNode> =
+/// JSONのボディをPOSTして、応答の本文を返す。
+let private post (client: HttpClient) (url: string) (body: 'Body) : Task<string> =
     task {
         use request = new HttpRequestMessage(HttpMethod.Post, url)
-        request.Content <- new StringContent(body.ToJsonString(), Encoding.UTF8, "application/json")
+        request.Content <- jsonContent body
         return! send client request
     }
 
-/// 文字列1つだけを持つJSONオブジェクトを組み立てる。
-let private jsonObjectOf (key: string) (value: string) : JsonNode =
-    let node = JsonObject()
-    node[key] <- JsonValue.Create value
-    node
-
-/// ModelFormをJSONボディとしてPOSTする。
-let private postForm (client: HttpClient) (url: string) (form: OpenWebui.ModelForm) : Task<unit> =
+/// JSONのボディをPOSTして、応答を読む。
+let private postJson (client: HttpClient) (url: string) (body: 'Body) : Task<'Response> =
     task {
-        use content =
-            new StringContent(OpenWebui.toJson form, Encoding.UTF8, "application/json")
+        let! response = post client url body
+        return parseResponse url response
+    }
 
-        use! response = client.PostAsync(url, content)
-
-        if not response.IsSuccessStatusCode then
-            let! body = response.Content.ReadAsStringAsync()
-            raise (SyncError $"%s{url}への書き込みに失敗しました: %d{int response.StatusCode} %s{body}")
+/// JSONのボディをPOSTする。応答は読まない。
+let private postOnly (client: HttpClient) (url: string) (body: 'Body) : Task<unit> =
+    task {
+        let! _ = post client url body
+        return ()
     }
 
 /// Knowledgeコレクション1つ分の、同期したい内容。
@@ -180,47 +225,23 @@ let private readKnowledgeDirectory (directory: string) : DesiredKnowledge list =
 let private sha256Hex (bytes: byte array) : string =
     Convert.ToHexStringLower(Security.Cryptography.SHA256.HashData bytes)
 
-/// 一覧のAPIが配列を返す場合と、itemsを持つオブジェクトを返す場合の両方から項目を取り出す。
-/// Open WebUIは版によってこの形が変わるため、どちらでも読めるようにする。
-let private listItems (url: string) (root: JsonNode) : JsonNode list =
-    match root with
-    | :? JsonArray as items -> List.ofSeq items
-    | _ ->
-        match root["items"] with
-        | :? JsonArray as items -> List.ofSeq items
-        | _ -> raise (SyncError $"%s{url}の応答を一覧として解釈できません: %s{root.ToJsonString()}")
-
-/// 一覧APIが応答へ載せる総件数。オブジェクトを返さない旧い形では無い。
-let private totalOf (root: JsonNode) : int option =
-    match root with
-    | :? JsonObject ->
-        match root["total"] with
-        | null -> None
-        | total -> Some(total.GetValue<int>())
-    | _ -> None
-
 /// 一覧APIを最後のページまで辿って全ての項目を集める。
 /// Knowledgeのファイル一覧は既定では30件しか返らないため、
 /// 1ページだけを見ると登録済みのファイルを未登録と取り違えて、
 /// 同じ内容を登録し直そうとしてDuplicate contentで弾かれる。
-let private getAllItems (client: HttpClient) (url: string) : Task<JsonNode list> =
+let private getAllItems (client: HttpClient) (url: string) : Task<'Item list> =
     // ページごとの一覧をそのまま積んで、最後に一度だけ繋ぐ。
     // 累積したリストへページを継ぎ足すとページ数の二乗のコピーになるため。
-    let rec fromPage (page: int) (pages: JsonNode list list) : Task<JsonNode list> =
+    let rec fromPage (page: int) (pages: 'Item list list) : Task<'Item list> =
         task {
-            let pageUrl = $"%s{url}?page=%d{page}"
-            let! response = getJson client pageUrl
-            let items = listItems pageUrl response
-            let accumulated = items :: pages
+            let! (response: Page<'Item>) = getJson client $"%s{url}?page=%d{page}"
+            let accumulated = response.Items :: pages
 
-            // 総件数を返さない形の応答では1ページで全件とみなす。
             // 進まないページを延々と辿らないように、
             // 空のページが返った時点でも打ち切る。
             let finished =
-                List.isEmpty items
-                || (match totalOf response with
-                    | None -> true
-                    | Some total -> total <= List.sumBy List.length accumulated)
+                List.isEmpty response.Items
+                || response.Total <= List.sumBy List.length accumulated
 
             if finished then
                 return List.concat (List.rev accumulated)
@@ -229,28 +250,6 @@ let private getAllItems (client: HttpClient) (url: string) : Task<JsonNode list>
         }
 
     fromPage 1 []
-
-/// JSONの文字列フィールドを読む。無ければ空文字として扱う。
-let private stringField (node: JsonNode) (keys: string list) : string =
-    let rec dig (current: JsonNode) (keys: string list) =
-        match current, keys with
-        | null, _ -> None
-        | _, [] -> Some current
-        | _, key :: rest -> dig current[key] rest
-
-    match dig node keys with
-    | None -> ""
-    | Some value -> value.GetValue<string>()
-
-/// 後続の処理が成立しなくなるJSONの文字列フィールドを読む。
-/// 空のまま進むとURLの組み立てやPOSTのボディが壊れた形になり、
-/// 原因から遠い場所で失敗するため、応答の形が変わった時点で気付けるように止める。
-let private requiredStringField (url: string) (node: JsonNode) (keys: string list) : string =
-    match stringField node keys with
-    | Str.NullOrEmpty ->
-        let path = String.concat "." keys
-        raise (SyncError $"%s{url}の応答に%s{path}がありません: %s{node.ToJsonString()}")
-    | Str.NonEmpty value -> value
 
 /// ファイルをアップロードしてfile idを得る。
 /// 既定ではアップロードの後処理がバックグラウンドへ回されて、
@@ -276,7 +275,8 @@ let private uploadFile
         request.Content <- form
 
         let! response = send client request
-        return requiredStringField $"%s{url}/api/v1/files/" response [ "id" ]
+        let uploaded: UploadedFile = parseResponse $"%s{url}/api/v1/files/" response
+        return uploaded.Id
     }
 
 /// Knowledgeコレクション1つを同期して、そのidを返す。
@@ -294,7 +294,7 @@ let private uploadFile
 let private syncKnowledge
     (client: HttpClient)
     (url: string)
-    (existing: JsonNode option)
+    (existing: Collection option)
     (desired: DesiredKnowledge)
     : Task<string> =
     task {
@@ -304,32 +304,28 @@ let private syncKnowledge
             task {
                 match existing with
                 | Some collection ->
-                    let id = requiredStringField $"%s{url}/api/v1/knowledge/" collection [ "id" ]
-
-                    if stringField collection [ "description" ] <> desired.Form.Description then
-                        let! _ =
-                            postJson
+                    if collection.Description <> desired.Form.Description then
+                        do!
+                            postOnly
                                 client
-                                $"%s{url}/api/v1/knowledge/%s{id}/update"
-                                (JsonNode.Parse(OpenWebuiKnowledge.toJson desired.Form))
+                                $"%s{url}/api/v1/knowledge/%s{collection.Id}/update"
+                                desired.Form
 
                         printfn $"%s{name}: 説明を更新"
 
-                    return id
+                    return collection.Id
                 | None ->
-                    let! created =
-                        postJson
-                            client
-                            $"%s{url}/api/v1/knowledge/create"
-                            (JsonNode.Parse(OpenWebuiKnowledge.toJson desired.Form))
+                    let! (created: Collection) =
+                        postJson client $"%s{url}/api/v1/knowledge/create" desired.Form
 
                     printfn $"%s{name}: 作成"
-                    return requiredStringField $"%s{url}/api/v1/knowledge/create" created [ "id" ]
+                    return created.Id
             }
 
         // コレクション単体を取るAPIのfilesはnullで返るため、
         // 登録済みのファイルは専用の一覧APIから取る。
-        let! files = getAllItems client $"%s{url}/api/v1/knowledge/%s{id}/files"
+        let! (files: RegisteredFile list) =
+            getAllItems client $"%s{url}/api/v1/knowledge/%s{id}/files"
 
         // 登録済みのファイルを名前で引けるようにする。
         // 同じ名前が複数あるのは以前の同期が中断した場合などの壊れた状態なので、
@@ -337,34 +333,19 @@ let private syncKnowledge
         let registered =
             files
             |> List.map (fun file ->
-                stringField file [ "meta"; "name" ],
-                (stringField file [ "id" ], stringField file [ "meta"; "file_hash" ]))
+                let fileName = file.Meta |> Option.bind _.Name |> Option.defaultValue ""
+                fileName, (file.Id, file.Meta |> Option.bind _.FileHash))
 
         let registeredByName = Map.ofList registered
         let desiredNames = desired.Files |> List.map fst |> Set.ofList
 
         let removeFile (fileId: string) =
-            task {
-                let! _ =
-                    postJson
-                        client
-                        $"%s{url}/api/v1/knowledge/%s{id}/file/remove"
-                        (jsonObjectOf "file_id" fileId)
-
-                return ()
-            }
+            postOnly client $"%s{url}/api/v1/knowledge/%s{id}/file/remove" { FileId = fileId }
 
         let addFile (fileName: string) (content: byte array) =
             task {
                 let! fileId = uploadFile client url fileName content
-
-                let! _ =
-                    postJson
-                        client
-                        $"%s{url}/api/v1/knowledge/%s{id}/file/add"
-                        (jsonObjectOf "file_id" fileId)
-
-                return ()
+                do! postOnly client $"%s{url}/api/v1/knowledge/%s{id}/file/add" { FileId = fileId }
             }
 
         // 生成物から消えたファイルと、名前が重複した余りを取り除く。
@@ -391,7 +372,7 @@ let private syncKnowledge
             desired.Files
             |> List.choose (fun (fileName, content) ->
                 match Map.tryFind fileName registeredByName with
-                | Some(fileId, hash) when hash <> sha256Hex content ->
+                | Some(fileId, hash) when hash <> Some(sha256Hex content) ->
                     Some(fileId, fileName, content)
                 | _ -> None)
 
@@ -427,7 +408,7 @@ let private syncKnowledge
 let private syncKnowledgeCollections
     (client: HttpClient)
     (url: string)
-    (existingByName: Map<string, JsonNode>)
+    (existingByName: Map<string, Collection>)
     (knowledge: DesiredKnowledge list)
     : Task<Map<string, string>> =
     knowledge
@@ -480,51 +461,28 @@ let private resolveKnowledge
 /// 送らなかった埋め込みモデルやWeb検索の設定は現在の値のまま残る。
 let private syncRagTemplate (client: HttpClient) (url: string) (template: string) : Task<unit> =
     task {
-        let! config = getJson client $"%s{url}/api/v1/retrieval/config"
+        let! (config: RagConfig) = getJson client $"%s{url}/api/v1/retrieval/config"
 
-        if stringField config [ "RAG_TEMPLATE" ] = template then
+        if config.RagTemplate = template then
             printfn "RAGテンプレート: 変更なし"
         else
-            let! _ =
-                postJson
-                    client
-                    $"%s{url}/api/v1/retrieval/config/update"
-                    (jsonObjectOf "RAG_TEMPLATE" template)
-
+            do! postOnly client $"%s{url}/api/v1/retrieval/config/update" { RagTemplate = template }
             printfn "RAGテンプレート: 更新"
     }
 
-/// 更新のボディへ、登録済みのModelのaccess_grantsをそのまま載せる。
-///
-/// 中身は登録先の利用者やグループの構成に依存していてこのリポジトリからは決められないため、
-/// 管理対象のフィールドとしては持たず、
-/// 読み取った値をそのまま送り返して権限の設定を保つ。
-///
-/// 更新のAPIはこのフィールドを省いても null を入れても500を返す。
-/// backend/open_webui/routers/models.pyのupdate_model_by_idが、
-/// 最後に`ModelForm(**form_data.model_dump())`で組み直すためで、
-/// ModelFormのaccess_grantsは`list[dict | None] = None`とNoneを許さない型なので、
-/// 既定のNoneのまま検証へ入ると落ちる。
-/// つまり配列を送るしか選択肢が無い。
-///
-/// 応答のaccess_grantsが欠けている場合は、
-/// 空の配列を作って権限を消してしまわないように止める。
-/// ModelModelのaccess_grantsは`Field(default_factory=list)`で、
-/// _to_model_modelが必ずDBから埋めて返すため、
-/// 欠けているのは応答の形がこちらの想定と違うということであり、
-/// 推測で書き込んでよい状況ではない。
-let private withAccessGrants (current: JsonNode) (form: OpenWebui.ModelForm) : JsonNode =
-    match JsonNode.Parse(OpenWebui.toJson form) with
-    | null -> raise (SyncError $"%s{form.Id}の更新のボディを組み立てられません")
-    | body ->
-        body["access_grants"] <-
-            match current["access_grants"] with
-            | null -> raise (SyncError $"%s{form.Id}の応答にaccess_grantsがありません")
-            | grants -> grants.DeepClone()
-
-        body
-
 /// ModelForm1件を同期する。
+///
+/// 更新のボディは作成と同じModelFormで、access_grantsは載せない。
+/// 中身は登録先の利用者やグループの構成に依存していてこのリポジトリからは決められないため、
+/// 管理対象のフィールドとしては持たない。
+/// backend/open_webui/models/models.pyのModelFormのaccess_grantsは`list[dict] | None = None`で、
+/// _write_modelは`form.access_grants is not None`の時だけ権限を置き換えるため、
+/// 省けば登録済みの権限の設定はそのまま残る。
+///
+/// base_model_idは逆に、送らなかった時だけ登録済みの値が保たれ、
+/// nullを送ると未設定へ上書きされる。
+/// 書き出しはNoneもnullとして送るため、
+/// 登録済みの値を保ちたい時は送る前にその値で埋める。
 let private syncModel
     (client: HttpClient)
     (options: Options)
@@ -539,36 +497,32 @@ let private syncModel
         if response.IsSuccessStatusCode then
             let! body = response.Content.ReadAsStringAsync()
 
-            // 更新のボディを組み立てる時にも応答を読むため、パースは1回で済ませる。
-            match JsonNode.Parse body with
-            | null -> raise (SyncError $"%s{id}の応答を解釈できません: %s{body}")
-            | currentNode ->
-                // 応答を管理対象のフィールドだけへ正規化して比較する。
-                let current = OpenWebui.ofJsonNode id currentNode
+            // 応答を管理対象のフィールドだけへ正規化して比較する。
+            let current = OpenWebui.ofJson id body
 
-                // base-model-idを指定しない運用では、
-                // 登録後にUIで選ばれた上流モデルを上書きせず保持する。
-                let desired =
-                    match options.BaseModelId with
-                    | Some _ -> desired
-                    | None ->
-                        { desired with
-                            BaseModelId = current.BaseModelId }
+            // base-model-idを指定しない運用では、
+            // 登録後にUIで選ばれた上流モデルを上書きせず保持する。
+            let desired =
+                match options.BaseModelId with
+                | Some _ -> desired
+                | None ->
+                    { desired with
+                        BaseModelId = current.BaseModelId }
 
-                if current = desired then
-                    printfn $"%s{id}: 変更なし"
-                else
-                    let updateUrl =
-                        $"%s{options.Url}/api/v1/models/model/update?id=%s{Uri.EscapeDataString id}"
+            if current = desired then
+                printfn $"%s{id}: 変更なし"
+            else
+                let updateUrl =
+                    $"%s{options.Url}/api/v1/models/model/update?id=%s{Uri.EscapeDataString id}"
 
-                    let! _ = postJson client updateUrl (withAccessGrants currentNode desired)
-                    printfn $"%s{id}: 更新"
+                do! postOnly client updateUrl desired
+                printfn $"%s{id}: 更新"
         elif
             // Open WebUIは未登録のidへ401を返す。404も未登録相当として扱う。
             response.StatusCode = HttpStatusCode.Unauthorized
             || response.StatusCode = HttpStatusCode.NotFound
         then
-            do! postForm client $"%s{options.Url}/api/v1/models/create" desired
+            do! postOnly client $"%s{options.Url}/api/v1/models/create" desired
             printfn $"%s{id}: 作成"
         else
             // サーバエラーやプロキシエラーを未登録とみなして作成へ進むと、
@@ -669,7 +623,7 @@ let sync (options: Options) : Task<unit> =
         // 一覧はコレクションごとに取り直さず1度だけ取る。
         // 往復が減るだけでなく、
         // 同期の途中で一覧が変わっても引き当ての基準がぶれない。
-        let! existingCollections =
+        let! (existingCollections: Collection list) =
             task {
                 match knowledge with
                 | [] -> return []
@@ -678,7 +632,7 @@ let sync (options: Options) : Task<unit> =
 
         let existingByName =
             existingCollections
-            |> List.map (fun collection -> stringField collection [ "name" ], collection)
+            |> List.map (fun collection -> collection.Name, collection)
             |> Map.ofList
 
         let! knowledgeIds = syncKnowledgeCollections client options.Url existingByName knowledge
