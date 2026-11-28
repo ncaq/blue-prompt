@@ -178,8 +178,7 @@ let private scheme: Parse.TextParser<char> =
 /// それ以外のリンクは黙って無視せず全て参照ファイルとして扱う。
 /// 表記ゆれの`./`は落として`./`有りと無しが同じファイルへまとまるようにする。
 let localLinkTargets (body: string) : string list =
-    Parse.findAll Markdown.inlineLink body
-    |> Seq.map _.Value
+    Markdown.linkUrls body
     |> Seq.filter (fun target ->
         not (target.StartsWith '#') && not (Parse.startsWith scheme target))
     |> Seq.map (fun target ->
