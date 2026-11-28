@@ -7,7 +7,6 @@ open System.Net
 open System.Net.Sockets
 open System.Text
 open System.Text.Json.Nodes
-open System.Text.RegularExpressions
 open System.Threading.Tasks
 open Xunit
 open BluePrompt
@@ -54,7 +53,16 @@ let private parseMultipart (contentType: string) (body: byte array) : string * b
 
     // ファイル名はトークンとして書ける文字だけならクォートが付かないため、どちらの形も読む。
     let fileName =
-        Regex.Match(text.Substring(0, headerEnd), "filename=\"?([^\";\r\n]*)\"?").Groups[1].Value
+        let key = "filename="
+        let header = text.Substring(0, headerEnd)
+
+        let value =
+            header.Substring(header.IndexOf(key, StringComparison.Ordinal) + key.Length)
+
+        value.TrimStart('"')
+        |> Seq.takeWhile (fun c -> not ("\";\r\n".Contains c))
+        |> Seq.toArray
+        |> String
 
     fileName, body[contentStart .. contentEnd - 1]
 

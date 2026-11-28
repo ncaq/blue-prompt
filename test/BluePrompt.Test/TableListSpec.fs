@@ -1,6 +1,5 @@
 module BluePrompt.Test.TableListSpec
 
-open System.Text.RegularExpressions
 open System.Threading.Tasks
 open Falco.Markup
 open Xunit
@@ -388,5 +387,5 @@ let ``箇条書きにした表はpandocで見出しと項目のMarkdownになる
         Assert.Contains("\n#### Q.E.D\n", markdown)
         Assert.Contains("\n- Lv: 1, コスト: 3, 効果: 治癒力の190%分のシールド\n", markdown)
         // 表が残っているとパイプテーブルの整形で空白が膨らむ。
-        Assert.DoesNotMatch(Regex "\\|", markdown)
+        Assert.DoesNotContain("|", markdown)
     }

@@ -1,11 +1,14 @@
 module BluePrompt.Test.ExtractSpec
 
 open System
-open System.Text.RegularExpressions
 open System.Threading.Tasks
 open Falco.Markup
 open Xunit
 open BluePrompt.Test.HtmlFixture
+
+/// 文字列の中に現れる部分文字列の数。
+let private countOf (needle: string) (text: string) : int =
+    text.Split(needle, StringSplitOptions.None).Length - 1
 
 /// 本文を#contentのmainだけへ入れたHTML文書。
 /// 抽出の検証はほとんどが本文の中身だけを問題にするため、この形を入力にする。
@@ -74,7 +77,7 @@ let ``contentHtmlはリンクを外しテーブルを平坦化する`` () =
     Assert.Contains("anchor text", html)
     // rowspanは各行へ複製展開され、セル内のbrは読点で繋がれる。
     Assert.DoesNotContain("rowspan", html)
-    Assert.Equal(2, Regex.Matches(html, "merged").Count)
+    Assert.Equal(2, countOf "merged" html)
     Assert.Contains("one、two", html)
     // セル先頭のbrは繋ぐ相手がいないので取り除かれる。
     Assert.DoesNotContain("、second", html)
@@ -322,7 +325,7 @@ let ``横に結合されたセルの複製は空になる`` () =
     let extracted = BluePrompt.Extract.contentHtml contentQuery html
 
     Assert.DoesNotContain("colspan", extracted)
-    Assert.Equal(1, Regex.Matches(extracted, "横に長い見出し").Count)
+    Assert.Equal(1, countOf "横に長い見出し" extracted)
 
 [<Fact>]
 let ``表を横断する1セルだけの行は段落として表の外へ出る`` () =
@@ -366,7 +369,7 @@ let ``表の途中の区切り行は前後の行を別々の表へ分ける`` ()
     Assert.True(positionOf "途中の小見出し" < positionOf "b1")
     Assert.Contains("<strong>途中の小見出し</strong>", extracted)
     // 前半の行と後半の行は同じ表に残らない。
-    Assert.Equal(2, Regex.Matches(extracted, "<table>").Count)
+    Assert.Equal(2, countOf "<table>" extracted)
 
 [<Fact>]
 let ``見出しの下が全て空の列は取り除かれる`` () =
@@ -421,7 +424,7 @@ let ``画像だけを持つ列と行は空として扱わない`` () =
 
     Assert.Contains("https://example.com/a.png", extracted)
     Assert.Contains("https://example.com/b.png", extracted)
-    Assert.Equal(3, Regex.Matches(extracted, "<tr>").Count)
+    Assert.Equal(3, countOf "<tr>" extracted)
 
 [<Fact>]
 let ``キーと値のペアを横に並べた行は1行1ペアの2列になる`` () =
@@ -445,7 +448,7 @@ let ``キーと値のペアを横に並べた行は1行1ペアの2列になる``
     Assert.Contains("<tr><th>HP</th><td>3146</td></tr>", extracted)
     Assert.Contains("<tr><th>攻撃力</th><td>118</td></tr>", extracted)
     // 中身が両方空の埋め草ペアは行にならない。
-    Assert.Equal(2, Regex.Matches(extracted, "<tr>").Count)
+    Assert.Equal(2, countOf "<tr>" extracted)
 
 [<Fact>]
 let ``見出し行の無い表では先頭行にだけ値がある列も残る`` () =
@@ -485,7 +488,7 @@ let ``全セルが空の行は取り除かれる`` () =
     let extracted = BluePrompt.Extract.contentHtml query html
 
     Assert.Contains("name", extracted)
-    Assert.Equal(1, Regex.Matches(extracted, "<tr>").Count)
+    Assert.Equal(1, countOf "<tr>" extracted)
 
 [<Fact>]
 let ``レイアウト用テーブルのセル内にある本文のdivは平坦化されない`` () =
@@ -535,7 +538,7 @@ let ``過大なrowspanは実際の行数で切り詰められる`` () =
     let extracted = BluePrompt.Extract.contentHtml contentQuery html
 
     // 実際の行数(2行)分だけ展開され、指定値までは複製されない。
-    Assert.Equal(2, Regex.Matches(extracted, "big").Count)
+    Assert.Equal(2, countOf "big" extracted)
     Assert.DoesNotContain("rowspan", extracted)
 
 [<Fact>]
@@ -555,7 +558,7 @@ let ``過大なcolspanは上限の列数で切り詰められる`` () =
     let extracted = BluePrompt.Extract.contentHtml contentQuery html
 
     // 1000列ではなく上限の100列(元セル1つと空の複製99個)とyで101セルになる。
-    Assert.Equal(101, Regex.Matches(extracted, "<td").Count)
+    Assert.Equal(101, countOf "<td" extracted)
     Assert.DoesNotContain("colspan", extracted)
 
 [<Fact>]
@@ -590,7 +593,7 @@ let ``rowspan0のセルは残りの行の末尾まで展開される`` () =
 
     let extracted = BluePrompt.Extract.contentHtml contentQuery html
 
-    Assert.Equal(2, Regex.Matches(extracted, "スパン").Count)
+    Assert.Equal(2, countOf "スパン" extracted)
     Assert.DoesNotContain("rowspan", extracted)
 
 [<Fact>]
