@@ -492,6 +492,7 @@
                 cp ${./.editorconfig} work/.editorconfig
                 cp ${./.editorconfig-checker.json} work/.editorconfig-checker.json
                 cp ${./_typos.toml} work/_typos.toml
+                cp ${./.markdownlint-cli2.yaml} work/.markdownlint-cli2.yaml
                 # どのスキルを生成するかはblue-promptのマニフェストだけが知っている。
                 # 生成物を消してから生成し直すことで、
                 # character.mdを持つのにマニフェストから漏れたスキルは、
@@ -552,6 +553,15 @@
               editorconfig-checker = {
                 command = pkgs.editorconfig-checker;
                 includes = [ "*" ];
+              };
+              # MarkdownがGFMとして壊れていないかの検査。
+              # 何を壊れとみなすかは.markdownlint-cli2.yamlに書いている。
+              # 整形はprettierが担うので、書き換えずに検査だけを行う。
+              # prettierが整形し終えた後の形を検査するように後で動かす。
+              markdownlint = {
+                command = pkgs.markdownlint-cli2;
+                includes = [ "*.md" ];
+                priority = 1;
               };
               zizmor.options = [ "--pedantic" ];
             };
@@ -735,6 +745,7 @@
               deadnix
               editorconfig-checker
               fantomas
+              markdownlint-cli2
               nixfmt
               prettier
               shellcheck

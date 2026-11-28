@@ -111,7 +111,7 @@ knowledge: character-cherino, character-cherino-hot-spring, character-appellatio
 - 趣味: 粛清、雪合戦
 - デザイン: Hwansang
 - イラスト: Hwansang
-- CV: 矢野妃菜喜[^1]
+- CV: 矢野妃菜喜[^normal-1]
 - ちびキャラ: ![チェリノ(小).png](https://bluearchive.wikiru.jp/attach2/E38381E382A7E383AAE3838E_E38381E382A7E383AAE3838E28E5B08F292E706E67.png)
 - 各バージョン一覧: ★3 チェリノ、★3 チェリノ（温泉）
 
@@ -246,7 +246,7 @@ knowledge: character-cherino, character-cherino-hot-spring, character-appellatio
 裏での活動が主体の彼らにとって、サプレッサーが付けられるメリットとリボルバーの高い信頼性・堅牢性というメリット（複雑な構造とはいえ少なくとも当時のオートマチックよりは遥かに高い信頼性があった）は大きいものであり、不便なリロード方法も積極的にドンパチしないのでさほどデメリットとして気にされなかったのだとか。
 ちなみにトリガープルがめちゃくちゃ重い。シングルアクションですら**4kg**、ダブルアクションに至っては**9kg**とトレーニング器具めいた重さとなっている。
 
-[^1]: 現在2代目声優。初代は丹下桜が担当（2025/7/22メンテナンスまで）。
+[^normal-1]: 現在2代目声優。初代は丹下桜が担当（2025/7/22メンテナンスまで）。
 
 # 衣装: チェリノ（温泉）
 
@@ -273,7 +273,7 @@ knowledge: character-cherino, character-cherino-hot-spring, character-appellatio
 - 趣味: 粛清、雪合戦
 - デザイン: kokosando
 - イラスト: kokosando
-- CV: 矢野妃菜喜[^1]
+- CV: 矢野妃菜喜[^hot-spring-1]
 - ちびキャラ: ![チェリノ（温泉）_SD2.png](https://bluearchive.wikiru.jp/attach2/E38381E382A7E383AAE3838EEFBC88E6B8A9E6B389EFBC89_E38381E382A7E383AAE3838EEFBC88E6B8A9E6B389EFBC895F5344322E706E67.png)
 - 各バージョン一覧: ★3 チェリノ、★3 チェリノ（温泉）
 
@@ -387,4 +387,4 @@ T-54/55生誕の地であるロシアでは退役したものの、初期型の�
 
 ちなみに粛清君1号の前面に取り付けられているドーザーブレードは、地雷処理やがれきの撤去、射撃ポジションの確保などを目的に、実際の戦車にも取り付けられることがある。
 
-[^1]: 現在2代目声優。初代は丹下桜が担当（2025/7/22メンテナンスまで）。
+[^hot-spring-1]: 現在2代目声優。初代は丹下桜が担当（2025/7/22メンテナンスまで）。

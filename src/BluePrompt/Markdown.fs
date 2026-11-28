@@ -19,6 +19,22 @@ open XParsec.CharParsers
 /// エスケープの規則がその一箇所だけで直されて他が崩れるのを防ぐためここへ置く。
 let escapeTableCell (text: string) : string = text.Replace("|", "\\|")
 
+/// GFMの脚注のラベル(`[^1]`の`1`)。
+/// ラベルは空白と角括弧を含められないので、その手前までを読む。
+let private footnoteLabel: Parse.TextParser<string> =
+    pstring "[^"
+    >>. many1Chars (satisfy (fun c -> not (Char.IsWhiteSpace c) && c <> '[' && c <> ']'))
+    .>> pchar ']'
+
+/// 脚注のラベルの前へprefixとハイフンを付ける。
+/// 参照の`[^1]`も定義の`[^1]:`も同じ形なので、両方が揃って書き換わる。
+/// 脚注のラベルは文書の中で一意である必要があり、
+/// 別々に作った文書を連結すると同じラベルの定義が重なって後のものが捨てられるため、
+/// 連結する前に文書ごとに異なるprefixを付けて分ける。
+/// コードの中の同じ形も書き換えるが、生成物のコードに脚注の形の文字列は現れない。
+let prefixFootnoteLabels (prefix: string) (markdown: string) : string =
+    Parse.replace (footnoteLabel |>> fun label -> $"[^%s{prefix}-%s{label}]") markdown
+
 /// リンクを拾うためのMarkdigの解釈の設定。
 /// wikiruから作る生成物はGFMの脚注を使う。
 /// 脚注の拡張が無いと`[^1]: 本文`をリンク参照の定義として読み、
