@@ -167,6 +167,8 @@ let rec private renderSection (section: Section) : string list =
     @ List.collect renderSection section.Children
 
 /// 節の木をMarkdownへ戻す。見出し行は`#`と空白1つと文字列の形へ揃う。
+/// 読む時に落とした末尾の改行と、`\n`へ揃えた改行コードは元へ戻らないので、
+/// 文書の終わり方は呼び出し側で整える。
 let toMarkdown (section: Section) : string =
     renderSection section |> String.concat "\n"
 
