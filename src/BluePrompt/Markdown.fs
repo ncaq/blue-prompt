@@ -17,6 +17,16 @@ open XParsec.CharParsers
 /// エスケープの規則がその一箇所だけで直されて他が崩れるのを防ぐためここへ置く。
 let escapeTableCell (text: string) : string = text.Replace("|", "\\|")
 
+/// インラインリンク(「[表示名](参照先)」)。参照先を返す。
+/// 表示名は空でもよく、参照先は1文字以上を求める。
+/// リンクを読む箇所が複数あるので、形の定義をここ1つにする。
+let inlineLink: Parse.TextParser<string> =
+    pchar '['
+    >>. skipManySatisfies (fun c -> c <> ']')
+    >>. pstring "]("
+    >>. many1Chars (satisfy (fun c -> c <> ')'))
+    .>> pchar ')'
+
 /// 見出しで区切った節の木。
 /// ルートは文書全体を表し、見出しを持たない。
 type Section =

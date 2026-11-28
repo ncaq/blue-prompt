@@ -169,14 +169,6 @@ let parseFrontmatter (path: string) (content: string) : Frontmatter =
           Body = body.Trim()
           Raw = String.concat "\n" (delimiter :: lines @ [ delimiter ]) }
 
-/// Markdownのインラインリンク。参照先を返す。
-let private link: Parse.TextParser<string> =
-    pchar '['
-    >>. skipManySatisfies (fun c -> c <> ']')
-    >>. pstring "]("
-    >>. many1Chars (satisfy (fun c -> c <> ')'))
-    .>> pchar ')'
-
 /// URLのスキーム。`https:`のような形で参照ファイルのパスと区別する。
 let private scheme: Parse.TextParser<char> =
     asciiLetter
@@ -189,7 +181,7 @@ let private scheme: Parse.TextParser<char> =
 /// それ以外のリンクは黙って無視せず全て参照ファイルとして扱う。
 /// 表記ゆれの`./`は落として`./`有りと無しが同じファイルへまとまるようにする。
 let localLinkTargets (body: string) : string list =
-    Parse.findAll link body
+    Parse.findAll Markdown.inlineLink body
     |> Seq.map _.Value
     |> Seq.filter (fun target ->
         not (target.StartsWith '#') && not (Parse.startsWith scheme target))

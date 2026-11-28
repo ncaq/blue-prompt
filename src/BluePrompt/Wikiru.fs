@@ -385,12 +385,7 @@ let sourceHeader (source: Uri) : string =
 
 /// sourceHeaderが組み立てる出典の行。リンクのURLを返す。
 /// 生成したファイルから出典を読み戻す側が、書く側と同じ場所で形を知るためにここへ置く。
-let sourceLine: Parse.TextParser<string> =
-    pstring "出典: ["
-    >>. skipMany1Satisfies (fun c -> c <> ']')
-    >>. pstring "]("
-    >>. many1Chars (satisfy (fun c -> c <> ')'))
-    .>> pchar ')'
+let sourceLine: Parse.TextParser<string> = pstring "出典: " >>. Markdown.inlineLink
 
 /// ページ名からナレッジファイル先頭に付ける出典の表記を組み立てる。
 let knowledgeHeader (pageName: string) : string = sourceHeader (pageUri pageName)
