@@ -40,6 +40,10 @@ nix-fast-buildコマンドで統合チェックを実行できます。
 nix-fast-build --option eval-cache false --no-link --skip-cached --no-nom
 ```
 
+checksの`open-webui-sync`はNixのデーモンに`uid-range`のsystem-featureを要求します。
+設定の無い環境ではこれだけが落ちるので、
+「同期のテスト」の節に従って設定してください。
+
 # リポジトリ構成
 
 様々なコーディングエージェント向けの`AGENTS.md`と、
@@ -144,10 +148,14 @@ APIの応答も、読む欄だけを持つレコードで受けます。
 
 Open WebUIとやり取りするJSONの設定は`src/BluePrompt/OpenWebuiJson.fs`に、
 wikiruから構造化したレコードの設定は`src/BluePrompt/JsonCodec.fs`にあります。
-Open WebUI向けは、書く時はNoneもnullとして書き、
+Open WebUI向けは、書く時はNoneをキーごと省かずにnullとして書きます。
+Open WebUIはnullを未設定として受け取れるうえ、
+生成物を読んだ時にどのフィールドが未設定なのかが見えるためです。
+
 読む時は欠けたフィールドもnullもNoneとして読みます。
 登録済みのModelには、
 このリポジトリが後から管理対象へ足したフィールドがまだ無いことがあるためです。
+書いたnullを読み戻せるように、nullもNoneとして読みます。
 
 ## リンター
 
