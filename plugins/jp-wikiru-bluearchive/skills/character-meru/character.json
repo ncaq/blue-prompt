@@ -1,0 +1,5301 @@
+{
+  "pageName": "メル",
+  "source": "https://bluearchive.wikiru.jp/?%E3%83%A1%E3%83%AB",
+  "character": {
+    "preamble": [],
+    "sections": [
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["基本情報"]
+          }
+        ],
+        "content": {
+          "Case": "Basic",
+          "Fields": [
+            {
+              "portrait": [
+                {
+                  "Case": "Image",
+                  "Fields": [
+                    "メル_2.png",
+                    "https://bluearchive.wikiru.jp/attach2/E383A1E383AB_E383A1E383AB5F322E706E67.png"
+                  ]
+                }
+              ],
+              "profile": [
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["名前"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["メル"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["フルネーム"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Ruby",
+                      "Fields": ["姫木", "ひめき"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["メル"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["レアリティ"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["★3"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["役割"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["STRIKER"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["ポジション"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["MIDDLE"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["クラス"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["アタッカー"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["武器種"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["HG"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["遮蔽物"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["使う"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["攻撃タイプ"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["貫通"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["防御タイプ"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["軽装備"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["学園"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["レッドウィンター"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["連邦学園2年生"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["部活"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["知識解放戦線"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["年齢"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["16歳"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["誕生日"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["12月21日"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["身長"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["137cm"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["趣味"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["漫画を描くこと、妄想"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["デザイン"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["ぶくろて"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["イラスト"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["ぶくろて"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["CV"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["新井里美"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["ちびキャラ"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Image",
+                      "Fields": [
+                        "メル_SD2.png",
+                        "https://bluearchive.wikiru.jp/attach2/E383A1E383AB_E383A1E383AB5F5344322E706E67.png"
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["各バージョン"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["一覧"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["★3 "]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["メル"]
+                    }
+                  ]
+                }
+              ],
+              "introduction": [
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "レッドウィンター連邦学園所属、図書委員会「知識解放戦線」の一人。"
+                        ]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "同じ知識解放戦線であるモミジと違って、二次創作を楽しむだけでなく自らも創作をしている。"
+                        ]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["ハンドルネームは「メルリー」。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "仲が良さそうな、あるいは悪そうな生徒同士の関係にインスピレーションを受ける事が多く、"
+                        ]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["所謂ナマモノ同人をしている。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "仇敵関係にあるトリニティ、ゲヘナの生徒もメルの「創作対象」であり、"
+                        ]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["よく描かれるため、メルの悪名は学園外にも轟いている。"]
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "appearances": [],
+              "acquisition": [
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ピックアップ募集「ペンは銃より強し！」(2023/08/23～2023/09/06)"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["、"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["復刻ピックアップ募集(2024/08/07～2024/08/14)"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["、"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["復刻ピックアップ募集(2025/12/17～2025/12/24)"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["、"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["通常募集"]
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "status": [
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["HP"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["2317"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["/23607(★3Lv87)"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["/26306(★4Lv90)"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["/28454(★5Lv87)"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["攻撃力"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["513"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["/4529(★3Lv87)"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["/5204(★4Lv90)"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["/5680(★5Lv87)"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["防御力"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["18/101"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["治癒力"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["1778"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["/4867(★3Lv87)"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["/5482(★4Lv90)"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["/5986(★5Lv87)"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["命中値"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["108"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["回避値"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["1011"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["会心値"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["270"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["会心ダメージ"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["200%"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["防御貫通値"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["0"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["安定値"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["916"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["射程距離"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["550"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["コスト回復力"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["700"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["CC強化力"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["100"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["CC抵抗力"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["100"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["市街地戦闘力"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["B"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["屋外戦闘力"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["S"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["屋内戦闘力"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["D"]
+                    }
+                  ]
+                }
+              ],
+              "equipment": [
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["Lv1"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["シューズ"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["Lv10"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["ヘアピン"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["Lv20"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["腕時計"]
+                    }
+                  ]
+                }
+              ],
+              "supplement": []
+            }
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["スキル"]
+          }
+        ],
+        "content": {
+          "Case": "Skills",
+          "Fields": [
+            [
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["EXスキル"]
+                  }
+                ],
+                "skills": [
+                  {
+                    "title": "最強のアイデア",
+                    "rows": [
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["1"]
+                              }
+                            ]
+                          ],
+                          [
+                            "コスト",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["敵1人に対して、攻撃力の91.1%分のダメージ/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力173%分の火傷持続ダメージを付与(30秒間)/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに弱点把握状態を適用(30秒間)"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["、"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "弱点把握状態の敵への攻撃時に、メルの攻撃力の1.3%分の追加ダメージ"
+                                ]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["(このダメージにおいては、会心が発動しません)"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["(最大480発分まで適用されます)"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "コスト",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["敵1人に対して、攻撃力の104%分のダメージ/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力199%分の火傷持続ダメージを付与(30秒間)/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに弱点把握状態を適用(30秒間)"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["、"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "弱点把握状態の敵への攻撃時に、メルの攻撃力の1.5%分の追加ダメージ"
+                                ]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["(このダメージにおいては、会心が発動しません)"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["(最大480発分まで適用されます)"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["3"]
+                              }
+                            ]
+                          ],
+                          [
+                            "コスト",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["敵1人に対して、攻撃力の145%分のダメージ/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力251%分の火傷持続ダメージを付与(30秒間)/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに弱点把握状態を適用(30秒間)"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["、"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "弱点把握状態の敵への攻撃時に、メルの攻撃力の1.7%分の追加ダメージ"
+                                ]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["(このダメージにおいては、会心が発動しません)"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["(最大480発分まで適用されます)"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["4"]
+                              }
+                            ]
+                          ],
+                          [
+                            "コスト",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["敵1人に対して、攻撃力の159%分のダメージ/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力277%分の火傷持続ダメージを付与(30秒間)/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに弱点把握状態を適用(30秒間)"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["、"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "弱点把握状態の敵への攻撃時に、メルの攻撃力の1.9%分の追加ダメージ"
+                                ]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["(このダメージにおいては、会心が発動しません)"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["(最大480発分まで適用されます)"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "コスト",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["敵1人に対して、攻撃力の173%分のダメージ/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力329%分の火傷持続ダメージを付与(30秒間)/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに弱点把握状態を適用(30秒間)"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["、"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "弱点把握状態の敵への攻撃時に、メルの攻撃力の2.5%分の追加ダメージ"
+                                ]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["(このダメージにおいては、会心が発動しません)"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["(最大480発分まで適用されます)"]
+                              }
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["ノーマルスキル"]
+                  }
+                ],
+                "skills": [
+                  {
+                    "title": "妄想は無限大",
+                    "rows": [
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["1"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "50秒毎に、敵1人に対して攻撃力の71.4%分のダメージ/さらに攻撃力の47.9%分の火傷持続ダメージを付与（30秒間）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "50秒毎に、敵1人に対して攻撃力の75%分のダメージ/さらに攻撃力の50.3%分の火傷持続ダメージを付与（30秒間）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["3"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "50秒毎に、敵1人に対して攻撃力の78.4分のダメージ/さらに攻撃力の52.7%分の火傷持続ダメージを付与（30秒間）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["4"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "50秒毎に、敵1人に対して攻撃力の92.8%分のダメージ/さらに攻撃力の62.3%分の火傷持続ダメージを付与（30秒間）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "50秒毎に、敵1人に対して攻撃力の96.4%分のダメージ/さらに攻撃力の64.7%分の火傷持続ダメージを付与（30秒間）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["6"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "50秒毎に、敵1人に対して攻撃力の100%分のダメージ/さらに攻撃力の67.1%分の火傷持続ダメージを付与（30秒間）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["7"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "50秒毎に、敵1人に対して攻撃力の114.2%分のダメージ/さらに攻撃力の76.7%分の火傷持続ダメージを付与（30秒間）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["8"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "50秒毎に、敵1人に対して攻撃力の117.8%分のダメージ/さらに攻撃力の79.1%分の火傷持続ダメージを付与（30秒間）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["9"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "50秒毎に、敵1人に対して攻撃力の121.4%分のダメージ/さらに攻撃力の81.5%分の火傷持続ダメージを付与（30秒間）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["10"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "50秒毎に、敵1人に対して攻撃力の135.6%分のダメージ/さらに攻撃力の91.1%分の火傷持続ダメージを付与（30秒間）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["パッシブスキル"]
+                  }
+                ],
+                "skills": [
+                  {
+                    "title": "インプット",
+                    "rows": [
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["1"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を14%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を14.7%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["3"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を15.4%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["4"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を18.2%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を18.9%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["6"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を19.6%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["7"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を22.4%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["8"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を23.1%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["9"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を23.8%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["10"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を26.6%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "title": "インプット+",
+                    "rows": [
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["1"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を504増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに攻撃力を14%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を530増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに攻撃力を14.7%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["3"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を555増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに攻撃力を15.4%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["4"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を656増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに攻撃力を18.2%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を681増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに攻撃力を18.9%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["6"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を706増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに攻撃力を19.6%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["7"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を807増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに攻撃力を22.4%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["8"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を832増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに攻撃力を23.1%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["9"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を857増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに攻撃力を23.8%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["10"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["攻撃力を958増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに攻撃力を26.6%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["サブスキル"]
+                  }
+                ],
+                "skills": [
+                  {
+                    "title": "設定崩壊！",
+                    "rows": [
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["1"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "通常攻撃3回毎に強化弾を発射し、攻撃力の139%分のダメージ"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "通常攻撃3回毎に強化弾を発射し、攻撃力の146%分のダメージ"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["3"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "通常攻撃3回毎に強化弾を発射し、攻撃力の153%分のダメージ"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["4"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "通常攻撃3回毎に強化弾を発射し、攻撃力の181%分のダメージ"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "通常攻撃3回毎に強化弾を発射し、攻撃力の188%分のダメージ"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["6"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "通常攻撃3回毎に強化弾を発射し、攻撃力の195%分のダメージ"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["7"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "通常攻撃3回毎に強化弾を発射し、攻撃力の222%分のダメージ"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["8"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "通常攻撃3回毎に強化弾を発射し、攻撃力の229%分のダメージ"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["9"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "通常攻撃3回毎に強化弾を発射し、攻撃力の236%分のダメージ"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["10"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "通常攻撃3回毎に強化弾を発射し、攻撃力の264%分のダメージ"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["固有武器"]
+          }
+        ],
+        "content": {
+          "Case": "UniqueWeapon",
+          "Fields": [
+            {
+              "name": [
+                {
+                  "Case": "Text",
+                  "Fields": ["創作の……苦しみ！"]
+                }
+              ],
+              "icon": [
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Image",
+                        "Fields": [
+                          "Weapon_Icon_CH0124.png",
+                          "https://bluearchive.wikiru.jp/attach2/696D67_576561706F6E5F49636F6E5F4348303132342E706E67.png"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "description": [
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メル専用の特殊製作拳銃。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["本人の悩みを体現した銃。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["他に良い名が思い浮かばず、この名前になったのだとか。"]
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "limitBreak": [
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["★2"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["パッシブスキルが「"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["インプット+"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["」に変化（攻撃力増加を追加）"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["★3"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["屋外戦への地形別戦闘力をSSに強化"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["★4"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["貫通特効10%加算"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["★5"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["今後のアップデートで追加予定です"]
+                    }
+                  ]
+                }
+              ],
+              "growth": [
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["攻撃力"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.1",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["185"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.30",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["672"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.40",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["840"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.50",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["1009"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.60",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["1177"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.70",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["-"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["最大HP"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.1",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["685"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.30",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["2492"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.40",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["3115"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.50",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["3738"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.60",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["4361"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.70",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["-"]
+                        }
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["能力解放"]
+          }
+        ],
+        "content": {
+          "Case": "Potential",
+          "Fields": [
+            {
+              "growth": [
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["最大HP"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.10",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+435"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.20",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+870"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.25",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+1087"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["攻撃力"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.10",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+77"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.20",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+154"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.25",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+192"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["治癒力"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.10",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+85"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.20",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+170"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.25",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+212"]
+                        }
+                      ]
+                    ]
+                  ]
+                }
+              ],
+              "materials": [
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "Lv",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["1-5"]
+                        }
+                      ]
+                    ],
+                    [
+                      "素材",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "応用WB",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x2(10)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "マンドレイクの種",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D616E647261676F72615F302E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x10(50)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "クレジットポイント",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["100,000"]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["(500,000)"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "Lv",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["6-10"]
+                        }
+                      ]
+                    ],
+                    [
+                      "素材",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "応用WB",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x2(10)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "マンドレイクの種",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D616E647261676F72615F302E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x15(75)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "クレジットポイント",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["100,000"]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["(500,000)"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "Lv",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["11-15"]
+                        }
+                      ]
+                    ],
+                    [
+                      "素材",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "応用WB",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x2(10)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "マンドレイクの種",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D616E647261676F72615F302E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x20(100)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "クレジットポイント",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["100,000"]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["(500,000)"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "Lv",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["16-20"]
+                        }
+                      ]
+                    ],
+                    [
+                      "素材",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "応用WB",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x4(20)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "マンドレイクの芽",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D616E647261676F72615F312E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x6(30)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "クレジットポイント",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["200,000"]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["(1,000,000)"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "Lv",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["21-25"]
+                        }
+                      ]
+                    ],
+                    [
+                      "素材",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "応用WB",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x4(20)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "マンドレイクの芽",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F4D616E647261676F72615F312E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x8(40)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "クレジットポイント",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["200,000"]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["(1,000,000)"]
+                        }
+                      ]
+                    ]
+                  ]
+                }
+              ],
+              "notes": [
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Text",
+                        "Fields": ["※括弧内は5Lv分合計"]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["絆ランクボーナス"]
+          }
+        ],
+        "content": {
+          "Case": "BondBonus",
+          "Fields": [
+            {
+              "ranks": [
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["2-5"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["攻撃力+4"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["6-10"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["攻撃力+6"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["11-15"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["攻撃力+8 最大HP+60"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["16-20"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["攻撃力+11 最大HP+72"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Strong",
+                          "Fields": [
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["～20合計"]
+                              }
+                            ]
+                          ]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["攻撃力+141 最大HP+660"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["21-30"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["攻撃力+3 最大HP+12"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["31-40"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["攻撃力+4 最大HP+18"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["41-50"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["攻撃力+6 最大HP+30"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Strong",
+                          "Fields": [
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["合計"]
+                              }
+                            ]
+                          ]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["攻撃力+271 最大HP+1260"]
+                        }
+                      ]
+                    ]
+                  ]
+                }
+              ],
+              "totals": [
+                {
+                  "title": "絆ランク20",
+                  "rows": [
+                    {
+                      "key": null,
+                      "fields": [
+                        [
+                          "",
+                          [
+                            {
+                              "Case": "Image",
+                              "Fields": [
+                                "メル",
+                                "https://bluearchive.wikiru.jp/attach2/696D67_E383A1E383AB5F69636F6E322E706E67.png"
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "対象",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["メル"]
+                            }
+                          ]
+                        ],
+                        [
+                          "最大HP",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["660"]
+                            }
+                          ]
+                        ],
+                        [
+                          "攻撃力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["141"]
+                            }
+                          ]
+                        ],
+                        [
+                          "防御力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ],
+                        [
+                          "治癒力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ]
+                      ]
+                    },
+                    {
+                      "key": null,
+                      "fields": [
+                        [
+                          "",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["合計"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "最大HP",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["660"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "攻撃力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["141"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "防御力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["0"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "治癒力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["0"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "絆ランク50",
+                  "rows": [
+                    {
+                      "key": null,
+                      "fields": [
+                        [
+                          "",
+                          [
+                            {
+                              "Case": "Image",
+                              "Fields": [
+                                "メル",
+                                "https://bluearchive.wikiru.jp/attach2/696D67_E383A1E383AB5F69636F6E322E706E67.png"
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "対象",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["メル"]
+                            }
+                          ]
+                        ],
+                        [
+                          "最大HP",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["1260"]
+                            }
+                          ]
+                        ],
+                        [
+                          "攻撃力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["271"]
+                            }
+                          ]
+                        ],
+                        [
+                          "防御力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ],
+                        [
+                          "治癒力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ]
+                      ]
+                    },
+                    {
+                      "key": null,
+                      "fields": [
+                        [
+                          "",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["合計"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "最大HP",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["1260"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "攻撃力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["271"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "防御力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["0"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "治癒力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["0"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ]
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "notes": []
+            }
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["絆ストーリー"]
+          }
+        ],
+        "content": {
+          "Case": "BondStory",
+          "Fields": [
+            {
+              "episodes": [
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "EP",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["1"]
+                        }
+                      ]
+                    ],
+                    [
+                      "タイトル",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["物資調達"]
+                        }
+                      ]
+                    ],
+                    [
+                      "解放絆RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["2"]
+                        }
+                      ]
+                    ],
+                    [
+                      "報酬",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["青輝石x20"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "EP",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["2"]
+                        }
+                      ]
+                    ],
+                    [
+                      "タイトル",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["創作の苦しみ（１）"]
+                        }
+                      ]
+                    ],
+                    [
+                      "解放絆RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["3"]
+                        }
+                      ]
+                    ],
+                    [
+                      "報酬",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["青輝石x40"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "EP",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["3"]
+                        }
+                      ]
+                    ],
+                    [
+                      "タイトル",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["創作の苦しみ（２）"]
+                        }
+                      ]
+                    ],
+                    [
+                      "解放絆RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["5"]
+                        }
+                      ]
+                    ],
+                    [
+                      "報酬",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["青輝石x60"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "EP",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["4"]
+                        }
+                      ]
+                    ],
+                    [
+                      "タイトル",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["知識解放戦線へ、ようこそ！"]
+                        }
+                      ]
+                    ],
+                    [
+                      "解放絆RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["6"]
+                        }
+                      ]
+                    ],
+                    [
+                      "報酬",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["青輝石x80, メモリアルロビー解禁"]
+                        }
+                      ]
+                    ]
+                  ]
+                }
+              ],
+              "lobby": [
+                {
+                  "Case": "Heading",
+                  "Fields": [
+                    3,
+                    [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー"]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Strong",
+                        "Fields": [
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["BGM"]
+                            },
+                            {
+                              "Case": "Text",
+                              "Fields": ["：Midnight Trip"]
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Image",
+                        "Fields": [
+                          "メル_メモリアルロビー.jpg",
+                          "https://bluearchive.wikiru.jp/attach2/E383A1E383AB_E383A1E383AB5FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg"
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Image",
+                        "Fields": ["", "https://i.imgur.com/80NzSZ7.png.jpg"]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Case": "Items",
+                  "Fields": [
+                    [
+                      {
+                        "title": null,
+                        "items": [
+                          [
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "スタッフ",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["GrimGreen"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            },
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "役割",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["シナリオライター"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            },
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "コンテンツ",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["メモリアルロビー メル"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            }
+                          ],
+                          [
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "スタッフ",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["NOOK"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            },
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "役割",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["シナリオ演出"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            },
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "コンテンツ",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["メモリアルロビー メル"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            }
+                          ],
+                          [
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "スタッフ",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["YutokaMizu"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            },
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "役割",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["イラストレーター"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            },
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "コンテンツ",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["メモリアルロビー メル"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            }
+                          ],
+                          [
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "スタッフ",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["Snowcat"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            },
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "役割",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["アニメーター"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            },
+                            {
+                              "Case": "Value",
+                              "Fields": [
+                                "コンテンツ",
+                                {
+                                  "inlines": [
+                                    {
+                                      "Case": "Text",
+                                      "Fields": ["メモリアルロビー メル"]
+                                    }
+                                  ],
+                                  "blocks": []
+                                }
+                              ]
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["ボイス"]
+          }
+        ],
+        "content": {
+          "Case": "Voice",
+          "Fields": [
+            [
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["一般"]
+                  }
+                ],
+                "lines": [
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["獲得"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["やっほー！私は知識解放戦線の姫木メル！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["メルリーって呼んでもいいよ、あ、そっちは"]
+                      },
+                      {
+                        "Case": "Ruby",
+                        "Fields": ["HN", "ハンドルネーム"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["ね。よろしく、先生。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["カフェ1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ネタ……ネタはどこだっ……！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["カフェ2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["まってまって……あの光景は、もしかして……？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["カフェ3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["やっぱ……もっと画力欲しいよぉ……。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["カフェ4"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["もうちょっと手が速くならないかなぁ……ついでに目と頭の回転も！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["カフェ5"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["同人誌を出すときは、本名は使わないんだよ。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["絆ランク増加1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "えっと、その、なんだ、こういう時って、アレを言わないと、だよね……。"
+                        ]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["だから、えっと、やっぱ無理っ！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["絆ランク増加2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "妄想はいつだって無敵！なんだけど……この状況は、現実だよね……うわあー…"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["絆ランク増加3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "最早感心しちゃうよ、私なんかにここまで…。ありがと、先生。これは本心だよ。"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["絆ランク増加4"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "「絆」って言葉さ、意味の重さの割にはやたら使われてる気がするけど、"
+                        ]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["その……私は先生との絆を、大切にしたいかも。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["生徒強化1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["絵の腕も、こうやって分かりやすく上達すれば良いのにねー。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["生徒強化2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["これも先生のおかげだね！お礼に、今度絵を描いてあげる！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["生徒強化3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["来た、見た、強くなったー！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["生徒強化4"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["あぁん、こんなに強くなるなんて、自分の成長っぷりが怖いわぁ～"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["固有武器装備"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["弘法筆を選ばずっていうけどそれでもツールは大事だからね。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["その……つまり、ありがとってことだよ。先生。"]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["戦闘"]
+                  }
+                ],
+                "lines": [
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["編成1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["おお、ネタの気配がする…！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["編成2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["私の専門はお絵かきだからね～"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["編成選択"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["そこストップ！そのままポーズをとって、そうそう…！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦略入場1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["さ、行こっか。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦略入場2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ふふ、ここには一体なにがあるのかな～？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦略勝利1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ふむふむ、悪くなかったよ～"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦略勝利2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["これだよ、これ～！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦略撤退1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["うぅ、やられた～。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦略撤退2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["まだ、ネタも湧いてきてないのに……"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦術入場1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["んじゃ、新刊のネタを探しに行こっか！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦術入場2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["さ～て、どこから手つけよっかな～？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["回復"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["目が冴えてきた…！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦術勝利1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["良い結果だね、意外と私こっちの才能もあるのかも。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦術勝利2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["うんうん、良い感じ。この勢いで原稿も。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦術撤退1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["徹夜作業より辛いんだけど……"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ノーマルスキル1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["いっけえぇ～！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["回避"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["へへん！当たらないよん。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["被CC1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["わ！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["被CC2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ひぃぃぃ…"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["被CC3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ひどいじゃん！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["バフ1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["さんきゅ～！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["バフ（自己）1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ノッてきた～！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["戦術移動"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["よし、行くよ！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["セクション移動1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["次は～どこかな～？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["セクション移動2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["進んでみよっかな～♪"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["遮蔽"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["隠れろー！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["こ、これは…！ふふふふ…！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["来た、キタキタキター！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["はっ！インスピレーションが…！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル（フィールド）1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["うおぉぉぉ！どうよ、コレ！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル（フィールド）2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["いやぁぁあ！できたー！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル（フィールド）3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["びびっと、よし！脱稿！"]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["ロビー"]
+                  }
+                ],
+                "lines": [
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ログイン1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["お、いらっしゃい、先生！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["んじゃ、お仕事始めちゃって～私はそれを描いてるから！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ログイン2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["お～そ～い～。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["待たせてごめん？いや？今来たばっかだけど？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["雑談1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ふむふむ。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["先生、ここに私の資料、持ち込んでもいい？"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["いやその……作業部屋にしたいなぁって思って。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["雑談2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["今更だけど先生って……多忙な人生を送ってるんだね……。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["雑談3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["芸術も知識も、すべて自由から芽生えるもの。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["だから私は今から……自由に先生をスケッチするよっ！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["雑談4"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ここが、先生の戦場……！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["感じる……感じるぞ……修羅場のオーラをっ！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["雑談5"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["偉大なる同人作家たちは皆、最初は真っ白の原稿を抱えていたんだ……"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["つまり、私は偉大なる同人作家になる素養があるってことだよ！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー雑談1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["別に私は、すごいことをしてるわけじゃないよ。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["他にやりたいことも、スキルもないし……。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー雑談2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["だから私は……創作を続けているだけなのかも。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー雑談3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["なんか……こういうのも悪くないね。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["こういう場所でさ……こういう会話を、先生とするの。いいかも。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー雑談4"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["だってほら……創作には変化が必要じゃん？"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["先生は、私に変化をもたらしてくれる人でもあるから。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー雑談5"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["うわあー…今恥ずかしいこと言っちゃったかも。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["あー今のなし！忘れて忘れて！あははは！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ハロウィン"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ハロウィーン……カボチャのモチーフのシーズンか……！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["仕方ない……出かけよう先生！資料集めの時間だよ！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["クリスマス"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "前に、クリスマスプレゼントで神絵師の描いた自カプの同人誌が欲しい！"
+                        ]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["……ってお願いしたことがあるんだけどさ、"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "結局自分の最高の萌えは自分で描くしかないって結論になっちゃったんだよね。"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["新年"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["あ～あ～年明けちゃた。あけましておめでとう、先生。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["お参りに行きたい気持ち半分、出かけたくない気持ち半分～"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["、"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["こういうの、オンラインでなんとかならないかなぁ～"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["誕生日"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["先生知ってる？今日はこの私……姫木メルの誕生日なのだよ！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": [
+                          "……いやいや、一緒に出掛けてって意味じゃないよ！そんなの面倒くさいし！"
+                        ]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["それより……出前、頼まない？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["先生誕生日"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["誕生日なんだね！おめでとう、先生！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["今日こそ、先生の似顔絵をプレゼントするね！"]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["イベント"]
+                  }
+                ],
+                "lines": [
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["イベントボイスリンク1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["「"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["学漫同人物語～2人が求める最終回～"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["」"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["、"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["「"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["【復刻】学漫同人物語～2人が求める最終回～"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["」"]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["小ネタ"]
+          }
+        ],
+        "content": {
+          "Case": "Trivia",
+          "Fields": [
+            [
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Strong",
+                      "Fields": [
+                        [
+                          {
+                            "Case": "Text",
+                            "Fields": ["「んじゃ、新刊のネタを探しに行こっか！」"]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["レッドウィンター連邦学園、知識解放戦線のメンバーの1人。"]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["女性同士のGL作品を好み、自らの手で描き上げることに情熱を燃やす。"]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["ペンネームは「メルリー」。"]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["とある"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["秘書室長"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["、"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["副委員長"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["、"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["行政官"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["、"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["会計"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["など他校を含む"]
+                    },
+                    {
+                      "Case": "Ruby",
+                      "Fields": ["実在の人物", "ナマモノ"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["を扱った危険な妄想本をいくつも執筆している。"]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["初出はグループストーリーの『227号特別クラス』。"]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "チェリノへの嘆願書を書くのに知識解放戦線の力を借りるという内容だが、相手がメルだっただめに嘆願書の内容がノドカ×シグレのエロ小説にされてしまった。"
+                      ]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["イベントでは"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["227号温泉郷"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["が初。先生ともこちらが初対面。"]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "温泉郷イベだけあって浴衣姿での登場となり、画面への登場回数が浴衣＞＞制服と大きく逆転した。"
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Image",
+                      "Fields": [
+                        "メル（温泉）_圧縮.png",
+                        "https://bluearchive.wikiru.jp/attach2/E383A1E383AB_E383A1E383ABEFBC88E6B8A9E6B389EFBC895FE59CA7E7B8AE2E706E67.png"
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Heading",
+                "Fields": [
+                  3,
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["立ち絵バリエーション"]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Image",
+                      "Fields": [
+                        "メル_圧縮.png",
+                        "https://bluearchive.wikiru.jp/attach2/E383A1E383AB_E383A1E383AB5FE59CA7E7B8AE2E706E67.png"
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["実装に当たって立ち絵がリニューアルされている。"]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "担当絵師や基本的な構図はそのままだが、他キャラに合わせて塗りがアニメ調に寄っている。"
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Heading",
+                "Fields": [
+                  3,
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["使用している銃の元ネタ"]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["TP-82"]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "ソ連が、宇宙から帰還した宇宙飛行士が救助隊の到着までの間シベリアの地表でサバイバルをするための装備として開発した、銃身が3本もついた中折れ式拳銃という珍銃。"
+                      ]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["本銃は扱いは拳銃となっているが、分類上はコンビネーション・ガン"]
+                    },
+                    {
+                      "Case": "FootnoteReference",
+                      "Fields": ["3"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["ともいうべき代物。"]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "上部の2本は12.5x70mm32ゲージ散弾や信号弾の発射を想定した滑腔銃身、下部の施条銃身はAK-74の物と同じ5.45x39mm弾を、それぞれの銃身ごとに1発ずつ装填できる作りとなっている。"
+                      ]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "メルの銃にはついていないが、本来はやたらとでかいストックがついており、そのストック部分のカバーを外すと鉈が出てくる仕組みとなっていた。"
+                      ]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "このストック部分の鉈は取り外しが可能であり、これ1本で銃での野生動物からの自衛や食料調達、鉈で木を切って薪にしたり簡易シェルターを作ったり等、幅広く使える緊急サバイバルキットの1つとして、1986年から2006年まで宇宙飛行士の装備として携行されていた。"
+                      ]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "実際に使用したソ連の宇宙飛行士によると「この銃の精度は非常に高い」とのこと。"
+                      ]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "2007年にTP-82用に保管していた弾が使用不可能となったことから、宇宙飛行士用の装備として使用されなくなった模様。"
+                      ]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "つまり、それまで20年ほどの間この珍銃が使われていたということでもある。"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "footnotes": [
+      {
+        "label": "1",
+        "content": [
+          {
+            "Case": "Text",
+            "Fields": [
+              "デバフ発生と同時に1回、以後4秒ごとに計8回発生する。最後のダメージはデバフ発生から28秒後に発生し、その2秒後にデバフアイコンが消える。"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "2",
+        "content": [
+          {
+            "Case": "Text",
+            "Fields": [
+              "マキはペイント状態の敵に高いダメージを出すスキルを持つ為、防御デバフの効果が微差でも当てる価値が高い"
+            ]
+          }
+        ]
+      },
+      {
+        "label": "3",
+        "content": [
+          {
+            "Case": "Text",
+            "Fields": [
+              "ライフルとショットガンのように種類の異なる火器を組み合わせた銃のこと。3銃身の物はドリリングとも呼ばれる。"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

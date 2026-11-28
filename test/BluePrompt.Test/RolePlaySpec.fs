@@ -3,201 +3,113 @@ module BluePrompt.Test.RolePlaySpec
 open System
 open System.IO
 open Xunit
+open BluePrompt.Article
+open BluePrompt.Character
 open BluePrompt.RolePlay
 
-/// 参照ファイル1つ分のMarkdownを組み立てる。
-/// wikiruの生徒個別ページから生成したものと同じ形にする。
-let private reference (pageName: string) : string =
-    let url = "https://bluearchive.wikiru.jp/?" + Uri.EscapeDataString pageName
+/// 衣装のページのURL。
+let private pageSource (pageName: string) : Uri =
+    Uri("https://bluearchive.wikiru.jp/?" + Uri.EscapeDataString pageName)
 
-    $"出典: [%s{pageName} - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{url})\n"
-    + "\n## 基本情報\n\n| 名前 | ユウカ |\n\n## ボイス\n"
-
-[<Fact>]
-let ``parseReferenceは出典のページ名と中身を読む`` () =
-    let parsed = parseReference "/skills/yuuka/normal.md" (reference "ユウカ")
-
-    Assert.Equal("ユウカ", parsed.PageName)
-    Assert.Equal((reference "ユウカ").Trim(), parsed.Body)
-
-[<Fact>]
-let ``parseReferenceはパーセントエンコードされたページ名を復元する`` () =
-    Assert.Equal("ユウカ（体操服）", (parseReference "track.md" (reference "ユウカ（体操服）")).PageName)
-
-[<Fact>]
-let ``出典の行が無い参照ファイルはReferenceShapeErrorになる`` () =
-    // 読めなかった衣装を黙って落とすと、一覧からその衣装が静かに消える。
-    let error =
-        Assert.Throws<ReferenceShapeError>(fun () ->
-            parseReference "normal.md" "## 基本情報\n\n| 名前 | ユウカ |\n" |> ignore)
-
-    match error :> exn with
-    | ReferenceShapeError(path, missing) ->
-        Assert.Equal("normal.md", path)
-        Assert.Equal("出典の行", missing)
-    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+/// ボイスの節だけを持つ衣装を組み立てる。
+/// セリフは脚注を1つ参照し、その脚注の本文をnoteにする。
+/// 脚注のラベルはwikiruのページごとに1から数えるので、どの衣装でも"1"にする。
+let private costume (pageName: string) (line: string) (note: string) : Costume =
+    { PageName = pageName
+      Source = pageSource pageName
+      Character =
+        { Preamble = []
+          Sections =
+            [ { Title = [ Text "ボイス" ]
+                Content =
+                  Voice
+                      [ { Title = None
+                          Lines =
+                            [ { Key = [ Text "ログイン" ]
+                                Value = [ Text line; FootnoteReference "1" ] } ] } ] } ]
+          Footnotes = [ { Label = "1"; Content = [ Text note ] } ] } }
 
 [<Fact>]
-let ``ページ名を持たない出典はReferenceShapeErrorになる`` () =
-    let markdown = "出典: [ユウカ - Wiki](https://bluearchive.wikiru.jp/)\n"
-
-    let error =
-        Assert.Throws<ReferenceShapeError>(fun () -> parseReference "normal.md" markdown |> ignore)
-
-    match error :> exn with
-    | ReferenceShapeError(_, missing) -> Assert.Equal("出典のページ名", missing)
-    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
-
-[<Fact>]
-let ``絶対URLではない出典はReferenceShapeErrorになる`` () =
-    // 壊れたリンクをUriのコンストラクタに任せると、
-    // どのファイルが壊れているのかがメッセージから消える。
-    let markdown = "出典: [ユウカ - Wiki](./?ユウカ)\n"
-
-    let error =
-        Assert.Throws<ReferenceShapeError>(fun () -> parseReference "normal.md" markdown |> ignore)
-
-    match error :> exn with
-    | ReferenceShapeError(path, missing) ->
-        Assert.Equal("normal.md", path)
-        Assert.Equal("出典のURL", missing)
-    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
-
-[<Fact>]
-let ``一段目の見出しを持つ参照ファイルはReferenceHeadingErrorになる`` () =
-    // 衣装の節は一段目の見出しを立てた下へ中身をそのまま収めるため、
-    // 中身が一段目の見出しを持つと節の切れ目が消えて、
-    // 以降の内容が別の衣装の兄弟として並ぶ。
-    let url = "https://bluearchive.wikiru.jp/?" + Uri.EscapeDataString "ユウカ"
-
-    let markdown = $"出典: [ユウカ - Wiki](%s{url})\n\n# 基本情報\n\n| 名前 | ユウカ |\n"
-
-    let error =
-        Assert.Throws<ReferenceHeadingError>(fun () ->
-            parseReference "normal.md" markdown |> ignore)
-
-    match error :> exn with
-    | ReferenceHeadingError path -> Assert.Equal("normal.md", path)
-    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
-
-[<Fact>]
-let ``二段目以降の見出しは参照ファイルとして受け付ける`` () =
-    // 現に全ての参照ファイルが基本情報やボイスの二段目の見出しを持つ。
-    Assert.Equal("ユウカ", (parseReference "normal.md" (reference "ユウカ")).PageName)
-
-[<Fact>]
-let ``コードフェンスの中の一段目の見出しに見える行は受け付ける`` () =
-    // フェンスの中の`# `の行はコードで、節の切れ目を消す見出しではない。
-    let markdown = reference "ユウカ" + "\n```console\n# コメント\n```\n"
-    Assert.Equal("ユウカ", (parseReference "normal.md" markdown).PageName)
-
-[<Fact>]
-let ``出典のリンクの表示名が空でもページ名を読める`` () =
-    // ページ名はリンクのURLから読むので、表示名には頼らない。
-    let url = "https://bluearchive.wikiru.jp/?" + Uri.EscapeDataString "ユウカ"
-    Assert.Equal("ユウカ", (parseReference "normal.md" $"出典: [](%s{url})\n").PageName)
-
-[<Fact>]
-let ``toCostumeMarkdownは出典のページ名の見出しへ中身を収める`` () =
-    // 参照ファイルの見出しは基本情報から始まる二段目なので、
-    // 一段目の衣装の見出しを立てた下へそのまま入る。
+let ``衣装は出典のページ名の見出しと出典の行の下へ中身を収める`` () =
+    // 参照データの見出しは二段目から始まるので、一段目の衣装の見出しの下へそのまま入る。
     // 節と節の間に空行が無いと、見出しが前の本文へ吸着してMarkdownが壊れる。
-    let costumes =
-        [ parseReference "normal.md" (reference "ユウカ")
-          parseReference "track.md" (reference "ユウカ（体操服）") ]
+    let url = (pageSource "ユウカ").AbsoluteUri
 
     Assert.Equal(
         "# 衣装: ユウカ\n\n"
-        + (reference "ユウカ").Trim()
-        + "\n\n# 衣装: ユウカ（体操服）\n\n"
-        + (reference "ユウカ（体操服）").Trim(),
-        toCostumeMarkdown costumes
+        + $"出典: [ユウカ - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{url})\n\n"
+        + "## ボイス\n\n"
+        + "- ログイン: おはよう[^1]\n\n"
+        + "[^1]: 注",
+        costumesMarkdown [ costume "ユウカ" "おはよう" "注" ]
     )
 
 [<Fact>]
-let ``toCostumeMarkdownは脚注のラベルを衣装ごとに分ける`` () =
-    // 参照ファイルはどれも脚注を`[^1]`から数えるので、
-    // そのまま連結すると定義が重なって後の衣装の脚注が捨てられる。
-    let withFootnote (pageName: string) (note: string) =
-        reference pageName + $"\n- CV: 声優[^1]\n\n[^1]: %s{note}\n"
+let ``衣装を繋ぐと脚注のラベルが全体の通し番号になる`` () =
+    // 衣装はどれも脚注を1から数えるので、そのまま繋ぐと定義が重なり、
+    // GFMでは後の衣装の脚注が捨てられて、参照が前の衣装の脚注を指してしまう。
+    let markdown =
+        costumesMarkdown [ costume "ユウカ" "通常のセリフ" "通常の注"; costume "ユウカ（体操服）" "体操服のセリフ" "体操服の注" ]
+
+    Assert.Contains("通常のセリフ[^1]", markdown)
+    Assert.Contains("[^1]: 通常の注", markdown)
+    Assert.Contains("体操服のセリフ[^2]", markdown)
+    Assert.Contains("[^2]: 体操服の注", markdown)
+
+[<Fact>]
+let ``取り消し線は本文の一部として残る`` () =
+    // 小ネタの取り消し線も書き手の文章の一部なので、生徒個別スキルと同じく残す。
+    let character: BluePrompt.Character.Character =
+        { Preamble = []
+          Sections =
+            [ { Title = [ Text "小ネタ" ]
+                Content = Trivia [ Paragraph [ Text "本文。"; Strikethrough [ Text "ツッコミ" ] ] ] } ]
+          Footnotes = [] }
 
     let markdown =
-        toCostumeMarkdown
-            [ parseReference "normal.md" (withFootnote "ユウカ" "通常の注")
-              parseReference "track.md" (withFootnote "ユウカ（体操服）" "体操服の注") ]
+        costumesMarkdown
+            [ { PageName = "ユウカ"
+                Source = pageSource "ユウカ"
+                Character = character } ]
 
-    Assert.Contains("声優[^normal-1]", markdown)
-    Assert.Contains("[^normal-1]: 通常の注", markdown)
-    Assert.Contains("声優[^track-1]", markdown)
-    Assert.Contains("[^track-1]: 体操服の注", markdown)
-    Assert.DoesNotContain("[^1]", markdown)
-
-/// 参照ファイルを並べた一時ディレクトリを作る。
-let private makeDirectory (files: (string * string) list) : string =
-    let directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
-    Directory.CreateDirectory directory |> ignore
-
-    for name, content in files do
-        File.WriteAllText(Path.Combine(directory, name), content)
-
-    directory
+    Assert.EndsWith("## 小ネタ\n\n本文。~~ツッコミ~~", markdown)
 
 [<Fact>]
-let ``readReferencesは通常衣装を先頭にしてスキル本体を除く`` () =
-    // SKILL.mdは実際に同じディレクトリへ生成されるので、
-    // 除外が漏れると出典の行を持たない衣装としてReferenceShapeErrorになる。
-    let directory =
-        makeDirectory
-            [ "SKILL.md", "生成物"
-              "character.md", "固有の手書き"
-              "track.md", reference "ユウカ（体操服）"
-              "pajama.md", reference "ユウカ（パジャマ）"
-              "normal.md", reference "ユウカ" ]
+let ``生徒個別スキルの型のJSONは読み戻すと元の衣装になる`` () =
+    // role-playスキルはwikiruへアクセスせず、このJSONだけから衣装を組み立てる。
+    let original = costume "ユウカ" "おはよう" "注"
 
-    // 読み終えた値はファイル名を持たないため、並びは出典のページ名で確かめる。
-    Assert.Equal<string list>(
-        [ "ユウカ"; "ユウカ（パジャマ）"; "ユウカ（体操服）" ],
-        (readReferences directory).GetAwaiter().GetResult() |> List.map _.PageName
-    )
+    let document: BluePrompt.Wikiru.CharacterDocument =
+        { PageName = original.PageName
+          Source = original.Source.AbsoluteUri
+          Character = original.Character }
+
+    let json = BluePrompt.JsonCodec.serialize document
+    Assert.Equal(original, ofCharacterDocument (BluePrompt.Wikiru.ofCharacterJson json))
 
 [<Fact>]
-let ``通常衣装が無ければファイル名の順に並ぶ`` () =
-    let directory =
-        makeDirectory [ "track.md", reference "ユウカ（体操服）"; "pajama.md", reference "ユウカ（パジャマ）" ]
+let ``一段目の見出しを持つ衣装はCostumeHeadingErrorになる`` () =
+    // 衣装の節は一段目の見出しを立てた下へ中身を収めるため、
+    // 中身が一段目の見出しを持つと節の切れ目が消えて、
+    // 以降の内容が別の衣装の兄弟として並ぶ。
+    let original = costume "ユウカ" "おはよう" "注"
 
-    Assert.Equal<string list>(
-        [ "ユウカ（パジャマ）"; "ユウカ（体操服）" ],
-        (readReferences directory).GetAwaiter().GetResult() |> List.map _.PageName
-    )
-
-[<Fact>]
-let ``衣装以外のMarkdownを置くとReferenceShapeErrorになる`` () =
-    // 除外を並べる形なので、スキルのディレクトリへ別のMarkdownを置くと衣装と見なされる。
-    let directory =
-        makeDirectory [ "normal.md", reference "ユウカ"; "README.md", "# 説明\n" ]
+    let broken =
+        { original with
+            Costume.Character =
+                { original.Character with
+                    Preamble = [ Heading(1, [ Text "基本情報" ]) ] } }
 
     let error =
-        Assert.Throws<ReferenceShapeError>(fun () ->
-            (readReferences directory).GetAwaiter().GetResult() |> ignore)
+        Assert.Throws<CostumeHeadingError>(fun () -> costumesMarkdown [ broken ] |> ignore)
 
     match error :> exn with
-    | ReferenceShapeError(path, missing) ->
-        Assert.Equal("README.md", Path.GetFileName path)
-        Assert.Equal("出典の行", missing)
+    | CostumeHeadingError pageName -> Assert.Equal("ユウカ", pageName)
     | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
-
-[<Fact>]
-let ``参照ファイルの無いディレクトリはReferenceNotFoundになる`` () =
-    // 衣装の一覧が空のまま書き出されないようにする。
-    let directory = makeDirectory [ "character.md", "固有の手書き" ]
-
-    Assert.Throws<ReferenceNotFound>(fun () ->
-        (readReferences directory).GetAwaiter().GetResult() |> ignore)
-    |> ignore
 
 /// 代表的な発言を並べたquoteディレクトリを持つスキルのディレクトリを作る。
 let private makeQuoteDirectory (files: (string * string) list) : string =
-    let directory = makeDirectory [ "normal.md", reference "ユウカ" ]
+    let directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
     let quoteDirectory = Path.Combine(directory, "quote")
     Directory.CreateDirectory quoteDirectory |> ignore
 
@@ -217,21 +129,10 @@ let ``readQuotesはファイル名の順に発言を読む`` () =
     )
 
 [<Fact>]
-let ``quoteディレクトリは衣装として拾われない`` () =
-    // 発言を1つ下のディレクトリへ分けているのは、
-    // 同じ階層へ置くとreadReferencesが出典の行を持たない衣装として読むためである。
-    // readReferencesが再帰探索へ変わればこの前提は崩れる。
-    let directory = makeQuoteDirectory [ "budget.md", "## 予算の話\n\n本文\n" ]
-
-    Assert.Equal<string list>(
-        [ "ユウカ" ],
-        (readReferences directory).GetAwaiter().GetResult() |> List.map _.PageName
-    )
-
-[<Fact>]
 let ``quoteディレクトリの無いスキルは発言を持たない`` () =
     // 発言は手書きなので、用意していない生徒が居る。
-    let directory = makeDirectory [ "normal.md", reference "ユウカ" ]
+    let directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+    Directory.CreateDirectory directory |> ignore
 
     Assert.Empty((readQuotes directory).GetAwaiter().GetResult())
 
@@ -313,27 +214,37 @@ let private document (caller: string) : BluePrompt.Appellation.Document =
             Name = "先生"
             Note = None } ] }
 
+/// 本文を持つcharacter.mdのフロントマター。
+let private characterOf (content: string) : BluePrompt.OpenWebui.Frontmatter =
+    BluePrompt.OpenWebui.parseFrontmatter "character.md" content
+
+/// テンプレートへ差し込む値を一通り持つ、ユウカのrole-playスキル。
+let private yuuka: RolePlay =
+    { Caller = "ユウカ"
+      CharacterPath = "character.md"
+      Character =
+        characterOf "---\nname: yuuka\ndescription: d\nknowledge: character-yuuka\n---\n\n位置付け。\n"
+      Costumes = [ costume "ユウカ" "おはよう" "注" ]
+      Quotes = []
+      Appellation = document "ユウカ" }
+
 [<Fact>]
 let ``renderSkillはフロントマターと差し込んだ本文を並べる`` () =
     let character =
-        BluePrompt.OpenWebui.parseFrontmatter
-            "character.md"
-            ("---\nname: yuuka\ndescription: Role-play as Yuuka\n"
-             + "knowledge: character-yuuka, character-appellation\n---\n\n早瀬ユウカの位置付け。\n")
+        characterOf (
+            "---\nname: yuuka\ndescription: Role-play as Yuuka\n"
+            + "knowledge: character-yuuka, character-appellation\n---\n\n早瀬ユウカの位置付け。\n"
+        )
 
     let quotes = [ "## 予算の話\n\n本文" ]
-    let references = [ parseReference "normal.md" (reference "ユウカ") ]
 
     let skill =
         renderSkill
-            { Caller = "ユウカ"
-              TemplatePath = "SKILL.template.md"
-              Template = template
-              CharacterPath = "character.md"
-              Character = character
-              References = references
-              Quotes = quotes
-              Appellation = document "ユウカ" }
+            "SKILL.template.md"
+            template
+            { yuuka with
+                Character = character
+                Quotes = quotes }
 
     Assert.Equal(
         "---\nname: yuuka\ndescription: Role-play as Yuuka\n"
@@ -342,7 +253,7 @@ let ``renderSkillはフロントマターと差し込んだ本文を並べる`` 
         + playingRules
         + $"\n出典: [キャラ呼称表 - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{appellationSource})\n"
         + "\n| 相手 | 呼称 |\n| --- | --- |\n| 先生 | 先生 |\n\n"
-        + toCostumeMarkdown references
+        + costumesMarkdown yuuka.Costumes
         + "\n"
         + quotesMarkdown "ユウカ" quotes
         + "\n- character-yuuka\n",
@@ -354,39 +265,27 @@ let ``renderSkillは呼称表に行が無い生徒でも表が無いことを書
     // 実装されたばかりの生徒は、wikiruの呼称表へ行が足されるまでレコードを持たない。
     let skill =
         renderSkill
-            { Caller = "ユウカ"
-              TemplatePath = "SKILL.template.md"
-              Template = template
-              CharacterPath = "character.md"
-              Character =
-                BluePrompt.OpenWebui.parseFrontmatter
-                    "character.md"
-                    "---\nname: yuuka\ndescription: d\nknowledge: character-yuuka\n---\n\n位置付け。\n"
-              References = [ parseReference "normal.md" (reference "ユウカ") ]
-              Quotes = []
-              Appellation = document "ノア" }
+            "SKILL.template.md"
+            template
+            { yuuka with
+                Appellation = document "ノア" }
 
     Assert.Contains("呼称表にはまだユウカの行がありません。", skill)
     Assert.DoesNotContain("| 相手 | 呼称 |", skill)
 
 [<Fact>]
 let ``本文の無いcharacter.mdはCharacterBodyNotFoundになる`` () =
-    // 参照ファイルとナレッジは0件で止まるのに本文だけ素通りすると、
+    // 衣装とナレッジは0件で止まるのに本文だけ素通りすると、
     // その生徒の位置付けが黙って落ちた本文が生成される。
     let error =
         Assert.Throws<CharacterBodyNotFound>(fun () ->
             renderSkill
-                { Caller = "ユウカ"
-                  TemplatePath = "SKILL.template.md"
-                  Template = template
-                  CharacterPath = "character.md"
-                  Character =
-                    BluePrompt.OpenWebui.parseFrontmatter
-                        "character.md"
-                        "---\nname: yuuka\ndescription: d\nknowledge: character-yuuka\n---\n"
-                  References = [ parseReference "normal.md" (reference "ユウカ") ]
-                  Quotes = []
-                  Appellation = document "ユウカ" }
+                "SKILL.template.md"
+                template
+                { yuuka with
+                    Character =
+                        characterOf
+                            "---\nname: yuuka\ndescription: d\nknowledge: character-yuuka\n---\n" }
             |> ignore)
 
     match error :> exn with
@@ -394,20 +293,19 @@ let ``本文の無いcharacter.mdはCharacterBodyNotFoundになる`` () =
     | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
 
 [<Fact>]
+let ``衣装が無いとCostumeNotFoundになる`` () =
+    // 衣装の節を1つも持たない本文を書き出さない。
+    let error =
+        Assert.Throws<CostumeNotFound>(fun () ->
+            renderSkill "SKILL.template.md" template { yuuka with Costumes = [] } |> ignore)
+
+    match error :> exn with
+    | CostumeNotFound caller -> Assert.Equal("ユウカ", caller)
+    | unexpected -> failwith $"想定外の例外です: %O{unexpected}"
+
+[<Fact>]
 let ``renderSkillはテンプレートのプレースホルダが欠けると止まる`` () =
     // 差し込むはずの内容が黙って落ちないようにする。
     Assert.Throws<BluePrompt.Template.PlaceholderMismatch>(fun () ->
-        renderSkill
-            { Caller = "ユウカ"
-              TemplatePath = "SKILL.template.md"
-              Template = "{{caller}}\n"
-              CharacterPath = "character.md"
-              Character =
-                BluePrompt.OpenWebui.parseFrontmatter
-                    "character.md"
-                    "---\nname: yuuka\ndescription: d\nknowledge: character-yuuka\n---\n\n本文\n"
-              References = [ parseReference "normal.md" (reference "ユウカ") ]
-              Quotes = []
-              Appellation = document "ユウカ" }
-        |> ignore)
+        renderSkill "SKILL.template.md" "{{caller}}\n" yuuka |> ignore)
     |> ignore

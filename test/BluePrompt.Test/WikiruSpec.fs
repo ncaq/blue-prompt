@@ -292,25 +292,10 @@ let ``生徒ページの組は折りたたみの中身を残し開閉UIだけ取
     Assert.Equal("", markdown content)
 
 [<Fact>]
-let ``role-play用の組は取り消し線を中身ごと取り除く`` () =
-    // 小ネタの取り消し線は編集者のツッコミで、演じる人格へ混ざると困る。
-    let content =
-        [ Text.h2 "小ネタ"
-          Elem.p [] [ Elem.del [] [ Text.raw "もはやオカン" ]; Text.raw "世話を焼いている" ] ]
-
-    Assert.Equal(
-        "## 小ネタ\n\n世話を焼いている\n",
-        articleOf BluePrompt.WikiruDom.rolePlayNoise content |> BluePrompt.Wikiru.render
-    )
-
-[<Fact>]
 let ``どの組もスクリプトとコメント欄の除去を共有する`` () =
     // DOMを直接読む経路は記事として読む時に固有の除去を持たないだけで、ノイズの除去は同じ集合を共有する。
     // ここが乖離すると片方の経路だけスクリプト片や投稿フォームの除去が漏れる。
-    for noise in
-        [ BluePrompt.WikiruDom.articleNoise
-          BluePrompt.WikiruDom.characterNoise
-          BluePrompt.WikiruDom.rolePlayNoise ] do
+    for noise in [ BluePrompt.WikiruDom.articleNoise; BluePrompt.WikiruDom.characterNoise ] do
         Assert.All(
             BluePrompt.WikiruDom.structuredNoise,
             fun selector -> Assert.Contains(selector, noise)

@@ -1,0 +1,5203 @@
+{
+  "pageName": "ミチル（ドレス）",
+  "source": "https://bluearchive.wikiru.jp/?%E3%83%9F%E3%83%81%E3%83%AB%EF%BC%88%E3%83%89%E3%83%AC%E3%82%B9%EF%BC%89",
+  "character": {
+    "preamble": [],
+    "sections": [
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["基本情報"]
+          }
+        ],
+        "content": {
+          "Case": "Other",
+          "Fields": [
+            [
+              {
+                "Case": "Items",
+                "Fields": [
+                  [
+                    {
+                      "title": null,
+                      "items": [
+                        [
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "画像",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Image",
+                                    "Fields": [
+                                      "ミチル（ドレス）.png",
+                                      "https://bluearchive.wikiru.jp/attach2/E3839FE38381E383ABEFBC88E38389E383ACE382B9EFBC89_E3839FE38381E383ABEFBC88E38389E383ACE382B9EFBC892E706E67.png"
+                                    ]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["名前"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["ミチル（ドレス）"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["フルネーム"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Ruby",
+                                    "Fields": ["千鳥", "ちどり"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["ミチル"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["レアリティ"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["★3"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["役割"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["SPECIAL"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["ポジション"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["BACK"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["クラス"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["ヒーラー"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["武器種"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["SG"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["遮蔽物"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["-"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["攻撃タイプ"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["爆発"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["防御タイプ"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["軽装備"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["学園"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["百鬼夜行連合学院3年生"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["部活"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["忍術研究部"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["年齢"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["17歳"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["誕生日"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["2月22日"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["身長"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["153cm"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["趣味"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["新しい忍術の考案、"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["動画づくり"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["デザイン"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["Blanchat"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["イラスト"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["Blanchat"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["CV"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["水橋かおり"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["ちびキャラ"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Image",
+                                    "Fields": [
+                                      "ミチル（ドレス）_SD2.png",
+                                      "https://bluearchive.wikiru.jp/attach2/E3839FE38381E383ABEFBC88E38389E383ACE382B9EFBC89_E3839FE38381E383ABEFBC88E38389E383ACE382B9EFBC895F5344322E706E67.png"
+                                    ]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["各バージョン"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["一覧"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["★1 "]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["ミチル"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["、"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["★3 "]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["ミチル（ドレス）"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Caption",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["基本情報"]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["百鬼夜行連合学院所属、忍術研究部の部長。"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "ファッションショーの潜入警備員として雇われ、ドレスに袖を通すことに。"
+                      ]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "色々と初めての経験が多い中、忍者らしくどうあるかを考えている模様。"
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Caption",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["入手方法"]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "ピックアップ募集「ヒトツボシ在る、舞台裏」(2025/12/24～2026/01/07)"
+                      ]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["、"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["通常募集"]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Caption",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["ステータス(初期値/MAX値)"]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Items",
+                "Fields": [
+                  [
+                    {
+                      "title": null,
+                      "items": [
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["HP"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["3289"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["/22425(★3Lv90)"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["/24227(★4Lv90)"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["/27030(★5Lv90)"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["攻撃力"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["298"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["/2711(★3Lv90)"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["/3022(★4Lv90)"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["/3400(★5Lv90)"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["防御力"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["97/538"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["治癒力"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["3008"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["/8418(★3Lv90)"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["/9278(★4Lv90)"]
+                                  },
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["/10352(★5Lv90)"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["命中値"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["530"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["回避値"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["187"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["会心値"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["415"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["会心ダメージ"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["200%"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["防御貫通値"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["安定値"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["2157"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["射程距離"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["1000"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["コスト回復力"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["700"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["CC強化力"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["100"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["CC抵抗力"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["100"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["市街地戦闘力"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["D"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["屋外戦闘力"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["B"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["屋内戦闘力"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["S"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Caption",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["装備（装着可能Lv）"]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Items",
+                "Fields": [
+                  [
+                    {
+                      "title": null,
+                      "items": [
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["Lv1"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["シューズ"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["Lv10"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["ヘアピン"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "Case": "Key",
+                            "Fields": [
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["Lv20"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          },
+                          {
+                            "Case": "Value",
+                            "Fields": [
+                              "",
+                              {
+                                "inlines": [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["ネックレス"]
+                                  }
+                                ],
+                                "blocks": []
+                              }
+                            ]
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ],
+            "項目の途中にキーがあります"
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["スキル"]
+          }
+        ],
+        "content": {
+          "Case": "Skills",
+          "Fields": [
+            [
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["EXスキル"]
+                  }
+                ],
+                "skills": [
+                  {
+                    "title": "少女忍法帖、ミチうにゃああっ!",
+                    "rows": [
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["1"]
+                              }
+                            ]
+                          ],
+                          [
+                            "コスト",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方1人に対して、治癒力の152%分の回復"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "コスト",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方1人に対して、治癒力の175%分の回復"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["3"]
+                              }
+                            ]
+                          ],
+                          [
+                            "コスト",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方1人に対して、治癒力の221%分の回復"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["4"]
+                              }
+                            ]
+                          ],
+                          [
+                            "コスト",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方1人に対して、治癒力の244%分の回復"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "コスト",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方1人に対して、治癒力の290%分の回復"]
+                              }
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["ノーマルスキル"]
+                  }
+                ],
+                "skills": [
+                  {
+                    "title": "秘儀を伝授しよう!",
+                    "rows": [
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["1"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "戦闘開始時、自身を除く味方の攻撃力を11.3%増加（60秒間）、スキルコストを1減少（Exスキル1回分）（戦闘中に1回のみ）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "戦闘開始時、自身を除く味方の攻撃力を11.9%増加（60秒間）、スキルコストを1減少（Exスキル1回分）（戦闘中に1回のみ）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["3"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "戦闘開始時、自身を除く味方の攻撃力を12.4%増加（60秒間）、スキルコストを1減少（Exスキル1回分）（戦闘中に1回のみ）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["4"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "戦闘開始時、自身を除く味方の攻撃力を14.7%増加（60秒間）、スキルコストを1減少（Exスキル1回分）（戦闘中に1回のみ）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "戦闘開始時、自身を除く味方の攻撃力を15.3%増加（60秒間）、スキルコストを1減少（Exスキル1回分）（戦闘中に1回のみ）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["6"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "戦闘開始時、自身を除く味方の攻撃力を15.8%増加（60秒間）、スキルコストを1減少（Exスキル1回分）（戦闘中に1回のみ）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["7"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "戦闘開始時、自身を除く味方の攻撃力を18.1%増加（60秒間）、スキルコストを1減少（Exスキル1回分）（戦闘中に1回のみ）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["8"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "戦闘開始時、自身を除く味方の攻撃力を18.7%増加（60秒間）、スキルコストを1減少（Exスキル1回分）（戦闘中に1回のみ）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["9"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "戦闘開始時、自身を除く味方の攻撃力を19.2%増加（60秒間）、スキルコストを1減少（Exスキル1回分）（戦闘中に1回のみ）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["10"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": [
+                                  "戦闘開始時、自身を除く味方の攻撃力を21.5%増加（60秒間）、スキルコストを1減少（Exスキル1回分）（戦闘中に1回のみ）"
+                                ]
+                              }
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["パッシブスキル"]
+                  }
+                ],
+                "skills": [
+                  {
+                    "title": "これもまた忍者装束也!",
+                    "rows": [
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["1"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を14%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を14.7%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["3"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を15.4%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["4"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を18.2%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を18.9%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["6"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を19.6%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["7"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を22.4%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["8"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を23.1%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["9"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を23.8%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["10"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を26.6%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "title": "これもまた忍者装束也!+",
+                    "rows": [
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["1"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を1024増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに治癒力を14%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を1076増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに治癒力を14.7%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["3"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を1127増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに治癒力を15.4%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["4"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を1332増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに治癒力を18.2%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を1383増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに治癒力を18.9%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["6"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を1434増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに治癒力を19.6%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["7"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を1639増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに治癒力を22.4%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["8"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を1690増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに治癒力を23.1%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["9"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を1741増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに治癒力を23.8%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["10"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果（固有武器★2）",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["治癒力を1946増加/"]
+                              },
+                              {
+                                "Case": "Text",
+                                "Fields": ["さらに治癒力を26.6%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["サブスキル"]
+                  }
+                ],
+                "skills": [
+                  {
+                    "title": "アンダーカバー流奥義!",
+                    "rows": [
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["1"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方のコスト回復力を10.6%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["2"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方のコスト回復力を11.2%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["3"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方のコスト回復力を11.7%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["4"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方のコスト回復力を13.8%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["5"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方のコスト回復力を14.4%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["6"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方のコスト回復力を14.9%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["7"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方のコスト回復力を17%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["8"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方のコスト回復力を17.6%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["9"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方のコスト回復力を18.1%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      },
+                      {
+                        "key": null,
+                        "fields": [
+                          [
+                            "Lv",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["10"]
+                              }
+                            ]
+                          ],
+                          [
+                            "効果",
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["味方のコスト回復力を20.2%増加"]
+                              }
+                            ]
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["固有武器"]
+          }
+        ],
+        "content": {
+          "Case": "UniqueWeapon",
+          "Fields": [
+            {
+              "name": [
+                {
+                  "Case": "Text",
+                  "Fields": ["ミチル流オーバーフローショットガン"]
+                }
+              ],
+              "icon": [
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Image",
+                        "Fields": [
+                          "Weapon_Icon_CH0113.png",
+                          "https://bluearchive.wikiru.jp/attach2/696D67_576561706F6E5F49636F6E5F4348303131332E706E67.png"
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "description": [
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ミチルが愛用しているショットガン。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["なんだか今回は、持ち主と同じく少しお淑やかになっている模様。"]
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "limitBreak": [
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["★2"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["パッシブスキルが「"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["これもまた忍者装束也!+"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["」に変化（治癒力増加を追加）"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["★3"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["屋内戦への地形別戦闘力をSSに強化"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["★4"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["最大コスト0.5増加"]
+                    }
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["★5"]
+                    }
+                  ],
+                  "value": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["今後のアップデートで追加予定です"]
+                    }
+                  ]
+                }
+              ],
+              "growth": [
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["攻撃力"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.1",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["107"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.30",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["390"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.40",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["488"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.50",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["586"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.60",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["683"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.70",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["-"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["最大HP"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.1",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["639"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.30",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["2322"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.40",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["2903"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.50",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["3483"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.60",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["4064"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.70",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["-"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["治癒力"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.1",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["301"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.30",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["1094"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.40",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["1368"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.50",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["1641"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.60",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["1915"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.70",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["-"]
+                        }
+                      ]
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["能力解放"]
+          }
+        ],
+        "content": {
+          "Case": "Potential",
+          "Fields": [
+            {
+              "growth": [
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["最大HP"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.10",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+401"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.20",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+801"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.25",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+1002"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["攻撃力"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.10",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+45"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.20",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+89"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.25",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+112"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": [
+                    {
+                      "Case": "Text",
+                      "Fields": ["治癒力"]
+                    }
+                  ],
+                  "fields": [
+                    [
+                      "Lv.10",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+144"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.20",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+287"]
+                        }
+                      ]
+                    ],
+                    [
+                      "Lv.25",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["+359"]
+                        }
+                      ]
+                    ]
+                  ]
+                }
+              ],
+              "materials": [
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "Lv",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["1-5"]
+                        }
+                      ]
+                    ],
+                    [
+                      "素材",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "応用WB",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x2(10)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "黄金の糸",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F302E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x10(50)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "クレジットポイント",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["100,000"]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["(500,000)"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "Lv",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["6-10"]
+                        }
+                      ]
+                    ],
+                    [
+                      "素材",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "応用WB",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x2(10)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "黄金の糸",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F302E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x15(75)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "クレジットポイント",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["100,000"]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["(500,000)"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "Lv",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["11-15"]
+                        }
+                      ]
+                    ],
+                    [
+                      "素材",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "応用WB",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x2(10)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "黄金の糸",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F302E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x20(100)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "クレジットポイント",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["100,000"]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["(500,000)"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "Lv",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["16-20"]
+                        }
+                      ]
+                    ],
+                    [
+                      "素材",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "応用WB",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x4(20)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "黄金の巻糸",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F312E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x6(30)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "クレジットポイント",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["200,000"]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["(1,000,000)"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "Lv",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["21-25"]
+                        }
+                      ]
+                    ],
+                    [
+                      "素材",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "応用WB",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_E5BF9CE794A857422E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x4(20)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "",
+                      [
+                        {
+                          "Case": "Image",
+                          "Fields": [
+                            "黄金の巻糸",
+                            "https://bluearchive.wikiru.jp/attach2/696D67_4974656D5F4D6174657269616C5F476F6C64656E466C656563655F312E706E67.png"
+                          ]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": [" "]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["x8(40)"]
+                        }
+                      ]
+                    ],
+                    [
+                      "クレジットポイント",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["200,000"]
+                        },
+                        {
+                          "Case": "Text",
+                          "Fields": ["(1,000,000)"]
+                        }
+                      ]
+                    ]
+                  ]
+                }
+              ],
+              "notes": [
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Text",
+                        "Fields": ["※括弧内は5Lv分合計"]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["絆ランクボーナス"]
+          }
+        ],
+        "content": {
+          "Case": "BondBonus",
+          "Fields": [
+            {
+              "ranks": [
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["2-5"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["治癒力+8"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["6-10"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["治癒力+12"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["11-15"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["治癒力+15 最大HP+55"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["16-20"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["治癒力+19 最大HP+66"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Strong",
+                          "Fields": [
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["～20合計"]
+                              }
+                            ]
+                          ]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["治癒力+262 最大HP+605"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["21-30"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["治癒力+5 最大HP+7"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["31-40"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["治癒力+7 最大HP+11"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["41-50"]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["治癒力+12 最大HP+18"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "RANK",
+                      [
+                        {
+                          "Case": "Strong",
+                          "Fields": [
+                            [
+                              {
+                                "Case": "Text",
+                                "Fields": ["合計"]
+                              }
+                            ]
+                          ]
+                        }
+                      ]
+                    ],
+                    [
+                      "絆ランクボーナス",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["治癒力+502 最大HP+965"]
+                        }
+                      ]
+                    ]
+                  ]
+                }
+              ],
+              "totals": [
+                {
+                  "title": "絆ランク20",
+                  "rows": [
+                    {
+                      "key": null,
+                      "fields": [
+                        [
+                          "",
+                          [
+                            {
+                              "Case": "Image",
+                              "Fields": [
+                                "ミチル",
+                                "https://bluearchive.wikiru.jp/attach2/696D67_E3839FE38381E383AB5F69636F6E2E706E67.png"
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "対象",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["ミチル"]
+                            }
+                          ]
+                        ],
+                        [
+                          "最大HP",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["850"]
+                            }
+                          ]
+                        ],
+                        [
+                          "攻撃力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["97"]
+                            }
+                          ]
+                        ],
+                        [
+                          "防御力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ],
+                        [
+                          "治癒力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ]
+                      ]
+                    },
+                    {
+                      "key": null,
+                      "fields": [
+                        [
+                          "",
+                          [
+                            {
+                              "Case": "Image",
+                              "Fields": [
+                                "ミチル（ドレス）",
+                                "https://bluearchive.wikiru.jp/attach2/696D67_E3839FE38381E383ABEFBC88E38389E383ACE382B9EFBC895F69636F6E2E706E67.png"
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "対象",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["ミチル（ドレス）"]
+                            }
+                          ]
+                        ],
+                        [
+                          "最大HP",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["605"]
+                            }
+                          ]
+                        ],
+                        [
+                          "攻撃力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ],
+                        [
+                          "防御力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ],
+                        [
+                          "治癒力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["262"]
+                            }
+                          ]
+                        ]
+                      ]
+                    },
+                    {
+                      "key": null,
+                      "fields": [
+                        [
+                          "",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["合計"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "最大HP",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["1455"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "攻撃力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["97"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "防御力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["0"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "治癒力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["262"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ]
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "title": "絆ランク50",
+                  "rows": [
+                    {
+                      "key": null,
+                      "fields": [
+                        [
+                          "",
+                          [
+                            {
+                              "Case": "Image",
+                              "Fields": [
+                                "ミチル",
+                                "https://bluearchive.wikiru.jp/attach2/696D67_E3839FE38381E383AB5F69636F6E2E706E67.png"
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "対象",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["ミチル"]
+                            }
+                          ]
+                        ],
+                        [
+                          "最大HP",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["1650"]
+                            }
+                          ]
+                        ],
+                        [
+                          "攻撃力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["197"]
+                            }
+                          ]
+                        ],
+                        [
+                          "防御力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ],
+                        [
+                          "治癒力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ]
+                      ]
+                    },
+                    {
+                      "key": null,
+                      "fields": [
+                        [
+                          "",
+                          [
+                            {
+                              "Case": "Image",
+                              "Fields": [
+                                "ミチル（ドレス）",
+                                "https://bluearchive.wikiru.jp/attach2/696D67_E3839FE38381E383ABEFBC88E38389E383ACE382B9EFBC895F69636F6E2E706E67.png"
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "対象",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["ミチル（ドレス）"]
+                            }
+                          ]
+                        ],
+                        [
+                          "最大HP",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["965"]
+                            }
+                          ]
+                        ],
+                        [
+                          "攻撃力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ],
+                        [
+                          "防御力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["0"]
+                            }
+                          ]
+                        ],
+                        [
+                          "治癒力",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["502"]
+                            }
+                          ]
+                        ]
+                      ]
+                    },
+                    {
+                      "key": null,
+                      "fields": [
+                        [
+                          "",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["合計"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "最大HP",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["2615"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "攻撃力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["197"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "防御力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["0"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ],
+                        [
+                          "治癒力",
+                          [
+                            {
+                              "Case": "Strong",
+                              "Fields": [
+                                [
+                                  {
+                                    "Case": "Text",
+                                    "Fields": ["502"]
+                                  }
+                                ]
+                              ]
+                            }
+                          ]
+                        ]
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "notes": []
+            }
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["絆ストーリー"]
+          }
+        ],
+        "content": {
+          "Case": "BondStory",
+          "Fields": [
+            {
+              "episodes": [
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "EP",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["1"]
+                        }
+                      ]
+                    ],
+                    [
+                      "タイトル",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["忍者少女は治療を求む！"]
+                        }
+                      ]
+                    ],
+                    [
+                      "解放絆RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["2"]
+                        }
+                      ]
+                    ],
+                    [
+                      "報酬",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["青輝石x20"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "EP",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["2"]
+                        }
+                      ]
+                    ],
+                    [
+                      "タイトル",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["忍者少女は恥ずかしい！"]
+                        }
+                      ]
+                    ],
+                    [
+                      "解放絆RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["3"]
+                        }
+                      ]
+                    ],
+                    [
+                      "報酬",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["青輝石x40,メモリアルロビー解禁"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "EP",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["3"]
+                        }
+                      ]
+                    ],
+                    [
+                      "タイトル",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["忍者少女は秘訣が知りたい！"]
+                        }
+                      ]
+                    ],
+                    [
+                      "解放絆RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["5"]
+                        }
+                      ]
+                    ],
+                    [
+                      "報酬",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["青輝石x60"]
+                        }
+                      ]
+                    ]
+                  ]
+                },
+                {
+                  "key": null,
+                  "fields": [
+                    [
+                      "EP",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["4"]
+                        }
+                      ]
+                    ],
+                    [
+                      "タイトル",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["忍者少女は流行に敏感！"]
+                        }
+                      ]
+                    ],
+                    [
+                      "解放絆RANK",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["6"]
+                        }
+                      ]
+                    ],
+                    [
+                      "報酬",
+                      [
+                        {
+                          "Case": "Text",
+                          "Fields": ["青輝石x80"]
+                        }
+                      ]
+                    ]
+                  ]
+                }
+              ],
+              "lobby": [
+                {
+                  "Case": "Heading",
+                  "Fields": [
+                    3,
+                    [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー"]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Strong",
+                        "Fields": [
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["BGM"]
+                            },
+                            {
+                              "Case": "Text",
+                              "Fields": ["：Love Story"]
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Image",
+                        "Fields": [
+                          "ミチル（ドレス）_メモリアルロビー.png",
+                          "https://bluearchive.wikiru.jp/attach2/E3839FE38381E383ABEFBC88E38389E383ACE382B9EFBC89_E3839FE38381E383ABEFBC88E38389E383ACE382B9EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E706E67.png"
+                        ]
+                      }
+                    ]
+                  ]
+                },
+                {
+                  "Case": "Paragraph",
+                  "Fields": [
+                    [
+                      {
+                        "Case": "Link",
+                        "Fields": [
+                          "https://i.imgur.com/d7R4HAC.mp4",
+                          [
+                            {
+                              "Case": "Text",
+                              "Fields": ["https://i.imgur.com/d7R4HAC.mp4"]
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["ボイス"]
+          }
+        ],
+        "content": {
+          "Case": "Voice",
+          "Fields": [
+            [
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["一般"]
+                  }
+                ],
+                "lines": [
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["獲得"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["先生殿～調子はどう？今回は潜入任務だよ！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["よろしくね！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["カフェ1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ふふ……私に気がつく人がいたらどうしよう……？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["カフェ2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["このドレス……ここで着るのはやりすぎ……？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["カフェ3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["（ドレスと、コーヒー……あっ！このネタ使えるかも……！）"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["カフェ4"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["いつか絶対……！ここでファンミーティングを……！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["カフェ5"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["（よし！とりあえず……人目につかない場所はどこだろ？）"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["絆ランク増加1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["これはちょっと恥ずかしい、かも……。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["絆ランク増加2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["この髪型、どうかな？"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["結構頑張って、セットしたんだけど……。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["絆ランク増加3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["えっ、可愛い……？"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["先生殿ってば、またまたぁ……ふ、ふへへへっ……。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["絆ランク増加4"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["この格好なら、先生殿のボディーガードとして……"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["そばにいてもいい……？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["生徒強化1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["この感覚……これが、シンデレラフィット……！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["生徒強化2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["服装が変わっても、心持ちまで変わるわけじゃないよ！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["生徒強化3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["こんな珍しい物をくれるってことは……"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["先生殿も、忍者の道を行きたくなったの？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["生徒強化4"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ふふっ、どう？"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["私……可愛いく……いや、強くなった？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["固有武器装備"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["いいの……？私に、こんな……！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["でも、先生殿の判断なら！うん！ありがとう！"]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["戦闘"]
+                  }
+                ],
+                "lines": [
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["編成1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["あ、あー。こちらアンダーカバーゼロワン。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["……ってこれでいいんだっけ？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["編成2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["私達の作戦場所は……ここだね！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["編成選択"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["このドレスは任務のためで……！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["で、でも……その、先生殿は、どう思う？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ノーマルスキル1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["秘儀を伝授して進ぜよう！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["これがミチル流……うにゃああっ！？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["とくと見よ！これが最新のカメ、らぁ～～っ！？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["少女忍法帖ミチルっち、スタ～とぉぉおっ！？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル（フィールド）1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["キャッ、チ……うにゃああっ！？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル（フィールド）2"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ふぅ……めっ、目が～っ！？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["EXスキル（フィールド）3"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ふぅ……オフショットはだめぇ！"]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["ロビー"]
+                  }
+                ],
+                "lines": [
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ログイン1"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ログイン2"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["雑談1"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["雑談2"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["雑談3"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["雑談4"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["雑談5"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー雑談1"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー雑談2"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー雑談3"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー雑談4"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["メモリアルロビー雑談5"]
+                      }
+                    ],
+                    "value": []
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ハロウィン"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ん？このまきびし？"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["もちろん、キャンディを狙う者たちへの罠を――"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["、"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["……じょ、冗談だよ。まきびしの形のキャンディだってば。"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["クリスマス"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["先生殿、知ってた！？"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["サンタの正体は……変装した忍者なんだって……！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["新年"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["あけましておめでとう～先生殿♪"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["、"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["やっぱお正月と言ったら時代劇だよね！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["というわけで……時代劇のリレー上映、いっしょにどう？"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["誕生日"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["あ、先生殿。今日は私の誕生日配信があるんだ。"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["誕生日プレゼントってことで……"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["先生殿も、スペシャルゲストとして出演してくれない？"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["えっ、いいの！？"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["じゃあ早く！こっち座って、カメラ見て！"]
+                      }
+                    ]
+                  },
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["先生誕生日"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["ふっふっふ……今日は先生殿のために、おめかししてきたよ！"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["……ん？私がプレゼントなのかって？"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["ちっ、違ぁう！いや、別にそれでもいいけど……"]
+                      },
+                      {
+                        "Case": "Text",
+                        "Fields": ["あっ、そうじゃなくて！うにゃああっ……！！"]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "title": [
+                  {
+                    "Case": "Text",
+                    "Fields": ["イベント"]
+                  }
+                ],
+                "lines": [
+                  {
+                    "key": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["イベントボイスリンク1"]
+                      }
+                    ],
+                    "value": [
+                      {
+                        "Case": "Text",
+                        "Fields": ["不忍ノ道～ファッションショー警護任務！の巻～"]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          ]
+        }
+      },
+      {
+        "title": [
+          {
+            "Case": "Text",
+            "Fields": ["小ネタ"]
+          }
+        ],
+        "content": {
+          "Case": "Trivia",
+          "Fields": [
+            [
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": ["不忍ノ道～ファッションショー警護任務！の巻～"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["で"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["ニヤ"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "から有名ファッションデザイナーの護衛を任され隠密行動の為のドレスを纏った"
+                      ]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["ミチル"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["。"]
+                    },
+                    {
+                      "Case": "LineBreak"
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["しかし"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": ["ツクヨ"]
+                    },
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "がファッションモデルとしての資質を見出された事から忍術研究部は密かに解散の危機を迎えるのであった……"
+                      ]
+                    }
+                  ]
+                ]
+              },
+              {
+                "Case": "Paragraph",
+                "Fields": [
+                  [
+                    {
+                      "Case": "Text",
+                      "Fields": [
+                        "彼女の代名詞とも言える独特の舌足らずでふにゃふにゃしたセリフの数々は健在であるばかりかラーメンの背油の如くマシマシ。"
+                      ]
+                    }
+                  ]
+                ]
+              }
+            ]
+          ]
+        }
+      }
+    ],
+    "footnotes": [
+      {
+        "label": "1",
+        "content": [
+          {
+            "Case": "Text",
+            "Fields": [
+              "シロコ（水着）は鞄＋時計という耐久面に寄せた組み合わせな一方、ミチル（ドレス）はヘアピン＋ネックレスという組み合わせのためSTキャラの耐久力はこちらが下回っている"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

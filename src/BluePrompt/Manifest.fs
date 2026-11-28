@@ -17,7 +17,7 @@ let private appellationJson =
     "plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json"
 
 /// 生徒1人の衣装1つ分のwikiruのページと、生成物の置き場所を決める名前。
-/// 生徒個別のナレッジのスキルと衣装別の参照ファイルは全てこの1行から導出するので、
+/// 生徒個別のナレッジのスキルと、role-playスキルが読む衣装は全てこの1行から導出するので、
 /// 対応の食い違いが起きない。
 type Student =
     {
@@ -37,9 +37,9 @@ let studentSkillName (student: Student) : string =
     | None -> $"character-%s{student.Base}"
     | Some costume -> $"character-%s{student.Base}-%s{costume}"
 
-/// role-playスキルの衣装別の参照ファイルの名前。素の衣装はnormal.md。
-let referenceFileName (student: Student) : string =
-    (student.Costume |> Option.defaultValue "normal") + ".md"
+/// 生徒個別のナレッジのスキルのディレクトリ。パスはリポジトリのルートからの相対。
+let private studentSkillDirectory (student: Student) : string =
+    $"plugins/jp-wikiru-bluearchive/skills/%s{studentSkillName student}"
 
 /// 実装済みの全生徒。衣装違いもwikiruのページが分かれているため1行ずつ持つ。
 /// 並びはベースの生徒の五十音順で、素の衣装を先頭に衣装違いが続く。
@@ -992,15 +992,11 @@ let wikiruTargets: Target.WikiruTarget list =
           "plugins/jp-wikiru-bluearchive/skills/character-index-by-group/school.json"
       ) ]
     @ (students
-       |> List.collect (fun student ->
-           [ Target.StudentSkill(
-                 student.Page,
-                 $"plugins/jp-wikiru-bluearchive/skills/%s{studentSkillName student}/SKILL.md"
-             )
-             Target.RolePlayReference(
-                 student.Page,
-                 $"plugins/role-play/skills/%s{student.Base}/%s{referenceFileName student}"
-             ) ]))
+       |> List.map (fun student ->
+           Target.StudentSkill(
+               student.Page,
+               $"%s{studentSkillDirectory student}/%s{SkillFile.skill}"
+           )))
     @ (unplayables
        |> List.map (fun unplayable ->
            Target.UnplayableSkill(
@@ -1010,7 +1006,8 @@ let wikiruTargets: Target.WikiruTarget list =
 
 /// テンプレートから本文を生成するrole-playスキル。パスはリポジトリのルートからの相対。
 /// 素の衣装の1行からベースの生徒ごとに1つ導出する。
-/// 衣装違いは同じディレクトリの参照ファイルとして生成時に読まれるため、ここには現れない。
+/// 衣装は同じベースの生徒の全ての行で、生徒個別スキルが置いた型のJSONから読む。
+/// 素の衣装を先頭に、衣装違いは衣装のスラッグの順に並べる。
 let rolePlaySkills: Target.RolePlaySkill list =
     students
     |> List.filter (fun student -> Option.isNone student.Costume)
@@ -1018,6 +1015,12 @@ let rolePlaySkills: Target.RolePlaySkill list =
         { Caller = student.Page
           Template = "plugins/role-play"
           Appellation = appellationJson
+          Costumes =
+            students
+            |> List.filter (fun costume -> costume.Base = student.Base)
+            |> List.sortBy _.Costume
+            |> List.map (fun costume ->
+                $"%s{studentSkillDirectory costume}/%s{SkillFile.characterJson}")
           Output = $"plugins/role-play/skills/%s{student.Base}" })
 
 /// wikiruの一覧とマニフェストを突き合わせた結果。どれもwikiruのページ名の列。
@@ -1219,7 +1222,7 @@ let createRolePlaySkills (root: string) : Task<unit> =
 /// wikiruの対象を全て並列に取得して書き出し、
 /// 続けてrole-playスキルを生成し直してから、まとめてnix fmtを1回だけ掛ける。
 /// 失敗した時の扱いはrunBoundedのとおりで、整形もrole-playスキルの生成もしない。
-/// role-playスキルは呼称表と衣装別の参照ファイルを読むため、
+/// role-playスキルは呼称表と生徒個別スキルが書いた型のJSONを読むため、
 /// それらが古いままかもしれない時には生成し直さない。
 let createAll (root: string) : Task<unit> =
     task {

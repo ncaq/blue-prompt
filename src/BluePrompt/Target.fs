@@ -17,14 +17,17 @@ type WikiruTarget =
     | School of page: string * markdownOutput: string * jsonOutput: string
     | StudentSkill of page: string * output: string
     | UnplayableSkill of page: string * output: string
-    | RolePlayReference of page: string * output: string
 
 /// テンプレートから本文を生成するrole-playスキル。
 type RolePlaySkill =
-    { Caller: string
-      Template: string
-      Appellation: string
-      Output: string }
+    {
+        Caller: string
+        Template: string
+        Appellation: string
+        /// 衣装ごとの、生徒個別スキルが置いた型のJSONのパス。並びが本文の衣装の並びになる。
+        Costumes: string list
+        Output: string
+    }
 
 /// 失敗の報告に使う対象の表示名。取得元のページ名で見分ける。
 let wikiruName (target: WikiruTarget) : string =
@@ -33,8 +36,7 @@ let wikiruName (target: WikiruTarget) : string =
     | Knowledge(page = page)
     | School(page = page)
     | StudentSkill(page = page)
-    | UnplayableSkill(page = page)
-    | RolePlayReference(page = page) -> page
+    | UnplayableSkill(page = page) -> page
 
 /// 失敗の報告に使う対象の表示名。演じる生徒の呼び名で見分ける。
 let rolePlayName (skill: RolePlaySkill) : string = skill.Caller
@@ -53,13 +55,13 @@ let resolveWikiru (root: string) (target: WikiruTarget) : WikiruTarget =
         School(page, resolve markdownOutput, resolve jsonOutput)
     | StudentSkill(page, output) -> StudentSkill(page, resolve output)
     | UnplayableSkill(page, output) -> UnplayableSkill(page, resolve output)
-    | RolePlayReference(page, output) -> RolePlayReference(page, resolve output)
 
 /// スキルのパスをルートからの相対として解決する。挙動はresolveWikiruと同じ。
 let resolveRolePlay (root: string) (skill: RolePlaySkill) : RolePlaySkill =
     { skill with
         Template = Path.Combine(root, skill.Template)
         Appellation = Path.Combine(root, skill.Appellation)
+        Costumes = skill.Costumes |> List.map (fun path -> Path.Combine(root, path))
         Output = Path.Combine(root, skill.Output) }
 
 /// 対象をwikiruから取得して書き出し、書いたパスを返す。整形は掛けない。
@@ -71,11 +73,10 @@ let writeWikiru (target: WikiruTarget) : Task<string list> =
     | School(page, markdownOutput, jsonOutput) -> Wikiru.writeSchool page markdownOutput jsonOutput
     | StudentSkill(page, output) -> Wikiru.writeStudentSkill page output
     | UnplayableSkill(page, output) -> Wikiru.writeUnplayableSkill page output
-    | RolePlayReference(page, output) -> Wikiru.writeRolePlayReference page output
 
 /// スキルの本文を併置された生成物から書き出し、書いたパスを返す。整形は掛けない。
 let writeRolePlay (skill: RolePlaySkill) : Task<string list> =
-    RolePlay.writeSkill skill.Caller skill.Template skill.Appellation skill.Output
+    RolePlay.writeSkill skill.Caller skill.Template skill.Appellation skill.Costumes skill.Output
 
 /// 書き出した直後にnix fmtを掛けて、生成コマンドだけで内容が確定するようにする。
 /// nixの起動とtreefmtの評価が所要時間の支配項なので、

@@ -254,6 +254,59 @@ let pruneFootnotes (article: Article) : Article =
             article.Footnotes
             |> List.filter (fun footnote -> Set.contains footnote.Label referenced) }
 
+/// 並びの中の脚注の参照のラベルをrenameで付け替える。入れ子まで降りる。
+let rec private renameInlineFootnotes
+    (rename: string -> string)
+    (inlines: Inline list)
+    : Inline list =
+    inlines
+    |> List.map (fun inlineNode ->
+        match inlineNode with
+        | FootnoteReference label -> FootnoteReference(rename label)
+        | Strong content -> Strong(renameInlineFootnotes rename content)
+        | Emphasis content -> Emphasis(renameInlineFootnotes rename content)
+        | Strikethrough content -> Strikethrough(renameInlineFootnotes rename content)
+        | Link(target, content) -> Link(target, renameInlineFootnotes rename content)
+        | Text _
+        | Ruby _
+        | Image _
+        | LineBreak -> inlineNode)
+
+/// 記事の脚注のラベルを、参照と定義を揃えてrenameで付け替える。
+/// 別々に読んだ記事を1つへ繋ぐ時に、ラベルが重ならないようにするために使う。
+let renameFootnotes (rename: string -> string) (article: Article) : Article =
+    { Blocks = mapInlines (renameInlineFootnotes rename) article.Blocks
+      Footnotes =
+        article.Footnotes
+        |> List.map (fun footnote ->
+            { Label = rename footnote.Label
+              Content = renameInlineFootnotes rename footnote.Content }) }
+
+/// 記事の並びを1つの記事へ繋ぐ。
+/// 脚注のラベルは記事ごとに数え始めるので、そのまま繋ぐと同じラベルの定義が重なり、
+/// GFMでは後の定義が捨てられて、後の記事の参照が前の記事の脚注を指してしまう。
+/// 定義の並びの順に1から数え直したラベルへ付け替えて、繋いだ後も一意にする。
+let concatArticles (articles: Article list) : Article =
+    let renamed, _ =
+        articles
+        |> List.mapFold
+            (fun offset article ->
+                let numbers =
+                    article.Footnotes
+                    |> List.mapi (fun index footnote ->
+                        footnote.Label, string<int> (offset + index + 1))
+                    |> Map.ofList
+
+                // 定義の無い参照は、付け替えずにそのまま残す。
+                let rename label =
+                    Map.tryFind label numbers |> Option.defaultValue label
+
+                renameFootnotes rename article, offset + article.Footnotes.Length)
+            0
+
+    { Blocks = renamed |> List.collect _.Blocks
+      Footnotes = renamed |> List.collect _.Footnotes }
+
 /// parentLevelより深い見出しの節を先頭から読み、読めなかった残りと組で返す。
 /// 同じ深さ以下の見出しは読まずに残すので、兄弟や親の兄弟として読まれる。
 let rec private sections (parentLevel: int) (blocks: Block list) : Section list * Block list =

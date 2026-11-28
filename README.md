@@ -476,7 +476,7 @@ devShellが置く`blue-prompt`コマンドを使います。
 引数無しで起動すると全てのサブコマンドの使い方を表示します。
 
 `plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジと、
-`plugins/role-play/`配下のスキルの参照ファイルと本文は生成物なので、
+`plugins/role-play/`配下のスキルの本文は生成物なので、
 手で編集せずこれらのコマンドで生成し直してください。
 `wikiru`と`roleplay`の生成コマンドは、
 読んだ構造を確認する`wikiru article`と`wikiru character`を除いて、
@@ -552,6 +552,9 @@ blue-prompt wikiru school --page '学校別' \
 
 生徒個別のスキルはナレッジを埋め込んだ`SKILL.md`全体を以下で生成します。
 スキル名は出力先のディレクトリ名から導出されます。
+同じディレクトリへ、読んだページの型を`character.json`として書き出します。
+role-playスキルの本文はこのJSONから組み立てます。
+`character.json`は生成の入力なので、スキルとしては配布しません。
 
 ```console
 blue-prompt wikiru student-skill --page '<生徒のページ名>' --output <SKILL.mdの出力パス>
@@ -563,21 +566,16 @@ blue-prompt wikiru student-skill --page '<生徒のページ名>' --output <SKIL
 blue-prompt wikiru unplayable-skill --page '<ページ名>' --output <SKILL.mdの出力パス>
 ```
 
-role-playスキルの衣装別参照ファイルは、
-生徒個別ページからプロフィールとボイスと小ネタだけを抜き出して以下で生成します。
-
-```console
-blue-prompt wikiru roleplay-reference --page '<生徒のページ名>' --output <出力ファイル>
-```
-
 role-playスキルの本文は、
 `plugins/role-play/SKILL.template.md`へ生徒ごとに決まる値を差し込んで以下で生成します。
+衣装は`--costume`へ衣装ごとの`character.json`を並べた順に載ります。
 wikiruへはアクセスせず、リポジトリへ併置した生成物だけで完結します。
 
 ```console
 blue-prompt roleplay skill --character '<キャラクター名>' \
   --template plugins/role-play \
   --appellation plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json \
+  --costume plugins/jp-wikiru-bluearchive/skills/<生徒個別スキル>/character.json \
   --output <スキルのディレクトリ>
 ```
 

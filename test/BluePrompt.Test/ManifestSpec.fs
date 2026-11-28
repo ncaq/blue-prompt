@@ -80,8 +80,7 @@ let private wikiruOutputs =
         | Target.School(_, markdownOutput, jsonOutput) -> [ markdownOutput; jsonOutput ]
         | Target.Knowledge(_, output)
         | Target.StudentSkill(_, output)
-        | Target.UnplayableSkill(_, output)
-        | Target.RolePlayReference(_, output) -> [ output ])
+        | Target.UnplayableSkill(_, output) -> [ output ])
 
 [<Fact>]
 let ``マニフェストの出力先は重複しない`` () =
@@ -134,19 +133,34 @@ let ``role-playスキルが読む呼称表はwikiruの対象が書き出す`` ()
         Assert.Contains(skill.Appellation, wikiruOutputs)
 
 [<Fact>]
-let ``role-playスキルの出力先には衣装別の参照ファイルが書き出される`` () =
-    // role-playスキルは衣装別の参照ファイルを出力先のディレクトリから読むため、
-    // 参照の出力先が別のディレクトリだと衣装が1つも載らないスキルが黙って生成される。
-    let references =
+let ``role-playスキルが読む衣装は生徒個別スキルと同じディレクトリに書き出される`` () =
+    // 衣装の型のJSONは生徒個別スキルがSKILL.mdと一緒に書き出すため、
+    // 読む場所がずれると衣装が読めずに生成が止まる。
+    let skillDirectories =
         Manifest.wikiruTargets
         |> List.choose (function
-            | Target.RolePlayReference(_, output) -> Some output
+            | Target.StudentSkill(_, output) -> Some(Path.GetDirectoryName output)
             | _ -> None)
 
     Assert.NotEmpty Manifest.rolePlaySkills
 
     for skill in Manifest.rolePlaySkills do
-        Assert.Contains(references, fun reference -> Path.GetDirectoryName reference = skill.Output)
+        Assert.NotEmpty skill.Costumes
+
+        for costume in skill.Costumes do
+            Assert.Equal("character.json", Path.GetFileName costume)
+            Assert.Contains(Path.GetDirectoryName costume, skillDirectories)
+
+[<Fact>]
+let ``role-playスキルの衣装は素の衣装が先頭に来る`` () =
+    let yuuka = Manifest.rolePlaySkills |> List.find (fun skill -> skill.Caller = "ユウカ")
+
+    Assert.Equal(
+        "plugins/jp-wikiru-bluearchive/skills/character-yuuka/character.json",
+        List.head yuuka.Costumes
+    )
+
+    Assert.True(List.length yuuka.Costumes > 1)
 
 [<Fact>]
 let ``生徒個別スキルとプレイアブルではない登場人物のスキルの名前は出力先のディレクトリの名前`` () =
@@ -273,12 +287,14 @@ let ``対象のパスはルートからの相対として解決される`` () =
         { Caller = "ユウカ"
           Template = "template"
           Appellation = "appellation.json"
+          Costumes = [ "skills/character-yuuka/character.json" ]
           Output = "skills/yuuka" }
 
     Assert.Equal(
         { skill with
             Template = Path.Combine(root, "template")
             Appellation = Path.Combine(root, "appellation.json")
+            Costumes = [ Path.Combine(root, "skills/character-yuuka/character.json") ]
             Output = Path.Combine(root, "skills/yuuka") },
         Target.resolveRolePlay root skill
     )

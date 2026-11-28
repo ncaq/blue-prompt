@@ -346,13 +346,18 @@ let trimGameplayDetails (article: Article) : Article =
         Blocks = trimGameplayBlocks article.Blocks }
 
 /// 生徒個別ページから、role-playの参照に要る部分だけを残す。
+/// 節はrolePlaySectionTitlesに載っているものだけを残す。
 /// 基本情報はプロフィールと紹介文までを残し、入手方法以降の性能データを落とす。
 /// 専用の型で読めた基本情報は型の上で落とし、
 /// タブで切り替えるページのように汎用の木のまま持っている節は、木の上の規則で同じ所を落とす。
+/// 生徒個別スキルと同じ読み方の型から作るので、
+/// role-playのためにページを読み直す必要は無い。
 let rolePlayCharacter (character: Character.Character) : Character.Character =
     { character with
         Sections =
             character.Sections
+            |> List.filter (fun section ->
+                List.contains ((plainText section.Title).Trim()) rolePlaySectionTitles)
             |> List.map (fun section ->
                 match section.Content with
                 | Character.Basic basic ->
@@ -369,22 +374,36 @@ let rolePlayCharacter (character: Character.Character) : Character.Character =
                         Content = Character.Other(trimGameplayBlocks blocks, reason) }
                 | _ -> section) }
 
+/// 生徒個別ページの型から、role-playの参照として書き出す記事の木を作る。
+/// 中身はrolePlayCharacterで残した部分で、落とした節だけが参照していた脚注は残さない。
+let rolePlayArticle (character: Character.Character) : Article =
+    pruneFootnotes (CharacterWriter.toArticle (rolePlayCharacter character))
+
 /// 記事をMarkdownへ書き出す。残った本文から参照されている脚注の定義だけを末尾に置く。
 let render (article: Article) : string =
     MarkdownWriter.render (pruneFootnotes article)
 
-/// 出典URLからナレッジファイル先頭に付ける出典の表記を組み立てる。
-/// リンクには渡されたURLをそのまま使い、ページ名を経由した再エンコードの往復をしない。
+/// 出典のリンクの表示名。
 /// 表示するページ名はクエリのパーセントデコードで復元し、
 /// クエリの無いURLはページ名を復元できないのでURL全体を表示名にする。
-/// Uri.ToStringはパーセントエンコードを解いた表示用文字列を返すため、リンクにはAbsoluteUriを使う。
-let sourceHeader (source: Uri) : string =
+let private sourceTitle (source: Uri) : string =
     let pageName =
         match source.Query.TrimStart '?' with
         | Str.NullOrEmpty -> source.AbsoluteUri
         | Str.NonEmpty query -> Uri.UnescapeDataString query
 
-    $"出典: [%s{pageName} - ブルーアーカイブ(ブルアカ)攻略有志Wiki](%s{source.AbsoluteUri})\n\n"
+    $"%s{pageName} - ブルーアーカイブ(ブルアカ)攻略有志Wiki"
+
+/// 出典URLからナレッジファイル先頭に付ける出典の表記を組み立てる。
+/// リンクには渡されたURLをそのまま使い、ページ名を経由した再エンコードの往復をしない。
+/// Uri.ToStringはパーセントエンコードを解いた表示用文字列を返すため、リンクにはAbsoluteUriを使う。
+let sourceHeader (source: Uri) : string =
+    $"出典: [%s{sourceTitle source}](%s{source.AbsoluteUri})\n\n"
+
+/// sourceHeaderと同じ出典の行を、記事の木の段落として作る。
+/// 記事の木から書き出す本文の中へ出典を置く時に使う。
+let sourceBlock (source: Uri) : Block =
+    Paragraph [ Text "出典: "; Link(source, [ Text(sourceTitle source) ]) ]
 
 /// sourceHeaderが組み立てる出典の行。リンクのURLを返す。
 /// 生成したファイルから出典を読み戻す側が、書く側と同じ場所で形を知るためにここへ置く。
@@ -465,28 +484,12 @@ let fetchCharacter
         return character
     }
 
-/// wikiruの生徒個別ページを読む。事実を載せているセクションだけへ選別する。
-/// 専用の型として読んだものを、書き出せるように記事の木へ戻して返す。
-let fetchStudentArticle (pageName: string) : Task<Article> =
-    task {
-        let! character = fetchCharacter WikiruDom.characterNoise studentSectionTitles pageName
-        return CharacterWriter.toArticle character
-    }
-
 /// wikiruのプレイアブルではない登場人物のページを読む。
 /// 生徒個別ページと同じ読み方で、事実を載せているセクションだけへ選別する。
 let fetchUnplayableArticle (pageName: string) : Task<Article> =
     task {
         let! character = fetchCharacter WikiruDom.characterNoise unplayableSectionTitles pageName
         return CharacterWriter.toArticle character
-    }
-
-/// wikiruの生徒個別ページをrole-playスキルの参照用に読む。
-/// プロフィールと紹介文とボイスと小ネタだけを残す。
-let fetchRolePlayArticle (pageName: string) : Task<Article> =
-    task {
-        let! character = fetchCharacter WikiruDom.rolePlayNoise rolePlaySectionTitles pageName
-        return CharacterWriter.toArticle (rolePlayCharacter character)
     }
 
 /// wikiruの生徒個別ページを生徒個別ページの型として読み、その構造をJSONで書き出す。
@@ -690,6 +693,13 @@ let unplayableSkillMarkdown (skillName: string) (pageName: string) (article: Art
         sections
         (render article)
 
+/// SKILL.mdの出力先のディレクトリ。スキルのディレクトリそのもの。
+let private skillDirectoryOf (outputPath: string) : string =
+    match Path.GetDirectoryName outputPath with
+    | Str.NullOrEmpty ->
+        raise (ArgumentException($"スキル名を導出するディレクトリがありません: %s{outputPath}", nameof outputPath))
+    | Str.NonEmpty directory -> directory
+
 /// 生徒個別ページと同じ形のページを読み、組み立てたSKILL.mdとして書き出す。
 /// スキル名は出力先のディレクトリ名と一致する必要があるため、出力パスから導出する。
 /// 整形は掛けず、書き出したパスを返す。
@@ -700,36 +710,53 @@ let private writeCharacterSkill
     (outputPath: string)
     : Task<string list> =
     task {
-        let skillName =
-            match Path.GetDirectoryName outputPath with
-            | Str.NullOrEmpty ->
-                raise (
-                    ArgumentException($"スキル名を導出するディレクトリがありません: %s{outputPath}", nameof outputPath)
-                )
-            | Str.NonEmpty directory -> Path.GetFileName directory
-
+        let skillName = Path.GetFileName(skillDirectoryOf outputPath)
         let! article = fetch pageName
         do! writeFile outputPath (build skillName pageName article)
         return [ outputPath ]
     }
 
-/// wikiruの生徒個別ページを読み、SKILL.mdとして書き出す。
+/// role-playスキルの本文を組み立てる時に読む、生徒個別ページの型と出典。
+/// 型だけでは衣装の名前と出典が分からないので、ページ名と一緒に持つ。
+type CharacterDocument =
+    { PageName: string
+      Source: string
+      Character: Character.Character }
+
+/// wikiruの生徒個別ページを読み、SKILL.mdと、読んだ型のJSONとして書き出す。
+/// JSONはrole-playスキルの本文を、ページを読み直さずに型から組み立てるための入力である。
+/// SKILL.mdと同じ1回の取得から書くので、2つの生成物が別の版のページから作られることは無い。
 let writeStudentSkill (pageName: string) (outputPath: string) : Task<string list> =
-    writeCharacterSkill fetchStudentArticle studentSkillMarkdown pageName outputPath
+    task {
+        let skillDirectory = skillDirectoryOf outputPath
+        let jsonPath = Path.Combine(skillDirectory, SkillFile.characterJson)
+
+        let! character = fetchCharacter WikiruDom.characterNoise studentSectionTitles pageName
+
+        do!
+            writeFile
+                outputPath
+                (studentSkillMarkdown
+                    (Path.GetFileName skillDirectory)
+                    pageName
+                    (CharacterWriter.toArticle character))
+
+        let document: CharacterDocument =
+            { PageName = pageName
+              Source = (pageUri pageName).AbsoluteUri
+              Character = character }
+
+        do! writeFile jsonPath (JsonCodec.serialize document)
+        return [ outputPath; jsonPath ]
+    }
+
+/// writeStudentSkillが書いたJSONを読み戻す。
+let ofCharacterJson (json: string) : CharacterDocument =
+    JsonCodec.deserialize<CharacterDocument> json
 
 /// wikiruのプレイアブルではない登場人物のページを読み、SKILL.mdとして書き出す。
 let writeUnplayableSkill (pageName: string) (outputPath: string) : Task<string list> =
     writeCharacterSkill fetchUnplayableArticle unplayableSkillMarkdown pageName outputPath
-
-/// wikiruの生徒個別ページを読み、
-/// role-playスキルが参照する衣装別の参照ファイルとして書き出す。
-/// 整形は掛けず、書き出したパスを返す。
-let writeRolePlayReference (pageName: string) (outputPath: string) : Task<string list> =
-    task {
-        let! article = fetchRolePlayArticle pageName
-        do! writeFile outputPath (knowledgeHeader pageName + render article)
-        return [ outputPath ]
-    }
 
 /// wikiruのキャラ呼称表ページを構造化データへパースし、
 /// LLM参照用のreference.mdと機械読み出し用のJSONを一度の取得から書き出す。

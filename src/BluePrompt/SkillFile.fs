@@ -17,10 +17,13 @@ let character: string = "character.md"
 
 /// 代表的な発言を1つ1つのMarkdownとして置くディレクトリ。
 /// 本文を生成するための入力で、生徒ごとに0個以上を手で書く。
-/// 衣装別の参照ファイルと同じ階層へ置くと、
-/// 除外を並べる形で参照ファイルを拾うRolePlayが衣装として読んでしまうため、
-/// 1つ下のディレクトリへ分ける。
 let quote: string = "quote"
+
+/// 生徒個別スキルのディレクトリに置く、読んだページの型(Character)のJSON。
+/// role-playスキルの本文を、wikiruへアクセスせずに型から組み立てるための入力で、
+/// Markdownへ書き出した後の文字列を読み直さずに済むようにする。
+/// SKILL.mdのcharacter.mdと名前の幹が同じだが、こちらは生徒個別スキルの側に置くので衝突しない。
+let characterJson: string = "character.json"
 
 /// スキル本体の骨格になる、全生徒で共通のテンプレート。
 let skillTemplate: string = "SKILL.template.md"

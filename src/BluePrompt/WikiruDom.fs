@@ -68,14 +68,6 @@ let characterNoise: string list =
     [ ".rgn-button"; ".rgn-description" ]
     @ List.filter (fun selector -> selector <> collapsibleSelector) articleNoise
 
-/// role-playスキルの参照用の組。
-/// 生徒個別ページの組に加えて、取り消し線(del)を中身ごと取り除く。
-/// 小ネタの取り消し線はwiki編集者の茶化しのツッコミで、
-/// 残すと演じる生徒が自分への揶揄を自己認識として取り込んでしまう。
-/// 記事の木へ読んだ後ではなくDOMの段で落とすのは、
-/// 表のセルや改行を繋いだ後に抜くと、繋ぎの読点だけが跡として残るためである。
-let rolePlayNoise: string list = "del" :: characterNoise
-
 /// セレクタに一致した要素をDOMから取り除く。
 /// 一致する要素が無いセレクタは読み飛ばす。存在しないことが正常な要素があるため。
 let removeNoise (selectors: string list) (document: IDocument) : unit =

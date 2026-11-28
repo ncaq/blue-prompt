@@ -78,6 +78,7 @@ module RolePlaySkill =
         | [<ExactlyOnce>] Character of name: string
         | [<ExactlyOnce>] Template of directory: string
         | [<ExactlyOnce>] Appellation of path: string
+        | [<Mandatory>] Costume of path: string
         | [<ExactlyOnce>] Output of directory: string
 
         interface IArgParserTemplate with
@@ -86,6 +87,7 @@ module RolePlaySkill =
                 | Character _ -> "演じる生徒の呼び名。"
                 | Template _ -> "SKILL.template.mdを置いたディレクトリ。"
                 | Appellation _ -> "生成済みのappellation.jsonのパス。"
+                | Costume _ -> "衣装ごとの、生徒個別スキルが置いたcharacter.jsonのパス。並べた順が本文の衣装の順になる。"
                 | Output _ -> "SKILL.mdを書き出すスキルのディレクトリ。"
 
 module Sync =
@@ -115,7 +117,6 @@ module WikiruCommand =
         | All of ParseResults<Root.Args>
         | Appellation of ParseResults<MarkdownJsonOutput.Args>
         | Knowledge of ParseResults<PageOutput.Args>
-        | Roleplay_Reference of ParseResults<PageOutput.Args>
         | School of ParseResults<MarkdownJsonOutput.Args>
         | Student_Skill of ParseResults<PageOutput.Args>
         | Unplayable_Skill of ParseResults<PageOutput.Args>
@@ -130,9 +131,10 @@ module WikiruCommand =
                 | All _ -> "マニフェストの対象を並列に取得して書き出し、role-playスキルも生成し直してから、まとめてnix fmtを掛ける。"
                 | Appellation _ -> "キャラ呼称表を構造化し、参照用のreference.mdと機械読み出し用のJSONを書き出す。"
                 | Knowledge _ -> "記事をMarkdown化してナレッジファイルとして書き出す。"
-                | Roleplay_Reference _ -> "生徒個別ページからプロフィールとボイスと小ネタを抜き出し、衣装別の参照ファイルとして書き出す。"
                 | School _ -> "学校別キャラクター一覧を構造化し、学校ごとの一覧のreference.mdと機械読み出し用のJSONを書き出す。"
-                | Student_Skill _ -> "生徒個別ページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
+                | Student_Skill _ ->
+                    "生徒個別ページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
+                    + "role-playスキルが読む型のcharacter.jsonも同じディレクトリへ書き出す。"
                 | Unplayable_Skill _ -> "プレイアブルではない登場人物のページから事実セクションを抜き出し、スキル定義ごとSKILL.mdとして書き出す。"
                 | Check_Manifest -> "wikiruのキャラクター一覧と学校別キャラクター一覧をマニフェストと突き合わせ、漏れているページを表示する。"
                 | Article _ -> "記事を読んだ構造をMarkdownにせずJSONのまま書き出す。読み方の確認用。"
@@ -148,7 +150,7 @@ module RolePlayCommand =
             member this.Usage =
                 match this with
                 | All _ -> "マニフェストのrole-playスキルを全て生成し直してから、まとめてnix fmtを掛ける。"
-                | Skill _ -> "テンプレートへcharacter.mdと衣装別の参照データと呼称表を流し込んでSKILL.mdを書き出す。"
+                | Skill _ -> "テンプレートへcharacter.mdと衣装ごとの参照データと呼称表を流し込んでSKILL.mdを書き出す。"
 
 module OpenWebuiCommand =
     [<CliPrefix(CliPrefix.None); HelpFlags("--help", "-h", "help")>]
@@ -236,7 +238,6 @@ let private runWikiru (args: ParseResults<WikiruCommand.Args>) : int =
     | WikiruCommand.All sub -> run (Manifest.createAll (sub.GetResult Root.Root))
     | WikiruCommand.Appellation sub -> create (Target.Appellation(markdownJsonOutput sub))
     | WikiruCommand.Knowledge sub -> create (Target.Knowledge(pageOutput sub))
-    | WikiruCommand.Roleplay_Reference sub -> create (Target.RolePlayReference(pageOutput sub))
     | WikiruCommand.School sub -> create (Target.School(markdownJsonOutput sub))
     | WikiruCommand.Student_Skill sub -> create (Target.StudentSkill(pageOutput sub))
     | WikiruCommand.Unplayable_Skill sub -> create (Target.UnplayableSkill(pageOutput sub))
@@ -253,6 +254,7 @@ let private runRolePlay (args: ParseResults<RolePlayCommand.Args>) : int =
                 { Caller = sub.GetResult RolePlaySkill.Character
                   Template = sub.GetResult RolePlaySkill.Template
                   Appellation = sub.GetResult RolePlaySkill.Appellation
+                  Costumes = sub.GetResults RolePlaySkill.Costume
                   Output = sub.GetResult RolePlaySkill.Output }
         )
 
