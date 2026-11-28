@@ -56,18 +56,14 @@
 
       # リポジトリにはあるが、スキルとしては配布しないファイルとディレクトリの名前。
       # character.mdとquoteは本文を生成するための入力で、
-      # *.template.mdは全生徒で共通の骨格なので、
+      # SKILL.template.mdは全生徒で共通の骨格なので、
       # Claude CodeやOpenCodeのスキルとして読ませる意味が無い。
-      #
-      # Open WebUIのModel向けのMODEL.mdはopen-webui-modelの中で生成し、
-      # スキルのディレクトリには存在しない前提なのでここには載せない。
       #
       # F#側で同じ名前を持つのはsrc/BluePrompt/SkillFile.fsで、
       # Nixへ定数を渡す手段が無いので重複は仕組み上残る。
       # どちらかの名前を変える時はもう片方も直す。
       nonSkillNames = [
         "character.md"
-        "MODEL.template.md"
         "quote"
         "SKILL.template.md"
       ];
@@ -425,39 +421,22 @@
                 fi
               '';
           # Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
-          # MODEL.md(無ければSKILL.md)の本文をシステムプロンプトへ焼き込んだ、
+          # SKILL.mdの本文をシステムプロンプトへ焼き込んだ、
           # ワークスペースModelの作成フォームJSONを人格のスキルごとに生成する。
           # POST /api/v1/models/createへそのまま渡して登録できる。
-          #
-          # MODEL.mdはSKILL.mdと同じ入力から組み立てられるので、リポジトリへは置かずここで生成する。
-          # スキルのディレクトリはマーケットプレイスがそのまま配るため、
-          # そこへ置くと人格の指示が二重に置かれた状態で配られてしまう。
           open-webui-model = pkgs.runCommand "open-webui-model-${marketplace.metadata.version}" { } ''
             # dotnetランタイムがユーザプロファイルへ書き込もうとするため、
             # サンドボックス内でも書けるHOMEを用意する。
             export HOME="$TMPDIR"
             mkdir -p $out
-            # マニフェストの対象はplugins/の下なので、ルートにはplugins/だけを持つディレクトリを渡す。
-            mkdir root
-            ln -s ${./plugins} root/plugins
-            ${lib.getExe blue-prompt} roleplay model --root root --output models
             ${lib.concatMapStrings (
               { pluginName, skillName }:
               # claude-ai-skillと同様に、
               # プラグインを跨いだスキル名の重複で出力が衝突しないように、
               # 出力ファイル名はプラグイン名で名前空間に分ける。
-              let
-                # テンプレートから生成するスキルは生成したMODEL.mdから、
-                # それ以外はスキルのディレクトリのSKILL.mdから組み立てる。
-                modelDir =
-                  if pluginName == "role-play" && lib.elem skillName templatedSkillNames then
-                    "models/${skillName}"
-                  else
-                    ./plugins + "/${pluginName}/skills/${skillName}";
-              in
               ''
                 ${lib.getExe blue-prompt} open-webui model \
-                  --skill ${modelDir} \
+                  --skill ${./plugins + "/${pluginName}/skills/${skillName}"} \
                   --output $out/${pluginName}-${skillName}.json
               ''
             ) (openWebuiSkillsOf "model")}
@@ -661,7 +640,7 @@
                 ${lib.concatMapStrings (skillPath: ''
                   sed -n '1,/^---$/p' ${skillPath}/SKILL.md | grep -qx "name: $(basename ${skillPath})"
                 '') opencodeSkillDirs}
-                # 生成の入力や別の届け先向けの本文が、どちらへも混ざっていない。
+                # 生成の入力が、どちらへも混ざっていない。
                 ${
                   let
                     assertClean = path: ''

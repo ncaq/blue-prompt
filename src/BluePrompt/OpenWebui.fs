@@ -1,7 +1,7 @@
 /// スキルをOpen WebUIのワークスペースModel定義へ変換する。
 /// Open WebUIにはClaude Codeのスキルのような、
 /// 指示書を会話の途中で読み込む仕組みが無いため、
-/// MODEL.md(無ければSKILL.md)の本文をシステムプロンプトへ焼き込んだ、
+/// SKILL.mdの本文をシステムプロンプトへ焼き込んだ、
 /// カスタムモデル(ModelForm)のJSONを生成する。
 /// 読ませたい参照データは本文が節として持っている前提で、
 /// ここでは参照ファイルを解決しない。
@@ -226,25 +226,15 @@ let private checkNoLocalLinks (skillPath: string) (body: string) : unit =
 /// idとnameにはフロントマターのnameを使い、ここでは一意性を保証しない。
 /// 同じ一覧の中のidの重複は、open-webui syncが同期の前に検出して止める。
 let buildModelForm (skillDirectory: string) : ModelForm =
-    // Model向けの本文があればそちらを使う。
-    // Claude Codeはナレッジをスキルとして読み込むが、
-    // Open WebUIでは紐付けから自動で渡されるため、本文の言い方が噛み合わない。
-    // 両方の言い方を1つの本文へ収めると、
-    // どちらの経路でも半分は当てはまらない説明を読ませることになる。
-    let modelPath = Path.Combine(skillDirectory, SkillFile.model)
     let skillPath = Path.Combine(skillDirectory, SkillFile.skill)
 
-    // 読む本文を選ぶのと、どちらも無いことを報せるのは同じ判断なので1つの式にする。
-    // 分けて書くと、存在検査がMODEL.mdの不在も報せ得るように見えてしまう。
-    let bodyPath =
-        if File.Exists modelPath then modelPath
-        elif File.Exists skillPath then skillPath
-        else raise (SkillFormatError(skillPath, "SKILL.mdが存在しません"))
+    if not (File.Exists skillPath) then
+        raise (SkillFormatError(skillPath, "SKILL.mdが存在しません"))
 
-    let frontmatter = parseFrontmatter bodyPath (File.ReadAllText bodyPath)
+    let frontmatter = parseFrontmatter skillPath (File.ReadAllText skillPath)
 
     // 本文はそのままシステムプロンプトになるので、自足していることをここで確かめる。
-    checkNoLocalLinks bodyPath frontmatter.Body
+    checkNoLocalLinks skillPath frontmatter.Body
 
     // idとnameはModelFormにも同じ名前のフィールドがあり、
     // レコードの型は後から定義された方が優先されるため、明示して取り違えを防ぐ。

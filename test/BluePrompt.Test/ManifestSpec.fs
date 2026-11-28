@@ -82,11 +82,11 @@ let ``finishは全成功ならrole-playも書き出して1回でまとめて整�
         do!
             Manifest.finish
                 (recordingFormat calls)
-                (fun () -> Task.FromResult [ "SKILL.md"; "MODEL.md" ])
+                (fun () -> Task.FromResult [ "SKILL.md" ])
                 [ "a", Ok [ "a.md" ]; "b", Ok [ "b.md"; "b.json" ] ]
 
         Assert.Equal<string list list>(
-            [ [ "a.md"; "b.md"; "b.json"; "SKILL.md"; "MODEL.md" ] ],
+            [ [ "a.md"; "b.md"; "b.json"; "SKILL.md" ] ],
             List.ofSeq calls
         )
     }

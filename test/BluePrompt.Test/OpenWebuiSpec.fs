@@ -30,43 +30,8 @@ description: Role-play as 早瀬ユウカ.
 あなたは早瀬ユウカとして振る舞います。
 """
 
-/// Model向けの本文。フロントマターもSKILL.mdと違う値にして、どちらが読まれたか見分ける。
-let private modelMd =
-    """---
-name: yuuka-model
-description: Model向けの説明。
-knowledge: character-yuuka
----
-
-Model向けの本文です。
-"""
-
 [<Fact>]
-let ``MODEL.mdがあればフロントマターごとSKILL.mdより優先される`` () =
-    // Claude CodeとOpen WebUIでは参照ファイルとナレッジの届き方が違うため、
-    // 本文はそれぞれの言い方で別に用意する。
-    // 本文だけでなくknowledgeの紐付けもMODEL.md側で決まる。
-    // 紐付けが外れるとopen-webui syncが参照の外れたModelとして止まる。
-    let directory = makeSkillDirectory [ "SKILL.md", skillMd; "MODEL.md", modelMd ]
-    let form = buildModelForm directory
-
-    Assert.Equal("Model向けの本文です。\n", form.Params.System)
-    Assert.Equal("yuuka-model", form.Id)
-    Assert.Equal("Model向けの説明。", form.Meta.Description)
-
-    Assert.Equal<string list>(
-        [ "character-yuuka" ],
-        form.Meta.Knowledge |> Option.defaultValue [] |> List.map _.Name
-    )
-
-[<Fact>]
-let ``SKILL.mdが無くてもMODEL.mdだけで組み立てられる`` () =
-    let directory = makeSkillDirectory [ "MODEL.md", modelMd ]
-
-    Assert.Equal("Model向けの本文です。\n", (buildModelForm directory).Params.System)
-
-[<Fact>]
-let ``本文がどちらも無いとSkillFormatErrorになる`` () =
+let ``SKILL.mdが無いとSkillFormatErrorになる`` () =
     let directory = makeSkillDirectory [ "normal.md", "# 通常\n" ]
 
     Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
@@ -99,27 +64,6 @@ description: desc
 
     let directory =
         makeSkillDirectory [ "SKILL.md", body; "normal.md", "# 通常\n\n制服姿。\n" ]
-
-    Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
-    |> ignore
-
-[<Fact>]
-let ``MODEL.mdだけにリンクが残っていてもSkillFormatErrorになる`` () =
-    // role-playスキルを変換する時に読まれるのはMODEL.mdなので、
-    // 検査がSKILL.mdを見ていると、実際に焼かれる本文のリンクを見逃す。
-    // 本文を選ぶ判定と検査の対象が同じであることを、
-    // リンクを持たないSKILL.mdと並べて固定する。
-    let body =
-        """---
-name: yuuka
-description: desc
----
-
-- [normal.md](./normal.md): 通常
-"""
-
-    let directory =
-        makeSkillDirectory [ "SKILL.md", skillMd; "MODEL.md", body; "normal.md", "# 通常\n\n制服姿。\n" ]
 
     Assert.Throws<SkillFormatError>(fun () -> buildModelForm directory |> ignore)
     |> ignore
