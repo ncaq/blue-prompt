@@ -8,8 +8,62 @@ on:
 
 permissions: {}
 
+# Reviews of the same pull request run one at a time,
+# and a newer pending review replaces an older pending one.
+# A running review is not cancelled so that it does not leave a half-posted review.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 jobs:
+  # On Renovate branches the update-deps workflow may add a commit
+  # that regenerates the NuGet lock files right after Renovate pushes.
+  # Reviewing the revision before that commit is wasted,
+  # because the commit triggers another review through the synchronize event.
+  # Wait for update-deps on the same revision,
+  # and review only if the pull request head has not moved meanwhile.
+  wait-update-deps:
+    name: wait-update-deps
+    runs-on: ubuntu-26.04
+    permissions:
+      actions: read # List the update-deps workflow runs
+      pull-requests: read # Read the current head of the pull request
+    # update-deps itself times out in 15 minutes.
+    timeout-minutes: 25
+    outputs:
+      current: ${{ steps.wait.outputs.current }}
+    steps:
+      - id: wait
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          set -euo pipefail
+          if [[ "$HEAD_REF" != renovate/* ]]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Leave some time for the run to be queued on top of its own timeout.
+          deadline=$((SECONDS + 20 * 60))
+          until [ "$(gh run list --repo "$GITHUB_REPOSITORY" --workflow update-deps.yml --commit "$HEAD_SHA" --json status --jq '.[0].status')" = completed ]; do
+            if [ "$SECONDS" -ge "$deadline" ]; then
+              echo "::error::update-deps did not finish for $HEAD_SHA."
+              exit 1
+            fi
+            sleep 15
+          done
+          current_head=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .head.sha)
+          if [ "$current_head" = "$HEAD_SHA" ]; then
+            echo 'current=true' >> "$GITHUB_OUTPUT"
+          else
+            echo "The head moved to $current_head, which is reviewed by its own synchronize event."
+            echo 'current=false' >> "$GITHUB_OUTPUT"
+          fi
   workflow:
+    needs: wait-update-deps
+    if: needs.wait-update-deps.outputs.current == 'true'
     # Reusable workflows are constrained by the caller's permissions,
     # so they must be explicitly declared here.
     # Claude GitHub App manages its own token, so only minimal permissions are needed.
