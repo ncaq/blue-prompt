@@ -95,16 +95,9 @@ let headingText (heading: IElement) : string =
     |> String.concat ""
     |> _.Trim()
 
-/// 編集フォームへのリンクかどうか。
-/// リンクの先はページではなく編集フォームなので、ページ名としては読まない。
-/// 取得したページではresolveEditLinksが読む前に片付けているので、
-/// これが効くのは、取得を通さずにHTML文字列から組んだDOMを直接読む時である。
-let isEditLink (element: IElement) : bool =
-    match element.GetAttribute "href" with
-    | null -> false
-    | href -> href.Contains "cmd=edit"
-
 /// 編集フォームへのリンクを片付ける。どの経路でも、DOMを読む前に掛ける。
+/// 編集フォームへのリンクの扱いはここ1箇所で決めて、DOMを読む側はそれが残っていない前提で読む。
+/// 読む側がそれぞれ読み飛ばす作りだと、片方だけが名前を落とすような食い違いが生まれる。
 /// 編集フォームへのリンクには2つの種類があり、リンクの中身で見分ける。
 ///
 /// - 編集のボタン。鉛筆の画像を持つリンクと、未作成ページの名前の後ろへ添えられる「?」だけのリンク。
@@ -127,7 +120,7 @@ let resolveEditLinks (document: IDocument) : unit =
 /// ページへのリンクは「./?<パーセントエンコードされたページ名>」の相対リンクで、
 /// 節へのリンクは末尾へ「#<節のid>」が付く。
 /// 他のページの記法で書かれたリンクはページ名を復元できないのでNoneにする。
-/// 未作成ページへの編集リンクはページ名ではなく編集フォームを指すので読まない。
+/// 編集フォームへのリンクはresolveEditLinksが先に片付けているので、ここへは来ない。
 let linkedPageName (anchor: IElement) : string option =
     /// ページへの相対リンク。パーセントエンコードされたままのページ名を返す。
     /// ページ名の中の`%23`がデコードで`#`へ戻ってから切られると、
@@ -136,7 +129,6 @@ let linkedPageName (anchor: IElement) : string option =
         pstring "./?" >>. manyChars (satisfy (fun c -> c <> '#'))
 
     match anchor.GetAttribute "href" with
-    | _ when isEditLink anchor -> None
     | null -> None
     | href ->
         // ページ名が空のリンクは「名前(ページ名: )」という壊れた表記になるので読まない。

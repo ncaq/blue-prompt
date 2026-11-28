@@ -24,7 +24,8 @@ let private isStudentRow (row: IElement) : bool =
 
 /// パース済みDOMから、一覧に並ぶ生徒個別ページのページ名を表の順に取り出す。
 /// 行の中で最初に現れるページへのリンクが、アイコンに張られた生徒個別ページへのリンクになる。
-/// 行の末尾の表の編集リンクは、ページではなく編集フォームへのリンクなので読まれない。
+/// 行の末尾の表の編集リンクは相対リンクではないので読まれない。
+/// 編集フォームへのリンクはWikiruDom.resolveEditLinksで片付けたDOMを受ける。
 /// 1件も得られなかった場合はEntryNotFoundを送出する。
 let parse (document: IDocument) : string list =
     let pages =
@@ -39,7 +40,9 @@ let parse (document: IDocument) : string list =
     pages
 
 /// HTML文字列から生徒個別ページのページ名を取り出す。
-/// パースしてparseへ委譲する。挙動と失敗条件はそちらと同じ。
+/// パースして、取得した時と同じく編集フォームへのリンクを片付けてから、parseへ委譲する。
+/// 挙動と失敗条件はそちらと同じ。
 let parseHtml (html: string) : string list =
     use document = HtmlParser().ParseDocument html
+    WikiruDom.resolveEditLinks document
     parse document

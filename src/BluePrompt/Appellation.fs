@@ -84,9 +84,6 @@ let private noteOfReference (notes: Map<string, string>) (reference: IElement) :
 /// セルの中身を「名前と注釈の組」の列へ分解する。
 /// 名前の区切りはbr要素と読点「、」の両方が使われているため、どちらでも区切る。
 /// 脚注アンカーは直前の名前への注釈として付ける。
-/// 存在しないページへの編集リンク(「?」の表示になる)は名前の一部ではないため無視する。
-/// 取得したページではWikiruDom.resolveEditLinksが読む前に片付けているので、
-/// これが効くのは、取得を通さずにHTML文字列から組んだDOMを直接読む時である。
 let private parseCell
     (notes: Map<string, string>)
     (cell: IElement)
@@ -117,12 +114,6 @@ let private parseCell
                     | None -> segments, (text, noteTexts)
                 | :? IElement as element when element.LocalName = "br" ->
                     finalize (text, noteTexts) segments, ("", [])
-                | :? IElement as element when
-                    (match element.GetAttribute "href" with
-                     | null -> false
-                     | href -> href.Contains "cmd=edit")
-                    ->
-                    segments, (text, noteTexts)
                 | node ->
                     match node.TextContent.Split '、' |> Array.toList with
                     | [] -> segments, (text, noteTexts)
@@ -189,6 +180,9 @@ let private parseTable
 /// コメント欄のように呼称表を持たないセクションは自然に読み飛ばされる。
 /// wiki側の編集ミスで同じ行が2度書かれることがあるため、完全一致のレコードは1件へまとめる。
 /// 1件も得られなかった場合はEntryNotFoundを送出する。
+/// 編集フォームへのリンクはWikiruDom.resolveEditLinksで片付けたDOMを受ける。
+/// 個別ページがまだ無い相手の名前は編集フォームへのリンクになっていて、
+/// 片付けた後は名前の文字だけが残るので、他の名前と同じに読める。
 let parse (document: IDocument) : Entry list =
     let notes = noteMap document
 
@@ -231,9 +225,11 @@ let parse (document: IDocument) : Entry list =
     entries
 
 /// HTML文字列から呼称表の全レコードを取り出す。
-/// パースしてparseへ委譲する。挙動と失敗条件はそちらと同じ。
+/// パースして、取得した時と同じく編集フォームへのリンクを片付けてから、parseへ委譲する。
+/// 挙動と失敗条件はそちらと同じ。
 let parseHtml (html: string) : Entry list =
     use document = HtmlParser().ParseDocument html
+    WikiruDom.resolveEditLinks document
     parse document
 
 /// 名前に注釈があれば半角括弧で後ろへ添える。
