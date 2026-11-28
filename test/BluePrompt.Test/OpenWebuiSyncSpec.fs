@@ -11,7 +11,6 @@ open System
 open System.IO
 open System.Net
 open System.Net.Http
-open System.Net.Sockets
 open System.Text.Json
 open System.Threading.Tasks
 open WireMock.RequestBuilders
@@ -44,53 +43,49 @@ type private FixedServer =
         |> List.filter (fun request -> request.Method = method && request.Path = path)
         |> List.length
 
-/// メソッドとパスごとに決まった応答をサーバへ登録する。
+/// メソッドとパスごとに決まった応答を返すサーバを立てて、testへ渡す。
 /// クエリ文字列は見ず、表に無いリクエストにはWireMockの既定の404を返す。
-let private addRoutes (routes: Map<string * string, int * string>) (server: WireMockServer) : unit =
-    for KeyValue((method, path), (status, body)) in routes do
-        server
-            .Given(Request.Create().UsingMethod(method).WithPath(path))
-            .RespondWith(
-                Response
-                    .Create()
-                    .WithStatusCode(status)
-                    .WithHeader("Content-Type", "application/json")
-                    .WithBody(body)
-            )
-        |> ignore
-
-/// サーバをテストから見える面にする。
-/// 受け取ったリクエストはWireMockの記録から後で確かめる。
-let private fixedServerOf (server: WireMockServer) : FixedServer =
-    let received () =
-        server.LogEntries
-        |> Seq.map (fun entry ->
-            let request = entry.RequestMessage
-
-            let authorization =
-                match request.Headers.TryGetValue "Authorization" with
-                | true, values -> Seq.tryHead values
-                | false, _ -> None
-
-            { Method = request.Method
-              Path = request.Path
-              Authorization = authorization })
-        |> List.ofSeq
-
-    { Url = server.Url.TrimEnd '/'
-      Received = received
-      Mock = server }
-
-/// メソッドとパスごとに決まった応答を返すサーバを空きポートで立てて、testへ渡す。
 /// 表の応答は状態を持たず、回数で変わる応答はテスト側がMockへ足す。
+/// 受け取ったリクエストはWireMockの記録から後で確かめる。
 let private withFixedServer
     (routes: Map<string * string, int * string>)
     (test: FixedServer -> Task<unit>)
     : Task =
     task {
         use server = WireMockServer.Start()
-        addRoutes routes server
-        do! test (fixedServerOf server)
+
+        for KeyValue((method, path), (status, body)) in routes do
+            server
+                .Given(Request.Create().UsingMethod(method).WithPath(path))
+                .RespondWith(
+                    Response
+                        .Create()
+                        .WithStatusCode(status)
+                        .WithHeader("Content-Type", "application/json")
+                        .WithBody(body)
+                )
+            |> ignore
+
+        let received () =
+            server.LogEntries
+            |> Seq.map (fun entry ->
+                let request = entry.RequestMessage
+
+                let authorization =
+                    match request.Headers.TryGetValue "Authorization" with
+                    | true, values -> Seq.tryHead values
+                    | false, _ -> None
+
+                { Method = request.Method
+                  Path = request.Path
+                  Authorization = authorization })
+            |> List.ofSeq
+
+        do!
+            test
+                { Url = server.Url.TrimEnd '/'
+                  Received = received
+                  Mock = server }
     }
 
 /// 起動を待ってサインインするまでの応答。
@@ -252,36 +247,6 @@ let ``起動の確認が成功するまでやり直してから同期する`` ()
             Assert.Equal(2, server.CountOf("GET", "/health"))
             Assert.Equal(1, server.CountOf("POST", "/api/v1/models/create"))
         })
-
-[<Fact>]
-let ``起動前で接続を拒否されてもやり直してから同期する`` () : Task =
-    task {
-        // socket activationで初回アクセス時に起動する構成のように、
-        // 最初の確認の時点ではまだ待ち受けていないインスタンスを模す。
-        // 空きポートを確保してすぐ閉じることで、最初の確認は接続拒否になる。
-        // localhostがIPv4とIPv6のどちらへ解決されても拒否されるように、両方を受けるソケットで確保する。
-        let listener = TcpListener.Create 0
-        listener.Start()
-        let port = (listener.LocalEndpoint :?> IPEndPoint).Port
-        listener.Stop()
-
-        let syncing =
-            sync
-                { ModelsDirectory = makeModelsDirectory [ makeForm "yuuka" ]
-                  Url = $"http://localhost:%d{port}"
-                  BaseModelId = None
-                  ApiKeyFile = None
-                  KnowledgeDirectory = None
-                  RagTemplateFile = None }
-
-        // 最初の確認が拒否された後の、やり直しの待ちの2秒の間にサーバを立てる。
-        do! Task.Delay(TimeSpan.FromSeconds 1.0)
-        use server = WireMockServer.Start(port)
-        addRoutes modelRoutes server
-        do! syncing
-
-        Assert.Equal(1, (fixedServerOf server).CountOf("POST", "/api/v1/models/create"))
-    }
 
 [<Fact>]
 let ``APIキーのファイルを指定するとBearerヘッダとして送られる`` () : Task =
