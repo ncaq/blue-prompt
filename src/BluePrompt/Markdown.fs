@@ -6,8 +6,11 @@
 /// 検索でヒットする単位と読ませたい単位を揃える。
 module BluePrompt.Markdown
 
+open System
 open System.Text
-open System.Text.RegularExpressions
+open XParsec
+open XParsec.Parsers
+open XParsec.CharParsers
 
 /// GFMのパイプテーブルのセルとして安全なように縦棒をエスケープする。
 /// wikiの本文由来の文字列をテーブルへ組み立てる箇所が複数あり、
@@ -40,13 +43,41 @@ type Fragment =
         Text: string
     }
 
-/// ATX見出しの行。setext見出し(下線形式)はこのリポジトリの生成物に現れないため扱わない。
-let private headingPattern = Regex @"^(#{1,6})\s+(.*\S)\s*$"
+/// Markdownの見出しの最も深いレベル。
+let maxHeadingDepth: int = 6
 
-/// コードブロックのフェンス行。
+/// ATX見出しの先頭の`#`の並び。数を見出しの深さとして返す。
+/// maxHeadingDepthより長い並びは見出しではない。
+/// setext見出し(下線形式)はこのリポジトリの生成物に現れないため扱わない。
+let headingMarker: Parse.TextParser<int> =
+    many1Chars (pchar '#')
+    >>= fun hashes ->
+        if hashes.Length <= maxHeadingDepth then
+            preturn hashes.Length
+        else
+            pzero
+
+/// 行をATX見出しとして読み、深さと、`#`と前後の空白を落とした文字列を返す。
+/// 文字列が空白しか残らない行は見出しとして扱わない。
+let private tryHeading (line: string) : (int * string) option =
+    Parse.tryPrefix (headingMarker .>> Parse.whitespaces1 .>>. Parse.restOfLine) line
+    |> Option.bind (fun struct (level, rest) ->
+        match rest.Trim() with
+        | Str.NullOrEmpty -> None
+        | Str.NonEmpty text -> Some(level, text))
+
+/// コードブロックのフェンス行の先頭。フェンスの文字の並びを返す。
+/// 字下げは3つまでで、それより深い行はフェンスではない。
 /// 閉じフェンスは開いたものと同じ文字で同じ以上の長さである必要があるため、
-/// 文字と長さを取り出す。
-let private fencePattern = Regex @"^\s{0,3}(`{3,}|~{3,})"
+/// 文字と長さが分かるように並びをそのまま返す。
+let private fence: Parse.TextParser<string> =
+    /// フェンスになる長さの、同じ文字の並び。
+    let run (mark: char) : Parse.TextParser<string> =
+        many1Chars (pchar mark)
+        >>= fun marks -> if 3 <= marks.Length then preturn marks else pzero
+
+    manyChars (satisfy Char.IsWhiteSpace)
+    >>= fun indent -> if indent.Length <= 3 then run '`' <|> run '~' else pzero
 
 /// 行を見出しと本文へ分類した中間表現。
 type private Line =
@@ -65,20 +96,17 @@ let private toLines (markdown: string) : Line list =
     |> Array.toList
     |> List.mapFold
         (fun (openFence: string option) line ->
-            match openFence, fencePattern.Match line with
-            | None, fence when fence.Success -> TextLine line, Some fence.Groups[1].Value
-            | Some opened, fence when
-                fence.Success
-                && fence.Groups[1].Value[0] = opened[0]
-                && opened.Length <= fence.Groups[1].Value.Length
+            match openFence, Parse.tryPrefix fence line with
+            | None, Some opening -> TextLine line, Some opening
+            | Some opened, Some closing when
+                closing[0] = opened[0] && opened.Length <= closing.Length
                 ->
                 TextLine line, None
-            | None, _ ->
+            | None, None ->
                 let parsed =
-                    match headingPattern.Match line with
-                    | heading when heading.Success ->
-                        HeadingLine(heading.Groups[1].Value.Length, heading.Groups[2].Value)
-                    | _ -> TextLine line
+                    match tryHeading line with
+                    | Some heading -> HeadingLine heading
+                    | None -> TextLine line
 
                 parsed, None
             | Some _, _ -> TextLine line, openFence)
@@ -176,7 +204,7 @@ let rec private collect
         // 子へ降りる時、この節自身の本文はどの子にも属さないため独立した断片にする。
         // 空白だけの本文は断片にしても検索の役に立たないので落とす。
         let own =
-            if List.forall System.String.IsNullOrWhiteSpace section.Body then
+            if List.forall String.IsNullOrWhiteSpace section.Body then
                 []
             else
                 [ { Headings = headingsOf ancestors section

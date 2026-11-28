@@ -4,11 +4,17 @@
 /// エスケープも整形もせず、渡された通りの文字列を置く。
 module BluePrompt.Template
 
-open System.Text.RegularExpressions
+open System
+open XParsec
+open XParsec.Parsers
+open XParsec.CharParsers
 
-/// 差し込む位置を示すプレースホルダ。
+/// 差し込む位置を示すプレースホルダ。名前を返す。
 /// `{{名前}}`の形で、テンプレートの中へ単独の段落として書く。
-let private placeholderPattern = Regex(@"\{\{(\w+)\}\}", RegexOptions.Compiled)
+let private placeholderName: Parse.TextParser<string> =
+    pstring "{{"
+    >>. many1Chars (satisfy (fun c -> Char.IsLetterOrDigit c || c = '_'))
+    .>> pstring "}}"
 
 /// プレースホルダの名前から、テンプレートへ書く表記を組み立てる。
 /// テンプレートを組み立てるテストが、波括弧の数を自前で書かずに済むようにする。
@@ -30,19 +36,14 @@ type Mismatch =
 /// プレースホルダの書き間違いで値が黙って落ちることも、
 /// テンプレートから消したプレースホルダへ値を渡し続けることも見逃すためである。
 let render (values: Map<string, string>) (template: string) : Result<string, Mismatch> =
-    let found =
-        placeholderPattern.Matches template
-        |> Seq.map (fun matched -> matched.Groups[1].Value)
-        |> Set.ofSeq
+    let found = Parse.findAll placeholderName template |> List.map _.Value |> Set.ofList
 
     let given = Set.ofSeq (Map.keys values)
 
     if found = given then
-        // 置換する文字列ではなく関数を渡すのは、
-        // 差し込む値の中の`$1`のような並びが置換パターンとして解釈されないようにするため。
         // 走査の対象はテンプレートだけなので、
         // 差し込んだ値の中にプレースホルダの形があっても二重には展開されない。
-        Ok(placeholderPattern.Replace(template, (fun matched -> values[matched.Groups[1].Value])))
+        Ok(Parse.replace (placeholderName |>> fun name -> values[name]) template)
     else
         Error
             { Unresolved = List.ofSeq (Set.difference found given)
