@@ -79,65 +79,23 @@ Nix経由の統合検証(外部サイト依存テストを除く)はnix-fast-bui
 devShellが置く`blue-prompt`コマンドを使います。
 中身は`dotnet run --configuration Release --project src/BluePrompt --`で、
 引数はそのまま渡り、相対パスは呼び出した場所が基準になります。
-`dotnet build`や`dotnet test`やリントは既定のDebugのままです。
-MSBuildには`dotnet run`からの呼び出しを見分ける手掛かりが無く、
-既定の構成をReleaseにするとこれらまで巻き込むため、
-実行だけをコマンドとして分けています。
+実行だけをReleaseにしている理由はflake.nixの`blue-prompt-dev`にあります。
 
 ## コマンドラインの構成
 
-サブコマンドと引数は[Argu](https://fsprojects.github.io/Argu/)の判別共用体で宣言しています。
-ヘルプは`Usage`から自動生成されるため、手書きの使い方の文字列はありません。
-サブコマンドを足す時は`src/BluePrompt/Program.fs`の判別共用体へケースを足すだけで、
-ヘルプにも反映されます。
-
-サブコマンドは外部システムとの接点で2階層に分かれています。
-
-- `wikiru`: wikiruへ取りに行くもの
-- `roleplay`: 外部と話さずリポジトリ内の生成物だけで完結するもの
-- `open-webui`: Open WebUI向けに生成するものと、インスタンスへ送るもの
-
-第1階層はこの取り込みから送り出しへの流れの順に並べ、
-各グループの中は辞書順にして、
-生成物を作らない確認用の`check-manifest`と`html`と`student-html`だけを末尾へ置いています。
-順序の定義は判別共用体のケースの並びだけにあり、
-ヘルプの並びもそこから決まるので、二重管理になりません。
-
-引数無しの起動とトップレベルのヘルプのフラグ(`--help`/`-h`/`help`)は、
-グループの一覧で止めずに末端のコマンドの引数まで全て展開して表示します。
-この規模なら階層を辿らせるより一度に見せるほうが早いためです。
-`blue-prompt wikiru --help`のように階層を指定した時はArgu既定のその階層だけの表示になります。
-
-引数は位置引数を使わず全て名前付きオプションです。
-必須のものは`ExactlyOnce`で縛っているため、
-渡し忘れも重複もArguが弾きます。
-
-`wikiru check-manifest`のように引数を取らないコマンドは、
-ケースへ`SubCommand`属性を付けます。
-付けないとArguがサブコマンドではなくスイッチとして扱います。
-自分の使い方を持たないため、
-全て展開したヘルプでもグループの一覧の1行としてだけ現れます。
+サブコマンドと引数は[Argu](https://fsprojects.github.io/Argu/)の判別共用体で、
+`src/BluePrompt/Program.fs`に宣言しています。
+サブコマンドを足す時は判別共用体へケースを足すだけで、ヘルプにも反映されます。
+並び順と引数の決まりは同じファイルの冒頭のコメントにあります。
 
 ## 文字列の形の判定と書き換え
 
 文字列の形の判定と書き換えは正規表現ではなく、
 パーサコンビネータの[XParsec](https://roboz0r.github.io/XParsec/)で書きます。
-正規表現は量指定子と先読みと行頭行末の指定が1行に詰まって読みにくく、
-部品に名前を付けて使い回すこともできないためです。
-
-文字列全体を走査して置き換える`replace`や、
-行頭と行末を確かめる`lineStart`と`lineEnd`のような共通の道具は、
-`src/BluePrompt/Parse.fs`にあります。
+理由と共通の道具は`src/BluePrompt/Parse.fs`にあります。
 
 Markdownの節を落としたり選んだりする処理は、
-行を1つずつ見て状態を持ち回るのではなく、
-`src/BluePrompt/Markdown.fs`の`parseSections`で見出しの木へ読んでから木を書き換えて、
-`toMarkdown`で戻します。
-木で書けば、節の終わりや小見出しの扱いを深さの比較で追う必要がありません。
-
-XParsecのパーサは正規表現と違って後戻りをしません。
-繰り返しは取れるだけ取ってから先へ進むので、
-繰り返しの文字の集合と直後の区切りが重ならないように組み立てます。
+`src/BluePrompt/Markdown.fs`の`parseSections`で見出しの木へ読んでから書き換えます。
 
 ## JSON
 
@@ -148,41 +106,25 @@ APIの応答も、読む欄だけを持つレコードで受けます。
 
 Open WebUIとやり取りするJSONの設定は`src/BluePrompt/OpenWebuiJson.fs`に、
 wikiruから構造化したレコードの設定は`src/BluePrompt/JsonCodec.fs`にあります。
-Open WebUI向けは、書く時はNoneをキーごと省かずにnullとして書きます。
-Open WebUIはnullを未設定として受け取れるうえ、
-生成物を読んだ時にどのフィールドが未設定なのかが見えるためです。
-
-読む時は欠けたフィールドもnullもNoneとして読みます。
-登録済みのModelには、
-このリポジトリが後から管理対象へ足したフィールドがまだ無いことがあるためです。
-書いたnullを読み戻せるように、nullもNoneとして読みます。
 
 ## リンター
 
 F#のリンターとして[fsharp-analyzers](https://github.com/ionide/FSharp.Analyzers.SDK)を使っています。
 ルール集はG-Research.FSharp.AnalyzersとIonide.Analyzersで、
 Directory.Build.propsで全F#プロジェクトへ導入しています。
-
 FSACが持つ診断(FSAC0001未使用open・FSAC0002冗長な修飾子・FSAC0003未使用宣言)も、
 `src/BluePrompt.Analyzers`の自作アナライザーで同じ検出をリントとして再現しています。
-FSACにはバッチ実行の手段が無いため、
-FSACが内部で使うFSharp.Compiler.ServiceのEditorServices APIを直接呼んでいます。
-FSharp.Analyzers.SDKとfsharp-analyzers CLIのバージョンは一致させる必要があるため、
-flake.nixはCLIの版をdeps.jsonに記録されたSDKの版から導きます。
-これらをエディタにも出すかはLSPクライアント側の設定次第なので、
+エディタに出るかはLSPクライアント側の設定次第なので、
 エディタが黙っていてもリントが落ちることはあります。
 
-FSAC0002のもとになるFCSのSimplifyNamesは`RequireQualifiedAccess`を見ておらず、
-省略するとコンパイルが通らない修飾まで冗長として報告します。
-判別共用体のケース名の衝突は、この属性ではなくモジュールで名前空間を分けて避けてください。
+判別共用体のケース名の衝突は、
+`RequireQualifiedAccess`ではなくモジュールで名前空間を分けて避けてください。
+理由は`src/BluePrompt/Program.fs`の冒頭のコメントにあります。
 
-リンターはnix-fast-buildの統合チェックの一部として自動実行されます。
-警告もエラー扱いで、
-違反があるとチェックが失敗します。
-
-対象のプロジェクトはリポジトリ直下の`lint.proj`が、
-`src`と`test`配下の再帰globで集約しているため、
-その配下にプロジェクトを追加する限り一覧の更新は不要です。
+リンターはnix-fast-buildの統合チェックの一部として自動実行され、
+警告もエラー扱いです。
+対象のプロジェクトは`lint.proj`がglobで集めるので、
+`src`と`test`の配下へプロジェクトを足しても一覧の更新は要りません。
 
 devShellで単体実行したい時は以下を使います。
 
@@ -198,59 +140,20 @@ dotnet msbuild src/BluePrompt /t:AnalyzeFSharpProject -warnaserror
 ```
 
 どちらも解析の前に必要な復元を自分で済ませるため、事前の準備は要りません。
-`src/BluePrompt.Analyzers`はどのプロジェクトからも参照されず、
-`dotnet build`や`dotnet test`では復元されないためです。
-Nixのビルドだけは復元をRuntimeIdentifier付きで済ませているので、
-`-p:BluePromptLintRestore=false`でこの復元を飛ばしています。
 
 ## NuGet依存の更新
 
 fsprojのPackageReferenceを変更したら以下を一回実行するだけで、
-deps.jsonとfsharp-analyzers.jsonの再生成と整形が完了します。
+deps.jsonとfsharp-analyzers.jsonとDirectory.Build.propsの`FSharpCoreVersion`の再生成と整形が完了します。
 コミットは他の変更とまとめて手動で行います。
 
 ```console
 nix run .#update-deps
 ```
 
-fsharp-analyzers.jsonはfsharp-analyzers CLIのNuGetパッケージのhashを持ちます。
-CLIはツールのパッケージなのでfetch-depsの対象にならず、
-deps.jsonのFSharp.Analyzers.SDKと同じ版のhashを別に取得しています。
-SDKの版と食い違っていればflake.nixの評価時に止まります。
-
-Directory.Build.propsの`FSharpCoreVersion`も、
-SDKが完全一致で要求する版へ揃える必要があります。
-食い違っていると復元自体が失敗するため、
-`update-deps`はfetch-depsの前にSDKのnuspecから要求する版を読み取って書き換えます。
-
-RenovateはfsprojとDirectory.Build.propsのPackageReferenceしか書き換えないため、
-そのままではこれらが古いまま残りnix-fast-buildが落ちます。
-Mendのホスト版RenovateはpostUpgradeTasksを実行できないので、
-代わりに`.github/workflows/update-deps.yml`が、
-Renovateのブランチへ再生成をコミットして追従させます。
-
-コミットはGitのpushではなくGraphQLの`createCommitOnBranch`で作ります。
-GitHubがサーバ側で署名するためVerifiedになり、
-同じくサーバ側で作られるRenovate自身のコミットと揃うからです。
-contents APIと違い複数のファイルを1つのコミットへまとめられます。
-
-トークンはGITHUB_TOKENではなく専用のGitHub Appのものを使います。
-GITHUB_TOKENが作ったコミットはワークフローを起動しない仕様のため、
-必須チェックのnix-fast-buildが最新のコミットで走らないまま止まってしまうからです。
-Client IDはActionsのvariableの`UPDATE_DEPS_APP_CLIENT_ID`に、
-秘密鍵はsecretの`UPDATE_DEPS_APP_PRIVATE_KEY`にあります。
-
-Renovateは自分以外の作者のコミットがあるブランチを、
-人手で編集されたとみなして以後の更新を止めます。
-このワークフローのコミットで止まらないように、
-renovate.jsonの`gitIgnoredAuthors`が作者を無視の対象にしています。
-
-PRの自動レビューの`.github/workflows/kyosei.yml`は、
-Renovateのブランチでは同じコミットに対するこのワークフローの完了を待ってからレビューします。
-待っている間に再生成のコミットが足されていれば、
-そのコミットで改めて起動するレビューに任せて、
-古いコミットのレビューは飛ばします。
-deps.jsonが古いままの状態を一度レビューしても無駄になるためです。
+RenovateのPRでは、
+`.github/workflows/update-deps.yml`が同じ再生成をRenovateのブランチへコミットして追従させます。
+仕組みの理由はワークフローと`renovate.json`と`.github/workflows/kyosei.yml`のコメントにあります。
 
 # スキルの呼び出し制御
 
@@ -286,17 +189,7 @@ descriptionでは繰り返しません。
 名前には姓を付けます。
 wikiruのページ名は「アイリ」「アイリ（バンド）」のように姓を持たず、
 一覧に並ぶ説明だけでは誰のことなのかが決まらないためです。
-生徒個別のスキルではプロフィールのフルネームから姓を取って、
-`src/BluePrompt/Wikiru.fs`の`familyNamedPageName`がページ名の前へ補います。
-フルネームが無いページや、
-フルネームとページ名が名前で繋がらないページは、
-別人の名前を作らないようにエラーで止まります。
-
-プレイアブルではない登場人物のスキルも同じ方法で姓を補いますが、
-作中で姓が明かされていない人物や、
-アロナのように生徒ではない人物がいるため、
-フルネームが無いか空欄のページではページ名をそのまま使います。
-フルネームとページ名が繋がらない時に止まるのは生徒と同じです。
+生成するスキルでは`src/BluePrompt/Wikiru.fs`の`familyNamedPageName`と`unplayableDisplayName`が補います。
 
 role-playのスキルのdescriptionは、
 character.mdのフロントマターから生成物へそのまま写ります。
@@ -327,24 +220,10 @@ wikiruの記事からの自動生成ファイルです。
 blue-prompt wikiru all --root .
 ```
 
-対象の一覧はJSONのような外部の設定ファイルではなく、
-F#の値として`Manifest.fs`に書いています。
-コンパイラが型を検査し、コメントも書け、パーサも要らないためです。
-個別コマンドと同じ生成対象の型(`src/BluePrompt/Target.fs`)を使うので、
-種別と引数の対応は1箇所にしかありません。
 対象のパスはリポジトリのルートからの相対で、`--root`で基準を渡します。
-
-並列度は`Manifest.fs`の`degreeOfParallelism`で固定しています。
-wikiru側の負荷は1台のPCから送る量では誤差ですが、
-無駄に並べても利益が無いため常識的な数に収めています。
-
-取得に失敗した対象があれば新しい対象を始めず、
-走っている対象を待ってから、失敗した対象の名前と理由を表示して終了コード1で止まります。
-複数が失敗しても表示するのはそのうち1つです。
+取得に失敗した対象があれば、失敗した対象の名前と理由を表示して終了コード1で止まります。
 失敗時は整形もrole-playスキルの生成もしないので、
 書き出し済みの生成物は整形されないまま残ります。
-role-playスキルは呼称表と衣装別の参照ファイルを読むため、
-それらが古いままかもしれない失敗時には生成し直しません。
 
 wikiruへアクセスせずrole-playスキルの本文だけを全て生成し直す時は以下を使います。
 テンプレートを直した時と、
@@ -365,27 +244,8 @@ wikiruの一覧を2つ取得して突き合わせるだけで、何も書き出�
 blue-prompt wikiru check-manifest
 ```
 
-出典は対象の種類で分かれています。
-学校別キャラクター一覧は衣装違いを持たず、
-キャラクター一覧はプレイアブルではない登場人物を持たないため、
-片方だけでは全体を確かめられません。
-
-- `students`: キャラクター一覧に並ぶ生徒個別ページ
-- `unplayables`: 学校別キャラクター一覧でレアリティがNPCのページ
-
 どちらの向きの食い違いも表示して、1つでもあれば終了コード1で止まります。
-wikiruにあってマニフェストに無いページは足し忘れで、
-マニフェストにあってwikiruに無いページは改名か綴りの間違いです。
-実装されて生徒になった登場人物は、
-`students`の足し忘れと`unplayables`の外し忘れの両方に現れます。
-
-学校別キャラクター一覧には生徒として載っているのに、
-キャラクター一覧にまだ無いページは、
-実装が告知されただけの生徒として参考に表示するだけで、漏れには数えません。
-この段階の個別ページはプロフィールもボイスも雛形で、
-生成しても演技の材料にならないためです。
-キャラクター一覧へ載った時点で足し忘れとして現れます。
-
+食い違いの種類と出典の分け方は`Manifest.fs`の`Coverage`と`coverageOf`にあります。
 外部サイトの状態で結果が変わるため、統合チェックには含めていません。
 
 ## 個別の生成
@@ -430,39 +290,17 @@ blue-prompt wikiru student-skill --page '<生徒のページ名>' --output <SKIL
 
 プレイアブルではない登場人物のスキルも、
 生徒個別ページと同じ形のページから以下で生成します。
-ロールプレイするにはボイスや発言が足りないため、
-role-playのスキルは作らずナレッジだけを持ちます。
-生徒の会話で話題に上った時に設定を引くためのもので、
+role-playのスキルは作らずナレッジだけを持ち、
 role-playのcharacter.mdの`knowledge:`からも挙げられます。
+対象と呼び方とスキル名の決め方は`Manifest.fs`の`Unplayable`と`unplayables`にあります。
 
 ```console
 blue-prompt wikiru unplayable-skill --page '<ページ名>' --output <SKILL.mdの出力パス>
 ```
 
-対象はwikiruの学校別キャラクター一覧でレアリティがNPCとされている人物で、
-`Manifest.fs`の`unplayables`が持ちます。
-wikiruはNPCと呼んでいますが、
-未実装の生徒も生徒なので、
-生成物でもコードでもその呼び方はしません。
-アロナのように生徒ではない人物も含むため、
-descriptionではcharacter、本文では登場人物と呼びます。
-
-残す節は生徒のホワイトリストを土台に、
-アロナとプラナとソラが持つボイス集と、
-カイテンジャーのメンバーごとの節を足しています。
-
-スキル名のスラッグは、
-作中で呼び名が定まっていない人物もいるため、
-グローバル版の英語表記であるbluearchive.wikiのNPCのカテゴリのページ名に揃えます。
-実装されて生徒になった時は、`unplayables`から外して`students`へ移し、
-`character-<slug>`のディレクトリを生徒の命名で生成し直します。
-
 role-playスキルの衣装別参照ファイルは、
 生徒個別ページからプロフィールとボイスと小ネタだけを抜き出して以下で生成します。
-小ネタの取り消し線はwiki編集者の茶化しなので、
-人格へ混ざらないように中身ごと取り除いています。
-絆ストーリーとメモリアルロビーはタイトルやスタッフの表しか持たず、
-演技の材料にならないため含めません。
+抜き出す節と取り除くものの理由は`Wikiru.fs`の`rolePlaySectionTitles`と`rolePlayContentQuery`にあります。
 
 ```console
 blue-prompt wikiru roleplay-reference --page '<生徒のページ名>' --output <出力ファイル>
@@ -497,15 +335,7 @@ Open WebUIのModelのシステムプロンプトにもそのままなります�
 生成物のフロントマターはcharacter.mdのものをそのまま写します。
 
 プロフィールや口調を手で書き下すことはしません。
-プロフィールは衣装別の参照データが本文へ入るため重複で、
-口調の要約は目を引かれた特徴だけを強めてボイスの持つ幅を潰すためです。
-
-衣装別の参照データは本文へインライン化しています。
-演じ始める前に全ての衣装へ目を通させる前提なので、
-別ファイルとして開かせても読ませる量は変わらず、
-開くかどうかの判断とファイルを開く往復だけが増えるためです。
-参照ファイル自体は単体でも引けるように残しますが、
-本文からはリンクしません。
+理由は`RolePlay.fs`の`playingRules`にあります。
 
 全生徒に効く指示はテンプレートを、
 その生徒だけの指示はcharacter.mdを編集して生成し直します。
@@ -520,13 +350,8 @@ blue-prompt roleplay skill --character '<キャラクター名>' \
   --output <スキルのディレクトリ>
 ```
 
-character.mdとquote/とテンプレートはスキルのディレクトリに置いたままです。
-Nixで組み立てるOpenCodeのスキルやhome-manager経由のClaude Codeのプラグインや配布ZIPからは除かれますが、
-Claude CodeとClaude.aiのweb版のマーケットプレイスはリポジトリの`plugins/`をそのまま配るため、
-その経路では一緒に配られます。
-生成の入力なので読ませる意味はありませんが、害も無いため許容しています。
-除外する名前はflake.nixの`nonSkillNames`が持っていて、
-漏れは統合チェックが検出します。
+character.mdとquote/とテンプレートはスキルのディレクトリに置いたままで、
+Nixで組み立てる配布物からはflake.nixの`nonSkillNames`が除きます。
 
 抽出設定を調整する時は、
 以下でpandoc変換前の中間HTMLを確認できます。
@@ -552,8 +377,6 @@ blue-prompt wikiru student-html --page '<生徒のページ名>' --output <出�
 話の運び方と長い語りの組み立てはこちらが担います。
 
 ファイルは`## `の見出しから始めます。
-節へ並べて差し込むため、
-見出しが無いと発言と発言の切れ目が消えるので、
 始まっていなければエラーで止まります。
 並びはファイル名の順です。
 
@@ -561,43 +384,11 @@ blue-prompt wikiru student-html --page '<生徒のページ名>' --output <出�
 生成では作れません。
 書き手が発言の本文と一緒に書きます。
 
-発言を持たない生徒も居るため、
-quote/が無ければ0件として扱い、
-本文からは節ごと消えます。
-
 ## 表の箇条書き化
 
 wikiruのデータの表は、
 pandocへ渡す前に`src/BluePrompt/TableList.fs`が箇条書きへ置き換えます。
-GFMのパイプテーブルのままだと、
-`nix fmt`のprettierが列幅を揃えるため、
-スキルのアイコンのURLや長いセリフのような広いセルが1つあるだけで全ての行が空白で埋まります。
-一時はKnowledge全体の文字数の半分が空白でした。
-また表の行は列の意味を見出し行に預けているので、
-Open WebUIが`CHUNK_SIZE`で切った後半のチャンクには数値だけが残ります。
-箇条書きなら項目ごとに「Lv: 1, コスト: 3, 効果: ...」と列名を抱えるため、
-整形で空白が増えず、どこで切られても読めます。
-prettierを掛けない例外を作るのではなく、
-整形しても膨らまない形を出力することで解決しています。
-
-置き換えの規則は以下の通りです。
-
-- 見出しを含む表はデータではなくレイアウトなので触らない
-- 平坦化の後も結合セルが残る表は、格子の予算を超えて展開を諦めた表なので触らない
-- 中身のあるセルが全てthの列は行ごとのキーの列で、キーは項目の先頭に「名前: 」の形で立つ
-- キーの列を除いて文字を持つthがtdより多い行は見出し行で、
-  その連なりの最後が列名の行、それより上が題名の行になる。
-  固有武器の表のようにデータ行の後に列名の行が現れれば、そこから別の一覧として読む
-- 題名はスキルの「Q.E.D」のように表が何の一覧かを言う行で、表の属する節の1つ下の見出しになる。
-  「I.F.F」と「I.F.F+」のように題名が複数並ぶ表は題名ごとの節へ分け、キーの列を各節で繰り返す
-- 縦に結合された立ち絵のように、先頭の行だけが画像を持ち、
-  続く行がその文字の複製になっている列は、独立した項目として先頭に置く。
-  複製が無い1行だけの表の画像や、素材のアイコンのように文字の行と並ぶ画像は、その行の値として残る。
-  題名行のアイコンは名前に添えた飾りなので残さない
-- 見出し行もキーも無いボイスのような表は、先頭のセルをキーとして読む
-
-呼称表と学校別キャラクター一覧はpandocを通さず表をレコードへ直接読むため、
-この置き換えの対象ではありません。
+理由と置き換えの規則はそのファイルのコメントにあります。
 
 # Open WebUI向けの生成と同期
 
@@ -616,13 +407,8 @@ Modelは会話の入口を選ぶだけで、
 
 SKILL.mdの本文を、
 システムプロンプトへ焼き込んだワークスペースModelの作成フォームJSONへ変換します。
-生成物は`POST /api/v1/models/create`へそのまま渡して登録できる形式です。
-
-読ませたい参照データは本文が節として持っている前提なので、
-ここでは参照ファイルを解決しません。
-Open WebUIには会話の途中でファイルを開く手段が無く、
-リンクを書いても開けない参照が残るだけなので、
 本文にローカルリンクが残っていればエラーで止まります。
+変換の決まりは`src/BluePrompt/OpenWebui.fs`にあります。
 
 人格のスキル分をまとめて生成するのは以下です。
 出力はビルド成果物でリポジトリへはコミットしないため、
@@ -640,21 +426,9 @@ blue-prompt open-webui model --skill <スキルディレクトリ> --output <出
 
 ## Knowledge定義の生成
 
-Knowledgeは登録したファイルをチャンクへ割ってベクトル検索するため、
-大きなファイルをそのまま渡すと表や節の途中で千切れて検索に掛からなくなります。
 SKILL.mdとリンクされたMarkdownの参照ファイルを見出しの単位へ分割して、
 検索でヒットする単位と読ませたい単位を揃えます。
-断片には祖先の見出しが前置され、
-出典の行が全ての断片へ配られるので、
-単体で読んでも何の一部なのかが分かります。
-ファイル名もコレクションの名前から始まります。
-検索で当たった断片は本文とファイル名だけがLLMへ渡るため、
-衣装違いの生徒のように似た構造のコレクションが並んでも、
-これで出所を区別できます。
-
-`appellation.json`のようなMarkdown以外の参照ファイルは、
-スクリプトで引くためのものでOpen WebUIには実行する主体がいないため、
-Knowledgeには含めません。
+分割と名付けの決まりは`src/BluePrompt/OpenWebuiKnowledge.fs`と`src/BluePrompt/Markdown.fs`にあります。
 
 ナレッジのスキル分をまとめて生成するのは以下です。
 出力はビルド成果物でリポジトリへはコミットしないため、
@@ -677,25 +451,15 @@ role-playスキルのフロントマターの`knowledge:`行に、
 yuukaのように生成するスキルでは、
 スキルのディレクトリのcharacter.md側へ書いて生成し直します。
 
-コレクションのidは登録先のインスタンスが採番するため生成時には決まりません。
-生成物では空にしておき、
-`open-webui sync`が名前でコレクションを引き当てて埋めます。
-紐付け先が同期の対象に無ければ、
-参照が外れたModelを黙って登録せずエラーで止まります。
-
-紐付けたKnowledgeを自動で参照させるには、
-`params.function_calling`を`legacy`(UIの表記では「Default」)にする必要があります。
-Open WebUIはv0.10.0以降この既定値が`native`で、
-`native`ではモデルがビルトインツールを能動的に呼ばない限りKnowledgeが注入されません。
-紐付けのあるModelにはこの指定が自動で入ります。
+コレクションのidは`open-webui sync`が名前でコレクションを引き当てて埋めます。
+紐付け先が同期の対象に無ければエラーで止まります。
 
 ## 同期
 
 生成したModelとKnowledgeは`open-webui sync`サブコマンドで対象インスタンスへ同期できます。
 APIで登録済みのものと突き合わせて、
 無ければ作成し、差分があれば上書きし、差分が無ければ書き込みません。
-Knowledgeのファイルは`meta.file_hash`(生バイト列のSHA-256)で比較するので、
-中身が変わっていないファイルには触りません。
+比べ方と送るものの決まりは`src/BluePrompt/OpenWebuiSync.fs`にあります。
 
 ```console
 blue-prompt open-webui sync --model <モデル定義ディレクトリ> --base-url <ベースURL> \
@@ -705,22 +469,10 @@ blue-prompt open-webui sync --model <モデル定義ディレクトリ> --base-u
 
 ## 同期のテスト
 
-同期はOpen WebUIのAPIの応答の形と挙動に依存しているため、
-登録や更新が正しく進むことは模したサーバではなく実物で確かめます。
-`tests/open-webui-sync.nix`のNixOSテストが、
-使い捨てのOpen WebUIをsystemd-nspawnのコンテナで立ち上げて、
-NixOSモジュールのサービスとCLIの両方から同期します。
+登録や更新が正しく進むことは、
+`tests/open-webui-sync.nix`のNixOSテストが使い捨ての実物のOpen WebUIで確かめます。
 nix-fast-buildのchecks(`open-webui-sync`)に含まれています。
-
-Knowledgeへファイルを足すとOpen WebUIはその場で埋め込みを計算するため、
-テストでは17MBの小さい埋め込みのモデルを固定出力で取ってきて動かします。
-検索の精度はテストの関心ではないためです。
-
-重いテストなので、手元で素早く回すのは`dotnet test`の単体テストです。
-単体テストの`OpenWebuiSyncSpec.fs`は、
-決まった応答を返すだけのサーバを相手に、
-サーバエラーや応答の欠けのような実物では起こせない応答と、
-登録先へ届く前に止まるべき入力の扱いだけを確かめます。
+手元で素早く回すのは`dotnet test`の単体テストです。
 
 コンテナのテストは`uid-range`のsystem-featureを要求します。
 手元のNixのデーモンに設定が無ければビルドできないので、
@@ -729,15 +481,8 @@ CIでは`.github/workflows/check.yml`がこの設定を渡しています。
 
 ## RAGプロンプトテンプレート
 
-Knowledgeが自動で参照される時、
-インスタンス全体のRAGテンプレートがシステムプロンプトの後ろへ連結されます。
-Open WebUIの既定値は引用番号の付け方やXMLタグの扱いを英語で指示する内容で、
-ロールプレイ用のModelでは人格と話し方を壊します。
-
-そのため`modules/open-webui-rag-template.txt`の差し障りのないテンプレートを、
-`--rag-template-file`で`POST /api/v1/retrieval/config/update`へ同期します。
-環境変数`RAG_TEMPLATE`は初回起動時にしかDBへ取り込まれず後から変えられないため、
-API経由で同期しています。
+Open WebUIの既定のRAGテンプレートはロールプレイ用のModelの人格と話し方を壊すため、
+`modules/open-webui-rag-template.txt`のテンプレートを`--rag-template-file`で同期します。
 
 ## NixOSモジュール
 
@@ -745,16 +490,8 @@ API経由で同期しています。
 `modules/nixos.nix`にあり`nixosModules.default`として公開されています。
 エンドポイントのURLなど登録先に依存する情報だけをオプションで入力すると、
 systemdサービスが起動時と生成物の変更時に同期を実行します。
-ModelとKnowledgeとRAGテンプレートはいずれも既定で同期の対象です。
-
-サービスはoneshotではなく`Type=exec`で、
-プロセスを起動できた時点で起動ジョブを終えます。
-Knowledgeのアップロードは登録先での埋め込みで長く掛かるため、
-oneshotにするとboot時の`multi-user.target`の到達と、
-構成を切り替える`nixos-rebuild switch`が完了まで待たされるからです。
 同期の成否は`nixos-rebuild`の出力には出ないので、
 ユニットの状態とジャーナルで確かめます。
-モジュールの検証はnix-fast-buildのchecks(`nixos-module`)に含まれています。
 
 # 想定するRAGの環境
 
@@ -838,22 +575,4 @@ wikiruは誰でも編集できるwikiなので、
 
 wikiruのページを模したテストの入力のHTMLは、
 文字列のリテラルではなく[Falco.Markup](https://github.com/FalcoFramework/Falco.Markup)で組み立てます。
-文字列で書くと閉じタグの対応と入れ子の見通しの悪さで読み書きが難しくなるためです。
-
-Falco.Markupは属性値も`Text.raw`の本文もエスケープしないので、
-書いた通りのHTMLが出ます。
-wikiruが返すマークアップをそのまま置きたいので本文には`Text.raw`を使い、
-エスケープする`Text.enc`は使いません。
-`&amp;`のような実体参照も、実物に合わせてそのまま書きます。
-
-要素1つで書けるものは`Elem`と`Attr`と`Text`をそのまま呼びます。
-`Elem.td [] [ Text.raw "a" ]`程度の短さのために、
-ライブラリと紛らわしい名前のヘルパーを作りません。
-
-`test/BluePrompt.Test/HtmlFixture.fs`に置くのは、
-文書全体の組み立てのように要素を並べるだけでは書けないものと、
-`<br class="spacer">`のようにwikiru固有の決まったマークアップとして繰り返し現れるものです。
-後者は要素1つでも、その値自体に意味があるので名前を付けます。
-
-出力されたHTMLの文字列を検査する側は、
-タグの途中や属性の断片も見るのでリテラルのままにします。
+書き方の決まりは`test/BluePrompt.Test/HtmlFixture.fs`の冒頭のコメントにあります。

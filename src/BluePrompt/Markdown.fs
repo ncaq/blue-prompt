@@ -162,6 +162,10 @@ and private section (parentLevel: int) : Parse.TextParser<Section> =
               Children = children }
 
 /// Markdownを見出しの木へ読み解く。
+/// 節を落としたり選んだりする処理は、
+/// 行を1つずつ見て状態を持ち回るのではなく、
+/// この木へ読んでから木を書き換えて、toMarkdownで戻す。
+/// 木で書けば、節の終わりや小見出しの扱いを深さの比較で追う必要が無い。
 let parseSections (markdown: string) : Section =
     match contents 0 (Reader.ofString (markdown.Replace("\r\n", "\n")) ()) with
     | Ok struct (body, children) ->

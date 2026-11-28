@@ -1,4 +1,7 @@
 /// webページのHTML取得。
+/// AngleSharpのローダーで取得するためJavaScriptは実行しない。
+/// wikiruはJavaScriptを実行しなくても最終的なMarkdownが変わらないことを確かめてある。
+/// 描画にJavaScriptが要るサイトを扱う時は、この取得の層を差し替える必要がある。
 module BluePrompt.Page
 
 open System
