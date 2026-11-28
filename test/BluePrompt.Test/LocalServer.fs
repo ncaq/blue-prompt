@@ -47,9 +47,10 @@ let rec private readRequestLine (stream: NetworkStream) (received: string) : Tas
 
 /// リクエストのパスに応じた応答を返すローカルHTTPサーバを立てて、そのURLをactionへ渡す。
 /// ポート0でOSに空きポートを割り当てさせて他のテストとの衝突を避ける。
+/// localhostがIPv4とIPv6のどちらへ解決されても繋がるように、両方を受けるソケットで待ち受ける。
 let withServer (respond: string -> Response) (action: Uri -> Task<'T>) : Task<'T> =
     task {
-        use listener = new TcpListener(IPAddress.Loopback, 0)
+        use listener = TcpListener.Create 0
         listener.Start()
         let port = (listener.LocalEndpoint :?> IPEndPoint).Port
 
@@ -93,7 +94,7 @@ let withServer (respond: string -> Response) (action: Uri -> Task<'T>) : Task<'T
             }
 
         try
-            return! action (Uri $"http://127.0.0.1:%d{port}/")
+            return! action (Uri $"http://localhost:%d{port}/")
         finally
             listener.Stop()
             ignore serving

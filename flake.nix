@@ -671,7 +671,7 @@
                       system.stateVersion = "26.05";
                       blue-prompt.open-webui = {
                         enable = true;
-                        url = "http://127.0.0.1:8080";
+                        url = "http://localhost:8080";
                         baseModelId = "test-model";
                         apiKeyFile = "/run/secrets/open-webui-api-key";
                       };

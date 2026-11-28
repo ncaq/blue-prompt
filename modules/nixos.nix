@@ -48,7 +48,7 @@ in
 
     url = lib.mkOption {
       type = lib.types.str;
-      example = "http://192.168.0.10:8080";
+      example = "http://open-webui.example.com:8080";
       description = ''
         同期先のOpen WebUIのベースURL。
         このホストから到達できるアドレスを指定する。
