@@ -19,10 +19,24 @@ jobs:
     permissions:
       contents: read # リポジトリコンテンツの読み取り
       id-token: write # niks3 OIDC認証
-    timeout-minutes: 15
+    # Open WebUIはnixpkgsではunfreeの扱いでcache.nixos.orgに無く、
+    # nixpkgsを上げた直後は自前のキャッシュにも無いためビルドから始まる。
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
       - uses: ncaq/nix-composite-action@b98d52550c121c2fedbd234ca86fb170ff2c221f # v3.0.8
+        with:
+          # NixOSテストのopen-webui-syncは、
+          # マシンをQEMUのVMではなくsystemd-nspawnのコンテナで動かす。
+          # コンテナはビルドのサンドボックスの中で起動するので、
+          # サンドボックスの中にrootを含むuidの範囲が要り、
+          # テストのderivationはそれを`uid-range`という機能として要求する。
+          # uidの範囲は動的なuidの割り当てでしか作れず、
+          # 範囲を持つビルドはcgroupの中で動かす決まりになっている。
+          extra-nix-config: |
+            auto-allocate-uids = true
+            extra-experimental-features = auto-allocate-uids cgroups
+            extra-system-features = nixos-test uid-range
       - run: nix run '.#nix-fast-build' -- --option eval-cache false --no-link --skip-cached --no-nom

@@ -700,6 +700,24 @@
                 test -x "$program"
                 touch $out
               '';
+
+            # 使い捨てのOpen WebUIへ実際に同期して、APIとの約束を確かめる。
+            # 詳しくはテストのファイルの冒頭のコメント。
+            open-webui-sync = pkgs.testers.runNixOSTest (
+              import ./tests/open-webui-sync.nix {
+                inherit lib pkgs blue-prompt;
+                nixosModule = inputs.self.nixosModules.default;
+                # Open WebUIのライセンスはnixpkgsではunfreeの扱いなので、
+                # このパッケージだけを許可したnixpkgsから取る。
+                inherit
+                  (import inputs.nixpkgs {
+                    inherit (pkgs.stdenv.hostPlatform) system;
+                    config.allowUnfreePredicate = package: lib.getName package == "open-webui";
+                  })
+                  open-webui
+                  ;
+              }
+            );
           };
 
           packages = {
