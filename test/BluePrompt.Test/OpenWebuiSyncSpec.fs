@@ -446,7 +446,9 @@ let ``登録済みのコレクションのidが空だとSyncErrorで止まる`` 
 
     let routes =
         knowledgeRoutes
-        |> Map.add ("GET", "/api/v1/knowledge/") (200, $$"""{"items":[{{collection}}],"total":1}""")
+        |> Map.add
+            ("GET", "/api/v1/knowledge/")
+            (200, $$"""{"items":[%%s{{collection}}],"total":1}""")
 
     withFixedServer routes (fun server ->
         task {
