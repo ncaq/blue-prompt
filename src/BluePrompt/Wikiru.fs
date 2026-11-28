@@ -148,21 +148,6 @@ let unplayableSectionTitles: string list =
     studentSectionTitles
     @ [ "ボイス集"; "カイテンレッド"; "カイテンブラック"; "カイテングリーン"; "カイテンイエロー"; "カイテンピンク" ]
 
-/// 見出し行の先頭。`#`の並びと空白1つを読んで、見出しの深さを返す。
-/// 深さはMarkdown.maxHeadingDepthまでで、
-/// removeEmptyHeadingsはこの深さを配列の添字にそのまま使う。
-let private headingPrefix: Parse.TextParser<int> =
-    Markdown.headingMarker .>> pchar ' '
-
-/// 最初の見出しより前を切り落とす。
-/// wikiruの記事は本文が最初の見出しから始まり、
-/// それより前は関連ページへのナビゲーションや注意書きで、ナレッジには要らない。
-/// 見出しが無いMarkdownはそのまま返す。
-let private trimPreamble (markdown: string) : string =
-    match Parse.tryFind (Parse.lineStart >>. headingPrefix) markdown with
-    | Some found -> markdown[found.Index ..]
-    | None -> markdown
-
 /// wikiruの脚注の参照。リンクを外した後に「\*1」の形で残る。番号を返す。
 let private wikiFootnoteMark: Parse.TextParser<string> =
     pstring "\\*" >>. Parse.digits
@@ -201,86 +186,64 @@ let private normalizeBlankLines (markdown: string) : string =
 
     (Parse.replace newlines markdown).Trim() + "\n"
 
-/// コメント欄の見出し行。見出しの深さを返す。
-let private commentHeading: Parse.TextParser<int> =
-    headingPrefix
-    .>> pstring "コメント"
-    .>> optional (pstring "フォーム")
-    .>> Parse.inlineSpaces
-    .>> eof
+/// 脚注の定義行を本文から除けて、定義行の並びと残りの本文に分ける。
+/// 定義はページの末尾に置かれて最後の節へ紛れ込むため、
+/// 節を落としたり中身の有無を見たりする前に除けておく。
+let private splitFootnoteDefinitions (markdown: string) : string list * string =
+    let definitions, body =
+        markdown.Split '\n'
+        |> Array.toList
+        |> List.partition (Parse.startsWith footnoteDefinition)
 
-/// コメント欄の節を丸ごと落とす。
+    definitions, String.concat "\n" body
+
+/// 除けておいた脚注の定義行を文書の末尾へ戻して、空行を整える。
+let private appendFootnoteDefinitions (definitions: string list) (body: string) : string =
+    normalizeBlankLines (body + "\n\n" + String.concat "\n" definitions)
+
+/// 本文を節の木として書き換える。
+let private editSections (edit: Markdown.Section -> Markdown.Section) (body: string) : string =
+    body |> Markdown.parseSections |> edit |> Markdown.toMarkdown
+
+/// 最初の見出しより前を切り落とす。
+/// wikiruの記事は本文が最初の見出しから始まり、
+/// それより前は関連ページへのナビゲーションや注意書きで、ナレッジには要らない。
+/// 見出しが無い文書はそのまま返す。
+let private dropPreamble (root: Markdown.Section) : Markdown.Section =
+    if List.isEmpty root.Children then
+        root
+    else
+        { root with Body = [] }
+
+/// コメント欄の節を小見出しごと落とす。
 /// コメントそのものは後から読み込まれるので取得したHTMLには残らないが、
 /// 投稿のルールを畳んで置いているページがあり、
 /// 見出しだけを消すとルールの本文が直前の節の続きとして残ってしまう。
-/// 節の終わりは同じ深さ以下の見出しで、そこから先はまた残す。
-/// 節の中に同じ見出しが入れ子で現れた時は浅い方の深さを保つ。
-/// 内側の深さで数えると外側の節が終わる前に除去が止まり、続きが残ってしまう。
-/// 脚注の定義はページの末尾に置かれてこの節へ紛れ込むため、
-/// 本文への参照ごと落ちてしまわないように残す。
-let private removeCommentSection (markdown: string) : string =
-    let step (kept: string list, dropping: int option) (line: string) =
-        match Parse.tryPrefix commentHeading line with
-        | Some depth ->
-            kept,
-            Some(
-                match dropping with
-                | Some outer -> min outer depth
-                | None -> depth
-            )
-        | None ->
-            match dropping with
-            | None -> line :: kept, None
-            | Some depth ->
-                match Parse.tryPrefix headingPrefix line with
-                | Some next when next <= depth -> line :: kept, None
-                | _ when Parse.startsWith footnoteDefinition line -> line :: kept, dropping
-                | _ -> kept, dropping
+let private dropCommentSections (root: Markdown.Section) : Markdown.Section =
+    root
+    |> Markdown.filterDescendants (fun section ->
+        section.Heading <> Some "コメント" && section.Heading <> Some "コメントフォーム")
 
-    markdown.Split '\n'
-    |> Array.fold step ([], None)
-    |> fst
-    |> List.rev
-    |> String.concat "\n"
-
-/// どの深さの見出しから見ても中身があることを表す状態。
-/// 本文の行はどの深さの見出しにとっても中身になるので行ごとに同じ値が要るが、
-/// 中身は常に同じで書き換えもしないため1つを使い回す。
-let private allDepthsHaveContent = Array.create (Markdown.maxHeadingDepth + 1) true
-
-/// 中身を持たない見出しを消す。
+/// 中身を持たない節を落とす。
 /// 節の中身が抽出や後始末で全て落ちると、見出しだけが残る。
-/// 見出しから次の見出しまでに本文が1行も無ければ、その見出しはもう何も指していない。
-/// 小見出しが全て落ちて空になった上位の見出しも同じ判断で落ちるように、
-/// 文書の末尾から見ていき、見出しの深さごとに中身の有無を持つ。
-/// 添字を見出しの深さへそのまま合わせるため、配列の0番は使わない。
-let private removeEmptyHeadings (markdown: string) : string =
-    let step (line: string) (kept: string list, hasContent: bool array) =
-        match Parse.tryPrefix headingPrefix line with
-        | Some depth ->
-            let keep = hasContent[depth]
+/// 本文が空白だけで小見出しも残っていない節は、もう何も指していない。
+/// 小見出しが全て落ちて空になった上位の節も落ちるように、深い方から先に見る。
+let rec private dropEmptySections (section: Markdown.Section) : Markdown.Section =
+    let hasContent (child: Markdown.Section) : bool =
+        not (List.forall String.IsNullOrWhiteSpace child.Body)
+        || not (List.isEmpty child.Children)
 
-            // この見出しで自身と同じ深さ以下の区間が終わるため、そこまでの中身は消化済みになる。
-            // 残す場合はこの見出し自体が、より浅い見出しから見た中身になる。
-            let next =
-                Array.init hasContent.Length (fun index ->
-                    if index >= depth then false
-                    elif keep then true
-                    else hasContent[index])
+    { section with
+        Children = section.Children |> List.map dropEmptySections |> List.filter hasContent }
 
-            (if keep then line :: kept else kept), next
-        | None ->
-            let next =
-                if String.IsNullOrWhiteSpace line then
-                    hasContent
-                else
-                    allDepthsHaveContent
+/// 節の単位での後始末をして、空行を整える。
+/// 脚注の定義は節の採否に関わらず全て残して、文書の末尾へ集める。
+let private pruneSections (markdown: string) : string =
+    let definitions, body = splitFootnoteDefinitions markdown
 
-            line :: kept, next
-
-    let initial = ([], Array.create (Markdown.maxHeadingDepth + 1) false)
-
-    Array.foldBack step (markdown.Split '\n') initial |> fst |> String.concat "\n"
+    body
+    |> editSections (dropPreamble >> dropCommentSections >> dropEmptySections)
+    |> appendFootnoteDefinitions definitions
 
 /// 外部リンクの跡として残った🌐アイコンを消す。
 /// wikiのJavaScriptが外部リンクの中へ付け足すアイコンは、
@@ -344,30 +307,26 @@ let private removeBlankLikeLine (markdown: string) : string =
 /// wikiruのページ由来のノイズを落として、ナレッジとして読める形へ整える。
 /// 何をどの順で施すかは以下のパイプラインがそのまま示していて、
 /// 個々の段が何を落とすのかはそれぞれの関数に書いてある。
-/// 順序に意味があるのは以下の3箇所だけで、残りは互いに影響しない。
+/// 順序に意味があるのは以下の2箇所だけで、残りは互いに影響しない。
 ///
-/// - 脚注の変換はコメント欄の節を落とすより先。
-///   節から脚注の定義だけを拾い出す判定を、変換後の1つの表記だけで書けるようにするため
-/// - 中身を失った見出しの除去は、行を落とす段を全て終えた後。
-///   途中で見ると、後の段で空になる見出しを取りこぼすため
-/// - 空行を潰す仕上げは最後。行を落とした跡が空行として残るため
+/// - 脚注の変換は節の単位での後始末より先。
+///   節から脚注の定義を除けておく判定を、変換後の1つの表記だけで書けるようにするため
+/// - 節の単位での後始末は最後。
+///   中身を失った節は、行を落とす段を全て終えてからでないと取りこぼすため。
+///   行を落とした跡の空行もここで潰す
 let cleanupMarkdown (markdown: string) : string =
     markdown
-    |> trimPreamble
     |> convertFootnotes
-    |> removeCommentSection
     |> removeExternalLinkIcon
     |> trimSpaceBeforeComma
     |> removeSeparatorRemnant
     |> removeEditorNotice
     |> removeFullImageCaption
     |> removeBlankLikeLine
-    |> removeEmptyHeadings
-    |> normalizeBlankLines
+    |> pruneSections
 
-/// h2見出し行。前後の空白を落とした見出しのテキストを返す。
-let private sectionHeading: Parse.TextParser<string> =
-    pstring "## " >>. skipMany (pchar ' ') >>. Parse.restOfLine |>> _.TrimEnd()
+/// 節を分けている見出しの深さ。wikiruの記事はh2で節を分ける。
+let private sectionLevel = 2
 
 /// h2見出しのホワイトリストでMarkdownのセクションを選別する。
 /// h2の見出しがtitlesに載っているセクションだけを、h3以下の小見出しごと残す。
@@ -376,46 +335,27 @@ let private sectionHeading: Parse.TextParser<string> =
 /// 残った本文から参照されているものだけを文書末尾へ集める。
 /// 選別で参照ごと落ちた定義を残すと宙に浮いた脚注になるため。
 let filterSections (titles: string list) (markdown: string) : string =
-    let lines = markdown.Split '\n'
+    let definitions, body = splitFootnoteDefinitions markdown
 
-    let definitions, bodyLines =
-        Array.partition (Parse.startsWith footnoteDefinition) lines
-
-    // h2見出しの行で残すかどうかの状態が切り替わり、行の採否は常にその状態に従う。
     let filtered =
-        bodyLines
-        |> Array.fold
-            (fun (kept, keeping) line ->
-                let keeping =
-                    match Parse.tryPrefix sectionHeading line with
-                    | Some title -> List.contains title titles
-                    | None -> keeping
-
-                (if keeping then line :: kept else kept), keeping)
-            ([], true)
-        |> fst
-        |> List.rev
-
-    let body = String.concat "\n" filtered
+        body
+        |> editSections (
+            Markdown.filterDescendants (fun section ->
+                section.Level <> sectionLevel
+                || Option.exists (fun title -> List.contains title titles) section.Heading)
+        )
 
     // 参照番号の集合を本文から一度だけ作り、定義側は集合参照で絞り込む。
     let referencedNumbers =
-        Parse.findAll footnoteReference body |> List.map _.Value |> Set.ofList
+        Parse.findAll footnoteReference filtered |> List.map _.Value |> Set.ofList
 
     let referencedDefinitions =
         definitions
-        |> Array.filter (fun definition ->
-            match Parse.tryPrefix footnoteDefinition definition with
-            | Some number -> Set.contains number referencedNumbers
-            | None -> false)
+        |> List.filter (fun definition ->
+            Parse.tryPrefix footnoteDefinition definition
+            |> Option.exists (fun number -> Set.contains number referencedNumbers))
 
-    let withDefinitions =
-        if Array.isEmpty referencedDefinitions then
-            body
-        else
-            body.TrimEnd() + "\n\n" + String.concat "\n" referencedDefinitions
-
-    normalizeBlankLines withDefinitions
+    appendFootnoteDefinitions referencedDefinitions filtered
 
 /// wikiruの記事ページをナレッジ用Markdownへ変換する。
 /// pandocArgumentsでpandocの変換オプションを調整できる。
@@ -613,10 +553,14 @@ let unplayableDisplayName (pageName: string) (markdown: string) : string =
 /// filterSectionsは同じ見出しが2回現れてもどちらも残すが、
 /// これは何が載っているかを述べるための一覧なので、重複は現れる順を保ったまま潰す。
 let sectionTitles (markdown: string) : string list =
-    markdown.Split '\n'
-    |> Array.choose (Parse.tryPrefix sectionHeading)
-    |> List.ofArray
-    |> List.distinct
+    let rec titles (section: Markdown.Section) : string list =
+        (if section.Level = sectionLevel then
+             Option.toList section.Heading
+         else
+             [])
+        @ List.collect titles section.Children
+
+    markdown |> Markdown.parseSections |> titles |> List.distinct
 
 /// 生徒個別のスキルとプレイアブルではない登場人物のスキルのSKILL.md全体を組み立てる。
 /// 1人分のナレッジは別ファイルへ分けるほどの量にならないため、

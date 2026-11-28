@@ -140,9 +140,15 @@ let ``2桁の脚注も変換される`` () =
 
 [<Fact>]
 let ``連続する脚注定義はそれぞれ変換される`` () =
-    let markdown = "# h\n\n\\*1 初対面時  \n\\*2 変装中  \n"
+    let markdown = "# h\n\n本文\n\n\\*1 初対面時  \n\\*2 変装中  \n"
 
-    Assert.Equal("# h\n\n[^1]: 初対面時\n[^2]: 変装中\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+    Assert.Equal("# h\n\n本文\n\n[^1]: 初対面時\n[^2]: 変装中\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
+
+[<Fact>]
+let ``脚注の定義しか持たない節は中身が無いものとして落ちる`` () =
+    // 脚注の定義はページの末尾に置かれて最後の節へ紛れ込むだけで、その節の中身ではない。
+    let markdown = "## 小ネタ\n\n本文\\*1\n\n## 脚注\n\n\\*1 注釈\n"
+    Assert.Equal("## 小ネタ\n\n本文[^1]\n\n[^1]: 注釈\n", BluePrompt.Wikiru.cleanupMarkdown markdown)
 
 [<Fact>]
 let ``エスケープされていないアスタリスクは変換されない`` () =

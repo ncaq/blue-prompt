@@ -44,12 +44,12 @@ type Fragment =
     }
 
 /// Markdownの見出しの最も深いレベル。
-let maxHeadingDepth: int = 6
+let private maxHeadingDepth: int = 6
 
 /// ATX見出しの先頭の`#`の並び。数を見出しの深さとして返す。
 /// maxHeadingDepthより長い並びは見出しではない。
 /// setext見出し(下線形式)はこのリポジトリの生成物に現れないため扱わない。
-let headingMarker: Parse.TextParser<int> =
+let private headingMarker: Parse.TextParser<int> =
     many1Chars (pchar '#')
     >>= fun hashes ->
         if hashes.Length <= maxHeadingDepth then
@@ -79,82 +79,70 @@ let private fence: Parse.TextParser<string> =
     manyChars (satisfy Char.IsWhiteSpace)
     >>= fun indent -> if indent.Length <= 3 then run '`' <|> run '~' else pzero
 
-/// 行を見出しと本文へ分類した中間表現。
-type private Line =
-    /// 見出しの深さと、`#`と前後の空白を落とした文字列。
-    /// フィールドへ名前を付けるとパターンマッチで参照されず未使用の宣言になるため、
-    /// 意味はこのコメントで補う。
-    | HeadingLine of int * string
-    /// 見出しではない行をそのまま持つ。
-    | TextLine of string
+/// コードフェンスで囲まれたブロックの行。
+/// 開いたフェンスの行から、同じ文字で同じ以上の長さの閉じフェンスの行までを読む。
+/// 閉じられていなければ文書の末尾までがブロックになる。
+/// 中の`#`で始まる行は見出しではなくコードなので、見出しより先にこちらで読む。
+let private fencedBlock: Parse.TextParser<string list> =
+    let fenceOf (line: string) : string option = Parse.tryPrefix fence line
 
-/// 本文をコードフェンスの内外を見分けながら行の並びへ分解する。
-/// フェンスの中の`#`で始まる行は見出しではなくコードなので、本文として扱う。
-/// 開いているフェンスは行から行へ持ち回る状態なので、mapFoldの状態として畳み込む。
-let private toLines (markdown: string) : Line list =
-    markdown.Replace("\r\n", "\n").Split '\n'
-    |> Array.toList
-    |> List.mapFold
-        (fun (openFence: string option) line ->
-            match openFence, Parse.tryPrefix fence line with
-            | None, Some opening -> TextLine line, Some opening
-            | Some opened, Some closing when
-                closing[0] = opened[0] && opened.Length <= closing.Length
-                ->
-                TextLine line, None
-            | None, None ->
-                let parsed =
-                    match tryHeading line with
-                    | Some heading -> HeadingLine heading
-                    | None -> TextLine line
+    Parse.lineChoose (fun line -> fenceOf line |> Option.map (fun opening -> line, opening))
+    >>= fun (openingLine, opening) ->
+        let closes (line: string) : bool =
+            match fenceOf line with
+            | Some closing -> closing[0] = opening[0] && opening.Length <= closing.Length
+            | None -> false
 
-                parsed, None
-            | Some _, _ -> TextLine line, openFence)
-        None
-    |> fst
+        many (Parse.lineChoose (fun line -> if closes line then None else Some line))
+        .>>. opt Parse.anyLine
+        |>> fun struct (inner, closingLine) ->
+            openingLine :: List.ofSeq inner @ ValueOption.toList closingLine
 
-/// 先頭に続く本文行を取り出す。
-let private takeText (lines: Line list) : string list * Line list =
-    let body =
-        lines
-        |> List.takeWhile (fun line ->
-            match line with
-            | TextLine _ -> true
-            | HeadingLine _ -> false)
-        |> List.map (fun line ->
-            match line with
-            | TextLine text -> text
-            | HeadingLine _ -> "")
+/// 見出しではない行の並び。
+let private body: Parse.TextParser<string list> =
+    let textLine: Parse.TextParser<string list> =
+        Parse.lineChoose (fun line ->
+            if Option.isSome (tryHeading line) then
+                None
+            else
+                Some [ line ])
 
-    body, List.skip body.Length lines
+    many (fencedBlock <|> textLine) |>> (Seq.concat >> List.ofSeq)
 
-/// 親より深い見出しを子の節として、同じ深さの見出しを兄弟として集める。
-let rec private takeSections (parentLevel: int) (lines: Line list) : Section list * Line list =
-    match lines with
-    | HeadingLine(level, text) :: rest when parentLevel < level ->
-        let body, afterBody = takeText rest
-        let children, afterChildren = takeSections level afterBody
+/// 見出しに続く本文と、parentLevelより深い見出しの節の並び。
+/// 同じ深さ以下の見出しは読まずに残すので、兄弟や親の兄弟として読まれる。
+let rec private contents
+    (parentLevel: int)
+    : Parse.TextParser<struct (string list * Section list)> =
+    fun reader -> (body .>>. (many (section parentLevel) |>> List.ofSeq)) reader
 
-        let section =
+/// parentLevelより深い見出しの節1つ。
+and private section (parentLevel: int) : Parse.TextParser<Section> =
+    Parse.lineChoose (fun line ->
+        tryHeading line |> Option.filter (fun (level, _) -> parentLevel < level))
+    >>= fun (level, text) ->
+        contents level
+        |>> fun struct (body, children) ->
             { Level = level
               Heading = Some text
               Body = body
               Children = children }
 
-        let siblings, remaining = takeSections parentLevel afterChildren
-        section :: siblings, remaining
-    | _ -> [], lines
-
 /// Markdownを見出しの木へ読み解く。
 let parseSections (markdown: string) : Section =
-    let body, afterBody = takeText (toLines markdown)
-    // 見出しはどの深さでもルートの子孫になるため、残りは常に空になる。
-    let children, _ = takeSections 0 afterBody
+    match contents 0 (Reader.ofString (markdown.Replace("\r\n", "\n")) ()) with
+    | Ok struct (body, children) ->
+        { Level = 0
+          Heading = None
+          Body = body
+          Children = children }
+    // 本文も節も0個から読め、見出しはどの深さでもルートの子孫になるため、失敗しない。
+    | Error _ -> invalidOp "Markdownを節へ読み解けませんでした"
 
-    { Level = 0
-      Heading = None
-      Body = body
-      Children = children }
+/// 子孫の節のうちkeepが偽を返したものを、その子孫ごと落とす。
+let rec filterDescendants (keep: Section -> bool) (section: Section) : Section =
+    { section with
+        Children = section.Children |> List.filter keep |> List.map (filterDescendants keep) }
 
 /// 節の見出し行を組み立てる。ルートは見出しを持たないため空になる。
 let private headingLines (section: Section) : string list =
@@ -167,6 +155,10 @@ let rec private renderSection (section: Section) : string list =
     headingLines section
     @ section.Body
     @ List.collect renderSection section.Children
+
+/// 節の木をMarkdownへ戻す。見出し行は`#`と空白1つと文字列の形へ揃う。
+let toMarkdown (section: Section) : string =
+    renderSection section |> String.concat "\n"
 
 /// 祖先の見出し行を前置して断片の本文を組み立てる。
 /// 祖先の本文は他の断片にも現れて重複するため、見出しだけを持ち回る。

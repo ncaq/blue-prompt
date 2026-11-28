@@ -40,6 +40,9 @@ let digits: TextParser<string> = many1Chars (satisfy Char.IsDigit)
 /// 行の残りを改行の手前まで読む。空でもよい。
 let restOfLine: TextParser<string> = manyChars (satisfy (fun c -> c <> '\n'))
 
+/// 入力の残りを全て読む。空でもよい。
+let restOfInput: TextParser<string> = manyChars anyChar
+
 /// 行頭であることを確かめる。入力は読み進めない。
 /// 文書の先頭か、直前が改行の位置を行頭とする。
 let lineStart: TextParser<unit> =
@@ -57,6 +60,20 @@ let lineEnd: TextParser<unit> =
         | ValueNone
         | ValueSome '\n' -> preturn () reader
         | ValueSome _ -> fail (Message "行末ではありません") reader
+
+/// 1行を読み、行末の改行も読み進める。空行も1行として読む。
+/// 文書の末尾では失敗するので、繰り返しても同じ位置で止まり続けない。
+let anyLine: TextParser<string> =
+    notFollowedBy eof >>. restOfLine .>> optional (pchar '\n')
+
+/// 次の1行をchooseが受け付けた時だけ読み進めて、chooseの結果を返す。
+/// 受け付けなければ読み進めずに失敗する。
+let lineChoose (choose: string -> 'a option) : TextParser<'a> =
+    lookAhead anyLine
+    >>= fun line ->
+        match choose line with
+        | Some value -> anyLine >>% value
+        | None -> pzero
 
 /// 末尾の行内の空白を落とす。
 let trimInlineEnd (text: string) : string =

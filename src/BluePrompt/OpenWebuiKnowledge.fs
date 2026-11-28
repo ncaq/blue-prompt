@@ -177,12 +177,9 @@ let private splitFile
 let private stripFrontmatter (content: string) : string =
     let normalized = content.Replace("\r\n", "\n")
 
-    match normalized.Split '\n' |> Array.toList with
-    | first :: rest when first = "---" ->
-        match List.tryFindIndex (fun line -> line = "---") rest with
-        | Some closeIndex -> rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim()
-        | None -> normalized
-    | _ -> normalized
+    match Parse.tryPrefix OpenWebui.frontmatterBlock normalized with
+    | Some struct (_, body) -> body.Trim()
+    | None -> normalized
 
 /// スキルディレクトリからKnowledgeコレクションの定義を組み立てる。
 ///

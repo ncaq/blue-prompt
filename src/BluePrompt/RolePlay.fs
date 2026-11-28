@@ -44,10 +44,6 @@ exception ReferenceHeadingError of path: string
 /// 衣装別の参照ファイルが1つも無かった時のスキルのディレクトリ。
 exception ReferenceNotFound of directory: string
 
-/// 参照ファイルに現れてはいけない、一段目の見出しの始まり。
-/// 二段目以降は`## `のように2文字目が`#`なので、これには一致しない。
-let private topHeadingPrefix: string = "# "
-
 /// 参照ファイルの内容から、本文へ差し込むために要る情報を読み取る。
 /// 読めなかった項目はReferenceShapeErrorで報せる。
 /// 欠けたまま組み立てると、どの衣装のものなのかを言わない節が本文へ並ぶため。
@@ -81,9 +77,10 @@ let parseReference (path: string) (markdown: string) : Reference =
 
     let body = markdown.Trim()
 
+    // 一段目の見出しはどこに現れても文書の直下の節になる。
     if
-        body.Split '\n'
-        |> Array.exists (fun line -> line.StartsWith(topHeadingPrefix, StringComparison.Ordinal))
+        (Markdown.parseSections body).Children
+        |> List.exists (fun section -> section.Level = 1)
     then
         raise (ReferenceHeadingError path)
 

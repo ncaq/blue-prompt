@@ -102,6 +102,20 @@ type Frontmatter =
 /// フロントマターの区切り行。
 let private delimiter = "---"
 
+/// フロントマターの区切りだけの行。
+let private delimiterLine: Parse.TextParser<unit> =
+    Parse.lineChoose (fun line -> if line = delimiter then Some() else None)
+
+/// 区切り行に挟まれたフロントマターの行の並びと、その後ろの本文。
+/// 閉じの区切り行が無ければ読めない。
+/// フロントマターを落とすだけのOpenWebuiKnowledgeも同じ形を読むため公開している。
+let frontmatterBlock: Parse.TextParser<struct (string list * string)> =
+    let fieldLines: Parse.TextParser<string list> =
+        many (Parse.lineChoose (fun line -> if line = delimiter then None else Some line))
+        |>> List.ofSeq
+
+    delimiterLine >>. fieldLines .>> delimiterLine .>>. Parse.restOfInput
+
 /// フロントマターのkey: value行。キーと、先頭の空白を落とした値を返す。
 let private field: Parse.TextParser<struct (string * string)> =
     many1Chars (satisfy (fun c -> isAsciiLetter c || c = '_' || c = '-'))
@@ -119,42 +133,41 @@ let private field: Parse.TextParser<struct (string * string)> =
 let parseFrontmatter (path: string) (content: string) : Frontmatter =
     let fail message = raise (SkillFormatError(path, message))
 
-    match content.Replace("\r\n", "\n").Split '\n' |> Array.toList with
-    | first :: rest when first = delimiter ->
-        match List.tryFindIndex (fun line -> line = delimiter) rest with
-        | None -> fail "フロントマターの閉じ---がありません"
-        | Some closeIndex ->
-            let fields =
-                rest
-                |> List.take closeIndex
-                |> List.choose (Parse.tryPrefix field)
-                |> List.map (fun struct (key, value) -> key, value)
-                |> Map.ofList
+    let normalized = content.Replace("\r\n", "\n")
 
-            let required key =
-                match Map.tryFind key fields with
-                | Some value when value <> "" -> value
-                | _ -> fail $"フロントマターに%s{key}がありません"
+    match Parse.tryPrefix frontmatterBlock normalized with
+    | None when Parse.startsWith delimiterLine normalized -> fail "フロントマターの閉じ---がありません"
+    | None -> fail "フロントマターの開始---がありません"
+    | Some struct (lines, body) ->
+        let fields =
+            lines
+            |> List.choose (Parse.tryPrefix field)
+            |> List.map (fun struct (key, value) -> key, value)
+            |> Map.ofList
 
-            // knowledge:は紐付けの無いスキルでは書かないため、
-            // 欠けていることを失敗とせず空の一覧として扱う。
-            let knowledge =
-                match Map.tryFind "knowledge" fields with
-                | None -> []
-                | Some value ->
-                    value.Split ','
-                    |> Array.toList
-                    |> List.choose (fun name ->
-                        match name.Trim() with
-                        | Str.NullOrEmpty -> None
-                        | Str.NonEmpty trimmed -> Some trimmed)
+        let required key =
+            match Map.tryFind key fields with
+            | Some value when value <> "" -> value
+            | _ -> fail $"フロントマターに%s{key}がありません"
 
-            { Name = required "name"
-              Description = required "description"
-              Knowledge = knowledge
-              Body = rest |> List.skip (closeIndex + 1) |> String.concat "\n" |> _.Trim()
-              Raw = String.concat "\n" (first :: List.take (closeIndex + 1) rest) }
-    | _ -> fail "フロントマターの開始---がありません"
+        // knowledge:は紐付けの無いスキルでは書かないため、
+        // 欠けていることを失敗とせず空の一覧として扱う。
+        let knowledge =
+            match Map.tryFind "knowledge" fields with
+            | None -> []
+            | Some value ->
+                value.Split ','
+                |> Array.toList
+                |> List.choose (fun name ->
+                    match name.Trim() with
+                    | Str.NullOrEmpty -> None
+                    | Str.NonEmpty trimmed -> Some trimmed)
+
+        { Name = required "name"
+          Description = required "description"
+          Knowledge = knowledge
+          Body = body.Trim()
+          Raw = String.concat "\n" (delimiter :: lines @ [ delimiter ]) }
 
 /// Markdownのインラインリンク。参照先を返す。
 let private link: Parse.TextParser<string> =
