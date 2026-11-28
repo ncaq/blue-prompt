@@ -180,6 +180,9 @@ let students: Student list =
       { Page = "ウミカ"
         Base = "umika"
         Costume = None }
+      { Page = "ウララ"
+        Base = "urara"
+        Costume = None }
       { Page = "エイミ"
         Base = "eimi"
         Costume = None }
@@ -690,6 +693,9 @@ let students: Student list =
       { Page = "マシロ（水着）"
         Base = "mashiro"
         Costume = Some "swimsuit" }
+      { Page = "マナミ"
+        Base = "manami"
+        Costume = None }
       { Page = "マリー"
         Base = "mari"
         Costume = None }
@@ -910,6 +916,7 @@ let unplayables: Unplayable list =
       { Page = "アキラ"; Slug = "akira" }
       { Page = "アケミ"; Slug = "akemi" }
       { Page = "アザミ"; Slug = "azami" }
+      { Page = "アスカ"; Slug = "asuka" }
       { Page = "アミ"; Slug = "ami" }
       { Page = "アヤメ"; Slug = "ayame" }
       { Page = "アユム"; Slug = "ayumu" }
@@ -920,11 +927,13 @@ let unplayables: Unplayable list =
       { Page = "カイテンジャー"; Slug = "kaitenger" }
       { Page = "カグヤ"; Slug = "kaguya" }
       { Page = "カナエ"; Slug = "kanae" }
+      { Page = "カノン"; Slug = "kanon" }
       { Page = "カヤ"; Slug = "kaya" }
       { Page = "カレン"; Slug = "karen" }
       { Page = "クズノハ"; Slug = "kuzunoha" }
       { Page = "コクリコ"; Slug = "kokuriko" }
       { Page = "サナエ"; Slug = "sanae" }
+      { Page = "サヨ"; Slug = "sayo" }
       { Page = "サユリ"; Slug = "sayuri" }
       { Page = "シノン"; Slug = "shinon" }
       { Page = "シュロ"; Slug = "shuro" }
