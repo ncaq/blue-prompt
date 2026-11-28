@@ -56,8 +56,11 @@ let private parseMultipart (contentType: string) (body: byte array) : string * b
         let key = "filename="
         let header = text.Substring(0, headerEnd)
 
+        // 見つからないまま読み進めると、ヘッダの途中の無関係な文字列がファイル名になる。
         let value =
-            header.Substring(header.IndexOf(key, StringComparison.Ordinal) + key.Length)
+            match header.IndexOf(key, StringComparison.Ordinal) with
+            | -1 -> failwith $"multipartのヘッダにファイル名がありません: %s{header}"
+            | index -> header.Substring(index + key.Length)
 
         value.TrimStart('"')
         |> Seq.takeWhile (fun c -> not ("\";\r\n".Contains c))
