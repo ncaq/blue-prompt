@@ -21,8 +21,6 @@ let private commands =
          "--json-output"
          "appellation.json" |]
       "wikiru knowledge", [| "wikiru"; "knowledge"; "--page"; "ページ"; "--output"; "out.md" |]
-      "wikiru roleplay-reference",
-      [| "wikiru"; "roleplay-reference"; "--page"; "ページ"; "--output"; "out.md" |]
       "wikiru school",
       [| "wikiru"
          "school"
@@ -49,6 +47,8 @@ let private commands =
          "plugins/role-play"
          "--appellation"
          "appellation.json"
+         "--costume"
+         "character-yuuka/character.json"
          "--output"
          "plugins/role-play/skills/yuuka" |]
       "open-webui knowledge",
@@ -76,7 +76,6 @@ let private parsedName (argv: string array) : string =
         | Program.WikiruCommand.All _ -> "wikiru all"
         | Program.WikiruCommand.Appellation _ -> "wikiru appellation"
         | Program.WikiruCommand.Knowledge _ -> "wikiru knowledge"
-        | Program.WikiruCommand.Roleplay_Reference _ -> "wikiru roleplay-reference"
         | Program.WikiruCommand.School _ -> "wikiru school"
         | Program.WikiruCommand.Student_Skill _ -> "wikiru student-skill"
         | Program.WikiruCommand.Unplayable_Skill _ -> "wikiru unplayable-skill"

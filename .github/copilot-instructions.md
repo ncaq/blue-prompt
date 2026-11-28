@@ -64,8 +64,8 @@ FSACが持つ診断(FSAC0001未使用open・FSAC0002冗長な修飾子・FSAC000
 
 # 生成物
 
-`plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジと、
-`plugins/role-play/`配下のスキルの参照ファイルと本文は生成物です。
+`plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジと型のJSON(character.json)と、
+`plugins/role-play/`配下のスキルの本文は生成物です。
 手で編集せず、READMEの「生成コマンド」の節のコマンドで生成し直してください。
 
 新しい生徒を足す時は個別のコマンドで生成してから、

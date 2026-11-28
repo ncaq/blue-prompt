@@ -1,8 +1,9 @@
 /// role-playスキルの本文の組み立て。
+/// 1人分の中身をRolePlay型へ集めてから、本文を1回で書き出す。
 /// 本文の骨格は全生徒で共通のテンプレート1つが持ち、
 /// その決まった位置へ、
 /// 生徒に固有の手書きの部分と、
-/// 生徒個別ページから作った衣装別の参照ファイルと、
+/// 生徒個別スキルの型から作った衣装ごとの参照データと、
 /// キャラ呼称表のJSONから読んだ事実と、
 /// quote/へ手で置いた代表的な発言を差し込む。
 /// wikiruへはアクセスせず、リポジトリへ併置した生成物だけで完結する。
@@ -14,139 +15,80 @@ open System
 open System.IO
 open System.Threading.Tasks
 open Microsoft.FSharp.Reflection
+open BluePrompt.Article
 
-/// 通常衣装の参照ファイルの名前。
-/// 衣装の一覧では基本になる姿から並べたいので、これを先頭へ置く。
-let private baseFileName: string = "normal.md"
-
-/// スキルのディレクトリにあるMarkdownのうち、衣装別の参照ファイルではないもの。
-let private nonReferenceFileNames =
-    Set.ofList [ SkillFile.skill; SkillFile.character ]
-
-/// 参照ファイル1つ分の、本文へ差し込むために要る情報。
-/// 中身は本文へそのまま写す。
+/// 衣装1つ。演じる生徒の衣装違いのページそれぞれが1つになる。
 /// 衣装別のボイスを持たせるのは場面ごとに衣装を再現させるためではなく、
 /// 口調を安定させる材料を増やすためなので、
 /// 場面に合う衣装を選ばせずに、演じ始める前に全ての衣装へ目を通させる。
-/// その前提なので、
-/// 別ファイルとして開かせても読ませる量は変わらず、
-/// 開くかどうかの判断とファイルを開く往復だけが増えるため。
-type Reference =
+/// その前提なので、別ファイルとして開かせても読ませる量は変わらず、
+/// 開くかどうかの判断とファイルを開く往復だけが増えるため、中身は本文へ直接入れる。
+type Costume =
     {
         /// 出典のwikiruのページ名。衣装の区別はこの名前が担う。
         PageName: string
-        /// 参照ファイルの拡張子を除いた名前。
-        /// 同じディレクトリの中で一意かつASCIIなので、
-        /// 衣装を連結する時に脚注のラベルを衣装ごとに分ける接頭辞に使う。
-        Key: string
-        /// 参照ファイルの中身。出典の行を含む全体を、前後の空白だけ落として持つ。
-        Body: string
+        /// 出典のURL。
+        Source: Uri
+        /// 生徒個別スキルが読んだページの型。role-play向けの切り出しは書き出す時に掛ける。
+        Character: Character.Character
     }
 
-/// 参照ファイルから読み取れなかった内容と、そのファイルのパス。
-exception ReferenceShapeError of path: string * missing: string
+/// 生徒個別スキルが書き出したJSONから衣装を作る。
+let ofCharacterDocument (document: Wikiru.CharacterDocument) : Costume =
+    { PageName = document.PageName
+      Source = Uri document.Source
+      Character = document.Character }
 
-/// 参照ファイルが一段目の見出しを含んでいた時の、そのファイルのパス。
-exception ReferenceHeadingError of path: string
+/// 生徒個別スキルのディレクトリに置いた型のJSONから衣装を読む。
+let readCostume (path: string) : Task<Costume> =
+    task {
+        let! json = File.ReadAllTextAsync path
+        return ofCharacterDocument (Wikiru.ofCharacterJson json)
+    }
 
-/// 衣装別の参照ファイルが1つも無かった時のスキルのディレクトリ。
-exception ReferenceNotFound of directory: string
-
-/// 参照ファイルの内容から、本文へ差し込むために要る情報を読み取る。
-/// 読めなかった項目はReferenceShapeErrorで報せる。
-/// 欠けたまま組み立てると、どの衣装のものなのかを言わない節が本文へ並ぶため。
-///
-/// 中身が一段目の見出しを持っていないことも確かめる。
-/// 衣装の節は一段目の見出しを立てた下へ中身をそのまま収めるので、
-/// 中身に一段目の見出しが現れると節の切れ目が消えて、
-/// 以降の内容が別の衣装の兄弟として並ぶ。
-/// ページの読み方を変えた時にしか起きないが、生成物を目で追わない限り気付けない壊れ方なので、
-/// 見出しから始まらない発言をQuoteShapeErrorで弾くのと同じく、読んだ時点で止める。
-let parseReference (path: string) (markdown: string) : Reference =
-    let missing name =
-        raise (ReferenceShapeError(path = path, missing = name))
-
-    // 壊れたリンクをUriのコンストラクタへ渡すとUriFormatExceptionが飛び、
-    // どのファイルが壊れているのかがメッセージから消えるため、
-    // 絶対URLかどうかはここで判定して他の失敗と同じ形へ寄せる。
-    let sourceUri (url: string) : Uri =
-        match Uri.TryCreate(url, UriKind.Absolute) with
-        | true, uri -> uri
-        | _ -> missing "出典のURL"
-
-    let pageName =
-        // 出典の行は参照ファイルの先頭にある。
-        match Parse.tryPrefix Wikiru.sourceLine markdown with
-        | Some url ->
-            match (sourceUri url).Query.TrimStart '?' with
-            | Str.NullOrEmpty -> missing "出典のページ名"
-            | Str.NonEmpty query -> Uri.UnescapeDataString query
-        | None -> missing "出典の行"
-
-    let body = markdown.Trim()
-
-    // 一段目の見出しはどこに現れても文書の直下の節になる。
-    if
-        (Markdown.parseSections body).Children
-        |> List.exists (fun section -> section.Level = 1)
-    then
-        raise (ReferenceHeadingError path)
-
-    { PageName = pageName
-      Key = Path.GetFileNameWithoutExtension path
-      Body = body }
+/// 衣装の参照データが一段目の見出しを含んでいた時の、衣装のページ名。
+exception CostumeHeadingError of pageName: string
 
 /// 衣装の節の見出しの前置き。
-/// 参照ファイルの見出しは基本情報から始まる二段目なので、
-/// 一段目のこの見出しを立てて、その下へ中身をそのまま収めると階層が揃う。
-let private costumeHeadingPrefix: string = "# 衣装: "
+/// 参照データの見出しは基本情報から始まる二段目なので、
+/// 一段目のこの見出しを立てて、その下へ中身を収めると階層が揃う。
+let private costumeHeadingPrefix: string = "衣装: "
+
+/// 衣装1つを、一段目の見出しを立てた記事の木にする。
+/// どの衣装なのかは出典のページ名がそのまま表す。
+///
+/// 中身が一段目の見出しを持っていないことも確かめる。
+/// 中身に一段目の見出しが現れると衣装の節の切れ目が消えて、
+/// 以降の内容が別の衣装の兄弟として並ぶ。
+/// ページの読み方を変えた時にしか起きないが、生成物を目で追わない限り気付けない壊れ方なので、
+/// 組み立てた時点で止める。
+let costumeArticle (costume: Costume) : Article =
+    let body = Wikiru.rolePlayArticle costume.Character
+
+    if
+        body.Blocks
+        |> List.exists (fun block ->
+            match block with
+            | Heading(1, _) -> true
+            | _ -> false)
+    then
+        raise (CostumeHeadingError costume.PageName)
+
+    { body with
+        Blocks =
+            Heading(1, [ Text(costumeHeadingPrefix + costume.PageName) ])
+            :: Wikiru.sourceBlock costume.Source
+            :: body.Blocks }
 
 /// 衣装ごとの参照データを節として組み立てる。
-/// どの衣装なのかは出典のページ名がそのまま表す。
-/// 参照ファイルへのリンクは残さない。
-/// 中身が本文にある以上リンクは同じものを指す重複でしかなく、
-/// Open WebUIのModelにはそもそも開く手段が無いため。
-///
-/// 参照ファイルはそれぞれ別のページから作るので、どれも脚注を`[^1]`から数える。
-/// そのまま連結すると同じラベルの定義が重なり、
-/// GFMでは後の衣装の脚注が捨てられて、参照が前の衣装の脚注を指してしまう。
-/// 衣装ごとに参照ファイルの名前をラベルへ前置して分ける。
-let toCostumeMarkdown (references: Reference list) : string =
-    references
-    |> List.map (fun reference ->
-        let body = Markdown.prefixFootnoteLabels reference.Key reference.Body
-        $"%s{costumeHeadingPrefix}%s{reference.PageName}\n\n%s{body}")
-    |> String.concat "\n\n"
-
-/// スキルのディレクトリから衣装別の参照ファイルを読む。
-/// SKILL.mdとcharacter.md以外のMarkdownを参照ファイルと見なす。
-/// 除外を並べる形なので、
-/// スキルのディレクトリへREADME.mdのような別のMarkdownを置くと、
-/// 出典の行を持たない衣装の参照ファイルと見なされてReferenceShapeErrorになる。
-/// 通常衣装を先頭に置き、残りはファイル名の順に並べる。
-/// 1つも無いディレクトリは、衣装の節を1つも持たない本文を書き出さないように失敗にする。
-let readReferences (directory: string) : Task<Reference list> =
-    task {
-        let paths =
-            Directory.GetFiles(directory, "*.md")
-            |> Array.filter (fun path ->
-                not (Set.contains (Path.GetFileName path) nonReferenceFileNames))
-            |> Array.sortBy (fun path ->
-                let fileName = Path.GetFileName path
-                fileName <> baseFileName, fileName)
-            |> Array.toList
-
-        if List.isEmpty paths then
-            raise (ReferenceNotFound directory)
-
-        let references = ResizeArray()
-
-        for path in paths do
-            let! markdown = File.ReadAllTextAsync path
-            references.Add(parseReference path markdown)
-
-        return List.ofSeq references
-    }
+/// 衣装はそれぞれ別のページから読んだ記事なので、
+/// 脚注のラベルはconcatArticlesが繋ぐ時に全体で一意になるよう振り直す。
+let costumesMarkdown (costumes: Costume list) : string =
+    costumes
+    |> List.map costumeArticle
+    |> concatArticles
+    |> MarkdownWriter.render
+    |> _.TrimEnd()
 
 /// 代表的な発言が見出しから始まっていなかった時のファイルのパス。
 exception QuoteShapeError of path: string
@@ -258,7 +200,7 @@ type TemplateValues =
         Playing: string
         /// キャラ呼称表のJSONから抜き出した、この生徒が誰をどう呼ぶかの表。
         Appellation: string
-        /// 衣装別の参照ファイルの中身。出典のページ名の見出しを立てた下へそのまま入る。
+        /// 衣装ごとの参照データ。出典のページ名の見出しを立てた下へ入る。
         Costumes: string
         /// quote/に置いた代表的な発言。
         /// 他の穴と違い見出しごと差し込まれ、発言を持たない生徒では節ごと消える。
@@ -282,23 +224,21 @@ let private templateValueMap (values: TemplateValues) : Map<string, string> =
         | _ -> invalidOp $"TemplateValuesの%s{field.Name}がstringではありません")
     |> Map.ofArray
 
-/// 本文を組み立てるのに要る、ファイルから読み終えた入力一式。
-/// 組み立てをファイル入出力から切り離して、
-/// 値とプレースホルダの対応をテストで固定できるようにするために持つ。
-type SkillInput =
+/// role-playスキル1人分の中身。
+/// 本文へ差し込むものを全てファイルから読み終えた値として持ち、
+/// 書き出しはこの値だけから決まる。
+/// 衣装は文字列ではなく型のまま持つので、
+/// 衣装を繋ぐ時の脚注のラベルのように、文字列の連結では見えない約束も構造の上で守れる。
+type RolePlay =
     {
         /// 演じる生徒の呼び名。呼称表の引き当てにも使う。
         Caller: string
-        /// 全生徒で共通のテンプレートのパス。差し込みの食い違いの報告に使う。
-        TemplatePath: string
-        /// 全生徒で共通のテンプレートの中身。
-        Template: string
         /// character.mdのパス。ナレッジが1つも無かった時の報告に使う。
         CharacterPath: string
         /// character.mdのフロントマターと、生徒に固有の手書きの本文。
         Character: OpenWebui.Frontmatter
-        /// 衣装別の参照ファイル。
-        References: Reference list
+        /// 衣装。通常衣装を先頭に置く。
+        Costumes: Costume list
         /// 代表的な発言。用意していない生徒では空になる。
         Quotes: string list
         /// キャラ呼称表。
@@ -308,7 +248,10 @@ type SkillInput =
 /// character.mdが本文を持たなかった時のcharacter.mdのパス。
 exception CharacterBodyNotFound of path: string
 
-/// 読み終えた入力からrole-playスキルの本文の文字列を組み立てる。
+/// 衣装が1つも無かった時の、演じる生徒の呼び名。
+exception CostumeNotFound of caller: string
+
+/// role-playスキルの本文の文字列を組み立てる。
 /// フロントマターは解釈せず、テンプレートを差し込んだ本文の前へそのまま置く。
 /// 没入感を左右する呼称は別ファイルへ分けず、本文へ直接埋め込む。
 /// 差し込むのは全生徒に共通する指示か、生徒ごとに決まる事実か、
@@ -321,36 +264,40 @@ exception CharacterBodyNotFound of path: string
 /// テンプレートにはどちらの経路でも成り立つ言い回しだけを書き、
 /// 「スキルが読み込まれた」のように片方でしか成り立たない前提は書かない。
 /// テンプレートの中へ書いた注釈は生成物へそのまま出るため、この決まりはここに置く。
-let renderSkill (input: SkillInput) : string =
-    // 参照ファイルが0件なら、ナレッジが0件ならと同じく、
-    // 差し込むものが無いまま本文を書き出さない。
+let renderSkill (templatePath: string) (template: string) (rolePlay: RolePlay) : string =
     // その生徒をどう位置付けるかは手で書く唯一の場所なので、
     // 移行の時に書き忘れると黙って落ちる。
-    if String.IsNullOrEmpty input.Character.Body then
-        raise (CharacterBodyNotFound input.CharacterPath)
+    if String.IsNullOrEmpty rolePlay.Character.Body then
+        raise (CharacterBodyNotFound rolePlay.CharacterPath)
+
+    // ナレッジが0件なら止めるのと同じく、衣装の節を1つも持たない本文を書き出さない。
+    if List.isEmpty rolePlay.Costumes then
+        raise (CostumeNotFound rolePlay.Caller)
 
     // 呼称表に行が無い生徒でも、テンプレートの「表に無い相手」の指示がそのまま効くので、
     // 表が無いことだけを書いて止めずに生成する。
     let appellation =
-        Wikiru.sourceHeader (Uri input.Appellation.Source)
-        + (Appellation.toCallerMarkdown input.Caller input.Appellation.Entries
-           |> Option.defaultValue $"呼称表にはまだ%s{input.Caller}の行がありません。\n")
+        Wikiru.sourceHeader (Uri rolePlay.Appellation.Source)
+        + (Appellation.toCallerMarkdown rolePlay.Caller rolePlay.Appellation.Entries
+           |> Option.defaultValue $"呼称表にはまだ%s{rolePlay.Caller}の行がありません。\n")
 
     let values =
-        { Caller = input.Caller
-          Character = input.Character.Body
+        { Caller = rolePlay.Caller
+          Character = rolePlay.Character.Body
           Playing = playingRules
           Appellation = appellation
-          Costumes = toCostumeMarkdown input.References
-          Quotes = quotesMarkdown input.Caller input.Quotes
-          KnowledgeSkills = knowledgeSkillsMarkdown input.CharacterPath input.Character.Knowledge }
+          Costumes = costumesMarkdown rolePlay.Costumes
+          Quotes = quotesMarkdown rolePlay.Caller rolePlay.Quotes
+          KnowledgeSkills =
+            knowledgeSkillsMarkdown rolePlay.CharacterPath rolePlay.Character.Knowledge }
 
-    input.Character.Raw
+    rolePlay.Character.Raw
     + "\n\n"
-    + Template.renderOrFail input.TemplatePath (templateValueMap values) input.Template
+    + Template.renderOrFail templatePath (templateValueMap values) template
 
-/// 全生徒で共通のテンプレートと、スキルのディレクトリに併置された生成物から、SKILL.mdを書き出す。
-/// 生徒に固有の手書きの部分と衣装別の参照ファイルと代表的な発言は、スキルのディレクトリから読む。
+/// 全生徒で共通のテンプレートと、リポジトリに併置された生成物から、SKILL.mdを書き出す。
+/// 生徒に固有の手書きの部分と代表的な発言はスキルのディレクトリから、
+/// 衣装は生徒個別スキルのディレクトリに置いた型のJSONから、与えられた順に読む。
 /// テンプレートも出力もファイル名が決まっているため、受け取るのはそれぞれのディレクトリになる。
 /// 整形は掛けず、書き出したパスを返す。
 /// 整形の呼び出しは一括生成で1回にまとめられるように書き出しと分けてTargetが持つ。
@@ -358,6 +305,7 @@ let writeSkill
     (caller: string)
     (templateDirectory: string)
     (jsonPath: string)
+    (costumePaths: string list)
     (skillDirectory: string)
     : Task<string list> =
     task {
@@ -365,19 +313,24 @@ let writeSkill
         let outputPath = Path.Combine(skillDirectory, SkillFile.skill)
         let characterPath = Path.Combine(skillDirectory, SkillFile.character)
         let! character = File.ReadAllTextAsync characterPath
-        let! references = readReferences skillDirectory
+        let costumes = ResizeArray()
+
+        for path in costumePaths do
+            let! costume = readCostume path
+            costumes.Add costume
+
         let! quotes = readQuotes skillDirectory
         let! json = File.ReadAllTextAsync jsonPath
         let! template = File.ReadAllTextAsync templatePath
 
         let body =
             renderSkill
+                templatePath
+                template
                 { Caller = caller
-                  TemplatePath = templatePath
-                  Template = template
                   CharacterPath = characterPath
                   Character = OpenWebui.parseFrontmatter characterPath character
-                  References = references
+                  Costumes = List.ofSeq costumes
                   Quotes = quotes
                   Appellation = Appellation.ofJson json }
 

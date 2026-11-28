@@ -17,30 +17,27 @@
 作中で生徒が名字で呼ばれることはほとんどなく、
 名字を思い出せなくてもスキルを呼び出せるようにするためです。
 
-## 衣装ごとの参照ファイル
+## 衣装ごとの参照データ
 
-どのスキルにもSKILL.mdの他に、
-衣装(実装)ごとのプロフィールとゲーム内ボイス一覧と小ネタを収めた参照ファイルがあります。
-中身はSKILL.mdの本文へインライン化されるため、
-このファイルは生成の入力であり、
-単体で衣装のデータを引きたい時のための控えでもあります。
-
-これらは
+どのスキルの本文にも、
+衣装(実装)ごとのプロフィールとゲーム内ボイス一覧と小ネタの節があります。
+中身は
 [ブルーアーカイブ(ブルアカ)攻略有志Wiki](https://bluearchive.wikiru.jp/)
-の生徒個別ページからの自動生成ファイルです。
-手で編集せず、リポジトリルートで以下のコマンドで再生成してください。
-`src/BluePrompt/Manifest.fs`に書いた生成物を全てまとめて更新します。
+の生徒個別ページを読んだ型から作ります。
+型はjp-wikiru-bluearchiveプラグインの生徒個別スキルが、
+SKILL.mdと一緒にcharacter.jsonとして書き出しています。
+role-playスキルの本文はそのJSONを読み戻して組み立てるので、
+衣装の中身をMarkdownの文字列から読み直すことはありません。
+
+wikiruの内容を取り込み直す時は、
+リポジトリルートで以下のコマンドを実行してください。
+`src/BluePrompt/Manifest.fs`に書いた生成物を全てまとめて更新し、
+続けてrole-playスキルの本文も生成し直します。
 `blue-prompt`はdevShellが置くコマンドで、
 手元のソースをReleaseでビルドして起動します。
 
 ```console
 blue-prompt wikiru all --root .
-```
-
-衣装を1つだけ生成し直す時は個別コマンドを使います。
-
-```console
-blue-prompt wikiru roleplay-reference --page 'ユウカ（体操服）' --output plugins/role-play/skills/yuuka/track.md
 ```
 
 ## 本文の生成
@@ -65,10 +62,14 @@ Open WebUIでは紐付けから自動で渡されますが、
   会話相手のプレイヤーが先生であることと、口調をボイスの書き起こしから読み取ることを伝えます
 - `{{appellation}}`: jp-wikiru-bluearchiveプラグインに同梱の生成済みappellation.jsonから抜き出した呼称表。
   誰をどう呼ぶかは没入感を大きく左右するため、別ファイルへ分けずスキル本体へ直接埋め込みます
-- `{{costumes}}`: 同じディレクトリにある衣装別の参照ファイルの中身。
-  出典のwikiruのページ名を見出しにした節へ、ファイルの中身がそのまま入ります。
-  参照ファイルの見出しは基本情報から始まる二段目なので、
-  一段目の衣装の見出しを立てた下へ収めると階層が揃います
+- `{{costumes}}`: 衣装ごとの参照データ。
+  生徒個別スキルの型から、基本情報のプロフィールと紹介文とボイスと小ネタだけを残したものです。
+  出典のwikiruのページ名を見出しにした節へ入ります。
+  中身の見出しは基本情報から始まる二段目なので、
+  一段目の衣装の見出しを立てた下へ収めると階層が揃います。
+  衣装はそれぞれ別のページなので脚注を1から数えますが、
+  全ての衣装を1つの記事の木へ繋ぐ時に通し番号へ振り直すので、
+  脚注のラベルは本文の中で重なりません
 - `{{quotes}}`: スキルのディレクトリのquote/に置いた代表的な発言。
   他の穴が節の中身だけを受け取るのに対して、これだけは見出しごと差し込まれます。
   発言を用意していない生徒では見出しだけが残らないように、0件なら節ごと消えるためです
@@ -86,20 +87,17 @@ Open WebUIでは紐付けから自動で渡されますが、
 このリポジトリが読まない項目を書き足した時に黙って落ちるためです。
 
 プロフィールや口調を手で書き下すことはしません。
-プロフィールは衣装別の参照データが本文へ入るため、
+プロフィールは衣装ごとの参照データが本文へ入るため、
 どちらの経路でも重複するだけだからです。
 口調の要約も置きません。
 要約は書き手が目を引かれた特徴だけを強めてしまい、
 ボイスの書き起こしが持っている語彙と言い回しの幅を潰すためです。
 
-衣装別の参照データを本文へインライン化しているのは、
+衣装ごとの参照データを別ファイルにせず本文へ入れているのは、
 演じ始める前に全ての衣装へ目を通させる前提だからです。
 別ファイルとして開かせても読ませる量は変わらず、
 開くかどうかの判断とファイルを開く往復だけが増えます。
-参照ファイル自体は単体でも引けるように残していますが、
-本文からはリンクしません。
-中身が本文にある以上、リンクは同じものを指す重複でしかなく、
-Open WebUIのModelにはそもそも開く手段が無いためです。
+Open WebUIのModelにはそもそも別ファイルを開く手段がありません。
 
 全生徒に効く指示を変えたい時はテンプレートを、
 その生徒だけの指示を変えたい時はcharacter.mdを編集して、
@@ -108,12 +106,17 @@ SKILL.mdはファイル名が決まっているため、
 渡すのはテンプレートのディレクトリと出力先のディレクトリです。
 SKILL.mdを直接編集してはいけません。
 wikiruへはアクセスしません。
-呼称表そのものを更新したい時は先に`wikiru appellation`で再生成してください。
+呼称表や衣装の中身そのものを更新したい時は、
+先に`wikiru appellation`や`wikiru student-skill`で再生成してください。
+衣装は`--costume`へ並べた順に本文へ載ります。
 
 ```console
 blue-prompt roleplay skill --character 'ユウカ' \
   --template plugins/role-play \
   --appellation plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json \
+  --costume plugins/jp-wikiru-bluearchive/skills/character-yuuka/character.json \
+  --costume plugins/jp-wikiru-bluearchive/skills/character-yuuka-pajama/character.json \
+  --costume plugins/jp-wikiru-bluearchive/skills/character-yuuka-track/character.json \
   --output plugins/role-play/skills/yuuka
 ```
 
@@ -126,16 +129,12 @@ blue-prompt roleplay all --root .
 ```
 
 新しい生徒を足す時は、
-character.mdを書いた上で`src/BluePrompt/Manifest.fs`の2つの一覧へ足してください。
+character.mdを書いた上で`src/BluePrompt/Manifest.fs`の`students`へ衣装ごとの行を足してください。
+生徒個別スキルの`StudentSkill`と、
+role-playスキルの`rolePlaySkills`は、どちらもこの行から導かれます。
+role-playスキルの衣装は、同じベースの生徒の全ての行の生徒個別スキルが書いたcharacter.jsonです。
 
-- `wikiruTargets`: 衣装ごとの`RolePlayReference`と、
-  character.mdの`knowledge:`へ挙げた生徒個別スキルの`StudentSkill`。
-  `RolePlayReference`が無いと`{{costumes}}`へ差し込む参照ファイルが生成されず、
-  `StudentSkill`が無いと`roleplay all`が実在しないナレッジとして止まります
-- `rolePlaySkills`: 呼び名と、テンプレートのディレクトリと、呼称表のJSONと、出力先のディレクトリの4つ
-
-呼び名はcharacter.mdからは決まらないので自動では埋まらず、
-足さないと統合チェックの`roleplay-generated`が、
+行を足し忘れると統合チェックの`roleplay-generated`が、
 生成し直されない生成物の差分として止まります。
 
 ## 代表的な発言
@@ -144,7 +143,7 @@ character.mdを書いた上で`src/BluePrompt/Manifest.fs`の2つの一覧へ足
 スキルのディレクトリのquote/へ1つ1つのMarkdownとして手で置きます。
 `seia`スキルのエデン条約についての説明がこれにあたります。
 
-衣装別の参照ファイルが持っているボイスは短いセリフばかりなので、
+衣装ごとの参照データが持っているボイスは短いセリフばかりなので、
 話の運び方や長い語りの組み立ては読み取れません。
 そこだけをこのファイルが担います。
 
@@ -164,6 +163,7 @@ quote/が無ければ0件として扱い、
 ## 配布物から除かれるファイル
 
 生成の入力であるcharacter.mdとquote/とテンプレートはこのディレクトリに置いたままです。
+生徒個別スキルの横に置いたcharacter.jsonも同じ扱いです。
 Nixで組み立てるOpenCodeのスキルとhome-manager経由のClaude Codeのプラグインと配布ZIPからは除かれますが、
 マーケットプレイスはこのプラグインのディレクトリをそのまま配るため、
 その経路では一緒に配られます。

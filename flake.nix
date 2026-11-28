@@ -56,6 +56,7 @@
 
       # リポジトリにはあるが、スキルとしては配布しないファイルとディレクトリの名前。
       # character.mdとquoteは本文を生成するための入力で、
+      # character.jsonは生徒個別スキルの横へ置いた、role-playスキルの本文を組み立てるための入力で、
       # SKILL.template.mdは全生徒で共通の骨格なので、
       # Claude CodeやOpenCodeのスキルとして読ませる意味が無い。
       # ここで除けるのはNixで組み立てる経路だけで、
@@ -67,6 +68,7 @@
       # Nixへ定数を渡す手段が無いので重複は仕組み上残る。
       # どちらかの名前を変える時はもう片方も直す。
       nonSkillNames = [
+        "character.json"
         "character.md"
         "quote"
         "SKILL.template.md"
