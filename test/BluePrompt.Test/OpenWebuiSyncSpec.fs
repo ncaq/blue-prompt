@@ -45,7 +45,8 @@ type private FixedServer =
 
 /// メソッドとパスごとに決まった応答を返すサーバを立てて、testへ渡す。
 /// クエリ文字列は見ず、表に無いリクエストにはWireMockの既定の404を返す。
-/// 状態を持たないので、受け取ったリクエストはWireMockの記録から後で確かめる。
+/// 表の応答は状態を持たず、回数で変わる応答はテスト側がMockへ足す。
+/// 受け取ったリクエストはWireMockの記録から後で確かめる。
 let private withFixedServer
     (routes: Map<string * string, int * string>)
     (test: FixedServer -> Task<unit>)
