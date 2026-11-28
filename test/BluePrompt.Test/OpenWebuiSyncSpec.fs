@@ -353,6 +353,8 @@ let ``サインインの応答にtokenが無いと止まる`` () : Task =
 
             // 何が足りないのか分かるようにフィールドの名前が含まれる。
             Assert.Contains("token", error.Message)
+            // 別の応答の読み込みで止まっても上の確かめは通るので、サインインまで進んだことを見る。
+            Assert.Equal(1, server.CountOf("POST", "/api/v1/auths/signin"))
             Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
         })
 
@@ -456,6 +458,9 @@ let ``アップロードの応答にidが無いと止まる`` () : Task =
 
             // 何が足りないのか分かるようにフィールドの名前が含まれる。
             Assert.Contains("id", error.Message)
+            // `id`は`invalid`のようなJSONの一般的なエラーメッセージにも含まれる。
+            // アップロードより前の応答で止まっても上の確かめは通るので、アップロードまで進んだことを見る。
+            Assert.Equal(1, server.CountOf("POST", "/api/v1/files/"))
             Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
         })
 
