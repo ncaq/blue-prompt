@@ -66,6 +66,39 @@ let ``セルの中の改行は読点で繋がる`` () =
     Assert.Equal("- 所属: セミナー、会計\n", markdown content)
 
 [<Fact>]
+let ``画像の行と個数の行は1行へ畳まれる`` () =
+    // 必要素材の表は素材の画像の行と個数の行を縦に重ね、Lvを縦の結合で両方へ掛けている。
+    let image (name: string) : XmlNode =
+        Elem.td [] [ Elem.img [ Attr.src $"https://example.com/%s{name}.png"; Attr.alt name ] ]
+
+    let level = Elem.td [ Attr.rowspan "2" ] [ Text.raw "1-5" ]
+
+    let content =
+        [ Elem.table
+              []
+              [ Elem.tr [] [ th "Lv"; Elem.th [ Attr.colspan "2" ] [ Text.raw "素材" ] ]
+                Elem.tr [] [ level; image "a"; image "b" ]
+                Elem.tr [] [ td "x2"; td "x10" ] ] ]
+
+    Assert.Equal(
+        "- Lv: 1-5, 素材: ![a](https://example.com/a.png) x2, ![b](https://example.com/b.png) x10\n",
+        markdown content
+    )
+
+[<Fact>]
+let ``縦の結合で繋がっていない画像の行と文字の行は畳まれない`` () =
+    // 無関係な2行がたまたま画像の行と文字の行だっただけの時に、項目を混ぜない。
+    let image = Elem.img [ Attr.src "https://example.com/a.png"; Attr.alt "a" ]
+
+    let content =
+        [ Elem.table
+              []
+              [ Elem.tr [] [ td "立ち絵"; Elem.td [] [ image ] ]
+                Elem.tr [] [ td "名前"; td "ユウカ" ] ] ]
+
+    Assert.Equal("- 立ち絵: ![a](https://example.com/a.png)\n- 名前: ユウカ\n", markdown content)
+
+[<Fact>]
 let ``空のセルだけの行と列は落ちる`` () =
     let content =
         [ Elem.table

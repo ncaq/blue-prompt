@@ -16,6 +16,9 @@ type GridCell =
         Text: string
         /// 画像を含むか。文字を持たず画像だけのセルも値として意味を持つ。
         HasImage: bool
+        /// 上の行から縦の結合で伸びてきたセルの複製か。
+        /// 中身がたまたま上と同じ別のセルと、同じセルの続きを見分けるために持つ。
+        IsContinuation: bool
     }
 
 /// 表を区切り行で分けた部分。
@@ -38,7 +41,8 @@ let private cellOf (isHeader: bool) (content: CellContent) : GridCell =
     { IsHeader = isHeader
       Content = content
       Text = (plainText content.Inlines).Trim()
-      HasImage = hasImage content.Inlines }
+      HasImage = hasImage content.Inlines
+      IsContinuation = false }
 
 /// 中身を持たないマス。
 let private emptyCell (isHeader: bool) : GridCell =
@@ -213,7 +217,10 @@ let private expand (budget: int64) (rows: Cell list list) : GridCell array list 
                                 else
                                     emptyCell origin.IsHeader
 
-                            setEntry grid[rowIndex + i] (columnIndex + j) entry
+                            setEntry
+                                grid[rowIndex + i]
+                                (columnIndex + j)
+                                { entry with IsContinuation = 0 < i }
 
                     columnIndex <- columnIndex + columnSpan))
 
@@ -223,6 +230,72 @@ let private expand (budget: int64) (rows: Cell list list) : GridCell array list 
             estimatedEntries
 
     grid |> Array.filter (Array.forall isBlankCell >> not) |> Array.toList, consumed
+
+/// 画像だけの行と、その真下の文字だけの行を1行へ畳む。
+/// 必要素材や愛用品の強化の表は、素材の画像の行と個数の行を縦に重ね、
+/// Lvのような行の見出しを縦の結合で両方の行へ掛けている。
+/// そのまま1行1項目にすると、同じLvの項目が画像だけと個数だけの2つに分かれて、
+/// どの素材が何個なのかを項目をまたいで数えないと読めない。
+/// 畳むのは、列ごとに見て以下のどれかだけで出来ている2行に限る。
+///
+/// - 上が画像だけで下が文字だけ。画像の後ろへ文字を続ける
+/// - 下が上からの縦の結合の複製。上を残す
+/// - 下が空。上を残す
+///
+/// 縦の結合で繋がった2行であることを、文字を持つ複製の列が1つはあることで確かめる。
+/// 無関係な2行がたまたま画像の行と文字の行だっただけの時に、項目を混ぜないためである。
+/// 文字が同じことでは確かめない。
+/// 対象が1人だけのボーナスの表は、その1人の行と合計の行の数値が全て同じになる。
+let private foldImageRows (rows: GridCell array list) : GridCell array list =
+    let isImageOnly (cell: GridCell) : bool =
+        cell.HasImage && String.IsNullOrEmpty cell.Text
+
+    let isTextOnly (cell: GridCell) : bool =
+        not cell.HasImage
+        && not (String.IsNullOrEmpty cell.Text)
+        && List.isEmpty cell.Content.Blocks
+
+    let isPair (upper: GridCell, lower: GridCell) : bool =
+        isImageOnly upper && isTextOnly lower && not lower.IsContinuation
+
+    let tryFold (upper: GridCell array) (lower: GridCell array) : GridCell array option =
+        let columns = Array.zip upper lower
+
+        if
+            upper.Length = lower.Length
+            && Array.exists isPair columns
+            && lower
+               |> Array.exists (fun cell ->
+                   cell.IsContinuation && not (String.IsNullOrEmpty cell.Text))
+            && columns
+               |> Array.forall (fun (upperCell, lowerCell) ->
+                   isPair (upperCell, lowerCell)
+                   || lowerCell.IsContinuation
+                   || isBlankCell lowerCell)
+        then
+            columns
+            |> Array.map (fun (upperCell, lowerCell) ->
+                if isPair (upperCell, lowerCell) then
+                    cellOf
+                        upperCell.IsHeader
+                        { upperCell.Content with
+                            Inlines =
+                                upperCell.Content.Inlines @ Text " " :: lowerCell.Content.Inlines }
+                else
+                    upperCell)
+            |> Some
+        else
+            None
+
+    let rec fold (rows: GridCell array list) : GridCell array list =
+        match rows with
+        | upper :: lower :: rest ->
+            match tryFold upper lower with
+            | Some folded -> folded :: fold rest
+            | None -> upper :: fold (lower :: rest)
+        | _ -> rows
+
+    fold rows
 
 /// 見出しの下が全て空になった列を列ごと取り除く。
 /// 空の列はノイズでしかないため。
@@ -307,7 +380,7 @@ let parts (budget: int64) (table: Table) : Part list * int64 =
         | _ ->
             let grid, used = expand (budget - consumed) (List.rev pending)
 
-            match grid |> dropEmptyColumns |> normalizePairsRows with
+            match grid |> foldImageRows |> dropEmptyColumns |> normalizePairsRows with
             | [] -> parts, consumed + used
             | rows -> Rows rows :: parts, consumed + used
 
