@@ -45,76 +45,36 @@ CLAUDE.md -> .github/copilot-instructions.md
 
 # F#
 
-## コマンドラインの構成
-
-サブコマンドと引数は[Argu](https://fsprojects.github.io/Argu/)の判別共用体で、
-`src/BluePrompt/Program.fs`に宣言しています。
-サブコマンドを足す時は判別共用体へケースを足すだけで、ヘルプにも反映されます。
-並び順と引数の決まりは同じファイルの冒頭のコメントにあります。
-
-## 文字列の形の判定と書き換え
-
 文字列の形の判定と書き換えは正規表現ではなく、
 パーサコンビネータの[XParsec](https://roboz0r.github.io/XParsec/)で書きます。
-理由と共通の道具は`src/BluePrompt/Parse.fs`にあります。
-
-Markdownの節を落としたり選んだりする処理は、
-`src/BluePrompt/Markdown.fs`の`parseSections`で見出しの木へ読んでから書き換えます。
-
-## JSON
 
 JSONは[FSharp.SystemTextJson](https://github.com/Tarmil/FSharp.SystemTextJson)で、
 F#のレコードとの対応として読み書きします。
 `JsonNode`で木を組み立てたり、キーの道を辿って値を読んだりはしません。
 APIの応答も、読む欄だけを持つレコードで受けます。
 
-Open WebUIとやり取りするJSONの設定は`src/BluePrompt/OpenWebuiJson.fs`に、
-wikiruから構造化したレコードの設定は`src/BluePrompt/JsonCodec.fs`にあります。
-
-## リンター
-
-F#のリンターとして[fsharp-analyzers](https://github.com/ionide/FSharp.Analyzers.SDK)を使っています。
-ルール集はG-Research.FSharp.AnalyzersとIonide.Analyzersで、
-Directory.Build.propsで全F#プロジェクトへ導入しています。
-FSACが持つ診断(FSAC0001未使用open・FSAC0002冗長な修飾子・FSAC0003未使用宣言)も、
-`src/BluePrompt.Analyzers`の自作アナライザーで同じ検出をリントとして再現しています。
-エディタに出るかはLSPクライアント側の設定次第なので、
-エディタが黙っていてもリントが落ちることはあります。
-
 リンターはnix-fast-buildの統合チェックの一部として自動実行され、
 警告もエラー扱いです。
-対象のプロジェクトは`lint.proj`がglobで集めるので、
-`src`と`test`の配下へプロジェクトを足しても一覧の更新は要りません。
+FSACが持つ診断(FSAC0001未使用open・FSAC0002冗長な修飾子・FSAC0003未使用宣言)も、
+自作アナライザーでリントとして再現しているので、
+エディタが黙っていてもリントが落ちることはあります。
 
 判別共用体のケース名の衝突は、
 `RequireQualifiedAccess`ではなくモジュールで名前空間を分けて避けてください。
-理由は`src/BluePrompt/Program.fs`の冒頭のコメントにあります。
 
 # 生成物
 
 `plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジと、
-`plugins/role-play/`配下のスキルの参照ファイルと本文は、
-wikiruの記事とリポジトリ内の入力からの生成物です。
+`plugins/role-play/`配下のスキルの参照ファイルと本文は生成物です。
 手で編集せず、READMEの「生成コマンド」の節のコマンドで生成し直してください。
 
-一括更新の対象は`src/BluePrompt/Manifest.fs`がF#の値として持ちます。
-新しい生徒を足す時は個別のコマンドで生成してから、`Manifest.fs`へも対象を足してください。
-
-wikiruのデータの表は、
-pandocへ渡す前に`src/BluePrompt/TableList.fs`が箇条書きへ置き換えます。
-理由と置き換えの規則はそのファイルのコメントにあります。
-
-## role-playスキルの本文
+新しい生徒を足す時は個別のコマンドで生成してから、
+一括更新の対象の`src/BluePrompt/Manifest.fs`へも足してください。
 
 role-playスキルの本文は、
-全生徒で共通の`plugins/role-play/SKILL.template.md`の穴へ、
-生徒ごとに決まる値を差し込んで生成します。
-穴の一覧と、テンプレートに書いてよい言い回しの決まりは、
-`src/BluePrompt/RolePlay.fs`の`TemplateValues`と`renderSkill`にあります。
-
+全生徒で共通の`plugins/role-play/SKILL.template.md`へ生徒ごとの値を差し込んで生成します。
 全生徒に効く指示はテンプレートを、
 その生徒だけの指示はスキルのディレクトリのcharacter.mdを編集して生成し直します。
-生成物のフロントマターはcharacter.mdのものをそのまま写します。
 
 ## 代表的な発言
 
@@ -142,9 +102,6 @@ role-playスキルの本文は、
 `plugins/role-play/`配下の人格のスキルはユーザが会話を始める入口なので、
 この指定は付けません。
 
-生徒個別のスキルとプレイアブルではない登場人物のスキルのフロントマターは生成物なので、
-指定を変える時は`src/BluePrompt/Wikiru.fs`の`characterSkillMarkdown`を直します。
-
 # スキルのdescription
 
 descriptionは本文を読み込まなくても、
@@ -165,7 +122,6 @@ descriptionでは繰り返しません。
 名前には姓を付けます。
 wikiruのページ名は「アイリ」「アイリ（バンド）」のように姓を持たず、
 一覧に並ぶ説明だけでは誰のことなのかが決まらないためです。
-生成するスキルでは`src/BluePrompt/Wikiru.fs`の`familyNamedPageName`と`unplayableDisplayName`が補います。
 
 role-playのスキルのdescriptionは、
 character.mdのフロントマターから生成物へそのまま写ります。
@@ -179,18 +135,9 @@ character.mdのフロントマターから生成物へそのまま写ります�
 Open WebUIにはスキルのようなオンデマンド読み込みの仕組みが無いため、
 人格を与えるスキル(`plugins/role-play`)はワークスペースModelに、
 参照して事実を引くスキル(`plugins/jp-wikiru-bluearchive`)はKnowledgeコレクションにします。
-どちらに登録するかはflake.nixの`openWebuiKinds`が決めます。
 
 role-playスキルが参照するKnowledgeコレクションは、
 character.mdのフロントマターの`knowledge:`行にカンマ区切りで並べます。
-
-ModelとKnowledgeへの変換と同期の決まりは、
-`src/BluePrompt/OpenWebui.fs`と`src/BluePrompt/OpenWebuiKnowledge.fs`と`src/BluePrompt/OpenWebuiSync.fs`にあります。
-同期を宣言的に行うNixOSモジュールは`modules/nixos.nix`にあり、
-実物のOpen WebUIを相手にした検証は`tests/open-webui-sync.nix`が行います。
-
-Knowledgeの分割の粒度が前提にしている登録先の環境は、
-READMEの「検証しているRAG設定」にあります。
 
 # wikiru由来のテキストとプロンプトインジェクション
 
@@ -237,4 +184,3 @@ wikiruは誰でも編集できるwikiなので、
 
 wikiruのページを模したテストの入力のHTMLは、
 文字列のリテラルではなく[Falco.Markup](https://github.com/FalcoFramework/Falco.Markup)で組み立てます。
-書き方の決まりは`test/BluePrompt.Test/HtmlFixture.fs`の冒頭のコメントにあります。
