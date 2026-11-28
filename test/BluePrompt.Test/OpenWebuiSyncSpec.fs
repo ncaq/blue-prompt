@@ -371,6 +371,28 @@ let ``アップロードの応答にidが無いとSyncErrorで止まる`` () : T
             Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
         })
 
+// 打ち切りが壊れると同じページを辿り続けて返らなくなるため、時間を区切る。
+[<Fact(Timeout = 30000)>]
+let ``総件数に届かなくても空のページが返れば一覧の取得を打ち切る`` () : Task =
+    // 実物では起こしにくい、総件数と中身が食い違った応答を模す。
+    // このサーバはクエリ文字列を見ないので、どのページを求めても空のページが返る。
+    let routes =
+        knowledgeRoutes
+        |> Map.add
+            ("GET", "/api/v1/knowledge/collection-id/files")
+            (200, """{"items":[],"total":5}""")
+
+    withFixedServer routes (fun server ->
+        task {
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
+
+            do! sync options
+
+            Assert.Equal(1, server.CountOf("GET", "/api/v1/knowledge/collection-id/files"))
+        })
+
 [<Fact>]
 let ``アップロードの応答のidが空だとSyncErrorで止まる`` () : Task =
     // キーがあっても値が空なら、読み込みは通ってしまう。
