@@ -424,9 +424,6 @@ dotnet build src/BluePrompt
 dotnet test test/BluePrompt.Test
 ```
 
-`dotnet test`は外部サイト依存テスト(`Category=Network`)も含めて実行します。
-nix-fast-buildのchecksは外部サイト依存テストを除いて実行します。
-
 ## リント
 
 F#のリンターは統合チェックの一部としても実行されます。

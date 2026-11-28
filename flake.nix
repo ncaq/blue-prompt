@@ -278,10 +278,6 @@
             dotnet-sdk = pkgs.dotnet-sdk_10;
             dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
             doCheck = true;
-            # サンドボックス内では外部ネットワークへ出られないため、
-            # `[<Trait("Category", "Network")>]`を付けた外部サイト依存テストは除外する。
-            # ループバックのHTTPサーバを使うテストはサンドボックス内でも動くので付けない。
-            testFilters = [ "Category!=Network" ];
             # HTML→Markdown変換のテストがpandocを起動するため、check環境に含める。
             nativeCheckInputs = [
               pkgs.pandoc

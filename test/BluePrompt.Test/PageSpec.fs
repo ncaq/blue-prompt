@@ -35,14 +35,6 @@ let ``ローカルサーバのHTMLを取得できる`` () : Task =
     }
 
 [<Fact>]
-[<Trait("Category", "Network")>]
-let ``example.comのHTMLを取得できる`` () : Task =
-    task {
-        let! html = BluePrompt.Page.fetchHtml (Uri "https://example.com/")
-        Assert.Contains("<title>Example Domain</title>", html)
-    }
-
-[<Fact>]
 let ``成功以外のHTTPステータスはFetchErrorになる`` () : Task =
     task {
         // ローダー差し替えで最も壊れやすいステータス検査を固定する。
