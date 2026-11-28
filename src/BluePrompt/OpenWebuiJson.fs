@@ -27,7 +27,8 @@ let private optionsWith (fsharpOptions: JsonFSharpOptions) : JsonSerializerOptio
 /// Noneのフィールドもキーごと省かずにnullとして書く。
 /// Open WebUIはnullを未設定として受け取れるうえ、
 /// 生成物を読んだ時にどのフィールドが未設定なのかが見えるため。
-let private writeOptions =
+/// APIへ送るボディを`System.Net.Http.Json`で直列化する時にも渡すため公開している。
+let writeOptions =
     optionsWith (JsonFSharpOptions.Default().WithSkippableOptionFields SkippableOptionFields.Never)
 
 /// 読み込みの設定。
@@ -38,7 +39,8 @@ let private writeOptions =
 /// 書き出しと同じ設定では、option型のフィールドが1つでも欠けると読み込みが失敗する。
 /// 逆に省けることだけを許すと、
 /// 書き出しがnullとして書いたフィールドをSomeの中身として読もうとして失敗する。
-let private readOptions =
+/// APIの応答を`System.Net.Http.Json`で読む時にも渡すため公開している。
+let readOptions =
     optionsWith (
         JsonFSharpOptions
             .Default()

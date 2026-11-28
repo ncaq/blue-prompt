@@ -7,7 +7,11 @@
 /// 決まった応答を返すだけのサーバを相手に確かめる。
 module BluePrompt.Test.OpenWebuiSyncSpec
 
+open System
 open System.IO
+open System.Net
+open System.Net.Http
+open System.Text.Json
 open System.Threading.Tasks
 open WireMock.RequestBuilders
 open WireMock.ResponseBuilders
@@ -252,7 +256,7 @@ let ``APIキーを指定しないとサインインしたトークンがBearer�
         })
 
 [<Fact>]
-let ``サインインに失敗するとSyncErrorで止まり書き込みへ進まない`` () : Task =
+let ``サインインに失敗すると止まり書き込みへ進まない`` () : Task =
     // 認証を有効にしたインスタンスでは固定の資格情報が通らない。
     let routes =
         modelRoutes
@@ -260,28 +264,28 @@ let ``サインインに失敗するとSyncErrorで止まり書き込みへ進�
 
     withFixedServer routes (fun server ->
         task {
-            // APIキーの指定が要ることに気付けるようにステータスが含まれる。
-            do!
-                assertSyncError
-                    [ "サインイン"; "400" ]
-                    (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
+            let! error =
+                Assert.ThrowsAsync<HttpRequestException>(fun () ->
+                    sync (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ])) :> Task)
 
+            Assert.Equal(Nullable HttpStatusCode.BadRequest, error.StatusCode)
             Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
         })
 
 [<Fact>]
-let ``サインインの応答にtokenが無いとSyncErrorで止まる`` () : Task =
+let ``サインインの応答にtokenが無いと止まる`` () : Task =
     let routes =
         modelRoutes
         |> Map.add ("POST", "/api/v1/auths/signin") (200, """{"detail":"ok"}""")
 
     withFixedServer routes (fun server ->
         task {
-            do!
-                assertSyncError
-                    [ "/api/v1/auths/signinの応答を解釈できません"; "token" ]
-                    (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
+            let! error =
+                Assert.ThrowsAsync<JsonException>(fun () ->
+                    sync (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ])) :> Task)
 
+            // 何が足りないのか分かるようにフィールドの名前が含まれる。
+            Assert.Contains("token", error.Message)
             Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
         })
 
@@ -367,10 +371,9 @@ let ``紐付け先のKnowledgeが同期の対象に無いとSyncErrorで止ま�
         })
 
 [<Fact>]
-let ``アップロードの応答にidが無いとSyncErrorで止まる`` () : Task =
+let ``アップロードの応答にidが無いと止まる`` () : Task =
     // 応答の形が変わった状況を模す。
-    // idのキーが無い応答は読み込みの時点で止まり、
-    // どのURLの応答にどのフィールドが無かったのかが理由に残る。
+    // idのキーが無い応答は読み込みの時点でJsonExceptionで止まる。
     // キーがあって値が空の応答は読み込みを通ってしまうので、別のテストが受け持つ。
     let routes =
         knowledgeRoutes
@@ -382,10 +385,10 @@ let ``アップロードの応答にidが無いとSyncErrorで止まる`` () : T
                 { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
                     KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
+            let! error = Assert.ThrowsAsync<JsonException>(fun () -> sync options :> Task)
+
             // 何が足りないのか分かるようにフィールドの名前が含まれる。
-            // 読み込みで止まったことは、読み込みの失敗にしか出ない文言で確かめる。
-            // URLとidだけでは、空のidで止める側の理由にも一致してしまう。
-            do! assertSyncError [ "/api/v1/files/の応答を解釈できません"; "id" ] options
+            Assert.Contains("id", error.Message)
             Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
         })
 
@@ -432,7 +435,7 @@ let ``アップロードの応答のidが空だとSyncErrorで止まる`` () : T
 /// 空のidで組み立てたURLはパスの形が崩れるので、末尾だけで数える。
 let private filesRequestCount (server: FixedServer) : int =
     server.Received()
-    |> List.filter (fun request -> request.Path.EndsWith("/files", System.StringComparison.Ordinal))
+    |> List.filter (fun request -> request.Path.EndsWith("/files", StringComparison.Ordinal))
     |> List.length
 
 [<Fact>]

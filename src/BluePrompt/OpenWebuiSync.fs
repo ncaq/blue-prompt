@@ -12,8 +12,7 @@ open System.IO
 open System.Net
 open System.Net.Http
 open System.Net.Http.Headers
-open System.Text
-open System.Text.Json
+open System.Net.Http.Json
 open System.Text.Json.Serialization
 open System.Threading
 open System.Threading.Tasks
@@ -112,14 +111,6 @@ let private noAuthCredentials =
     { Email = "admin@localhost"
       Password = "admin" }
 
-/// 応答のJSONを読む。
-/// 読めなければ、どのURLの応答がどう読めなかったのか分かる形でSyncErrorにする。
-let private parseResponse (url: string) (body: string) : 'Response =
-    try
-        OpenWebuiJson.deserialize<'Response> body
-    with :? JsonException as error ->
-        raise (SyncError $"%s{url}の応答を解釈できません: %s{error.Message} %s{body}")
-
 /// 応答から読んだidを、空でないことを確かめてから返す。
 /// キーが無ければ読み込みで失敗するが、`"id": ""`は通ってしまう。
 /// 空のまま進むとURLの組み立てやPOSTのボディが壊れた形になり、
@@ -129,71 +120,42 @@ let private requireId (url: string) (id: string) : string =
     | Str.NullOrEmpty -> raise (SyncError $"%s{url}の応答のidが空です")
     | Str.NonEmpty id -> id
 
-/// 値をJSONのボディにする。
-let private jsonContent (body: 'Body) : HttpContent =
-    new StringContent(OpenWebuiJson.serialize body, Encoding.UTF8, "application/json")
-
-/// 認証を無効化したインスタンスのadminとしてサインインし、Bearerトークンを得る。
-/// `WEBUI_AUTH`を無効にしてもAPIはトークンを要求するため、
-/// APIキーを渡さない運用ではUIが裏で行っているのと同じサインインを自分で行う。
-let private signIn (client: HttpClient) (url: string) : Task<string> =
-    task {
-        let signInUrl = $"%s{url}/api/v1/auths/signin"
-        use content = jsonContent noAuthCredentials
-        use! response = client.PostAsync(signInUrl, content)
-        let! body = response.Content.ReadAsStringAsync()
-
-        if not response.IsSuccessStatusCode then
-            // 認証を有効にしたインスタンスではこの資格情報が通らないため、
-            // APIキーの指定が要ることに気付けるようにステータスと本文を残す。
-            raise (SyncError $"%s{url}へのサインインに失敗しました: %d{int response.StatusCode} %s{body}")
-
-        let signedIn: SignInResponse = parseResponse signInUrl body
-        return signedIn.Token
-    }
-
-/// 要求を送って応答の本文を返す。
-/// 失敗した時はどのURLがどう失敗したのか分かる形でSyncErrorにする。
-let private send (client: HttpClient) (request: HttpRequestMessage) : Task<string> =
-    task {
-        let url = request.RequestUri
-        use! response = client.SendAsync request
-        let! body = response.Content.ReadAsStringAsync()
-
-        if not response.IsSuccessStatusCode then
-            raise (SyncError $"%O{url}への要求が失敗しました: %d{int response.StatusCode} %s{body}")
-
-        return body
-    }
-
 /// JSONを返すAPIをGETで呼んで、応答を読む。
+/// 成功以外のステータスはHttpRequestExceptionに、読めない応答はJsonExceptionになる。
 let private getJson (client: HttpClient) (url: string) : Task<'Response> =
-    task {
-        use request = new HttpRequestMessage(HttpMethod.Get, url)
-        let! body = send client request
-        return parseResponse url body
-    }
+    client.GetFromJsonAsync<'Response>(url, OpenWebuiJson.readOptions)
 
-/// JSONのボディをPOSTして、応答の本文を返す。
-let private post (client: HttpClient) (url: string) (body: 'Body) : Task<string> =
+/// JSONのボディをPOSTして、成功以外のステータスなら失敗させる。
+let private post (client: HttpClient) (url: string) (body: 'Body) : Task<HttpResponseMessage> =
     task {
-        use request = new HttpRequestMessage(HttpMethod.Post, url)
-        request.Content <- jsonContent body
-        return! send client request
+        let! response = client.PostAsJsonAsync(url, body, OpenWebuiJson.writeOptions)
+        return response.EnsureSuccessStatusCode()
     }
 
 /// JSONのボディをPOSTして、応答を読む。
 let private postJson (client: HttpClient) (url: string) (body: 'Body) : Task<'Response> =
     task {
-        let! response = post client url body
-        return parseResponse url response
+        use! response = post client url body
+        return! response.Content.ReadFromJsonAsync<'Response> OpenWebuiJson.readOptions
     }
 
 /// JSONのボディをPOSTする。応答は読まない。
 let private postOnly (client: HttpClient) (url: string) (body: 'Body) : Task<unit> =
     task {
-        let! _ = post client url body
+        use! _ = post client url body
         return ()
+    }
+
+/// 認証を無効化したインスタンスのadminとしてサインインし、Bearerトークンを得る。
+/// `WEBUI_AUTH`を無効にしてもAPIはトークンを要求するため、
+/// APIキーを渡さない運用ではUIが裏で行っているのと同じサインインを自分で行う。
+/// 認証を有効にしたインスタンスではこの資格情報が通らず、HttpRequestExceptionになる。
+let private signIn (client: HttpClient) (url: string) : Task<string> =
+    task {
+        let! (signedIn: SignInResponse) =
+            postJson client $"%s{url}/api/v1/auths/signin" noAuthCredentials
+
+        return signedIn.Token
     }
 
 /// Knowledgeコレクション1つ分の、同期したい内容。
@@ -272,22 +234,17 @@ let private uploadFile
     (content: byte array)
     : Task<string> =
     task {
-        use request =
-            new HttpRequestMessage(
-                HttpMethod.Post,
-                $"%s{url}/api/v1/files/?process_in_background=false"
-            )
-
-        let form = new MultipartFormDataContent()
+        use form = new MultipartFormDataContent()
         let file = new ByteArrayContent(content)
         file.Headers.ContentType <- MediaTypeHeaderValue "text/markdown"
         form.Add(file, "file", fileName)
-        request.Content <- form
 
-        let! response = send client request
-        let uploadUrl = $"%s{url}/api/v1/files/"
-        let uploaded: UploadedFile = parseResponse uploadUrl response
-        return requireId uploadUrl uploaded.Id
+        use! response = client.PostAsync($"%s{url}/api/v1/files/?process_in_background=false", form)
+
+        let! (uploaded: UploadedFile) =
+            response.EnsureSuccessStatusCode().Content.ReadFromJsonAsync OpenWebuiJson.readOptions
+
+        return requireId $"%s{url}/api/v1/files/" uploaded.Id
     }
 
 /// Knowledgeコレクション1つを同期して、そのidを返す。
@@ -499,10 +456,10 @@ let private syncModel
             client.GetAsync $"%s{options.Url}/api/v1/models/model?id=%s{Uri.EscapeDataString id}"
 
         if response.IsSuccessStatusCode then
-            let! body = response.Content.ReadAsStringAsync()
-
-            // 応答を管理対象のフィールドだけへ正規化して比較する。
-            let current = OpenWebui.ofJson id body
+            // ModelFormに無いフィールドは読み捨てられるので、
+            // 応答は管理対象のフィールドだけへ正規化されて比較できる。
+            let! (current: OpenWebui.ModelForm) =
+                response.Content.ReadFromJsonAsync OpenWebuiJson.readOptions
 
             // base-model-idを指定しない運用では、
             // 登録後にUIで選ばれた上流モデルを上書きせず保持する。
