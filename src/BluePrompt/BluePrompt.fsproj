@@ -39,5 +39,6 @@
     <PackageReference Include="FSharp.SystemTextJson" Version="1.4.36" />
     <PackageReference Include="Markdig" Version="1.6.0" />
     <PackageReference Include="XParsec" Version="1.0.0" />
+    <PackageReference Include="YamlDotNet" Version="18.1.0" />
   </ItemGroup>
 </Project>

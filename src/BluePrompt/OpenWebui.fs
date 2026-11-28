@@ -13,8 +13,10 @@ open System.IO
 open System.Text.Json
 open System.Threading.Tasks
 open XParsec
-open XParsec.Parsers
 open XParsec.CharParsers
+open YamlDotNet.Core
+open YamlDotNet.Serialization
+open YamlDotNet.Serialization.NamingConventions
 
 /// SKILL.mdがOpen WebUIへ変換できる形式ではなかった時の対象パスと理由。
 exception SkillFormatError of path: string * message: string
@@ -75,8 +77,6 @@ type ModelForm =
       IsActive: bool }
 
 /// SKILL.mdのYAMLフロントマター。
-/// このリポジトリのスキルが使うのは1行のkey: valueだけなので、
-/// YAMLパーサーを持ち込まずその形の行だけを解釈する。
 ///
 /// Knowledgeは省略可能なknowledge:行で、
 /// そのスキルがOpen WebUIで参照するKnowledgeコレクションの名前を並べる。
@@ -113,12 +113,24 @@ let frontmatterBlock: Parse.TextParser<struct (string list * string)> =
 
     delimiterLine >>. fieldLines .>> delimiterLine .>>. Parse.restOfInput
 
-/// フロントマターのkey: value行。キーと、先頭の空白を落とした値を返す。
-let private field: Parse.TextParser<struct (string * string)> =
-    many1Chars (satisfy (fun c -> isAsciiLetter c || c = '_' || c = '-'))
-    .>> pchar ':'
-    .>> Parse.whitespaces
-    .>>. Parse.restOfLine
+/// フロントマターのうち、このリポジトリが読む項目。
+/// 書かれていない項目はnullとして読まれる。
+/// YamlDotNetが引数無しで作ってから値を書き込むため、CLIMutableにする。
+/// privateにするとYamlDotNetが型を作れずに読み込みが失敗する。
+[<CLIMutable>]
+type FrontmatterFields =
+    { Name: string
+      Description: string
+      Knowledge: string }
+
+/// フロントマターをFrontmatterFieldsへ読むYAMLのデシリアライザ。
+/// `user-invocable`のようにこのリポジトリが読まない項目はRawとして写すだけなので、
+/// 型に無い項目があっても失敗させない。
+let private yamlDeserializer =
+    DeserializerBuilder()
+        .WithNamingConvention(HyphenatedNamingConvention.Instance)
+        .IgnoreUnmatchedProperties()
+        .Build()
 
 /// SKILL.mdの本文からフロントマターの要素と、その後ろの本文を取り出す。
 /// 必須の要素が欠けているなど形式が想定と異なる場合は、
@@ -137,20 +149,32 @@ let parseFrontmatter (path: string) (content: string) : Frontmatter =
     | None -> fail "フロントマターの開始---がありません"
     | Some struct (lines, body) ->
         let fields =
-            lines
-            |> List.choose (Parse.tryPrefix field)
-            |> List.map (fun struct (key, value) -> key, value)
-            |> Map.ofList
+            try
+                // 項目が1つも無いフロントマターは、空の文書としてnullに読まれる。
+                match
+                    box (yamlDeserializer.Deserialize<FrontmatterFields>(String.concat "\n" lines))
+                with
+                | null -> None
+                | parsed -> Some(parsed :?> FrontmatterFields)
+            with :? YamlException as error ->
+                fail $"フロントマターをYAMLとして読めません: %s{error.Message}"
 
-        let required key =
-            match Map.tryFind key fields with
-            | Some value when value <> "" -> value
-            | _ -> fail $"フロントマターに%s{key}がありません"
+        let field (select: FrontmatterFields -> string) : string option =
+            fields
+            |> Option.bind (fun fields ->
+                match select fields with
+                | Str.NullOrEmpty -> None
+                | Str.NonEmpty value -> Some value)
+
+        let required key select =
+            match field select with
+            | Some value -> value
+            | None -> fail $"フロントマターに%s{key}がありません"
 
         // knowledge:は紐付けの無いスキルでは書かないため、
         // 欠けていることを失敗とせず空の一覧として扱う。
         let knowledge =
-            match Map.tryFind "knowledge" fields with
+            match field _.Knowledge with
             | None -> []
             | Some value ->
                 value.Split ','
@@ -160,8 +184,8 @@ let parseFrontmatter (path: string) (content: string) : Frontmatter =
                     | Str.NullOrEmpty -> None
                     | Str.NonEmpty trimmed -> Some trimmed)
 
-        { Name = required "name"
-          Description = required "description"
+        { Name = required "name" _.Name
+          Description = required "description" _.Description
           Knowledge = knowledge
           Body = body.Trim()
           Raw = String.concat "\n" (delimiter :: lines @ [ delimiter ]) }

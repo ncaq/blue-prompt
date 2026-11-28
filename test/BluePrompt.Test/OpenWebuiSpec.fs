@@ -157,6 +157,23 @@ let ``Rawはフロントマターを解釈せずそのまま返す`` () =
     Assert.Equal("本文", frontmatter.Body)
 
 [<Fact>]
+let ``フロントマターの値はYAMLとして読まれる`` () =
+    // 引用符で囲めば、区切りのコロンや先頭の記号も値として書ける。
+    let content =
+        "---\nname: yuuka\ndescription: \"Role-play: [Yuuka]\"\nuser-invocable: false\n---\n\n本文\n"
+
+    let frontmatter = parseFrontmatter "character.md" content
+
+    Assert.Equal("Role-play: [Yuuka]", frontmatter.Description)
+
+[<Fact>]
+let ``YAMLとして読めないフロントマターはSkillFormatErrorになる`` () =
+    Assert.Throws<SkillFormatError>(fun () ->
+        parseFrontmatter "character.md" "---\nname: [yuuka\ndescription: desc\n---\n\n本文\n"
+        |> ignore)
+    |> ignore
+
+[<Fact>]
 let ``閉じの区切り行が無いとSkillFormatErrorになる`` () =
     // 開始だけを見て通すと、フロントマターの全体が本文として流れ込む。
     Assert.Throws<SkillFormatError>(fun () ->
