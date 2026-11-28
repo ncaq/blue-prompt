@@ -33,6 +33,8 @@ type private FixedServer =
         Url: string
         /// ここまでに受け取ったリクエスト。
         Received: unit -> ReceivedRequest list
+        /// 表では書けない、回数で変わる応答を足すためのWireMockのサーバ。
+        Mock: WireMockServer
     }
 
     /// メソッドとパスが一致したリクエストの数。
@@ -81,7 +83,8 @@ let private withFixedServer
         do!
             test
                 { Url = server.Url.TrimEnd '/'
-                  Received = received }
+                  Received = received
+                  Mock = server }
     }
 
 /// 起動を待ってサインインするまでの応答。
@@ -213,6 +216,34 @@ let ``ベースURLの末尾スラッシュはどの経路で組み立てても�
 
             do! sync options
 
+            Assert.Equal(1, server.CountOf("POST", "/api/v1/models/create"))
+        })
+
+[<Fact>]
+let ``起動の確認が成功するまでやり直してから同期する`` () : Task =
+    // 起動の途中のインスタンスは、前段のプロキシなどから成功以外の応答を返す。
+    // やり直しの待ちの2秒を1回だけ消費する。
+    withFixedServer (Map.remove ("GET", "/health") modelRoutes) (fun server ->
+        task {
+            let health = Request.Create().UsingGet().WithPath("/health")
+
+            server.Mock
+                .Given(health)
+                .InScenario("起動")
+                .WillSetStateTo("起動済み")
+                .RespondWith(Response.Create().WithStatusCode(503))
+            |> ignore
+
+            server.Mock
+                .Given(health)
+                .InScenario("起動")
+                .WhenStateIs("起動済み")
+                .RespondWith(Response.Create().WithStatusCode(200))
+            |> ignore
+
+            do! sync (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
+
+            Assert.Equal(2, server.CountOf("GET", "/health"))
             Assert.Equal(1, server.CountOf("POST", "/api/v1/models/create"))
         })
 

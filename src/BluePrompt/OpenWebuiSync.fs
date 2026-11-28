@@ -16,6 +16,9 @@ open System.Net.Http.Json
 open System.Text.Json.Serialization
 open System.Threading
 open System.Threading.Tasks
+open Polly
+open Polly.Retry
+open Polly.Timeout
 
 /// 同期先のインスタンスに依存していてこちらからは知り得ない接続情報。
 type Options =
@@ -29,39 +32,56 @@ type Options =
 /// 同期先との通信や生成物の読み込みに失敗した時の理由。
 exception SyncError of message: string
 
+/// インスタンスの起動を待つ間の、1回の確認の結果をやり直すパイプライン。
+/// 接続エラーと確認の打ち切りと成功以外のステータスを、2秒おきに最初の1回を含めて30回まで試す。
+/// 接続が確立しない環境ではHttpClientの既定タイムアウト(100秒)まで1回の確認がブロックし得るため、
+/// やり直しの内側で確認ごとに5秒で打ち切る。
+let private healthPipeline: ResiliencePipeline<bool> =
+    ResiliencePipelineBuilder<bool>()
+        .AddRetry(
+            RetryStrategyOptions<bool>(
+                ShouldHandle =
+                    (fun arguments ->
+                        match arguments.Outcome.Exception with
+                        | null -> ValueTask<bool>(not arguments.Outcome.Result)
+                        | :? HttpRequestException
+                        | :? TimeoutRejectedException -> ValueTask<bool> true
+                        | _ -> ValueTask<bool> false),
+                MaxRetryAttempts = 29,
+                Delay = TimeSpan.FromSeconds 2.0,
+                BackoffType = DelayBackoffType.Constant
+            )
+        )
+        .AddTimeout(TimeSpan.FromSeconds 5.0)
+        .Build()
+
 /// socket activationで初回アクセス時に起動する構成でも同期できるように、
 /// 接続エラーも含めてリトライしながらインスタンスの起動を待つ。
 let private waitForHealth (client: HttpClient) (url: string) : Task<unit> =
-    let maxAttempts = 30
+    task {
+        let! healthy =
+            task {
+                try
+                    return!
+                        healthPipeline
+                            .ExecuteAsync(fun (token: CancellationToken) ->
+                                ValueTask<bool>(
+                                    task {
+                                        // 応答は読まずに捨てるため、接続をすぐプールへ返せるように破棄する。
+                                        use! response = client.GetAsync($"%s{url}/health", token)
+                                        return response.IsSuccessStatusCode
+                                    }
+                                ))
+                            .AsTask()
+                // やり直しが尽きた時は、最後の確認の失敗がそのまま届く。
+                with
+                | :? HttpRequestException
+                | :? TimeoutRejectedException -> return false
+            }
 
-    let rec attemptFrom (attempt: int) : Task<unit> =
-        task {
-            let! healthy =
-                task {
-                    // 接続が確立しない環境ではHttpClientの既定タイムアウト(100秒)まで、
-                    // 1試行がブロックし得るため、試行ごとに短い打ち切りを設ける。
-                    use timeout = new CancellationTokenSource(TimeSpan.FromSeconds 5.0)
-
-                    try
-                        // 応答は読まずに捨てるため、接続をすぐプールへ返せるように破棄する。
-                        use! response = client.GetAsync($"%s{url}/health", timeout.Token)
-                        return response.IsSuccessStatusCode
-                    with
-                    | :? HttpRequestException -> return false
-                    // 打ち切りはTaskCanceledExceptionとして届くためリトライ対象へ含める。
-                    | :? OperationCanceledException -> return false
-                }
-
-            if healthy then
-                return ()
-            elif maxAttempts <= attempt then
-                return raise (SyncError $"%s{url}の起動を待ちましたが応答がありません")
-            else
-                do! Task.Delay(TimeSpan.FromSeconds 2.0)
-                return! attemptFrom (attempt + 1)
-        }
-
-    attemptFrom 1
+        if not healthy then
+            raise (SyncError $"%s{url}の起動を待ちましたが応答がありません")
+    }
 
 /// サインインのボディ。
 type private SignInForm = { Email: string; Password: string }
