@@ -60,7 +60,7 @@ let private headingMarker: Parse.TextParser<int> =
 /// 行をATX見出しとして読み、深さと、`#`と前後の空白を落とした文字列を返す。
 /// 文字列が空白しか残らない行は見出しとして扱わない。
 let private tryHeading (line: string) : (int * string) option =
-    Parse.tryPrefix (headingMarker .>> Parse.whitespaces1 .>>. Parse.restOfLine) line
+    Parse.tryPrefix (headingMarker .>> Parse.inlineSpaces1 .>>. Parse.restOfLine) line
     |> Option.bind (fun struct (level, rest) ->
         match rest.Trim() with
         | Str.NullOrEmpty -> None

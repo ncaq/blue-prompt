@@ -31,9 +31,6 @@ let inlineSpaces1: TextParser<unit> = skipMany1Satisfies isInlineSpace
 /// 改行も含む空白を0個以上読み飛ばす。
 let whitespaces: TextParser<unit> = skipManySatisfies Char.IsWhiteSpace
 
-/// 改行も含む空白を1個以上読み飛ばす。
-let whitespaces1: TextParser<unit> = skipMany1Satisfies Char.IsWhiteSpace
-
 /// 1文字以上の数字の並び。
 let digits: TextParser<string> = many1Chars (satisfy Char.IsDigit)
 
@@ -95,9 +92,6 @@ let tryPrefix (p: TextParser<'a>) (text: string) : 'a option =
     match p (Reader.ofString text ()) with
     | Ok value -> Some value
     | Error _ -> None
-
-/// 文字列の全体がパーサの読む形であれば結果を返す。
-let tryWhole (p: TextParser<'a>) (text: string) : 'a option = tryPrefix (p .>> eof) text
 
 /// 文字列の先頭がパーサの読む形で始まっているか。
 let startsWith (p: TextParser<'a>) (text: string) : bool = Option.isSome (tryPrefix p text)
