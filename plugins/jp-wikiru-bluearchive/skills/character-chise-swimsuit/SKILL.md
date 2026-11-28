@@ -254,7 +254,7 @@ user-invocable: false
 
 ### メモリアルロビー
 
-**BGM：Popping' Memories**
+**BGM：Poppin' Memories**
 
 ![チセ（水着）_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E38381E382BBEFBC88E6B0B4E79D80EFBC89_E38381E382BBEFBC88E6B0B4E79D80EFBC895FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 

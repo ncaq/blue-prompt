@@ -222,7 +222,7 @@ user-invocable: false
 
 ### メモリアルロビー
 
-**BGM：Popping' Memories**
+**BGM：Poppin' Memories**
 
 ![ツクヨ_メモリアルロビー.jpg](https://bluearchive.wikiru.jp/attach2/E38384E382AFE383A8_E38384E382AFE383A85FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC2E6A7067.jpg)
 

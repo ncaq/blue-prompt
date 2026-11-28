@@ -219,7 +219,7 @@ user-invocable: false
 
 ### メモリアルロビー
 
-**BGM：Popping' Memories**
+**BGM：Poppin' Memories**
 
 ![食蜂操祈_メモリアルロビー_new.png](https://bluearchive.wikiru.jp/attach2/E9A39FE89C82E6938DE7A588_E9A39FE89C82E6938DE7A5885FE383A1E383A2E383AAE382A2E383ABE383ADE38393E383BC5F6E65772E706E67.png)
 

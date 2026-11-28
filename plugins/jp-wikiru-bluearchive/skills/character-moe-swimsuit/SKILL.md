@@ -216,7 +216,7 @@ user-invocable: false
 
 - EP: 1, タイトル: Explosive hazards, 解放絆RANK: 2, 報酬: 青輝石x20
 - EP: 2, タイトル: Danger close, 解放絆RANK: 3, 報酬: 青輝石x40
-- EP: 3, タイトル: Logistics information, 解放絆RANK: 5, 報酬: 青輝石x60
+- EP: 3, タイトル: Logistics infomation, 解放絆RANK: 5, 報酬: 青輝石x60
 - EP: 4, タイトル: Area beautification, 解放絆RANK: 6, 報酬: 青輝石x80,メモリアルロビー解禁
 
 ### メモリアルロビー

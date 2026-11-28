@@ -134,7 +134,7 @@ StG44
 ### 使用しているカメラの元ネタ
 
 チアキが使用しているオレンジ色のカメラは特定の1機種を元ネタとしておらず、複数のカメラの特徴を組み合わせた架空のカメラであると思われる。
-元ネタとして考えられるのはPENTAX Option [H90](https://www.ricoh-imaging.co.jp/japan/products/digital/optio-h90/feature.html)または[RZ18](https://www.ricoh-imaging.co.jp/japan/products/optio-rz18/)、Leica [Q2](https://leica-camera.com/ja-JP/photography/cameras/q/q2-black)、Nikon1 [J2](https://www.nikon-image.com/products/mirrorless/lineup/j2/)あたりか。
+元ネタとして考えられるのはPENTAX Optio [H90](https://www.ricoh-imaging.co.jp/japan/products/digital/optio-h90/feature.html)または[RZ18](https://www.ricoh-imaging.co.jp/japan/products/optio-rz18/)、Leica [Q2](https://leica-camera.com/ja-JP/photography/cameras/q/q2-black)、Nikon1 [J2](https://www.nikon-image.com/products/mirrorless/lineup/j2/)あたりか。
 
 - コンデジかミラーレスか
   カメラ全体の外形やサイズのコンパクトさを考えるとDSLRではなくコンデジかミラーレスのどちらかであることは間違いないが、チアキのカメラは両方の特徴を備えており断言ができない状態である。
