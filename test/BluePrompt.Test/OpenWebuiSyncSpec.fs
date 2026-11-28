@@ -7,26 +7,14 @@
 /// 決まった応答を返すだけのサーバを相手に確かめる。
 module BluePrompt.Test.OpenWebuiSyncSpec
 
-open System
 open System.Collections.Generic
 open System.IO
-open System.Net
-open System.Net.Sockets
 open System.Text
 open System.Threading.Tasks
 open Xunit
 open BluePrompt
 open BluePrompt.OpenWebuiSync
-
-/// 空きポートをOSに割り当てさせて確保する。
-/// HttpListenerはポート0の自動割り当てに対応していないため。
-/// IPv4とIPv6のどちらで待ち受けても空いているように、両方を受けるソケットで確保する。
-let private freePort () : int =
-    use listener = TcpListener.Create 0
-    listener.Start()
-    let port = (listener.LocalEndpoint :?> IPEndPoint).Port
-    listener.Stop()
-    port
+open BluePrompt.Test.LocalServer
 
 /// 受け取ったリクエスト1つ分の、テストが確かめる内容。
 type private ReceivedRequest =
@@ -34,61 +22,52 @@ type private ReceivedRequest =
       Path: string
       Authorization: string option }
 
-/// メソッドとパスごとに決まった応答を返すサーバ。
-/// クエリ文字列は見ず、表に無いリクエストには404を返す。
-/// 状態を持たないので、受け取ったリクエストを記録して後から確かめる。
-type private FixedServer(routes: Map<string * string, int * string>) =
-    let port = freePort ()
-    let listener = new HttpListener()
-    let received = List<ReceivedRequest>()
-
-    let handle (context: HttpListenerContext) =
-        let request = context.Request
-
-        lock received (fun () ->
-            received.Add
-                { Method = request.HttpMethod
-                  Path = request.Url.AbsolutePath
-                  Authorization = Option.ofObj request.Headers["Authorization"] })
-
-        // ボディは見ないが、読み切らないとクライアントの送信が終わらないことがある。
-        request.InputStream.CopyTo Stream.Null
-
-        let status, body =
-            routes
-            |> Map.tryFind (request.HttpMethod, request.Url.AbsolutePath)
-            |> Option.defaultValue (404, """{"detail":"unknown"}""")
-
-        let response = context.Response
-        response.StatusCode <- status
-        let bytes = Encoding.UTF8.GetBytes(body: string)
-        response.OutputStream.Write(bytes, 0, bytes.Length)
-        response.Close()
-
-    do
-        listener.Prefixes.Add $"http://localhost:%d{port}/"
-        listener.Start()
-
-        Task.Run(fun () ->
-            while listener.IsListening do
-                try
-                    handle (listener.GetContext())
-                with _ ->
-                    ())
-        |> ignore
-
-    member _.Url = $"http://localhost:%d{port}"
-
-    member _.Received = lock received (fun () -> List.ofSeq received)
+/// 決まった応答を返すサーバの、テストから見える面。
+type private FixedServer =
+    {
+        /// 末尾のスラッシュを含まないベースURL。
+        Url: string
+        /// ここまでに受け取ったリクエスト。
+        Received: unit -> ReceivedRequest list
+    }
 
     /// メソッドとパスが一致したリクエストの数。
     member this.CountOf(method: string, path: string) =
-        this.Received
+        this.Received()
         |> List.filter (fun request -> request.Method = method && request.Path = path)
         |> List.length
 
-    interface IDisposable with
-        member _.Dispose() = listener.Close()
+/// メソッドとパスごとに決まった応答を返すサーバを立てて、testへ渡す。
+/// クエリ文字列は見ず、表に無いリクエストには404を返す。
+/// 状態を持たないので、受け取ったリクエストを記録して後から確かめる。
+let private withFixedServer
+    (routes: Map<string * string, int * string>)
+    (test: FixedServer -> Task<unit>)
+    : Task =
+    let received = List<ReceivedRequest>()
+
+    let respond (request: Request) : Response =
+        lock received (fun () ->
+            received.Add
+                { Method = request.Method
+                  Path = request.Path
+                  Authorization = Map.tryFind "authorization" request.Headers })
+
+        let status, body =
+            routes
+            |> Map.tryFind (request.Method, request.Path)
+            |> Option.defaultValue (404, """{"detail":"unknown"}""")
+
+        // 同期はステータスコードしか見ないので、理由句は固定の文字列で済ませる。
+        { Status = $"%d{status} Fixed"
+          ContentType = "application/json"
+          Body = Encoding.UTF8.GetBytes(body: string)
+          ExtraHeaders = [] }
+
+    withRequestServer respond (fun url ->
+        test
+            { Url = url.ToString().TrimEnd '/'
+              Received = fun () -> lock received (fun () -> List.ofSeq received) })
 
 /// 起動を待ってサインインするまでの応答。
 let private signedIn =
@@ -179,6 +158,10 @@ let private makeKnowledgeDirectory (collections: (string * (string * string) lis
 
     directory
 
+/// `knowledgeRoutes`が作成を受け付けるコレクションを1つだけ持つ定義一式。
+let private makeAppellationDirectory () : string =
+    makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]
+
 let private makeOptions (server: FixedServer) (directory: string) : Options =
     { ModelsDirectory = directory
       Url = server.Url
@@ -187,180 +170,203 @@ let private makeOptions (server: FixedServer) (directory: string) : Options =
       KnowledgeDirectory = None
       RagTemplateFile = None }
 
-let private run (options: Options) = (sync options).GetAwaiter().GetResult()
-
 /// 同期がSyncErrorで止まることと、その理由に手掛かりが含まれることを確かめる。
-let private assertSyncError (clue: string) (options: Options) =
-    let error = Assert.Throws<SyncError>(fun () -> run options)
+let private assertSyncError (clue: string) (options: Options) : Task<unit> =
+    task {
+        let! error = Assert.ThrowsAsync<SyncError>(fun () -> sync options :> Task)
 
-    match error :> exn with
-    | SyncError message -> Assert.Contains(clue, message)
-    | unexpected -> failwith unexpected.Message
-
-[<Fact>]
-let ``ベースURLの末尾スラッシュはどの経路で組み立てても落とされる`` () =
-    use server = new FixedServer(modelRoutes)
-
-    // パスは文字列の連結で組み立てるため、
-    // 末尾スラッシュが残ると`//health`のような不正なURLになる。
-    // CLI以外の経路がOptionsを組み立てても壊れないように、
-    // この不変条件はOptionsを持つ側で保つ。
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
-            Url = $"%s{server.Url}/" }
-
-    run options
-
-    Assert.Equal(1, server.CountOf("POST", "/api/v1/models/create"))
+        match error :> exn with
+        | SyncError message -> Assert.Contains(clue, message)
+        | unexpected -> failwith unexpected.Message
+    }
 
 [<Fact>]
-let ``APIキーのファイルを指定するとBearerヘッダとして送られる`` () =
-    use server = new FixedServer(modelRoutes)
-    let apiKeyPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
-    File.WriteAllText(apiKeyPath, "secret-key\n")
+let ``ベースURLの末尾スラッシュはどの経路で組み立てても落とされる`` () : Task =
+    withFixedServer modelRoutes (fun server ->
+        task {
+            // パスは文字列の連結で組み立てるため、
+            // 末尾スラッシュが残ると`//health`のような不正なURLになる。
+            // CLI以外の経路がOptionsを組み立てても壊れないように、
+            // この不変条件はOptionsを持つ側で保つ。
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    Url = $"%s{server.Url}/" }
 
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
-            ApiKeyFile = Some apiKeyPath }
+            do! sync options
 
-    run options
-
-    let authorizations =
-        server.Received
-        |> List.filter (fun request -> request.Path <> "/health")
-        |> List.map _.Authorization
-        |> List.distinct
-
-    Assert.Equal<string option list>([ Some "Bearer secret-key" ], authorizations)
-    // 資格情報が与えられている以上サインインは要らない。
-    Assert.Equal(0, server.CountOf("POST", "/api/v1/auths/signin"))
+            Assert.Equal(1, server.CountOf("POST", "/api/v1/models/create"))
+        })
 
 [<Fact>]
-let ``APIキーを指定しないとサインインしたトークンがBearerヘッダとして送られる`` () =
-    use server = new FixedServer(modelRoutes)
+let ``APIキーのファイルを指定するとBearerヘッダとして送られる`` () : Task =
+    withFixedServer modelRoutes (fun server ->
+        task {
+            let apiKeyPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+            File.WriteAllText(apiKeyPath, "secret-key\n")
 
-    run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    ApiKeyFile = Some apiKeyPath }
 
-    Assert.Equal(1, server.CountOf("POST", "/api/v1/auths/signin"))
+            do! sync options
 
-    let create =
-        server.Received
-        |> List.find (fun request -> request.Path = "/api/v1/models/create")
+            let authorizations =
+                server.Received()
+                |> List.filter (fun request -> request.Path <> "/health")
+                |> List.map _.Authorization
+                |> List.distinct
 
-    Assert.Equal(Some "Bearer signed-in-token", create.Authorization)
+            Assert.Equal<string option list>([ Some "Bearer secret-key" ], authorizations)
+            // 資格情報が与えられている以上サインインは要らない。
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/auths/signin"))
+        })
 
 [<Fact>]
-let ``サインインに失敗するとSyncErrorで止まり書き込みへ進まない`` () =
+let ``APIキーを指定しないとサインインしたトークンがBearerヘッダとして送られる`` () : Task =
+    withFixedServer modelRoutes (fun server ->
+        task {
+            do! sync (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
+
+            Assert.Equal(1, server.CountOf("POST", "/api/v1/auths/signin"))
+
+            let create =
+                server.Received()
+                |> List.find (fun request -> request.Path = "/api/v1/models/create")
+
+            Assert.Equal(Some "Bearer signed-in-token", create.Authorization)
+        })
+
+[<Fact>]
+let ``サインインに失敗するとSyncErrorで止まり書き込みへ進まない`` () : Task =
     // 認証を有効にしたインスタンスでは固定の資格情報が通らない。
-    use server =
-        new FixedServer(
-            modelRoutes
-            |> Map.add
-                ("POST", "/api/v1/auths/signin")
-                (400, """{"detail":"Invalid credentials"}""")
-        )
+    let routes =
+        modelRoutes
+        |> Map.add ("POST", "/api/v1/auths/signin") (400, """{"detail":"Invalid credentials"}""")
 
-    // APIキーの指定が要ることに気付けるようにステータスが含まれる。
-    assertSyncError "400" (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
-    Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+    withFixedServer routes (fun server ->
+        task {
+            // APIキーの指定が要ることに気付けるようにステータスが含まれる。
+            do!
+                assertSyncError
+                    "400"
+                    (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
 
-[<Fact>]
-let ``サインインの応答にtokenが無いとSyncErrorで止まる`` () =
-    use server =
-        new FixedServer(
-            modelRoutes
-            |> Map.add ("POST", "/api/v1/auths/signin") (200, """{"detail":"ok"}""")
-        )
-
-    assertSyncError "token" (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
-    Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+        })
 
 [<Fact>]
-let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり作成へ進まない`` () =
+let ``サインインの応答にtokenが無いとSyncErrorで止まる`` () : Task =
+    let routes =
+        modelRoutes
+        |> Map.add ("POST", "/api/v1/auths/signin") (200, """{"detail":"ok"}""")
+
+    withFixedServer routes (fun server ->
+        task {
+            do!
+                assertSyncError
+                    "token"
+                    (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
+
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+        })
+
+[<Fact>]
+let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり作成へ進まない`` () : Task =
     // サーバエラーを未登録とみなして作成へ進むと、意図しない作成につながる。
-    use server =
-        new FixedServer(
-            modelRoutes
-            |> Map.add ("GET", "/api/v1/models/model") (500, """{"detail":"internal error"}""")
-        )
+    let routes =
+        modelRoutes
+        |> Map.add ("GET", "/api/v1/models/model") (500, """{"detail":"internal error"}""")
 
-    // 失敗の理由が調査できるようにステータスコードが含まれる。
-    assertSyncError "500" (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
-    Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+    withFixedServer routes (fun server ->
+        task {
+            // 失敗の理由が調査できるようにステータスコードが含まれる。
+            do!
+                assertSyncError
+                    "500"
+                    (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
 
-[<Fact>]
-let ``同じidのModel定義が複数あるとSyncErrorで止まる`` () =
-    use server = new FixedServer(modelRoutes)
-    let directory = makeModelsDirectory [ makeForm "yuuka" ]
-    // 別のファイル名で同じidの定義を置く。
-    File.WriteAllText(
-        Path.Combine(directory, "duplicated.json"),
-        OpenWebui.toJson (makeForm "yuuka")
-    )
-
-    // どの定義が衝突したのか調査できるようにidが含まれる。
-    assertSyncError "yuuka" (makeOptions server directory)
-    // 後勝ちの上書きが起きないように、登録先へ触れる前に止まる。
-    Assert.Empty(server.Received)
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+        })
 
 [<Fact>]
-let ``同じ名前のKnowledgeコレクションが複数あるとSyncErrorで止まる`` () =
-    use server = new FixedServer(knowledgeRoutes)
+let ``同じidのModel定義が複数あるとSyncErrorで止まる`` () : Task =
+    withFixedServer modelRoutes (fun server ->
+        task {
+            let directory = makeModelsDirectory [ makeForm "yuuka" ]
+            // 別のファイル名で同じidの定義を置く。
+            File.WriteAllText(
+                Path.Combine(directory, "duplicated.json"),
+                OpenWebui.toJson (makeForm "yuuka")
+            )
 
-    let directory =
-        makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]
-
-    // 別のディレクトリ名で同じ名前の定義を置く。
-    let duplicated = Path.Combine(directory, "duplicated")
-
-    Directory.CreateDirectory(Path.Combine(duplicated, OpenWebuiKnowledge.filesDirectoryName))
-    |> ignore
-
-    File.WriteAllText(
-        Path.Combine(duplicated, OpenWebuiKnowledge.formFileName),
-        OpenWebuiKnowledge.toJson
-            { Name = "character-appellation"
-              Description = "重複した定義" }
-    )
-
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
-            KnowledgeDirectory = Some directory }
-
-    assertSyncError "character-appellation" options
-    Assert.Empty(server.Received)
+            // どの定義が衝突したのか調査できるようにidが含まれる。
+            do! assertSyncError "yuuka" (makeOptions server directory)
+            // 後勝ちの上書きが起きないように、登録先へ触れる前に止まる。
+            Assert.Empty(server.Received())
+        })
 
 [<Fact>]
-let ``紐付け先のKnowledgeが同期の対象に無いとSyncErrorで止まる`` () =
-    use server = new FixedServer(knowledgeRoutes)
-    let models = makeModelsDirectory [ makeFormWithKnowledge "yuuka" [ "typo-name" ] ]
+let ``同じ名前のKnowledgeコレクションが複数あるとSyncErrorで止まる`` () : Task =
+    withFixedServer knowledgeRoutes (fun server ->
+        task {
+            let directory =
+                makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]
 
-    let options =
-        { makeOptions server models with
-            KnowledgeDirectory =
-                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
+            // 別のディレクトリ名で同じ名前の定義を置く。
+            let duplicated = Path.Combine(directory, "duplicated")
 
-    // 綴りの誤りに気付けるように参照先の名前が含まれる。
-    assertSyncError "typo-name" options
-    // 参照が外れたModelを黙って登録しない。
-    Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+            Directory.CreateDirectory(
+                Path.Combine(duplicated, OpenWebuiKnowledge.filesDirectoryName)
+            )
+            |> ignore
+
+            File.WriteAllText(
+                Path.Combine(duplicated, OpenWebuiKnowledge.formFileName),
+                OpenWebuiKnowledge.toJson
+                    { Name = "character-appellation"
+                      Description = "重複した定義" }
+            )
+
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some directory }
+
+            do! assertSyncError "character-appellation" options
+            Assert.Empty(server.Received())
+        })
 
 [<Fact>]
-let ``アップロードの応答にidが無いとSyncErrorで止まる`` () =
+let ``紐付け先のKnowledgeが同期の対象に無いとSyncErrorで止まる`` () : Task =
+    withFixedServer knowledgeRoutes (fun server ->
+        task {
+            let models = makeModelsDirectory [ makeFormWithKnowledge "yuuka" [ "typo-name" ] ]
+
+            let options =
+                { makeOptions server models with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
+
+            // 綴りの誤りに気付けるように参照先の名前が含まれる。
+            do! assertSyncError "typo-name" options
+            // 参照が外れたModelを黙って登録しない。
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+        })
+
+[<Fact>]
+let ``アップロードの応答にidが無いとSyncErrorで止まる`` () : Task =
     // 応答の形が変わった状況を模す。
     // 空のidのまま進むと、コレクションへの追加が空のfile_idで飛んで、
     // 原因から遠い場所で失敗する。
-    use server =
-        new FixedServer(
-            knowledgeRoutes
-            |> Map.add ("POST", "/api/v1/files/") (200, """{"detail":"ok"}""")
-        )
+    let routes =
+        knowledgeRoutes
+        |> Map.add ("POST", "/api/v1/files/") (200, """{"detail":"ok"}""")
 
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
-            KnowledgeDirectory =
-                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
+    withFixedServer routes (fun server ->
+        task {
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
-    // 何が足りないのか分かるようにフィールドの名前が含まれる。
-    assertSyncError "id" options
-    Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
+            // 何が足りないのか分かるようにフィールドの名前が含まれる。
+            do! assertSyncError "id" options
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
+        })
