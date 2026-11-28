@@ -268,7 +268,7 @@ let ``サインインの応答にtokenが無いとSyncErrorで止まる`` () : T
         task {
             do!
                 assertSyncError
-                    [ "/api/v1/auths/signin"; "token" ]
+                    [ "/api/v1/auths/signinの応答を解釈できません"; "token" ]
                     (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
 
             Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
@@ -372,7 +372,9 @@ let ``アップロードの応答にidが無いとSyncErrorで止まる`` () : T
                     KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
             // 何が足りないのか分かるようにフィールドの名前が含まれる。
-            do! assertSyncError [ "/api/v1/files/"; "id" ] options
+            // 読み込みで止まったことは、読み込みの失敗にしか出ない文言で確かめる。
+            // URLとidだけでは、空のidで止める側の理由にも一致してしまう。
+            do! assertSyncError [ "/api/v1/files/の応答を解釈できません"; "id" ] options
             Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
         })
 
