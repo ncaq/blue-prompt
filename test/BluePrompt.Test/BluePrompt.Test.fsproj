@@ -6,6 +6,7 @@
   <ItemGroup>
     <Compile Include="HtmlFixture.fs" />
     <Compile Include="LocalServer.fs" />
+    <Compile Include="ParseSpec.fs" />
     <Compile Include="PandocSpec.fs" />
     <Compile Include="TableSpec.fs" />
     <Compile Include="TableListSpec.fs" />
