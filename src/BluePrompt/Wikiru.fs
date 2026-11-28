@@ -1,5 +1,7 @@
 /// ブルーアーカイブ攻略有志Wiki(bluearchive.wikiru.jp)固有のページ取得とナレッジ化。
 /// 取得したDOMを記事の木へ読み、節の後始末と選別を木の上で済ませて、最後にMarkdownへ書き出す。
+/// 生徒個別ページは、記事の木をさらに節ごとの専用の型へ読んでから書き出す。
+/// キャラ呼称表と学校別キャラクター一覧とキャラクター一覧は、記事の木を通さずDOMからレコードへ読む。
 module BluePrompt.Wikiru
 
 open System
@@ -42,7 +44,7 @@ let rolePlaySectionTitles: string list = [ "基本情報"; "ボイス"; "小ネ�
 /// 生徒のページには無い事実のセクションだけを足す。
 /// アロナとプラナとソラはゲーム内のボイスを「ボイス集」の節に持つ。
 /// カイテンジャーは5人で1ページで、メンバーごとのプロフィールと紹介文がそれぞれ1つの節になっている。
-/// 「公式ツイッターの紹介」は埋め込みのツイートだけで、抽出すると中身が残らないため含めない。
+/// 「公式ツイッターの紹介」は埋め込みのツイートだけで、読んでもツイートのURLしか残らないため含めない。
 let unplayableSectionTitles: string list =
     studentSectionTitles
     @ [ "ボイス集"; "カイテンレッド"; "カイテンブラック"; "カイテングリーン"; "カイテンイエロー"; "カイテンピンク" ]
@@ -260,6 +262,7 @@ let private isCommentSection (section: Section) : bool =
 ///
 /// - 本文ではない行を落とすのは表を読み解く前。読点の跡を残さないため
 /// - 表を読み解くのは節の後始末より前。中身を失った節は、表を読み解いた後でないと決まらないため
+/// - 本文の段落は改行の連なりで分ける。表のセルの中は読み解く時に1行へ繋がれていて、ここでは分かれない
 /// - 最初の見出しより前は切り落とす。wikiruの記事は本文が最初の見出しから始まり、
 ///   それより前は関連ページへのナビゲーションや注意書きで、ナレッジには要らない。
 ///   見出しが無い文書はそのまま残す
@@ -337,12 +340,15 @@ let private trimGameplayBlocks (blocks: Block list) : Block list =
     trim blocks
 
 /// 記事の全体へtrimGameplayBlocksを掛ける。
+/// 生成の経路はrolePlayCharacterを通るので、これは木の上の規則だけを確かめるための入口である。
 let trimGameplayDetails (article: Article) : Article =
     { article with
         Blocks = trimGameplayBlocks article.Blocks }
 
 /// 生徒個別ページから、role-playの参照に要る部分だけを残す。
 /// 基本情報はプロフィールと紹介文までを残し、入手方法以降の性能データを落とす。
+/// 専用の型で読めた基本情報は型の上で落とし、
+/// タブで切り替えるページのように汎用の木のまま持っている節は、木の上の規則で同じ所を落とす。
 let rolePlayCharacter (character: Character.Character) : Character.Character =
     { character with
         Sections =
@@ -397,7 +403,7 @@ let private writeFile (outputPath: string) (content: string) : Task<unit> =
         do! File.WriteAllTextAsync(outputPath, content)
     }
 
-/// wikiruのページを取得し、ノイズを除いたDOMをactionへ渡してその結果を返す。
+/// wikiruのページを取得し、編集リンクを片付けてノイズを除いたDOMをactionへ渡してその結果を返す。
 let private fetchPage (noise: string list) (pageName: string) (action: IDocument -> 'T) : Task<'T> =
     Page.fetch (pageUri pageName) (fun document ->
         WikiruDom.resolveEditLinks document
@@ -460,6 +466,7 @@ let fetchCharacter
     }
 
 /// wikiruの生徒個別ページを読む。事実を載せているセクションだけへ選別する。
+/// 専用の型として読んだものを、書き出せるように記事の木へ戻して返す。
 let fetchStudentArticle (pageName: string) : Task<Article> =
     task {
         let! character = fetchCharacter WikiruDom.characterNoise studentSectionTitles pageName

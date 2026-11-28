@@ -1,7 +1,8 @@
 /// wikiruのキャラ呼称表の構造化。
 /// 「誰が誰をどう呼ぶか」をレコードの列へパースし、
 /// LLM向けのMarkdownと機械読み出し用のJSONの両方をそこから生成する。
-/// パースはHTML文字列だけで完結するため、ネットワークを使わずに単体テストで検証できる。
+/// パースは渡されたDOMを読むだけで自分では取得しないため、
+/// HTML文字列から組んだDOMを渡せば、ネットワークを使わずに単体テストで検証できる。
 module BluePrompt.Appellation
 
 open System
@@ -84,6 +85,8 @@ let private noteOfReference (notes: Map<string, string>) (reference: IElement) :
 /// 名前の区切りはbr要素と読点「、」の両方が使われているため、どちらでも区切る。
 /// 脚注アンカーは直前の名前への注釈として付ける。
 /// 存在しないページへの編集リンク(「?」の表示になる)は名前の一部ではないため無視する。
+/// 取得したページではWikiruDom.resolveEditLinksが読む前に片付けているので、
+/// これが効くのは、取得を通さずにHTML文字列から組んだDOMを直接読む時である。
 let private parseCell
     (notes: Map<string, string>)
     (cell: IElement)

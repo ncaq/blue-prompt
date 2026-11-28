@@ -277,7 +277,7 @@ let rec private sections (parentLevel: int) (blocks: Block list) : Section list 
     | _ -> [], blocks
 
 /// ブロックの並びを節の木へ読む。
-/// 箇条書きや引用の中の見出しは節を分けない。
+/// 箇条書きや引用やタブの中の見出しは節を分けない。
 let outline (blocks: Block list) : Outline =
     let isHeading (block: Block) : bool =
         match block with
@@ -308,7 +308,7 @@ let rec filterSections (keep: Section -> bool) (sections: Section list) : Sectio
             Children = filterSections keep section.Children })
 
 /// 中身を持たない節を落とす。
-/// 節の中身が抽出や後始末で全て落ちると、見出しだけが残る。
+/// 節の中身がノイズの除去や節の選別で全て落ちると、見出しだけが残る。
 /// 小見出しが全て落ちて空になった上位の節も落ちるように、深い方から先に見る。
 let rec dropEmptySections (sections: Section list) : Section list =
     sections

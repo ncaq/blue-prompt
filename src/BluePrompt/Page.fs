@@ -1,4 +1,4 @@
-/// webページのHTML取得。
+/// webページの取得。取得したページはパース済みのDOMとして呼び出し側の関数へ渡す。
 /// AngleSharpのローダーで取得するためJavaScriptは実行しない。
 /// wikiruはJavaScriptを実行しなくても最終的なMarkdownが変わらないことを確かめてある。
 /// 描画にJavaScriptが要るサイトを扱う時は、この取得の層を差し替える必要がある。
@@ -121,7 +121,7 @@ let private ensureFetched (url: Uri) (document: IDocument) : unit =
     // 素通りすると空のHTMLが正常な取得として流れてしまうので、
     // ソースが空のドキュメントを取得失敗としてstatus=0のFetchErrorへ写像する。
     // 成功ステータスで本文が完全に空の応答も同じ姿になるが、
-    // 抽出できるものが無い点は取得失敗と変わらない。
+    // 読めるものが無い点は取得失敗と変わらない。
     // Source.Textはページ全体の文字列を毎回新規生成するため、O(1)のLengthで判定する。
     if document.Source.Length = 0 then
         raise (FetchError(url = url, status = 0))

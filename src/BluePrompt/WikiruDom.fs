@@ -95,11 +95,10 @@ let headingText (heading: IElement) : string =
     |> String.concat ""
     |> _.Trim()
 
-/// 未作成ページへの編集リンクかどうか。
-/// wikiruは個別ページがまだ無いキャラクターを、
-/// 名前の後ろへ編集リンクの「?」を添えた形で表示する。
-/// 「?」は名前の一部ではなく、リンク先もページ名ではなく編集フォームなので、
-/// 名前からもページ名からも除く。
+/// 編集フォームへのリンクかどうか。
+/// リンクの先はページではなく編集フォームなので、ページ名としては読まない。
+/// 取得したページではresolveEditLinksが読む前に片付けているので、
+/// これが効くのは、取得を通さずにHTML文字列から組んだDOMを直接読む時である。
 let isEditLink (element: IElement) : bool =
     match element.GetAttribute "href" with
     | null -> false
