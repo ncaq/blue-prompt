@@ -886,6 +886,8 @@ let students: Student list =
 /// プレイアブルではない登場人物。
 /// 未実装の生徒と、アロナのように生徒ではない人物の両方を含む。
 /// ロールプレイの対象にせず、生徒の会話で話題に上った時に設定を引くためのナレッジだけを持つ。
+/// wikiruはNPCと呼ぶが、未実装の生徒も生徒なので、生成物でもコードでもその呼び方はしない。
+/// 生徒ではない人物も含むため、スキルの説明ではcharacter、本文では登場人物と呼ぶ。
 type Unplayable =
     {
         /// wikiruのページ名。
@@ -901,7 +903,8 @@ let unplayableSkillName (unplayable: Unplayable) : string = $"character-%s{unpla
 
 /// wikiruの学校別キャラクター一覧でレアリティがNPCとされている全員。
 /// 並びはページ名の五十音順。
-/// 実装されて生徒になったら、ここから外してstudentsへ移す。
+/// 実装されて生徒になったら、ここから外してstudentsへ移し、
+/// character-<slug>のディレクトリを生徒の命名で生成し直す。
 let unplayables: Unplayable list =
     [ { Page = "アオイ"; Slug = "aoi" }
       { Page = "アキラ"; Slug = "akira" }

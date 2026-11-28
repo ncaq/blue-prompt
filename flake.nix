@@ -58,6 +58,10 @@
       # character.mdとquoteは本文を生成するための入力で、
       # SKILL.template.mdは全生徒で共通の骨格なので、
       # Claude CodeやOpenCodeのスキルとして読ませる意味が無い。
+      # ここで除けるのはNixで組み立てる経路だけで、
+      # Claude CodeとClaude.aiのweb版のマーケットプレイスはリポジトリのplugins/をそのまま配るため、
+      # その経路では一緒に配られる。
+      # 読ませる意味は無いが害も無いので許容している。
       #
       # F#側で同じ名前を持つのはsrc/BluePrompt/SkillFile.fsで、
       # Nixへ定数を渡す手段が無いので重複は仕組み上残る。
@@ -246,6 +250,7 @@
           blue-prompt = pkgs.buildDotnetModule {
             pname = "blue-prompt";
             # 外部に配布しないプログラムなのでバージョン番号に意味が無い。
+            # 配布物の版はmarketplace.jsonの`metadata.version`が別に持ち、こちらとは方針が違う。
             version = "0.0.0";
             # plugins/配下のMarkdown変更でF#の再ビルドが走らないようにソースを限定する。
             src = lib.fileset.toSource {
@@ -273,7 +278,9 @@
             dotnet-sdk = pkgs.dotnet-sdk_10;
             dotnet-runtime = pkgs.dotnetCorePackages.runtime_10_0;
             doCheck = true;
-            # サンドボックス内では外部ネットワークへ出られないため、外部サイト依存テストは除外する。
+            # サンドボックス内では外部ネットワークへ出られないため、
+            # `[<Trait("Category", "Network")>]`を付けた外部サイト依存テストは除外する。
+            # ループバックのHTTPサーバを使うテストはサンドボックス内でも動くので付けない。
             testFilters = [ "Category!=Network" ];
             # HTML→Markdown変換のテストがpandocを起動するため、check環境に含める。
             nativeCheckInputs = [

@@ -224,6 +224,13 @@ Knowledgeコレクションの分割の粒度は、
 - エンジンの選定: https://github.com/ncaq/blue-prompt/issues/171
 - モデルの選定: https://github.com/ncaq/blue-prompt/issues/196
 
+この設定での登録先の実際の構築は、
+作者のdotfilesの https://github.com/ncaq/dotfiles/pull/1550 が行っています。
+
+モデルの乗り換えや、
+ハイブリッド検索とリランカーの導入でこの前提が変わる時は、
+モデルの選定のissueの測定をやり直した上でこの節を更新します。
+
 ### NixOSモジュールによる宣言的な同期
 
 Open WebUIをNixOSで運用している場合は、
@@ -381,3 +388,222 @@ NEXON Games Co., Ltd. および Yostar, Inc. に帰属します。
 速やかに対応します。
 連絡先はリポジトリのIssueか、
 メールアドレス<ncaq@ncaq.net>までお願いします。
+
+# 開発
+
+以下のコマンドはdevShell(direnvをロードした通常の環境)の中で使います。
+
+## フォーマットと統合チェック
+
+フォーマットとリントは以下で実行できます。
+
+```console
+nix fmt
+```
+
+統合チェックは以下で実行できます。
+
+```console
+nix-fast-build --option eval-cache false --no-link --skip-cached --no-nom
+```
+
+checksの`open-webui-sync`は、
+使い捨てのOpen WebUIをsystemd-nspawnのコンテナで立ち上げるNixOSテストで、
+Nixのデーモンに`uid-range`のsystem-featureを要求します。
+設定の無い環境ではこれだけが落ちるので、
+NixOSのマニュアルの"Running Tests"の"System Requirements"に従って設定してください。
+CIでは`.github/workflows/check.yml`がこの設定を渡しています。
+
+## ビルドとテスト
+
+slnファイルは使っていないため、
+プロジェクトのディレクトリを指定して実行します。
+
+```console
+dotnet build src/BluePrompt
+dotnet test test/BluePrompt.Test
+```
+
+`dotnet test`は外部サイト依存テスト(`Category=Network`)も含めて実行します。
+nix-fast-buildのchecksは外部サイト依存テストを除いて実行します。
+
+## リント
+
+F#のリンターは統合チェックの一部としても実行されます。
+単体で実行したい時は以下を使います。
+
+```console
+dotnet msbuild lint.proj /t:AnalyzeFSharpProject -warnaserror -m
+```
+
+特定のプロジェクトだけ解析したい時は、
+プロジェクトのディレクトリを指定します。
+
+```console
+dotnet msbuild src/BluePrompt /t:AnalyzeFSharpProject -warnaserror
+```
+
+どちらも解析の前に必要な復元を自分で済ませるため、事前の準備は要りません。
+
+## NuGet依存の更新
+
+fsprojのPackageReferenceを変更したら以下を一回実行するだけで、
+deps.jsonとfsharp-analyzers.jsonとDirectory.Build.propsの`FSharpCoreVersion`の再生成と整形が完了します。
+コミットは他の変更とまとめて手動で行います。
+
+```console
+nix run .#update-deps
+```
+
+RenovateのPRでは、
+`.github/workflows/update-deps.yml`が同じ再生成をRenovateのブランチへコミットします。
+
+## 生成コマンド
+
+生成コマンドを手元のソースから実行する時は、
+devShellが置く`blue-prompt`コマンドを使います。
+中身は`dotnet run --configuration Release --project src/BluePrompt --`で、
+引数はそのまま渡り、相対パスは呼び出した場所が基準になります。
+引数無しで起動すると全てのサブコマンドの使い方を表示します。
+
+`plugins/jp-wikiru-bluearchive/`配下のスキルのナレッジと、
+`plugins/role-play/`配下のスキルの参照ファイルと本文は生成物なので、
+手で編集せずこれらのコマンドで生成し直してください。
+`wikiru`と`roleplay`の生成コマンドは、
+中間HTMLを確認する`wikiru html`と`wikiru student-html`を除いて、
+書き出した直後に`nix fmt`まで実行するので、
+生成コマンドだけで内容が確定します。
+
+### 一括更新
+
+`src/BluePrompt/Manifest.fs`に書いた対象を全てwikiruから取得して書き出し、
+続けてrole-playスキルの本文も生成し直してから、
+最後に`nix fmt`を1回だけ実行します。
+対象のパスはリポジトリのルートからの相対で、`--root`で基準を渡します。
+
+```console
+blue-prompt wikiru all --root .
+```
+
+取得に失敗した対象があれば、失敗した対象の名前と理由を表示して終了コード1で止まります。
+失敗時は整形もrole-playスキルの生成もしないので、
+書き出し済みの生成物は整形されないまま残ります。
+
+wikiruへアクセスせずrole-playスキルの本文だけを全て生成し直す時は以下を使います。
+テンプレートを直した時と、
+統合チェックの`roleplay-generated`が生成物の鮮度を確かめる時に使われます。
+
+```console
+blue-prompt roleplay all --root .
+```
+
+### マニフェストの漏れの確認
+
+`Manifest.fs`の対象は手で足すため、
+wikiruへ生徒や衣装違いが増えても一括更新は何も言いません。
+漏れは以下で調べます。
+wikiruの一覧を取得して突き合わせるだけで、何も書き出しません。
+食い違いが1つでもあれば終了コード1で止まります。
+
+```console
+blue-prompt wikiru check-manifest
+```
+
+外部サイトの状態で結果が変わるため、統合チェックには含めていません。
+
+### 個別の生成
+
+新しい生徒を足す時は、
+個別のコマンドで生成してから、
+以後の一括更新に含めるために`Manifest.fs`へも対象を足してください。
+
+一般的なページを整形した`reference.md`は以下で生成します。
+
+```console
+blue-prompt wikiru knowledge --page '<ページ名>' --output <出力ファイル>
+```
+
+キャラ呼称表のスキルは、
+LLM参照用の`reference.md`と機械読み出し用の`appellation.json`を以下で同時に生成します。
+
+```console
+blue-prompt wikiru appellation --page 'キャラ呼称表' \
+  --markdown-output plugins/jp-wikiru-bluearchive/skills/character-appellation/reference.md \
+  --json-output plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json
+```
+
+学校別キャラクター一覧のスキルは、
+学校ごとの表にまとめた`reference.md`と機械読み出し用の`school.json`を以下で同時に生成します。
+
+```console
+blue-prompt wikiru school --page '学校別' \
+  --markdown-output plugins/jp-wikiru-bluearchive/skills/character-index-by-group/reference.md \
+  --json-output plugins/jp-wikiru-bluearchive/skills/character-index-by-group/school.json
+```
+
+生徒個別のスキルはナレッジを埋め込んだ`SKILL.md`全体を以下で生成します。
+スキル名は出力先のディレクトリ名から導出されます。
+
+```console
+blue-prompt wikiru student-skill --page '<生徒のページ名>' --output <SKILL.mdの出力パス>
+```
+
+プレイアブルではない登場人物のスキルは以下で生成します。
+
+```console
+blue-prompt wikiru unplayable-skill --page '<ページ名>' --output <SKILL.mdの出力パス>
+```
+
+role-playスキルの衣装別参照ファイルは、
+生徒個別ページからプロフィールとボイスと小ネタだけを抜き出して以下で生成します。
+
+```console
+blue-prompt wikiru roleplay-reference --page '<生徒のページ名>' --output <出力ファイル>
+```
+
+role-playスキルの本文は、
+`plugins/role-play/SKILL.template.md`へ生徒ごとに決まる値を差し込んで以下で生成します。
+wikiruへはアクセスせず、リポジトリへ併置した生成物だけで完結します。
+
+```console
+blue-prompt roleplay skill --character '<キャラクター名>' \
+  --template plugins/role-play \
+  --appellation plugins/jp-wikiru-bluearchive/skills/character-appellation/appellation.json \
+  --output <スキルのディレクトリ>
+```
+
+抽出設定を調整する時は、
+以下でpandoc変換前の中間HTMLを確認できます。
+生徒個別ページは抽出設定が異なるので`student-html`を使います。
+どちらも`nix fmt`を実行しません。
+
+```console
+blue-prompt wikiru html --page '<ページ名>' --output <出力ファイル>
+blue-prompt wikiru student-html --page '<生徒のページ名>' --output <出力ファイル>
+```
+
+### Open WebUI向けの生成と同期
+
+全スキル分のModelとKnowledgeは以下で生成します。
+出力はビルド成果物でリポジトリへはコミットしないため、
+`nix fmt`は実行しません。
+
+```console
+nix build .#open-webui-model
+nix build .#open-webui-knowledge
+```
+
+スキル1つ分を単体で変換したい時は以下を使います。
+
+```console
+blue-prompt open-webui model --skill <スキルディレクトリ> --output <出力ファイル>
+blue-prompt open-webui knowledge --skill <スキルディレクトリ> --output <出力ディレクトリ>
+```
+
+生成したModelとKnowledgeは以下で対象インスタンスへ同期できます。
+
+```console
+blue-prompt open-webui sync --model <モデル定義ディレクトリ> --base-url <ベースURL> \
+  [--base-model-id <id>] [--api-key-file <パス>] \
+  [--knowledge <ディレクトリ>] [--rag-template-file <パス>]
+```

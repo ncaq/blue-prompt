@@ -13,6 +13,7 @@ module BluePrompt.RolePlay
 open System
 open System.IO
 open System.Threading.Tasks
+open Microsoft.FSharp.Reflection
 
 /// 通常衣装の参照ファイルの名前。
 /// 衣装の一覧では基本になる姿から並べたいので、これを先頭へ置く。
@@ -24,7 +25,10 @@ let private nonReferenceFileNames =
 
 /// 参照ファイル1つ分の、本文へ差し込むために要る情報。
 /// 中身は本文へそのまま写す。
-/// 演じ始める前に全ての衣装へ目を通させる前提なので、
+/// 衣装別のボイスを持たせるのは場面ごとに衣装を再現させるためではなく、
+/// 口調を安定させる材料を増やすためなので、
+/// 場面に合う衣装を選ばせずに、演じ始める前に全ての衣装へ目を通させる。
+/// その前提なので、
 /// 別ファイルとして開かせても読ませる量は変わらず、
 /// 開くかどうかの判断とファイルを開く往復だけが増えるため。
 type Reference =
@@ -165,9 +169,6 @@ let readQuotes (directory: string) : Task<string list> =
             return List.ofSeq quotes
     }
 
-/// テンプレートで代表的な発言を差し込む位置を示すプレースホルダの名前。
-let private quotesPlaceholder: string = "quotes"
-
 /// 代表的な発言の節を組み立てる。
 /// 他の穴と違いここだけは見出しごと差し込む。
 /// 発言を用意していない生徒では見出しだけが残るのを避けたいためで、
@@ -185,9 +186,6 @@ let quotesMarkdown (caller: string) (quotes: string list) : string =
 
         String.concat "\n\n" ([ "# 代表的な発言"; guide ] @ quotes)
 
-/// テンプレートで演じ方の共通の指示を差し込む位置を示すプレースホルダの名前。
-let private playingPlaceholder: string = "playing"
-
 /// 全生徒に共通する演じ方の指示。
 /// テンプレートへ手で書くと、生徒が増えるたびに同じ文が写されて少しずつずれるため、
 /// ここを唯一の出どころにする。
@@ -202,21 +200,6 @@ let playingRules: string =
         [ "- 会話相手のプレイヤーは先生です"
           "- 口調は衣装ごとの参照データのボイスの書き起こしから読み取ってください。"
           "  目立つ言い回しだけを繰り返さず、場面ごとの語彙と言葉遣いの幅をそのまま真似てください" ]
-
-/// テンプレートで呼称表を差し込む位置を示すプレースホルダの名前。
-let private appellationPlaceholder: string = "appellation"
-
-/// テンプレートで衣装ごとの参照データを差し込む位置を示すプレースホルダの名前。
-let private costumesPlaceholder: string = "costumes"
-
-/// テンプレートで演じる生徒の呼び名を差し込む位置を示すプレースホルダの名前。
-let private callerPlaceholder: string = "caller"
-
-/// テンプレートで生徒に固有の手書きの部分を差し込む位置を示すプレースホルダの名前。
-let private characterPlaceholder: string = "character"
-
-/// テンプレートで生徒のナレッジのスキル名の並びを差し込む位置を示すプレースホルダの名前。
-let private knowledgeSkillsPlaceholder: string = "knowledgeSkills"
 
 /// 全てのrole-playスキルが参照する、生徒個別ではないナレッジのスキル。
 /// 本文では役割が違うので別の文で扱っており、生徒のナレッジの一覧からは除く。
@@ -245,6 +228,47 @@ let knowledgeSkillsMarkdown (path: string) (knowledge: string list) : string =
         raise (KnowledgeSkillNotFound path)
 
     names |> List.map (fun name -> $"- %s{name}") |> String.concat "\n"
+
+/// 全生徒で共通のテンプレート(plugins/role-play/SKILL.template.md)の穴へ差し込む値。
+/// フィールド名の先頭を小文字にした名前が、テンプレートに書く`{{名前}}`の穴になる。
+/// テンプレートはここの穴を全て使う必要があり、
+/// 過不足があると差し込むはずの内容が黙って落ちないようにTemplate.renderOrFailが止める。
+///
+/// フィールド名はテンプレートとの約束なので、名前を変える時はテンプレートの穴も直す。
+/// 穴へは文字列をそのまま差し込むため、フィールドは全てstringにする。
+type TemplateValues =
+    {
+        /// 演じる生徒の呼び名。
+        Caller: string
+        /// character.mdの本文。その生徒をどう位置付けるかを書いた、生徒に固有の手書きの部分。
+        Character: string
+        /// 全生徒に共通する演じ方の指示。中身はplayingRules。
+        Playing: string
+        /// キャラ呼称表のJSONから抜き出した、この生徒が誰をどう呼ぶかの表。
+        Appellation: string
+        /// 衣装別の参照ファイルの中身。出典のページ名の見出しを立てた下へそのまま入る。
+        Costumes: string
+        /// quote/に置いた代表的な発言。
+        /// 他の穴と違い見出しごと差し込まれ、発言を持たない生徒では節ごと消える。
+        Quotes: string
+        /// character.mdのフロントマターのknowledge:から、
+        /// 全生徒が参照するものを除いた、この生徒のナレッジのスキル名の一覧。
+        KnowledgeSkills: string
+    }
+
+/// テンプレートの穴の名前から差し込む値への対応にする。
+/// 穴の名前はTemplateValuesのフィールド名から導いて、名前を書く場所を1つにする。
+/// string以外のフィールドを足すとコンパイルは通ってしまうため、
+/// 実行時にどのフィールドなのかを添えて止める。
+let private templateValueMap (values: TemplateValues) : Map<string, string> =
+    FSharpType.GetRecordFields typeof<TemplateValues>
+    |> Array.map (fun field ->
+        let name = Char.ToLowerInvariant field.Name[0] |> string<char>
+
+        match field.GetValue values with
+        | :? string as value -> name + field.Name.Substring 1, value
+        | _ -> invalidOp $"TemplateValuesの%s{field.Name}がstringではありません")
+    |> Map.ofArray
 
 /// 本文を組み立てるのに要る、ファイルから読み終えた入力一式。
 /// 組み立てをファイル入出力から切り離して、
@@ -278,6 +302,13 @@ exception CharacterBodyNotFound of path: string
 /// 差し込むのは全生徒に共通する指示か、生徒ごとに決まる事実か、
 /// その生徒をどう位置付けるかを書いた手書きの部分だけなので、
 /// 本文の骨格は生徒が増えても1つのテンプレートのまま保たれる。
+/// 全生徒に効く指示はテンプレートを、その生徒だけの指示はcharacter.mdを直して生成し直す。
+///
+/// 組み立てた本文はClaude Codeのスキルになり、Open WebUIのModelのシステムプロンプトにもそのままなる。
+/// ナレッジの引き方は経路で違うが、本文を分けると生成の経路まで二重になるため、
+/// テンプレートにはどちらの経路でも成り立つ言い回しだけを書き、
+/// 「スキルが読み込まれた」のように片方でしか成り立たない前提は書かない。
+/// テンプレートの中へ書いた注釈は生成物へそのまま出るため、この決まりはここに置く。
 let renderSkill (input: SkillInput) : string =
     // 参照ファイルが0件なら、ナレッジが0件ならと同じく、
     // 差し込むものが無いまま本文を書き出さない。
@@ -291,19 +322,17 @@ let renderSkill (input: SkillInput) : string =
         + Appellation.toCallerMarkdown input.Caller input.Appellation.Entries
 
     let values =
-        Map
-            [ callerPlaceholder, input.Caller
-              characterPlaceholder, input.Character.Body
-              playingPlaceholder, playingRules
-              appellationPlaceholder, appellation
-              costumesPlaceholder, toCostumeMarkdown input.References
-              quotesPlaceholder, quotesMarkdown input.Caller input.Quotes
-              knowledgeSkillsPlaceholder,
-              knowledgeSkillsMarkdown input.CharacterPath input.Character.Knowledge ]
+        { Caller = input.Caller
+          Character = input.Character.Body
+          Playing = playingRules
+          Appellation = appellation
+          Costumes = toCostumeMarkdown input.References
+          Quotes = quotesMarkdown input.Caller input.Quotes
+          KnowledgeSkills = knowledgeSkillsMarkdown input.CharacterPath input.Character.Knowledge }
 
     input.Character.Raw
     + "\n\n"
-    + Template.renderOrFail input.TemplatePath values input.Template
+    + Template.renderOrFail input.TemplatePath (templateValueMap values) input.Template
 
 /// 全生徒で共通のテンプレートと、スキルのディレクトリに併置された生成物から、SKILL.mdを書き出す。
 /// 生徒に固有の手書きの部分と衣装別の参照ファイルと代表的な発言は、スキルのディレクトリから読む。
