@@ -224,6 +224,13 @@ Knowledgeコレクションの分割の粒度は、
 - エンジンの選定: https://github.com/ncaq/blue-prompt/issues/171
 - モデルの選定: https://github.com/ncaq/blue-prompt/issues/196
 
+この設定での登録先の実際の構築は、
+作者のdotfilesの https://github.com/ncaq/dotfiles/pull/1550 が行っています。
+
+モデルの乗り換えや、
+ハイブリッド検索とリランカーの導入でこの前提が変わる時は、
+モデルの選定のissueの測定をやり直した上でこの節を更新します。
+
 ### NixOSモジュールによる宣言的な同期
 
 Open WebUIをNixOSで運用している場合は、

@@ -189,13 +189,8 @@ ModelとKnowledgeへの変換と同期の決まりは、
 同期を宣言的に行うNixOSモジュールは`modules/nixos.nix`にあり、
 実物のOpen WebUIを相手にした検証は`tests/open-webui-sync.nix`が行います。
 
-Knowledgeの分割の粒度は、
-READMEの「検証しているRAG設定」の登録先で検索が当たることを実測して決めています。
-この設定での登録先の実際の構築は、
-dotfilesの https://github.com/ncaq/dotfiles/pull/1550 が行っています。
-モデルの乗り換えや、
-ハイブリッド検索とリランカーの導入でこの前提が変わる時は、
-https://github.com/ncaq/blue-prompt/issues/196 の測定をやり直した上でREADMEを更新します。
+Knowledgeの分割の粒度が前提にしている登録先の環境は、
+READMEの「検証しているRAG設定」にあります。
 
 # wikiru由来のテキストとプロンプトインジェクション
 
