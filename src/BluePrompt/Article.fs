@@ -31,6 +31,9 @@ type Block =
     | Quote of Block list
     | CodeBlock of string
     | ThematicBreak
+    /// ラベルを選んで中身を切り替える並び。ラベルと、その中身の組を表示の順に持つ。
+    /// 中身の見出しは節を分けない。切り替えの全体が、置かれた節の中身である。
+    | Tabs of (Inline list * Block list) list
     /// 解釈した直後の表。結合セルを保つ。Listing.analyzeがCaptionとItemsへ読み解く。
     | Table of Table
     /// 表を横断する見出しセルだけの行。表の中の小見出し。
@@ -138,6 +141,7 @@ let rec isBlankBlock (block: Block) : bool =
     | BulletList items
     | OrderedList items -> items |> List.forall (List.forall isBlankBlock)
     | Quote blocks -> List.forall isBlankBlock blocks
+    | Tabs panels -> panels |> List.forall (snd >> List.forall isBlankBlock)
     | CodeBlock text -> String.IsNullOrWhiteSpace text
     | ThematicBreak -> false
     | Table table ->
@@ -161,6 +165,8 @@ let rec mapInlines (f: Inline list -> Inline list) (blocks: Block list) : Block 
         | BulletList items -> BulletList(List.map (mapInlines f) items)
         | OrderedList items -> OrderedList(List.map (mapInlines f) items)
         | Quote inner -> Quote(mapInlines f inner)
+        | Tabs panels ->
+            panels |> List.map (fun (label, inner) -> f label, mapInlines f inner) |> Tabs
         | Table table ->
             Table
                 { Rows =
@@ -195,6 +201,11 @@ let rec collectBlocks (f: Block -> Block list) (blocks: Block list) : Block list
         | BulletList items -> f (BulletList(List.map (collectBlocks f) items))
         | OrderedList items -> f (OrderedList(List.map (collectBlocks f) items))
         | Quote inner -> f (Quote(collectBlocks f inner))
+        | Tabs panels ->
+            panels
+            |> List.map (fun (label, inner) -> label, collectBlocks f inner)
+            |> Tabs
+            |> f
         | Heading _
         | Paragraph _
         | Caption _

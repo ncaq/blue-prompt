@@ -104,6 +104,31 @@ let ``本文の改行は1つなら行を2つ続けば段落を区切る`` () =
     Assert.Equal("## 小ネタ\n\n1行目\n2行目\n\n次の段落\n", markdown content)
 
 [<Fact>]
+let ``タブはラベルを小見出しにして中身を順に並べる`` () =
+    // そのまま読むと、ラベルの箇条書きの後ろへ全てのタブの中身が区切り無く続いてしまう。
+    let panel (index: int) (content: XmlNode list) : XmlNode =
+        Elem.div [ Attr.id $"tabsabc-%d{index}" ] content
+
+    let label (index: int) (text: string) : XmlNode =
+        Elem.li [] [ Elem.a [ Attr.href $"#tabsabc-%d{index}" ] [ Text.raw text ] ]
+
+    let content =
+        [ Text.h2 "スキル"
+          Elem.div
+              [ Attr.id "tabsabc" ]
+              [ Elem.ul [] [ label 1 "防御型"; label 2 "攻撃型" ]
+                panel 1 [ Text.h4 "EXスキル"; Text.p "守る" ]
+                panel 2 [ Text.h4 "EXスキル"; Text.p "攻める" ] ]
+          Text.h2 "小ネタ"
+          Text.p "本文" ]
+
+    Assert.Equal(
+        "## スキル\n\n**防御型**\n\n#### EXスキル\n\n守る\n\n**攻撃型**\n\n#### EXスキル\n\n攻める\n\n## 小ネタ\n\n本文\n",
+        articleOf BluePrompt.WikiruDom.characterNoise content
+        |> BluePrompt.Wikiru.render
+    )
+
+[<Fact>]
 let ``脚注は参照と定義として読まれる`` () =
     let note (label: string) : XmlNode =
         Elem.a [ Attr.class' "note_super"; Attr.href "#notefoot" ] [ Text.raw $"*%s{label}" ]

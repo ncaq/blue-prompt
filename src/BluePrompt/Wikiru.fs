@@ -60,9 +60,41 @@ let private footnoteLabel (element: IElement) : string option =
     else
         None
 
+/// タブの入れ物を、ラベルと中身の組の並びとして読む。タブの入れ物でなければNone。
+/// wikiruのタブは、idが「tabs」で始まるdivの直下に、
+/// ラベルのリンクを並べたulと、リンクの先のidを持つ中身のdivを置いている。
+/// そのまま読むと、ラベルの箇条書きの後ろへ全てのタブの中身が区切り無く続いて、
+/// どこからがどのタブの中身なのかが分からなくなる。
+let private tabs (element: IElement) (read: INode list -> Block list) : Block list option =
+    let isContainer =
+        element.LocalName = "div"
+        && not (isNull element.Id)
+        && element.Id.StartsWith("tabs", StringComparison.Ordinal)
+
+    let panels =
+        if isContainer then
+            element.Children
+            |> Seq.filter (fun child -> child.LocalName = "ul")
+            |> Seq.collect _.QuerySelectorAll("li > a[href^='#']")
+            |> Seq.choose (fun anchor ->
+                let target = (anchor.GetAttribute "href").TrimStart '#'
+
+                element.Children
+                |> Seq.tryFind (fun child -> child.Id = target)
+                |> Option.map (fun panel ->
+                    [ Text(anchor.TextContent.Trim()) ], read (Seq.toList panel.ChildNodes)))
+            |> Seq.toList
+        else
+            []
+
+    match panels with
+    | [] -> None
+    | _ -> Some [ Tabs panels ]
+
 /// wikiruの記事を読む時の、サイト固有の読み方。
 let private htmlOptions: Html.Options =
-    { Inline = fun element -> footnoteLabel element |> Option.map FootnoteReference }
+    { Inline = fun element -> footnoteLabel element |> Option.map FootnoteReference
+      Block = tabs }
 
 /// 脚注の定義を#noteから読む。
 /// wikiruの脚注定義は「アンカー、本文のspan、brの繰り返し」の並びなので、
@@ -270,6 +302,7 @@ let selectSections (titles: string list) (article: Article) : Article =
 /// role-playの参照に要るのはプロフィールと紹介文だけで、性能データはrole-playには使わないため。
 /// 「入手方法」はプロフィールの表を横断する見出しセルの行で、節の見出しにはならない。
 /// 次の節の見出しまでを落とす。
+/// 基本情報をタブで切り替えるページでは、それぞれのタブの中身で同じように切り落とす。
 let trimGameplayDetails (article: Article) : Article =
     let isAcquisition (block: Block) : bool =
         match block with
@@ -281,17 +314,26 @@ let trimGameplayDetails (article: Article) : Article =
         | Heading(level, _) -> level <= sectionLevel
         | _ -> false
 
+    let rec trim (blocks: Block list) : Block list =
+        blocks
+        |> List.fold
+            (fun (kept, skipping) block ->
+                if isSectionHeading block then
+                    block :: kept, false
+                elif skipping || isAcquisition block then
+                    kept, true
+                else
+                    match block with
+                    | Tabs panels ->
+                        Tabs(panels |> List.map (fun (label, inner) -> label, trim inner)) :: kept,
+                        false
+                    | _ -> block :: kept, false)
+            ([], false)
+        |> fst
+        |> List.rev
+
     { article with
-        Blocks =
-            article.Blocks
-            |> List.fold
-                (fun (kept, skipping) block ->
-                    if isSectionHeading block then block :: kept, false
-                    elif skipping || isAcquisition block then kept, true
-                    else block :: kept, false)
-                ([], false)
-            |> fst
-            |> List.rev }
+        Blocks = trim article.Blocks }
 
 /// 記事をMarkdownへ書き出す。残った本文から参照されている脚注の定義だけを末尾に置く。
 let render (article: Article) : string =
@@ -426,23 +468,27 @@ let fullName (article: Article) : string option =
             | _ -> plainText [ inlineNode ])
         |> String.concat ""
 
-    article.Blocks
-    |> List.tryPick (fun block ->
-        match block with
-        | Items groups ->
-            groups
-            |> List.collect _.Items
-            |> List.tryPick (fun parts ->
-                match parts with
-                | Key key :: rest when (plainText key.Inlines).Trim() = "フルネーム" ->
-                    rest
-                    |> List.tryPick (fun part ->
-                        match part with
-                        | Value(_, content) -> Some(baseText content.Inlines)
-                        | Key _ -> None)
-                    |> Option.defaultValue ""
-                    |> Some
-                | _ -> None)
+    /// 項目の並び。プロフィールをタブで切り替えるページのために、タブの中も表示の順に辿る。
+    /// 先頭のタブがページ名の姿なので、最初に見つかったフルネームを使えばよい。
+    let rec items (blocks: Block list) : Part list list =
+        blocks
+        |> List.collect (fun block ->
+            match block with
+            | Items groups -> groups |> List.collect _.Items
+            | Tabs panels -> panels |> List.collect (snd >> items)
+            | _ -> [])
+
+    items article.Blocks
+    |> List.tryPick (fun parts ->
+        match parts with
+        | Key key :: rest when (plainText key.Inlines).Trim() = "フルネーム" ->
+            rest
+            |> List.tryPick (fun part ->
+                match part with
+                | Value(_, content) -> Some(baseText content.Inlines)
+                | Key _ -> None)
+            |> Option.defaultValue ""
+            |> Some
         | _ -> None)
     |> Option.bind (fun value ->
         match (Parse.remove ruby value).Trim() with

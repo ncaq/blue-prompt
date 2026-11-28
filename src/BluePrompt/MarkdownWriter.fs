@@ -211,6 +211,11 @@ and private blockLines (headingLevel: int option) (block: Block) : string list =
         let fence = String.replicate (max 3 (longestRun + 1)) "`"
         fence :: List.ofArray (text.Replace("\r\n", "\n").Split '\n') @ [ fence ]
     | ThematicBreak -> [ "---" ]
+    // Markdownには切り替えが無いので、ラベルを小見出しにして全ての中身を順に並べる。
+    | Tabs panels ->
+        panels
+        |> List.collect (fun (label, inner) -> Caption label :: inner)
+        |> blocksLines headingLevel
     | Caption content -> [ boldLine content ]
     | Items groups ->
         groups

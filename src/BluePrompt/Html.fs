@@ -14,10 +14,16 @@ type Options =
         /// 要素をサイト固有の決まりで行の中の要素として読む。読まない要素にはNoneを返す。
         /// 脚注の参照のように、HTMLとしてはただのリンクでも意味の違う要素に使う。
         Inline: IElement -> Inline option
+        /// 段落を切る要素をサイト固有の決まりでブロックの並びとして読む。読まない要素にはNoneを返す。
+        /// タブのように、HTMLとしてはただの入れ物でも意味を持つ要素に使う。
+        /// 中身を読むための、ノードの並びをブロックとして読む関数を受け取る。
+        Block: IElement -> (INode list -> Block list) -> Block list option
     }
 
 /// サイト固有の読み方を持たない設定。
-let plain: Options = { Inline = fun _ -> None }
+let plain: Options =
+    { Inline = fun _ -> None
+      Block = fun _ _ -> None }
 
 /// 表示対象ではない要素。中身ごと読み飛ばす。
 /// タグを落としても文字として本文へ混ざると、スクリプト片やフォームの部品が成果物へ紛れ込む。
@@ -346,7 +352,11 @@ let rec private readBlocks (options: Options) (nodes: INode list) : Block list =
                 | :? IElement as element when
                     Option.isNone (options.Inline element) && isBlockLike element
                     ->
-                    [], readBlock options element :: flush pending blocks
+                    let read =
+                        options.Block element (readBlocks options)
+                        |> Option.defaultWith (fun () -> readBlock options element)
+
+                    [], read :: flush pending blocks
                 | _ -> List.rev (readInline options node) @ pending, blocks)
             ([], [])
 
