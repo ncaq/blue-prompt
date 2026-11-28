@@ -370,3 +370,64 @@ let ``アップロードの応答にidが無いとSyncErrorで止まる`` () : T
             do! assertSyncError "id" options
             Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
         })
+
+[<Fact>]
+let ``アップロードの応答のidが空だとSyncErrorで止まる`` () : Task =
+    // キーがあっても値が空なら、読み込みは通ってしまう。
+    // そのまま進むと空のfile_idでコレクションへの追加が飛ぶ。
+    let routes =
+        knowledgeRoutes |> Map.add ("POST", "/api/v1/files/") (200, """{"id":""}""")
+
+    withFixedServer routes (fun server ->
+        task {
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
+
+            do! assertSyncError "/api/v1/files/の応答のidが空です" options
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
+        })
+
+/// コレクションのファイル一覧への要求の数。
+/// 空のidで組み立てたURLはパスの形が崩れるので、末尾だけで数える。
+let private filesRequestCount (server: FixedServer) : int =
+    server.Received()
+    |> List.filter (fun request -> request.Path.EndsWith("/files", System.StringComparison.Ordinal))
+    |> List.length
+
+[<Fact>]
+let ``コレクションの作成の応答のidが空だとSyncErrorで止まる`` () : Task =
+    // 空のidのまま進むと、`/api/v1/knowledge//files`のような壊れたURLへ要求が飛ぶ。
+    let routes =
+        knowledgeRoutes
+        |> Map.add
+            ("POST", "/api/v1/knowledge/create")
+            (200, """{"id":"","name":"character-appellation","description":"説明"}""")
+
+    withFixedServer routes (fun server ->
+        task {
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
+
+            do! assertSyncError "/api/v1/knowledge/createの応答のidが空です" options
+            Assert.Equal(0, filesRequestCount server)
+        })
+
+[<Fact>]
+let ``登録済みのコレクションのidが空だとSyncErrorで止まる`` () : Task =
+    let collection = """{"id":"","name":"character-appellation","description":"説明"}"""
+
+    let routes =
+        knowledgeRoutes
+        |> Map.add ("GET", "/api/v1/knowledge/") (200, $$"""{"items":[{{collection}}],"total":1}""")
+
+    withFixedServer routes (fun server ->
+        task {
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
+
+            do! assertSyncError "/api/v1/knowledge/の応答のidが空です" options
+            Assert.Equal(0, filesRequestCount server)
+        })
