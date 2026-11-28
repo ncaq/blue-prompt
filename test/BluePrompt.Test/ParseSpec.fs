@@ -52,14 +52,26 @@ let ``anyLineは空行も1行として読み文書の末尾では失敗する`` 
     Assert.Equal(Some "", Parse.tryPrefix Parse.anyLine "\n次の行")
     Assert.Equal(None, Parse.tryPrefix Parse.anyLine "")
 
+/// 「受け付ける」という行だけを受け付けるlineChoose。
+let private chooseAccepted: Parse.TextParser<string> =
+    Parse.lineChoose (fun line -> if line = "受け付ける" then Some line else None)
+
 [<Fact>]
 let ``lineChooseは受け付けなかった行を読み進めない`` () =
-    // 受け付けなかった行は、続くパーサがそのまま読める位置に残る。
-    let rejectThenRead =
-        Parse.lineChoose (fun line -> if line = "受け付ける" then Some line else None)
-        <|> Parse.anyLine
+    // `<|>`は右のパーサの前に読み位置を自分で戻すので、
+    // 組み合わせた結果を見ても、lineChooseが位置を戻したのかは分からない。
+    // Readerへ直接適用して、失敗した後の位置を見る。
+    let reader = Reader.ofString "別の行\n続き" ()
 
-    Assert.Equal(Some "別の行", Parse.tryPrefix rejectThenRead "別の行\n続き")
+    Assert.True(Result.isError (chooseAccepted reader))
+    Assert.Equal(0, reader.Index)
+
+[<Fact>]
+let ``lineChooseは受け付けた行を改行ごと読み進める`` () =
+    let reader = Reader.ofString "受け付ける\n続き" ()
+
+    Assert.Equal(Ok "受け付ける", chooseAccepted reader |> Result.mapError ignore)
+    Assert.Equal("受け付ける\n".Length, reader.Index)
 
 [<Fact>]
 let ``trimInlineEndは末尾の行内の空白だけを落とす`` () =
