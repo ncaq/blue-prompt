@@ -1,364 +1,97 @@
+/// open-webui syncの単体テスト。
+///
+/// 登録や更新が正しく進むことは、
+/// 使い捨ての実物のOpen WebUIへ同期するNixOSテスト(tests/open-webui-sync.nix)で確かめる。
+/// ここでは実物では起こせない応答や、
+/// 登録先へ届く前に止まるべき入力の扱いだけを、
+/// 決まった応答を返すだけのサーバを相手に確かめる。
 module BluePrompt.Test.OpenWebuiSyncSpec
 
-open System
 open System.Collections.Generic
 open System.IO
-open System.Net
-open System.Net.Sockets
 open System.Text
-open System.Text.Json.Nodes
 open System.Threading.Tasks
 open Xunit
 open BluePrompt
 open BluePrompt.OpenWebuiSync
+open BluePrompt.Test.LocalServer
 
-/// loopbackの空きポートをOSに割り当てさせて確保する。
-/// HttpListenerはポート0の自動割り当てに対応していないため。
-let private freePort () : int =
-    use listener = new TcpListener(IPAddress.Loopback, 0)
-    listener.Start()
-    let port = (listener.LocalEndpoint :?> IPEndPoint).Port
-    listener.Stop()
-    port
+/// 受け取ったリクエスト1つ分の、テストが確かめる内容。
+type private ReceivedRequest =
+    { Method: string
+      Path: string
+      Authorization: string option }
 
-/// Open WebUIがアップロード時にmeta.file_hashへ入れるのと同じ、生バイト列のSHA-256。
-let private sha256Hex (bytes: byte array) : string =
-    Convert.ToHexStringLower(Security.Cryptography.SHA256.HashData bytes)
+/// 決まった応答を返すサーバの、テストから見える面。
+type private FixedServer =
+    {
+        /// 末尾のスラッシュを含まないベースURL。
+        Url: string
+        /// ここまでに受け取ったリクエスト。
+        Received: unit -> ReceivedRequest list
+    }
 
-/// アップロードされたファイル1つ分の、モックが覚えておく内容。
-type private UploadedFile =
-    { Id: string
-      FileName: string
-      Hash: string }
+    /// メソッドとパスが一致したリクエストの数。
+    member this.CountOf(method: string, path: string) =
+        this.Received()
+        |> List.filter (fun request -> request.Method = method && request.Path = path)
+        |> List.length
 
-/// multipart/form-dataのボディから、最初のパートのファイル名と中身を取り出す。
-/// テストで確かめたいのはアップロードされた中身が変わったかどうかなので、
-/// 汎用のパーサーは持ち込まず境界と空行だけを頼りに切り出す。
-let private parseMultipart (contentType: string) (body: byte array) : string * byte array =
-    let boundary =
-        contentType.Split ';'
-        |> Array.map _.Trim()
-        |> Array.pick (fun part ->
-            if part.StartsWith("boundary=", StringComparison.Ordinal) then
-                Some("--" + part.Substring("boundary=".Length).Trim '"')
-            else
-                None)
+/// メソッドとパスごとに決まった応答を返すサーバを立てて、testへ渡す。
+/// クエリ文字列は見ず、表に無いリクエストには404を返す。
+/// 状態を持たないので、受け取ったリクエストを記録して後から確かめる。
+let private withFixedServer
+    (routes: Map<string * string, int * string>)
+    (test: FixedServer -> Task<unit>)
+    : Task =
+    let received = List<ReceivedRequest>()
 
-    let text = Encoding.Latin1.GetString body
-    let headerEnd = text.IndexOf("\r\n\r\n", StringComparison.Ordinal)
-    let contentStart = headerEnd + 4
+    let respond (request: Request) : Response =
+        lock received (fun () ->
+            received.Add
+                { Method = request.Method
+                  Path = request.Path
+                  Authorization = Map.tryFind "authorization" request.Headers })
 
-    let contentEnd =
-        text.IndexOf("\r\n" + boundary, contentStart, StringComparison.Ordinal)
+        let status, body =
+            routes
+            |> Map.tryFind (request.Method, request.Path)
+            |> Option.defaultValue (404, """{"detail":"unknown"}""")
 
-    // ファイル名はトークンとして書ける文字だけならクォートが付かないため、どちらの形も読む。
-    let fileName =
-        let key = "filename="
-        let header = text.Substring(0, headerEnd)
+        // 同期はステータスコードしか見ないので、理由句は固定の文字列で済ませる。
+        { Status = $"%d{status} Fixed"
+          ContentType = "application/json"
+          Body = Encoding.UTF8.GetBytes(body: string)
+          ExtraHeaders = [] }
 
-        // 見つからないまま読み進めると、ヘッダの途中の無関係な文字列がファイル名になる。
-        let value =
-            match header.IndexOf(key, StringComparison.Ordinal) with
-            | -1 -> failwith $"multipartのヘッダにファイル名がありません: %s{header}"
-            | index -> header.Substring(index + key.Length)
+    withRequestServer respond (fun url ->
+        test
+            { Url = url.ToString().TrimEnd '/'
+              Received = fun () -> lock received (fun () -> List.ofSeq received) })
 
-        value.TrimStart('"')
-        |> Seq.takeWhile (fun c -> not ("\";\r\n".Contains c))
-        |> Seq.toArray
-        |> String
+/// 起動を待ってサインインするまでの応答。
+let private signedIn =
+    Map
+        [ ("GET", "/health"), (200, """{"status":true}""")
+          ("POST", "/api/v1/auths/signin"), (200, """{"token":"signed-in-token"}""") ]
 
-    fileName, body[contentStart .. contentEnd - 1]
+/// Modelが未登録で、作成を受け付ける応答。
+/// Open WebUIは未登録のidへ401を返す。
+let private modelRoutes =
+    signedIn
+    |> Map.add ("GET", "/api/v1/models/model") (401, """{"detail":"not found"}""")
+    |> Map.add ("POST", "/api/v1/models/create") (200, "{}")
 
-/// Open WebUIのModel・Knowledge・ファイル・RAG設定のAPIを模したモックサーバ。
-/// 登録済みの状態をメモリ上の辞書として持ち、
-/// 実物と同じくフォームに無いフィールドがDB側で補われる状況も模す。
-type private MockServer() =
-    let port = freePort ()
-    let listener = new HttpListener()
-    let models = Dictionary<string, JsonNode>()
-    // コレクションのidから、名前と説明と登録済みファイルへの対応。
-    let collections = Dictionary<string, JsonNode>()
-    let collectionFiles = Dictionary<string, UploadedFile list>()
-    // アップロード済みでまだコレクションへ結び付いていないファイル。
-    let mutable uploaded: Map<string, UploadedFile> = Map.empty
-    let mutable createCount = 0
-    let mutable updateCount = 0
-    let mutable signInCount = 0
-    let mutable uploadCount = 0
-    let mutable fileAddCount = 0
-    let mutable fileRemoveCount = 0
-    let mutable knowledgeCreateCount = 0
-    let mutable knowledgeUpdateCount = 0
-    let mutable ragTemplateUpdateCount = 0
-    let mutable ragTemplate = "既定のテンプレート"
-    let mutable nextId = 0
-    let mutable lastAuthorization: string option = None
-    // 存在確認のGETへ固定の応答を返すための上書き。サーバ側の異常を模す。
-    let mutable modelGetOverride: (int * string) option = None
-    // サインインへ固定の応答を返すための上書き。認証を有効にしたインスタンスを模す。
-    let mutable signInOverride: (int * string) option = None
-    // アップロードへ固定の応答を返すための上書き。応答の形が変わった状況を模す。
-    let mutable uploadOverride: (int * string) option = None
-
-    let issueId () =
-        nextId <- nextId + 1
-        $"id-%d{nextId}"
-
-    let respond (response: HttpListenerResponse) (status: int) (body: string) =
-        response.StatusCode <- status
-        let bytes = Encoding.UTF8.GetBytes(body: string)
-        response.OutputStream.Write(bytes, 0, bytes.Length)
-        response.Close()
-
-    /// リクエストのボディを生バイト列として読み切る。
-    let readBody (request: HttpListenerRequest) =
-        use buffer = new MemoryStream()
-        request.InputStream.CopyTo buffer
-        buffer.ToArray()
-
-    let readJson (request: HttpListenerRequest) =
-        JsonNode.Parse(Encoding.UTF8.GetString(readBody request))
-
-    /// パスの末尾から2つ目を、コレクションのidとして取り出す。
-    let collectionIdOf (path: string) (depthFromEnd: int) =
-        let parts = path.Split '/'
-        parts[parts.Length - depthFromEnd - 1]
-
-    /// コレクション単体のJSON。
-    /// 実物と同じく、この応答のfilesは常にnullで一覧を含まない。
-    let collectionJson (id: string) =
-        let collection = collections[id].DeepClone()
-        collection["files"] <- null
-        collection.ToJsonString()
-
-    /// 一覧APIが1ページで返す件数。実物のKnowledgeのファイル一覧と同じ。
-    let pageSize = 30
-
-    /// 登録済みファイルの一覧のJSON。
-    /// 実物と同じくページングして、itemsと総件数のtotalを持つオブジェクトとして返す。
-    let collectionFilesJson (id: string) (page: int) =
-        let all = collectionFiles[id]
-
-        let items =
-            JsonArray(
-                all
-                |> List.skip (min ((page - 1) * pageSize) (List.length all))
-                |> List.truncate pageSize
-                |> List.map (fun file ->
-                    let meta = JsonObject()
-                    meta["name"] <- JsonValue.Create file.FileName
-                    meta["file_hash"] <- JsonValue.Create file.Hash
-                    let node = JsonObject()
-                    node["id"] <- JsonValue.Create file.Id
-                    node["meta"] <- meta
-                    node :> JsonNode)
-                |> List.toArray
-            )
-
-        let root = JsonObject()
-        root["items"] <- items
-        root["total"] <- JsonValue.Create(List.length all)
-        root.ToJsonString()
-
-    /// 実物と同じく、フォームに無いフィールドをDB側で補って保存する。
-    let storeNode (form: JsonNode) =
-        let meta = form["meta"]
-        form["user_id"] <- JsonValue.Create "mock-user"
-        meta["profile_image_url"] <- JsonValue.Create "/static/favicon.png"
-
-        // 登録済みのModelには権限の設定が必ず入る。
-        if isNull form["access_grants"] then
-            form["access_grants"] <- JsonArray()
-
-        models[form["id"].GetValue<string>()] <- form
-
-    let store (request: HttpListenerRequest) =
-        use reader = new StreamReader(request.InputStream)
-        storeNode (JsonNode.Parse(reader.ReadToEnd()))
-
-    let handle (context: HttpListenerContext) =
-        let request = context.Request
-        lastAuthorization <- Option.ofObj (request.Headers["Authorization"])
-
-        match request.HttpMethod, request.Url.AbsolutePath with
-        | "GET", "/health" -> respond context.Response 200 """{"status":true}"""
-        | "POST", "/api/v1/auths/signin" ->
-            signInCount <- signInCount + 1
-
-            match signInOverride with
-            | Some(status, body) -> respond context.Response status body
-            | None -> respond context.Response 200 """{"token":"signed-in-token"}"""
-        | "GET", "/api/v1/models/model" ->
-            match modelGetOverride with
-            | Some(status, body) -> respond context.Response status body
-            | None ->
-                match models.TryGetValue(request.QueryString["id"]) with
-                | true, model -> respond context.Response 200 (model.ToJsonString())
-                // Open WebUIは未登録のidへ401を返す。
-                | _ -> respond context.Response 401 """{"detail":"not found"}"""
-        | "POST", "/api/v1/models/create" ->
-            createCount <- createCount + 1
-            store request
-            respond context.Response 200 "{}"
-        | "POST", "/api/v1/models/model/update" ->
-            updateCount <- updateCount + 1
-            let form = readJson request
-
-            // 実物はaccess_grantsを省いたボディへ500を返す。
-            match form["access_grants"] with
-            | null -> respond context.Response 500 "Internal Server Error"
-            | _ ->
-                storeNode form
-                respond context.Response 200 "{}"
-        | "GET", "/api/v1/knowledge/" ->
-            // 実物と同じくitemsを持つオブジェクトとして返す。
-            let items = JsonArray(collections.Values |> Seq.map _.DeepClone() |> Seq.toArray)
-
-            let root = JsonObject()
-            root["items"] <- items
-            respond context.Response 200 (root.ToJsonString())
-        | "POST", "/api/v1/knowledge/create" ->
-            knowledgeCreateCount <- knowledgeCreateCount + 1
-            let form = readJson request
-            let id = issueId ()
-            form["id"] <- JsonValue.Create id
-            collections[id] <- form
-            collectionFiles[id] <- []
-            respond context.Response 200 (form.ToJsonString())
-        | "POST", "/api/v1/files/" ->
-            uploadCount <- uploadCount + 1
-            let fileName, content = parseMultipart request.ContentType (readBody request)
-            let id = issueId ()
-
-            match uploadOverride with
-            | Some(status, body) -> respond context.Response status body
-            | None ->
-                uploaded <-
-                    Map.add
-                        id
-                        { Id = id
-                          FileName = fileName
-                          Hash = sha256Hex content }
-                        uploaded
-
-                let created = JsonObject()
-                created["id"] <- JsonValue.Create id
-                respond context.Response 200 (created.ToJsonString())
-        | "POST", path when path.EndsWith("/file/add", StringComparison.Ordinal) ->
-            fileAddCount <- fileAddCount + 1
-            let id = collectionIdOf path 2
-            let body = readJson request
-            let fileId = body["file_id"].GetValue<string>()
-            collectionFiles[id] <- collectionFiles[id] @ [ uploaded[fileId] ]
-            respond context.Response 200 (collectionJson id)
-        | "POST", path when path.EndsWith("/file/remove", StringComparison.Ordinal) ->
-            fileRemoveCount <- fileRemoveCount + 1
-            let id = collectionIdOf path 2
-            let body = readJson request
-            let fileId = body["file_id"].GetValue<string>()
-
-            collectionFiles[id] <-
-                collectionFiles[id] |> List.filter (fun file -> file.Id <> fileId)
-
-            respond context.Response 200 (collectionJson id)
-        | "POST", path when
-            path.EndsWith("/update", StringComparison.Ordinal)
-            && path.StartsWith("/api/v1/knowledge/", StringComparison.Ordinal)
-            ->
-            knowledgeUpdateCount <- knowledgeUpdateCount + 1
-            let id = collectionIdOf path 1
-            let form = readJson request
-            form["id"] <- JsonValue.Create id
-            collections[id] <- form
-            respond context.Response 200 (collectionJson id)
-        | "GET", path when
-            path.StartsWith("/api/v1/knowledge/", StringComparison.Ordinal)
-            && path.EndsWith("/files", StringComparison.Ordinal)
-            ->
-            let page =
-                match Int32.TryParse(request.QueryString["page"]) with
-                | true, value -> value
-                | _ -> 1
-
-            respond context.Response 200 (collectionFilesJson (collectionIdOf path 1) page)
-        | "GET", path when path.StartsWith("/api/v1/knowledge/", StringComparison.Ordinal) ->
-            let id = collectionIdOf path 0
-
-            match collections.ContainsKey id with
-            | true -> respond context.Response 200 (collectionJson id)
-            | false -> respond context.Response 404 """{"detail":"not found"}"""
-        | "GET", "/api/v1/retrieval/config" ->
-            let root = JsonObject()
-            root["RAG_TEMPLATE"] <- JsonValue.Create ragTemplate
-            respond context.Response 200 (root.ToJsonString())
-        | "POST", "/api/v1/retrieval/config/update" ->
-            ragTemplateUpdateCount <- ragTemplateUpdateCount + 1
-            let body = readJson request
-            ragTemplate <- body["RAG_TEMPLATE"].GetValue<string>()
-            respond context.Response 200 """{"status":true}"""
-        | _ -> respond context.Response 404 """{"detail":"unknown"}"""
-
-    do
-        listener.Prefixes.Add $"http://127.0.0.1:%d{port}/"
-        listener.Start()
-
-        Task.Run(fun () ->
-            while listener.IsListening do
-                try
-                    handle (listener.GetContext())
-                with _ ->
-                    ())
-        |> ignore
-
-    member _.Url = $"http://127.0.0.1:%d{port}"
-
-    member _.OverrideModelGet(status: int, body: string) = modelGetOverride <- Some(status, body)
-    member _.OverrideSignIn(status: int, body: string) = signInOverride <- Some(status, body)
-    member _.OverrideUpload(status: int, body: string) = uploadOverride <- Some(status, body)
-    member _.Models = models
-    member _.CreateCount = createCount
-    member _.UpdateCount = updateCount
-    member _.SignInCount = signInCount
-    member _.LastAuthorization = lastAuthorization
-    member _.PageSize = pageSize
-    member _.UploadCount = uploadCount
-    member _.FileAddCount = fileAddCount
-    member _.FileRemoveCount = fileRemoveCount
-    member _.KnowledgeCreateCount = knowledgeCreateCount
-    member _.KnowledgeUpdateCount = knowledgeUpdateCount
-    member _.RagTemplateUpdateCount = ragTemplateUpdateCount
-    member _.RagTemplate = ragTemplate
-
-    /// コレクションの名前から、登録されているファイル名の一覧を引く。
-    member _.FileNamesOf(name: string) =
-        collections
-        |> Seq.tryPick (fun entry ->
-            if entry.Value["name"].GetValue<string>() = name then
-                Some(collectionFiles[entry.Key] |> List.map _.FileName)
-            else
-                None)
-
-    /// 登録済みのファイルを同じ名前のまま複製する。
-    /// 以前の同期が中断して同名のファイルが残った、壊れた状態を模す。
-    member this.DuplicateFile(name: string) =
-        match this.CollectionIdOf name with
-        | None -> failwith $"%s{name}が登録されていません"
-        | Some id ->
-            collectionFiles[id] <-
-                collectionFiles[id]
-                @ (collectionFiles[id] |> List.map (fun file -> { file with Id = issueId () }))
-
-    /// コレクションの名前からidを引く。
-    member _.CollectionIdOf(name: string) =
-        collections
-        |> Seq.tryPick (fun entry ->
-            if entry.Value["name"].GetValue<string>() = name then
-                Some entry.Key
-            else
-                None)
-
-    interface IDisposable with
-        member _.Dispose() = listener.Close()
+/// Knowledgeコレクションが未登録で、作成とファイルの追加を受け付ける応答。
+let private knowledgeRoutes =
+    modelRoutes
+    |> Map.add ("GET", "/api/v1/knowledge/") (200, """{"items":[],"total":0}""")
+    |> Map.add
+        ("POST", "/api/v1/knowledge/create")
+        (200, """{"id":"collection-id","name":"character-appellation","description":"説明"}""")
+    |> Map.add ("GET", "/api/v1/knowledge/collection-id/files") (200, """{"items":[],"total":0}""")
+    |> Map.add ("POST", "/api/v1/files/") (200, """{"id":"file-id"}""")
+    |> Map.add ("POST", "/api/v1/knowledge/collection-id/file/add") (200, "{}")
 
 /// ModelFormのJSON群をテスト用の一時ディレクトリへ書き出す。
 let private makeModelsDirectory (forms: OpenWebui.ModelForm list) : string =
@@ -370,7 +103,7 @@ let private makeModelsDirectory (forms: OpenWebui.ModelForm list) : string =
 
     directory
 
-let private makeForm (id: string) (system: string) : OpenWebui.ModelForm =
+let private makeForm (id: string) : OpenWebui.ModelForm =
     { Id = id
       BaseModelId = None
       Name = id
@@ -378,221 +111,28 @@ let private makeForm (id: string) (system: string) : OpenWebui.ModelForm =
         { Description = $"%s{id}の説明"
           Knowledge = None }
       Params =
-        { System = system
+        { System = "プロンプト"
           FunctionCalling = None }
       IsActive = true }
 
-let private makeOptions (server: MockServer) (directory: string) : Options =
-    { ModelsDirectory = directory
-      Url = server.Url
-      BaseModelId = None
-      ApiKeyFile = None
-      KnowledgeDirectory = None
-      RagTemplateFile = None }
+/// knowledge:を書いたスキルから作られるのと同じModelFormを組み立てる。
+let private makeFormWithKnowledge (id: string) (knowledgeNames: string list) : OpenWebui.ModelForm =
+    let form = makeForm id
 
-let private run (options: Options) = (sync options).GetAwaiter().GetResult()
-
-/// JsonNodeをネストしたキーで辿る。
-/// F#はインデクサの連鎖を式の位置によっては解釈できないため、関数として用意する。
-let private node (root: JsonNode) (keys: string list) : JsonNode =
-    List.fold (fun (current: JsonNode) (key: string) -> current[key]) root keys
-
-[<Fact>]
-let ``未登録のModelは作成され再実行では書き込まれない`` () =
-    use server = new MockServer()
-
-    let options =
-        makeOptions
-            server
-            (makeModelsDirectory [ makeForm "yuuka" "プロンプト"; makeForm "kotori" "プロンプト" ])
-
-    run options
-    Assert.Equal(2, server.CreateCount)
-    Assert.Equal(0, server.UpdateCount)
-
-    run options
-    Assert.Equal(2, server.CreateCount)
-    Assert.Equal(0, server.UpdateCount)
-
-[<Fact>]
-let ``ベースURLの末尾スラッシュはどの経路で組み立てても落とされる`` () =
-    use server = new MockServer()
-
-    // パスは文字列の連結で組み立てるため、
-    // 末尾スラッシュが残ると`//health`のような不正なURLになる。
-    // CLI以外の経路がOptionsを組み立てても壊れないように、
-    // この不変条件はOptionsを持つ側で保つ。
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
-            Url = $"%s{server.Url}/" }
-
-    run options
-
-    Assert.Equal(1, server.CreateCount)
-
-[<Fact>]
-let ``スキルを改良すると登録済みのModelが上書きされる`` () =
-    use server = new MockServer()
-    run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "古いプロンプト" ]))
-
-    run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "改良したプロンプト" ]))
-
-    Assert.Equal(1, server.UpdateCount)
-    let yuuka = server.Models["yuuka"]
-    Assert.Equal("改良したプロンプト", (node yuuka [ "params"; "system" ]).GetValue<string>())
-
-[<Fact>]
-let ``base-model-id未指定ではUIで選ばれた上流モデルを保持したまま改良を上書きする`` () =
-    use server = new MockServer()
-    run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "古いプロンプト" ]))
-
-    // 登録後にUIで上流モデルを選んだ状況を模す。
-    let yuuka = server.Models["yuuka"]
-    yuuka["base_model_id"] <- JsonValue.Create "qwen3:32b"
-
-    // 上流モデルの選択だけでは差分とみなさず書き込まない。
-    run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "古いプロンプト" ]))
-    Assert.Equal(0, server.UpdateCount)
-
-    run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "改良したプロンプト" ]))
-    Assert.Equal(1, server.UpdateCount)
-    let updated = server.Models["yuuka"]
-    Assert.Equal("qwen3:32b", (node updated [ "base_model_id" ]).GetValue<string>())
-    Assert.Equal("改良したプロンプト", (node updated [ "params"; "system" ]).GetValue<string>())
-
-[<Fact>]
-let ``base-model-idを指定すると作成時から設定される`` () =
-    use server = new MockServer()
-
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
-            BaseModelId = Some "qwen3:32b" }
-
-    run options
-
-    let yuuka = server.Models["yuuka"]
-    Assert.Equal("qwen3:32b", (node yuuka [ "base_model_id" ]).GetValue<string>())
-
-[<Fact>]
-let ``APIキーのファイルを指定するとBearerヘッダとして送られる`` () =
-    use server = new MockServer()
-    let apiKeyPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
-    File.WriteAllText(apiKeyPath, "secret-key\n")
-
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
-            ApiKeyFile = Some apiKeyPath }
-
-    run options
-
-    Assert.Equal(Some "Bearer secret-key", server.LastAuthorization)
-    // 資格情報が与えられている以上サインインは要らない。
-    Assert.Equal(0, server.SignInCount)
-
-[<Fact>]
-let ``APIキーを指定しないとサインインしたトークンがBearerヘッダとして送られる`` () =
-    use server = new MockServer()
-
-    run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]))
-
-    Assert.Equal(1, server.SignInCount)
-    Assert.Equal(Some "Bearer signed-in-token", server.LastAuthorization)
-    Assert.Equal(1, server.CreateCount)
-
-[<Fact>]
-let ``サインインに失敗するとSyncErrorで止まり書き込みへ進まない`` () =
-    use server = new MockServer()
-    // 認証を有効にしたインスタンスでは固定の資格情報が通らない。
-    server.OverrideSignIn(400, """{"detail":"Invalid credentials"}""")
-
-    let options = makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ])
-
-    let error = Assert.Throws<SyncError>(fun () -> run options)
-
-    // APIキーの指定が要ることに気付けるように理由が含まれる。
-    match error :> exn with
-    | SyncError message -> Assert.Contains("400", message)
-    | unexpected -> failwith unexpected.Message
-
-    Assert.Equal(0, server.CreateCount)
-
-[<Fact>]
-let ``サインインの応答にtokenが無いとSyncErrorで止まる`` () =
-    use server = new MockServer()
-    server.OverrideSignIn(200, """{"detail":"ok"}""")
-
-    let options = makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ])
-
-    let error = Assert.Throws<SyncError>(fun () -> run options)
-
-    match error :> exn with
-    | SyncError message -> Assert.Contains("token", message)
-    | unexpected -> failwith unexpected.Message
-
-    Assert.Equal(0, server.CreateCount)
-
-[<Fact>]
-let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり作成へ進まない`` () =
-    use server = new MockServer()
-    server.OverrideModelGet(500, """{"detail":"internal error"}""")
-
-    let options = makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ])
-
-    let error = Assert.Throws<SyncError>(fun () -> run options)
-
-    // 失敗の理由が調査できるようにステータスコードが含まれる。
-    match error :> exn with
-    | SyncError message -> Assert.Contains("500", message)
-    | unexpected -> failwith unexpected.Message
-
-    Assert.Equal(0, server.CreateCount)
-
-[<Fact>]
-let ``応答に権限設定が無いと空の権限で上書きせずSyncErrorで止まる`` () =
-    use server = new MockServer()
-
-    // access_grantsを持たない応答を模す。
-    // 実物のModelModelはこのフィールドを必ず埋めて返すため、
-    // 欠けているのは応答の形が想定と違うということで、
-    // このリポジトリが管理しない権限の設定を推測で書き換えてはいけない。
-    let body =
-        """{"id":"yuuka","name":"yuuka",
-"meta":{"description":"yuukaの説明"},
-"params":{"system":"古いプロンプト"},"is_active":true}"""
-
-    server.OverrideModelGet(200, body)
-
-    let options =
-        makeOptions server (makeModelsDirectory [ makeForm "yuuka" "改良したプロンプト" ])
-
-    let error = Assert.Throws<SyncError>(fun () -> run options)
-
-    // 何が足りないのか分かるようにフィールドの名前が含まれる。
-    match error :> exn with
-    | SyncError message -> Assert.Contains("access_grants", message)
-    | unexpected -> failwith unexpected.Message
-
-    Assert.Equal(0, server.UpdateCount)
-
-[<Fact>]
-let ``同じidのModel定義が複数あるとSyncErrorで止まる`` () =
-    use server = new MockServer()
-    let directory = makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]
-    // 別のファイル名で同じidの定義を置く。
-    File.WriteAllText(
-        Path.Combine(directory, "duplicated.json"),
-        OpenWebui.toJson (makeForm "yuuka" "別のプロンプト")
-    )
-
-    let error = Assert.Throws<SyncError>(fun () -> run (makeOptions server directory))
-
-    // どの定義が衝突したのか調査できるようにidが含まれる。
-    match error :> exn with
-    | SyncError message -> Assert.Contains("yuuka", message)
-    | unexpected -> failwith unexpected.Message
-
-    // 後勝ちの上書きが起きないように書き込みの前に止まる。
-    Assert.Equal(0, server.CreateCount)
+    { form with
+        Meta =
+            { form.Meta with
+                Knowledge =
+                    Some(
+                        knowledgeNames
+                        |> List.map (fun name ->
+                            { OpenWebui.KnowledgeReference.Id = None
+                              Name = name
+                              Type = OpenWebui.collectionType })
+                    ) }
+        Params =
+            { form.Params with
+                FunctionCalling = Some OpenWebui.legacyFunctionCalling } }
 
 /// Knowledgeコレクションの定義一式をテスト用の一時ディレクトリへ書き出す。
 let private makeKnowledgeDirectory (collections: (string * (string * string) list) list) : string =
@@ -618,361 +158,307 @@ let private makeKnowledgeDirectory (collections: (string * (string * string) lis
 
     directory
 
-/// knowledge:を書いたスキルから作られるのと同じModelFormを組み立てる。
-let private makeFormWithKnowledge (id: string) (knowledgeNames: string list) : OpenWebui.ModelForm =
-    let form = makeForm id "プロンプト"
+/// `knowledgeRoutes`が作成を受け付けるコレクションを1つだけ持つ定義一式。
+let private makeAppellationDirectory () : string =
+    makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]
 
-    { form with
-        Meta =
-            { form.Meta with
-                Knowledge =
-                    Some(
-                        knowledgeNames
-                        |> List.map (fun name ->
-                            { OpenWebui.KnowledgeReference.Id = None
-                              Name = name
-                              Type = OpenWebui.collectionType })
-                    ) }
-        Params =
-            { form.Params with
-                FunctionCalling = Some OpenWebui.legacyFunctionCalling } }
+let private makeOptions (server: FixedServer) (directory: string) : Options =
+    { ModelsDirectory = directory
+      Url = server.Url
+      BaseModelId = None
+      ApiKeyFile = None
+      KnowledgeDirectory = None
+      RagTemplateFile = None }
 
-[<Fact>]
-let ``未登録のKnowledgeは作成され再実行では書き込まれない`` () =
-    use server = new MockServer()
+/// 同期がSyncErrorで止まることと、その理由に手掛かりが全て含まれることを確かめる。
+/// 短い手掛かりは別の失敗の理由にも一致し得るので、
+/// どこで止まったのかが分かるように止まった先のURLなども並べる。
+let private assertSyncError (clues: string list) (options: Options) : Task<unit> =
+    task {
+        let! error = Assert.ThrowsAsync<SyncError>(fun () -> sync options :> Task)
 
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
-            KnowledgeDirectory =
-                Some(
-                    makeKnowledgeDirectory
-                        [ "character-appellation", [ "a.md", "呼称A"; "b.md", "呼称B" ] ]
-                ) }
-
-    run options
-    Assert.Equal(1, server.KnowledgeCreateCount)
-    Assert.Equal(2, server.UploadCount)
-    Assert.Equal(2, server.FileAddCount)
-
-    Assert.Equal<string list option>(
-        Some [ "a.md"; "b.md" ],
-        server.FileNamesOf "character-appellation"
-    )
-
-    // 中身が変わっていないファイルはハッシュが一致するので触らない。
-    run options
-    Assert.Equal(1, server.KnowledgeCreateCount)
-    Assert.Equal(2, server.UploadCount)
-    Assert.Equal(2, server.FileAddCount)
-    Assert.Equal(0, server.FileRemoveCount)
+        match error :> exn with
+        | SyncError message ->
+            for clue in clues do
+                Assert.Contains(clue, message)
+        | unexpected -> failwith unexpected.Message
+    }
 
 [<Fact>]
-let ``中身が変わったファイルは登録し直される`` () =
-    use server = new MockServer()
-    let models = makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]
+let ``ベースURLの末尾スラッシュはどの経路で組み立てても落とされる`` () : Task =
+    withFixedServer modelRoutes (fun server ->
+        task {
+            // パスは文字列の連結で組み立てるため、
+            // 末尾スラッシュが残ると`//health`のような不正なURLになる。
+            // CLI以外の経路がOptionsを組み立てても壊れないように、
+            // この不変条件はOptionsを持つ側で保つ。
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    Url = $"%s{server.Url}/" }
 
-    run
-        { makeOptions server models with
-            KnowledgeDirectory =
-                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "古い呼称" ] ]) }
+            do! sync options
 
-    run
-        { makeOptions server models with
-            KnowledgeDirectory =
-                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "新しい呼称" ] ]) }
-
-    // 古い埋め込みが残らないように、消してから入れ直す。
-    Assert.Equal(1, server.FileRemoveCount)
-    Assert.Equal(2, server.UploadCount)
-    Assert.Equal(2, server.FileAddCount)
+            Assert.Equal(1, server.CountOf("POST", "/api/v1/models/create"))
+        })
 
 [<Fact>]
-let ``生成物から消えたファイルはコレクションからも取り除かれる`` () =
-    use server = new MockServer()
-    let models = makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]
+let ``APIキーのファイルを指定するとBearerヘッダとして送られる`` () : Task =
+    withFixedServer modelRoutes (fun server ->
+        task {
+            let apiKeyPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
+            File.WriteAllText(apiKeyPath, "secret-key\n")
 
-    run
-        { makeOptions server models with
-            KnowledgeDirectory =
-                Some(
-                    makeKnowledgeDirectory
-                        [ "character-appellation", [ "a.md", "呼称A"; "b.md", "呼称B" ] ]
-                ) }
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    ApiKeyFile = Some apiKeyPath }
 
-    run
-        { makeOptions server models with
-            KnowledgeDirectory =
-                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
+            do! sync options
 
-    Assert.Equal(1, server.FileRemoveCount)
-    Assert.Equal<string list option>(Some [ "a.md" ], server.FileNamesOf "character-appellation")
+            let authorizations =
+                server.Received()
+                |> List.filter (fun request -> request.Path <> "/health")
+                |> List.map _.Authorization
+                |> List.distinct
 
-[<Fact>]
-let ``Modelの紐付けには作成したコレクションのidが埋まる`` () =
-    use server = new MockServer()
-
-    let models =
-        makeModelsDirectory [ makeFormWithKnowledge "yuuka" [ "character-appellation" ] ]
-
-    run
-        { makeOptions server models with
-            KnowledgeDirectory =
-                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
-
-    let knowledge = node server.Models["yuuka"] [ "meta"; "knowledge" ]
-    let reference = knowledge[0]
-
-    Assert.Equal(
-        server.CollectionIdOf "character-appellation",
-        Some(reference["id"].GetValue<string>())
-    )
-
-    Assert.Equal("collection", reference["type"].GetValue<string>())
-    // 自動でRAG検索させるための方式もModelへ設定される。
-    Assert.Equal(
-        OpenWebui.legacyFunctionCalling,
-        (node server.Models["yuuka"] [ "params"; "function_calling" ]).GetValue<string>()
-    )
+            Assert.Equal<string option list>([ Some "Bearer secret-key" ], authorizations)
+            // 資格情報が与えられている以上サインインは要らない。
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/auths/signin"))
+        })
 
 [<Fact>]
-let ``複数のコレクションを同期してもそれぞれのidが埋まる`` () =
-    use server = new MockServer()
+let ``APIキーを指定しないとサインインしたトークンがBearerヘッダとして送られる`` () : Task =
+    withFixedServer modelRoutes (fun server ->
+        task {
+            do! sync (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
 
-    // 採番されたidはコレクションからコレクションへ持ち回る状態のため、
-    // 1つしか同期しないと積み上げが壊れていても気付けない。
-    let models =
-        makeModelsDirectory
-            [ makeFormWithKnowledge "yuuka" [ "character-appellation"; "character-yuuka" ] ]
+            Assert.Equal(1, server.CountOf("POST", "/api/v1/auths/signin"))
 
-    run
-        { makeOptions server models with
-            KnowledgeDirectory =
-                Some(
-                    makeKnowledgeDirectory
-                        [ "character-appellation", [ "a.md", "呼称A" ]
-                          "character-yuuka", [ "b.md", "ユウカB" ] ]
-                ) }
+            let create =
+                server.Received()
+                |> List.find (fun request -> request.Path = "/api/v1/models/create")
 
-    let knowledge = node server.Models["yuuka"] [ "meta"; "knowledge" ]
-
-    let idOf (name: string) =
-        knowledge.AsArray()
-        |> Seq.tryPick (fun (reference: JsonNode) ->
-            if reference["name"].GetValue<string>() = name then
-                Some(reference["id"].GetValue<string>())
-            else
-                None)
-
-    // 名前ごとに別のidが引き当てられ、取り違えも取りこぼしも起きない。
-    Assert.Equal(server.CollectionIdOf "character-appellation", idOf "character-appellation")
-    Assert.Equal(server.CollectionIdOf "character-yuuka", idOf "character-yuuka")
-    Assert.NotEqual(idOf "character-appellation", idOf "character-yuuka")
+            Assert.Equal(Some "Bearer signed-in-token", create.Authorization)
+        })
 
 [<Fact>]
-let ``紐付けのあるModelは再実行では書き込まれない`` () =
-    use server = new MockServer()
+let ``サインインに失敗するとSyncErrorで止まり書き込みへ進まない`` () : Task =
+    // 認証を有効にしたインスタンスでは固定の資格情報が通らない。
+    let routes =
+        modelRoutes
+        |> Map.add ("POST", "/api/v1/auths/signin") (400, """{"detail":"Invalid credentials"}""")
 
-    // 名前で引き当てて埋めたidが、
-    // 応答を読み戻した値と一致しないと毎回更新が飛び続ける。
-    // 紐付けの直列化がずれた時にここで気付けるようにする。
-    let models =
-        makeModelsDirectory [ makeFormWithKnowledge "yuuka" [ "character-appellation" ] ]
+    withFixedServer routes (fun server ->
+        task {
+            // APIキーの指定が要ることに気付けるようにステータスが含まれる。
+            do!
+                assertSyncError
+                    [ "サインイン"; "400" ]
+                    (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
 
-    let options =
-        { makeOptions server models with
-            KnowledgeDirectory =
-                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
-
-    run options
-    Assert.Equal(1, server.CreateCount)
-    Assert.Equal(0, server.UpdateCount)
-
-    run options
-    Assert.Equal(1, server.CreateCount)
-    Assert.Equal(0, server.UpdateCount)
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+        })
 
 [<Fact>]
-let ``コレクションの説明は変わった時だけ書き込まれる`` () =
-    use server = new MockServer()
-    let models = makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]
+let ``サインインの応答にtokenが無いとSyncErrorで止まる`` () : Task =
+    let routes =
+        modelRoutes
+        |> Map.add ("POST", "/api/v1/auths/signin") (200, """{"detail":"ok"}""")
 
-    let directory =
-        makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]
+    withFixedServer routes (fun server ->
+        task {
+            do!
+                assertSyncError
+                    [ "/api/v1/auths/signinの応答を解釈できません"; "token" ]
+                    (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
 
-    let options =
-        { makeOptions server models with
-            KnowledgeDirectory = Some directory }
-
-    run options
-    run options
-    Assert.Equal(0, server.KnowledgeUpdateCount)
-
-    File.WriteAllText(
-        Path.Combine(directory, "character-appellation", OpenWebuiKnowledge.formFileName),
-        OpenWebuiKnowledge.toJson
-            { Name = "character-appellation"
-              Description = "書き換えた説明" }
-    )
-
-    run options
-    Assert.Equal(1, server.KnowledgeUpdateCount)
-
-    // 書き込んだ後は差分が無くなるので、再実行では触らない。
-    run options
-    Assert.Equal(1, server.KnowledgeUpdateCount)
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+        })
 
 [<Fact>]
-let ``同じ名前で重複した登録済みファイルは1つだけ残る`` () =
-    use server = new MockServer()
-    let models = makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]
+let ``存在確認のGETがサーバエラーを返すとSyncErrorで止まり作成へ進まない`` () : Task =
+    // サーバエラーを未登録とみなして作成へ進むと、意図しない作成につながる。
+    let routes =
+        modelRoutes
+        |> Map.add ("GET", "/api/v1/models/model") (500, """{"detail":"internal error"}""")
 
-    let options =
-        { makeOptions server models with
-            KnowledgeDirectory =
-                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
+    withFixedServer routes (fun server ->
+        task {
+            // 失敗の理由が調査できるようにステータスコードが含まれる。
+            do!
+                assertSyncError
+                    [ "yuukaの存在確認に失敗"; "500" ]
+                    (makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]))
 
-    run options
-
-    // 以前の同期が中断して同名のファイルが残った、壊れた状態を模す。
-    server.DuplicateFile "character-appellation"
-
-    run options
-
-    // 名前で引いた時に選ばれなかった方は比較の対象にならないまま残り続けるので取り除く。
-    Assert.Equal(1, server.FileRemoveCount)
-    Assert.Equal<string list option>(Some [ "a.md" ], server.FileNamesOf "character-appellation")
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+        })
 
 [<Fact>]
-let ``紐付け先のKnowledgeが同期の対象に無いとSyncErrorで止まる`` () =
-    use server = new MockServer()
+let ``同じidのModel定義が複数あるとSyncErrorで止まる`` () : Task =
+    withFixedServer modelRoutes (fun server ->
+        task {
+            let directory = makeModelsDirectory [ makeForm "yuuka" ]
+            // 別のファイル名で同じidの定義を置く。
+            File.WriteAllText(
+                Path.Combine(directory, "duplicated.json"),
+                OpenWebui.toJson (makeForm "yuuka")
+            )
 
-    let models = makeModelsDirectory [ makeFormWithKnowledge "yuuka" [ "typo-name" ] ]
-
-    let options =
-        { makeOptions server models with
-            KnowledgeDirectory =
-                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
-
-    let error = Assert.Throws<SyncError>(fun () -> run options)
-
-    // 綴りの誤りに気付けるように参照先の名前が含まれる。
-    match error :> exn with
-    | SyncError message -> Assert.Contains("typo-name", message)
-    | unexpected -> failwith unexpected.Message
-
-    // 参照が外れたModelを黙って登録しない。
-    Assert.Equal(0, server.CreateCount)
+            // どの定義が衝突したのか調査できるようにidが含まれる。
+            do! assertSyncError [ "Modelのidが重複"; "yuuka" ] (makeOptions server directory)
+            // 後勝ちの上書きが起きないように、登録先へ触れる前に止まる。
+            Assert.Empty(server.Received())
+        })
 
 [<Fact>]
-let ``アップロードの応答にidが無いとSyncErrorで止まる`` () =
-    use server = new MockServer()
+let ``同じ名前のKnowledgeコレクションが複数あるとSyncErrorで止まる`` () : Task =
+    withFixedServer knowledgeRoutes (fun server ->
+        task {
+            let directory =
+                makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]
+
+            // 別のディレクトリ名で同じ名前の定義を置く。
+            let duplicated = Path.Combine(directory, "duplicated")
+
+            Directory.CreateDirectory(
+                Path.Combine(duplicated, OpenWebuiKnowledge.filesDirectoryName)
+            )
+            |> ignore
+
+            File.WriteAllText(
+                Path.Combine(duplicated, OpenWebuiKnowledge.formFileName),
+                OpenWebuiKnowledge.toJson
+                    { Name = "character-appellation"
+                      Description = "重複した定義" }
+            )
+
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some directory }
+
+            do! assertSyncError [ "名前が重複"; "character-appellation" ] options
+            Assert.Empty(server.Received())
+        })
+
+[<Fact>]
+let ``紐付け先のKnowledgeが同期の対象に無いとSyncErrorで止まる`` () : Task =
+    withFixedServer knowledgeRoutes (fun server ->
+        task {
+            let models = makeModelsDirectory [ makeFormWithKnowledge "yuuka" [ "typo-name" ] ]
+
+            let options =
+                { makeOptions server models with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
+
+            // 綴りの誤りに気付けるように参照先の名前が含まれる。
+            do! assertSyncError [ "同期の対象にありません"; "typo-name" ] options
+            // 参照が外れたModelを黙って登録しない。
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/models/create"))
+        })
+
+[<Fact>]
+let ``アップロードの応答にidが無いとSyncErrorで止まる`` () : Task =
     // 応答の形が変わった状況を模す。
-    // 空のidのまま進むと、コレクションへの追加が空のfile_idで飛んで、
-    // 原因から遠い場所で失敗する。
-    server.OverrideUpload(200, """{"detail":"ok"}""")
+    // idのキーが無い応答は読み込みの時点で止まり、
+    // どのURLの応答にどのフィールドが無かったのかが理由に残る。
+    // キーがあって値が空の応答は読み込みを通ってしまうので、別のテストが受け持つ。
+    let routes =
+        knowledgeRoutes
+        |> Map.add ("POST", "/api/v1/files/") (200, """{"detail":"ok"}""")
 
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
-            KnowledgeDirectory =
-                Some(makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]) }
+    withFixedServer routes (fun server ->
+        task {
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
-    let error = Assert.Throws<SyncError>(fun () -> run options)
+            // 何が足りないのか分かるようにフィールドの名前が含まれる。
+            // 読み込みで止まったことは、読み込みの失敗にしか出ない文言で確かめる。
+            // URLとidだけでは、空のidで止める側の理由にも一致してしまう。
+            do! assertSyncError [ "/api/v1/files/の応答を解釈できません"; "id" ] options
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
+        })
 
-    // 何が足りないのか分かるようにフィールドの名前が含まれる。
-    match error :> exn with
-    | SyncError message -> Assert.Contains("id", message)
-    | unexpected -> failwith unexpected.Message
+// 打ち切りが壊れると同じページを辿り続けて返らなくなるため、時間を区切る。
+[<Fact(Timeout = 30000)>]
+let ``総件数に届かなくても空のページが返れば一覧の取得を打ち切る`` () : Task =
+    // 実物では起こしにくい、総件数と中身が食い違った応答を模す。
+    // このサーバはクエリ文字列を見ないので、どのページを求めても空のページが返る。
+    let routes =
+        knowledgeRoutes
+        |> Map.add
+            ("GET", "/api/v1/knowledge/collection-id/files")
+            (200, """{"items":[],"total":5}""")
 
-    Assert.Equal(0, server.FileAddCount)
+    withFixedServer routes (fun server ->
+        task {
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
-[<Fact>]
-let ``RAGテンプレートは差分がある時だけ書き込まれる`` () =
-    use server = new MockServer()
-    let templatePath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName())
-    File.WriteAllText(templatePath, "参考資料:\n{{CONTEXT}}\n")
+            do! sync options
 
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
-            RagTemplateFile = Some templatePath }
-
-    run options
-    Assert.Equal(1, server.RagTemplateUpdateCount)
-    Assert.Equal("参考資料:\n{{CONTEXT}}\n", server.RagTemplate)
-
-    run options
-    Assert.Equal(1, server.RagTemplateUpdateCount)
-
-[<Fact>]
-let ``同じ名前のKnowledgeコレクションが複数あるとSyncErrorで止まる`` () =
-    use server = new MockServer()
-
-    let directory =
-        makeKnowledgeDirectory [ "character-appellation", [ "a.md", "呼称A" ] ]
-
-    // 別のディレクトリ名で同じ名前の定義を置く。
-    let duplicated = Path.Combine(directory, "duplicated")
-
-    Directory.CreateDirectory(Path.Combine(duplicated, OpenWebuiKnowledge.filesDirectoryName))
-    |> ignore
-
-    File.WriteAllText(
-        Path.Combine(duplicated, OpenWebuiKnowledge.formFileName),
-        OpenWebuiKnowledge.toJson
-            { Name = "character-appellation"
-              Description = "重複した定義" }
-    )
-
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
-            KnowledgeDirectory = Some directory }
-
-    let error = Assert.Throws<SyncError>(fun () -> run options)
-
-    match error :> exn with
-    | SyncError message -> Assert.Contains("character-appellation", message)
-    | unexpected -> failwith unexpected.Message
-
-    Assert.Equal(0, server.KnowledgeCreateCount)
+            Assert.Equal(1, server.CountOf("GET", "/api/v1/knowledge/collection-id/files"))
+        })
 
 [<Fact>]
-let ``一覧の1ページに収まらない数のファイルでも再実行で書き込まれない`` () =
-    use server = new MockServer()
+let ``アップロードの応答のidが空だとSyncErrorで止まる`` () : Task =
+    // キーがあっても値が空なら、読み込みは通ってしまう。
+    // そのまま進むと空のfile_idでコレクションへの追加が飛ぶ。
+    let routes =
+        knowledgeRoutes |> Map.add ("POST", "/api/v1/files/") (200, """{"id":""}""")
 
-    // 一覧APIは1ページ分しか返さないため、
-    // ページを辿らないと登録済みのファイルを未登録と取り違えて、
-    // 同じ内容を登録し直そうとしてDuplicate contentで弾かれる。
-    let pageSize = server.PageSize
+    withFixedServer routes (fun server ->
+        task {
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
-    let files =
-        List.init (pageSize + 5) (fun index -> $"file%02d{index}.md", $"呼称%d{index}")
+            do! assertSyncError [ "/api/v1/files/の応答のidが空です" ] options
+            Assert.Equal(0, server.CountOf("POST", "/api/v1/knowledge/collection-id/file/add"))
+        })
 
-    let options =
-        { makeOptions server (makeModelsDirectory [ makeForm "yuuka" "プロンプト" ]) with
-            KnowledgeDirectory = Some(makeKnowledgeDirectory [ "character-appellation", files ]) }
-
-    run options
-    Assert.Equal(pageSize + 5, server.UploadCount)
-    Assert.Equal(pageSize + 5, server.FileAddCount)
-
-    run options
-    Assert.Equal(pageSize + 5, server.UploadCount)
-    Assert.Equal(pageSize + 5, server.FileAddCount)
-    Assert.Equal(0, server.FileRemoveCount)
+/// コレクションのファイル一覧への要求の数。
+/// 空のidで組み立てたURLはパスの形が崩れるので、末尾だけで数える。
+let private filesRequestCount (server: FixedServer) : int =
+    server.Received()
+    |> List.filter (fun request -> request.Path.EndsWith("/files", System.StringComparison.Ordinal))
+    |> List.length
 
 [<Fact>]
-let ``更新でも登録済みの権限設定が保たれる`` () =
-    use server = new MockServer()
-    let models = makeModelsDirectory [ makeForm "yuuka" "古いプロンプト" ]
-    run (makeOptions server models)
+let ``コレクションの作成の応答のidが空だとSyncErrorで止まる`` () : Task =
+    // 空のidのまま進むと、`/api/v1/knowledge//files`のような壊れたURLへ要求が飛ぶ。
+    let routes =
+        knowledgeRoutes
+        |> Map.add
+            ("POST", "/api/v1/knowledge/create")
+            (200, """{"id":"","name":"character-appellation","description":"説明"}""")
 
-    // 登録後にUIで公開範囲を設定した状況を模す。
-    let grants = JsonArray()
-    grants.Add(JsonValue.Create "everyone")
-    server.Models["yuuka"]["access_grants"] <- grants
+    withFixedServer routes (fun server ->
+        task {
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
 
-    run (makeOptions server (makeModelsDirectory [ makeForm "yuuka" "改良したプロンプト" ]))
+            do! assertSyncError [ "/api/v1/knowledge/createの応答のidが空です" ] options
+            Assert.Equal(0, filesRequestCount server)
+        })
 
-    Assert.Equal(1, server.UpdateCount)
-    // 管理対象ではない権限の設定は読み取った値をそのまま送り返して保つ。
-    let stored = node server.Models["yuuka"] [ "access_grants" ]
-    Assert.Equal("everyone", stored[0].GetValue<string>())
+[<Fact>]
+let ``登録済みのコレクションのidが空だとSyncErrorで止まる`` () : Task =
+    let collection = """{"id":"","name":"character-appellation","description":"説明"}"""
+
+    let routes =
+        knowledgeRoutes
+        |> Map.add
+            ("GET", "/api/v1/knowledge/")
+            (200, $$"""{"items":[%%s{{collection}}],"total":1}""")
+
+    withFixedServer routes (fun server ->
+        task {
+            let options =
+                { makeOptions server (makeModelsDirectory [ makeForm "yuuka" ]) with
+                    KnowledgeDirectory = Some(makeAppellationDirectory ()) }
+
+            do! assertSyncError [ "/api/v1/knowledge/の応答のidが空です" ] options
+            Assert.Equal(0, filesRequestCount server)
+        })

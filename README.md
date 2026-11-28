@@ -238,7 +238,7 @@ Open WebUIをNixOSで運用している場合は、
 
   blue-prompt.open-webui = {
     enable = true;
-    url = "http://192.168.0.10:8080";
+    url = "http://open-webui.example.com:8080";
     # 実際に推論へ使う上流モデル。
     # 省略すると新規作成時はnullになり、登録後にUIで選んだ値を保持します。
     baseModelId = "qwen3:32b";

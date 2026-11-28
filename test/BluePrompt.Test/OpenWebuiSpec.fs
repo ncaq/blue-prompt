@@ -208,9 +208,9 @@ let ``管理対象へ後から足したフィールドが無い応答も読み�
     // function_callingを導入する前に登録したModelの応答を模す。
     // 実際にOpen WebUIへ登録済みのModelのparamsにはsystemしかない。
     //
-    // optionalFieldPathsの安全網として働くように、
+    // 読み込みが無いフィールドをNoneとして読むことを確かめるため、
     // 管理対象のoption型のフィールドは1つも書かない。
-    // nullで明示すると、補う処理を落としてもこのテストが通ってしまう。
+    // nullで明示すると、書き出しと同じ設定で読んでもこのテストが通ってしまう。
     let json =
         """{
   "id": "yuuka",
@@ -226,3 +226,44 @@ let ``管理対象へ後から足したフィールドが無い応答も読み�
     Assert.Equal(None, form.BaseModelId)
     Assert.Equal(None, form.Params.FunctionCalling)
     Assert.Equal(None, form.Meta.Knowledge)
+
+/// option型のフィールドを全てNoneにしたModelForm。
+let private formWithoutOptions: ModelForm =
+    { Id = "yuuka"
+      BaseModelId = None
+      Name = "yuuka"
+      Meta = { Description = "説明"; Knowledge = None }
+      Params =
+        { System = "プロンプト"
+          FunctionCalling = None }
+      IsActive = true }
+
+[<Fact>]
+let ``option型のフィールドがNoneのModelFormはtoJsonから読み戻せる`` () =
+    // 書き出しはNoneをnullとして書くので、
+    // 読み込みはnullもNoneとして読む必要がある。
+    let json = toJson formWithoutOptions
+    Assert.Contains("\"base_model_id\": null", json)
+    Assert.Equal(formWithoutOptions, ofJson "生成物" json)
+
+[<Fact>]
+let ``option型のフィールドがSomeのModelFormはtoJsonから読み戻せる`` () =
+    let form =
+        { formWithoutOptions with
+            BaseModelId = Some "qwen3:32b"
+            Meta =
+                { formWithoutOptions.Meta with
+                    Knowledge =
+                        Some
+                            [ { KnowledgeReference.Id = Some "collection-id"
+                                Name = "character-yuuka"
+                                Type = collectionType } ] }
+            Params =
+                { formWithoutOptions.Params with
+                    FunctionCalling = Some legacyFunctionCalling } }
+
+    Assert.Equal(form, ofJson "生成物" (toJson form))
+
+[<Fact>]
+let ``nullだけのJSONはSkillFormatErrorになる`` () =
+    Assert.Throws<SkillFormatError>(fun () -> ofJson "空の応答" "null" |> ignore)

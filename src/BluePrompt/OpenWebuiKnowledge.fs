@@ -13,9 +13,6 @@ module BluePrompt.OpenWebuiKnowledge
 
 open System
 open System.IO
-open System.Text.Json
-open System.Text.Json.Serialization
-open System.Text.Encodings.Web
 open System.Threading.Tasks
 open XParsec
 
@@ -231,26 +228,12 @@ let buildKnowledge (skillDirectory: string) : Knowledge =
           Description = frontmatter.Description }
       Files = files }
 
-/// JSON直列化の設定。
-/// OpenWebui側と同じく、キーはsnake_caseへ揃えて日本語はそのまま書く。
-let private serializerOptions =
-    let options =
-        JsonSerializerOptions(
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        )
-
-    JsonFSharpOptions.Default().AddToJsonSerializerOptions options
-    options
-
 /// KnowledgeFormをOpen WebUIのAPIへ渡せるJSON文字列へ直列化する。
-let toJson (form: KnowledgeForm) : string =
-    JsonSerializer.Serialize(form, serializerOptions) + "\n"
+let toJson (form: KnowledgeForm) : string = OpenWebuiJson.serialize form
 
 /// toJsonの逆変換。
 let ofJson (json: string) : KnowledgeForm =
-    JsonSerializer.Deserialize<KnowledgeForm>(json, serializerOptions)
+    OpenWebuiJson.deserialize<KnowledgeForm> json
 
 /// コレクションの定義を置くディレクトリの中で、フォームのJSONに使う名前。
 let formFileName = "knowledge.json"

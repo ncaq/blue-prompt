@@ -40,6 +40,10 @@ nix-fast-buildコマンドで統合チェックを実行できます。
 nix-fast-build --option eval-cache false --no-link --skip-cached --no-nom
 ```
 
+checksの`open-webui-sync`はNixのデーモンに`uid-range`のsystem-featureを要求します。
+設定の無い環境ではこれだけが落ちるので、
+「同期のテスト」の節に従って設定してください。
+
 # リポジトリ構成
 
 様々なコーディングエージェント向けの`AGENTS.md`と、
@@ -134,6 +138,24 @@ Markdownの節を落としたり選んだりする処理は、
 XParsecのパーサは正規表現と違って後戻りをしません。
 繰り返しは取れるだけ取ってから先へ進むので、
 繰り返しの文字の集合と直後の区切りが重ならないように組み立てます。
+
+## JSON
+
+JSONは[FSharp.SystemTextJson](https://github.com/Tarmil/FSharp.SystemTextJson)で、
+F#のレコードとの対応として読み書きします。
+`JsonNode`で木を組み立てたり、キーの道を辿って値を読んだりはしません。
+APIの応答も、読む欄だけを持つレコードで受けます。
+
+Open WebUIとやり取りするJSONの設定は`src/BluePrompt/OpenWebuiJson.fs`に、
+wikiruから構造化したレコードの設定は`src/BluePrompt/JsonCodec.fs`にあります。
+Open WebUI向けは、書く時はNoneをキーごと省かずにnullとして書きます。
+Open WebUIはnullを未設定として受け取れるうえ、
+生成物を読んだ時にどのフィールドが未設定なのかが見えるためです。
+
+読む時は欠けたフィールドもnullもNoneとして読みます。
+登録済みのModelには、
+このリポジトリが後から管理対象へ足したフィールドがまだ無いことがあるためです。
+書いたnullを読み戻せるように、nullもNoneとして読みます。
 
 ## リンター
 
@@ -670,6 +692,30 @@ blue-prompt open-webui sync --model <モデル定義ディレクトリ> --base-u
   [--base-model-id <id>] [--api-key-file <パス>] \
   [--knowledge <ディレクトリ>] [--rag-template-file <パス>]
 ```
+
+## 同期のテスト
+
+同期はOpen WebUIのAPIの応答の形と挙動に依存しているため、
+登録や更新が正しく進むことは模したサーバではなく実物で確かめます。
+`tests/open-webui-sync.nix`のNixOSテストが、
+使い捨てのOpen WebUIをsystemd-nspawnのコンテナで立ち上げて、
+NixOSモジュールのサービスとCLIの両方から同期します。
+nix-fast-buildのchecks(`open-webui-sync`)に含まれています。
+
+Knowledgeへファイルを足すとOpen WebUIはその場で埋め込みを計算するため、
+テストでは17MBの小さい埋め込みのモデルを固定出力で取ってきて動かします。
+検索の精度はテストの関心ではないためです。
+
+重いテストなので、手元で素早く回すのは`dotnet test`の単体テストです。
+単体テストの`OpenWebuiSyncSpec.fs`は、
+決まった応答を返すだけのサーバを相手に、
+サーバエラーや応答の欠けのような実物では起こせない応答と、
+登録先へ届く前に止まるべき入力の扱いだけを確かめます。
+
+コンテナのテストは`uid-range`のsystem-featureを要求します。
+手元のNixのデーモンに設定が無ければビルドできないので、
+NixOSのマニュアルの"Running Tests"の"System Requirements"に従って設定してください。
+CIでは`.github/workflows/check.yml`がこの設定を渡しています。
 
 ## RAGプロンプトテンプレート
 

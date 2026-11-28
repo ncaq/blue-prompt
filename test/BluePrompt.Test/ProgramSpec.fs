@@ -61,7 +61,7 @@ let private commands =
          "--model"
          "models"
          "--base-url"
-         "http://127.0.0.1:8080" |] ]
+         "http://localhost:8080" |] ]
 
 /// パースの結果を、表のコマンド名と突き合わせられる文字列にする。
 /// 同じ型の引数を取るケースが横に並ぶため、
@@ -186,7 +186,7 @@ let ``既知のサブコマンドへの未知のオプションでは非0を返�
                "--model"
                "/tmp/models"
                "--base-url"
-               "http://127.0.0.1:8080"
+               "http://localhost:8080"
                "--unknown" |]
     )
 
@@ -213,7 +213,7 @@ let ``同期の失敗は理由だけを表示して非0を返す`` () =
                "--model"
                models
                "--base-url"
-               "http://127.0.0.1:8080"
+               "http://localhost:8080"
                "--knowledge"
                knowledge |]
     )
@@ -278,7 +278,7 @@ let ``コマンドライン引数から接続情報を組み立てられる`` ()
                 [| "--model"
                    "/tmp/models"
                    "--base-url"
-                   "http://127.0.0.1:8080/"
+                   "http://localhost:8080/"
                    "--base-model-id"
                    "qwen3:32b"
                    "--api-key-file"
@@ -291,7 +291,7 @@ let ``コマンドライン引数から接続情報を組み立てられる`` ()
 
     Assert.Equal("/tmp/models", options.ModelsDirectory)
     // 末尾スラッシュの正規化はOpenWebuiSync側の責務なので、ここでは素通しする。
-    Assert.Equal("http://127.0.0.1:8080/", options.Url)
+    Assert.Equal("http://localhost:8080/", options.Url)
     Assert.Equal(Some "qwen3:32b", options.BaseModelId)
     Assert.Equal(Some "/run/credentials/api-key", options.ApiKeyFile)
     Assert.Equal(Some "/tmp/knowledge", options.KnowledgeDirectory)
@@ -303,7 +303,7 @@ let ``省略できるオプションを渡さなければNoneのままになる`
 
     let options =
         Program.syncOptions (
-            parser.Parse [| "--model"; "/tmp/models"; "--base-url"; "http://127.0.0.1:8080" |]
+            parser.Parse [| "--model"; "/tmp/models"; "--base-url"; "http://localhost:8080" |]
         )
 
     // ModelだけをKnowledgeやRAGテンプレート抜きで同期する運用が成り立つ。

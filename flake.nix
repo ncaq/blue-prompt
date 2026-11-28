@@ -671,7 +671,7 @@
                       system.stateVersion = "26.05";
                       blue-prompt.open-webui = {
                         enable = true;
-                        url = "http://127.0.0.1:8080";
+                        url = "http://localhost:8080";
                         baseModelId = "test-model";
                         apiKeyFile = "/run/secrets/open-webui-api-key";
                       };
@@ -700,6 +700,24 @@
                 test -x "$program"
                 touch $out
               '';
+
+            # 使い捨てのOpen WebUIへ実際に同期して、APIとの約束を確かめる。
+            # 詳しくはテストのファイルの冒頭のコメント。
+            open-webui-sync = pkgs.testers.runNixOSTest (
+              import ./tests/open-webui-sync.nix {
+                inherit lib pkgs blue-prompt;
+                nixosModule = inputs.self.nixosModules.default;
+                # Open WebUIのライセンスはnixpkgsではunfreeの扱いなので、
+                # このパッケージだけを許可したnixpkgsから取る。
+                inherit
+                  (import inputs.nixpkgs {
+                    inherit (pkgs.stdenv.hostPlatform) system;
+                    config.allowUnfreePredicate = package: lib.getName package == "open-webui";
+                  })
+                  open-webui
+                  ;
+              }
+            );
           };
 
           packages = {

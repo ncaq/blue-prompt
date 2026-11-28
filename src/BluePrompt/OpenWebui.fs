@@ -11,9 +11,6 @@ module BluePrompt.OpenWebui
 open System
 open System.IO
 open System.Text.Json
-open System.Text.Json.Nodes
-open System.Text.Json.Serialization
-open System.Text.Encodings.Web
 open System.Threading.Tasks
 open XParsec
 open XParsec.Parsers
@@ -283,78 +280,21 @@ let buildModelForm (skillDirectory: string) : ModelForm =
                 Some legacyFunctionCalling }
       IsActive = true }
 
-/// JSON直列化の設定。
-/// Open WebUIのPydanticモデルはbase_model_idのようなsnake_caseのキーを使うため、
-/// キーの命名はsnake_caseへ揃える。
-/// F#のoption型をnullと値の対応で書けるようにJsonFSharpOptionsを使い、
-/// 日本語をエスケープせずそのまま書いて内容を確認できるようにする。
-let private serializerOptions =
-    let options =
-        JsonSerializerOptions(
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        )
-
-    JsonFSharpOptions.Default().AddToJsonSerializerOptions options
-    options
-
 /// ModelFormをOpen WebUIのAPIへ渡せるJSON文字列へ直列化する。
-let toJson (form: ModelForm) : string =
-    JsonSerializer.Serialize(form, serializerOptions) + "\n"
+let toJson (form: ModelForm) : string = OpenWebuiJson.serialize form
 
-/// 管理対象のoption型のフィールドのうち、
-/// 応答に無ければnullで補う必要があるものの位置。
-/// 登録済みのModelには、
-/// このリポジトリが後から管理対象へ足したフィールドがまだ無いことがあり、
-/// 例えばfunction_callingを導入する前に登録したModelのparamsにはsystemしかありません。
-/// レコードのフィールドが1つでも欠けるとデシリアライズは失敗しますが、
-/// nullが入っていればNoneとして読めます。
-///
-/// option型のフィールドを足す時はここへも足してください。
-/// 忘れると登録済みのModelを読み戻せなくなります。
-/// 古い形の応答を読むテストが検出します。
-let private optionalFieldPaths =
-    [ [], "base_model_id"
-      [ "meta" ], "knowledge"
-      [ "params" ], "function_calling" ]
-
-/// 応答に無いoption型のフィールドをnullで補う。
-/// 途中の親が応答に無ければ補う先も無いため、そこで辿るのをやめる。
-let private fillMissingOptionalFields (root: JsonNode) : JsonNode =
-    for parentKeys, key in optionalFieldPaths do
-        let parent =
-            List.fold
-                (fun (node: JsonNode option) (parentKey: string) ->
-                    node |> Option.bind (fun node -> Option.ofObj node[parentKey]))
-                (Some root)
-                parentKeys
-
-        match parent with
-        | Some(:? JsonObject as object) when not (object.ContainsKey key) -> object[key] <- null
-        | _ -> ()
-
-    root
-
-/// 読み込んだJSONのノードをModelFormへ読み戻す。
+/// toJsonの逆変換としてJSONをModelFormへ読み戻す。
 /// ModelFormに無いフィールドは無視されるため、
 /// APIの応答を管理対象のフィールドだけへ正規化する用途にも使える。
+/// 応答にoption型のフィールドが無ければNoneとして読む。
 ///
 /// originはこのJSONがどこから来たのかを示す、
 /// ファイルのパスやURLのような短い文字列で、失敗した時の手掛かりになる。
-/// 応答を読んだ後にそのノードを別の用途へ使い回せるように、
-/// 文字列ではなくノードを受け取る形にしている。
-let ofJsonNode (origin: string) (node: JsonNode) : ModelForm =
+let ofJson (origin: string) (json: string) : ModelForm =
     try
-        (fillMissingOptionalFields node).Deserialize<ModelForm>(serializerOptions)
+        OpenWebuiJson.deserialize<ModelForm> json
     with :? JsonException as error ->
         raise (SkillFormatError(origin, $"Modelの定義として解釈できません: %s{error.Message}"))
-
-/// toJsonの逆変換としてJSONをModelFormへ読み戻す。
-let ofJson (origin: string) (json: string) : ModelForm =
-    match JsonNode.Parse json with
-    | null -> raise (SkillFormatError(origin, $"Modelの定義として解釈できません: %s{json}"))
-    | root -> ofJsonNode origin root
 
 /// スキルディレクトリからModelFormのJSONを書き出す。
 /// 出力はNixのビルド成果物でリポジトリへはコミットしないため、nix fmtは掛けない。

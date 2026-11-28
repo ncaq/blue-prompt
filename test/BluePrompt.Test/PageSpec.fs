@@ -90,7 +90,8 @@ let ``接続できない場合はFetchErrorになる`` () : Task =
         // status=200の空ドキュメントを返すため、
         // 検知しないと空のHTMLが正常な取得として静かに返ってしまう。
         // 空きポートを確保してすぐ閉じることで、確実に接続拒否になるURLを作る。
-        let listener = new TcpListener(IPAddress.Loopback, 0)
+        // localhostがIPv4とIPv6のどちらへ解決されても拒否されるように、両方を受けるソケットで確保する。
+        let listener = TcpListener.Create 0
         listener.Start()
         let port = (listener.LocalEndpoint :?> IPEndPoint).Port
         listener.Stop()
@@ -98,7 +99,7 @@ let ``接続できない場合はFetchErrorになる`` () : Task =
         // status=0はリトライの対象なので、既定の間隔で待たされないように空のリトライ間隔で呼ぶ。
         let! error =
             Assert.ThrowsAsync<BluePrompt.Page.FetchError>(fun () ->
-                BluePrompt.Page.fetchHtmlWith [] (Uri $"http://127.0.0.1:%d{port}/") :> Task)
+                BluePrompt.Page.fetchHtmlWith [] (Uri $"http://localhost:%d{port}/") :> Task)
 
         // レスポンス自体を得られなかった取得失敗はstatus=0として現れる。
         match error :> exn with
