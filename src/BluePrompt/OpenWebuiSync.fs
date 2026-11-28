@@ -29,7 +29,11 @@ type Options =
       KnowledgeDirectory: string option
       RagTemplateFile: string option }
 
-/// 同期先との通信や生成物の読み込みに失敗した時の理由。
+/// 同期の前提が崩れて止めた時の理由。
+/// 生成物の欠けやidの重複、紐付け先の欠落、応答の空のid、
+/// 起動待ちの打ち切り、Modelの存在確認の想定外のステータスがこれで届く。
+/// HTTPの成功以外のステータスと読めない応答は、
+/// これに包まずHttpRequestExceptionとJsonExceptionのまま届く。
 exception SyncError of message: string
 
 /// インスタンスの起動を待つ間の、1回の確認の結果をやり直すパイプライン。

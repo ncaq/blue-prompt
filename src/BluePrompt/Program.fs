@@ -300,7 +300,7 @@ let main argv =
         else
             eprintfn $"%s{e.Message}"
             1
-    // 同期の失敗はスタックトレースではなく理由だけを表示する。
+    // SyncErrorで止めた同期の失敗は、スタックトレースではなく理由だけを表示する。
     | OpenWebuiSync.SyncError message ->
         eprintfn $"%s{message}"
         1
